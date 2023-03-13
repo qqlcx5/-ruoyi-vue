@@ -98,18 +98,18 @@
                 @click="setLoginState(LoginStateEnum.QR_CODE)"
               />
             </el-col>
-            <el-col :span="8">
+            <!-- <el-col :span="8">
               <XButton
                 class="w-[100%]"
                 :title="t('login.btnRegister')"
                 @click="setLoginState(LoginStateEnum.REGISTER)"
               />
-            </el-col>
+            </el-col> -->
           </el-row>
         </el-form-item>
       </el-col>
-      <el-divider content-position="center">{{ t('login.otherLogin') }}</el-divider>
-      <el-col :span="24" style="padding-left: 10px; padding-right: 10px">
+      <!-- <el-divider content-position="center">{{ t('login.otherLogin') }}</el-divider> -->
+      <!--<el-col :span="24" style="padding-left: 10px; padding-right: 10px">
         <el-form-item>
           <div class="flex justify-between w-[100%]">
             <Icon
@@ -123,7 +123,7 @@
             />
           </div>
         </el-form-item>
-      </el-col>
+      </el-col> -->
     </el-row>
   </el-form>
 </template>
@@ -140,7 +140,7 @@ import * as LoginApi from '@/api/login'
 import { LoginStateEnum, useLoginState, useFormValid } from './useLogin'
 
 const { t } = useI18n()
-const message = useMessage()
+// const message = useMessage()
 const iconHouse = useIcon({ icon: 'ep:house' })
 const iconAvatar = useIcon({ icon: 'ep:avatar' })
 const iconLock = useIcon({ icon: 'ep:lock' })
@@ -174,12 +174,12 @@ const loginData = reactive({
   }
 })
 
-const socialList = [
-  { icon: 'ant-design:github-filled', type: 0 },
-  { icon: 'ant-design:wechat-filled', type: 30 },
-  { icon: 'ant-design:alipay-circle-filled', type: 0 },
-  { icon: 'ant-design:dingtalk-circle-filled', type: 20 }
-]
+// const socialList = [
+//   { icon: 'ant-design:github-filled', type: 0 },
+//   { icon: 'ant-design:wechat-filled', type: 30 },
+//   { icon: 'ant-design:alipay-circle-filled', type: 0 },
+//   { icon: 'ant-design:dingtalk-circle-filled', type: 20 }
+// ]
 
 // 获取验证码
 const getCode = async () => {
@@ -252,25 +252,25 @@ const handleLogin = async (params) => {
 }
 
 // 社交登录
-const doSocialLogin = async (type: number) => {
-  if (type === 0) {
-    message.error('此方式未配置')
-  } else {
-    loginLoading.value = true
-    if (loginData.tenantEnable === 'true') {
-      await message.prompt('请输入租户名称', t('common.reminder')).then(async ({ value }) => {
-        const res = await LoginApi.getTenantIdByNameApi(value)
-        authUtil.setTenantId(res)
-      })
-    }
-    // 计算 redirectUri
-    const redirectUri =
-      location.origin + '/social-login?type=' + type + '&redirect=' + (redirect.value || '/')
-    // 进行跳转
-    const res = await LoginApi.socialAuthRedirectApi(type, encodeURIComponent(redirectUri))
-    window.location.href = res
-  }
-}
+// const doSocialLogin = async (type: number) => {
+//   if (type === 0) {
+//     message.error('此方式未配置')
+//   } else {
+//     loginLoading.value = true
+//     if (loginData.tenantEnable === 'true') {
+//       await message.prompt('请输入租户名称', t('common.reminder')).then(async ({ value }) => {
+//         const res = await LoginApi.getTenantIdByNameApi(value)
+//         authUtil.setTenantId(res)
+//       })
+//     }
+//     // 计算 redirectUri
+//     const redirectUri =
+//       location.origin + '/social-login?type=' + type + '&redirect=' + (redirect.value || '/')
+//     // 进行跳转
+//     const res = await LoginApi.socialAuthRedirectApi(type, encodeURIComponent(redirectUri))
+//     window.location.href = res
+//   }
+// }
 watch(
   () => currentRoute.value,
   (route: RouteLocationNormalizedLoaded) => {
