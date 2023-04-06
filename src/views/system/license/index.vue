@@ -80,9 +80,7 @@ const updateSupport = ref(0)
 const uploadDisabled = ref(false)
 let updateUrl = import.meta.env.VITE_UPLOAD_URL
 const submitForm = async () => {
-  console.log(fileList.value[0])
   uploadData.value.file = fileList.value[0]['raw']
-  console.log(uploadData)
   // 参数校验
   const elForm = unref(formUpload)
   if (!elForm) return
