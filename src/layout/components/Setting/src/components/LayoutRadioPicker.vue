@@ -12,17 +12,20 @@ const layout = computed(() => appStore.getLayout)
 </script>
 
 <template>
-  <div :class="prefixCls" class="flex flex-wrap space-x-14px layout-content">
+  <div :class="prefixCls" class="total-content flex flex-wrap space-x-14px layout-content">
     <div
       :class="[
         `${prefixCls}__classic`,
         'relative w-80px h-60px cursor-pointer bg-gray-300',
         {
           'is-acitve': layout === 'classic'
-        }
+        },
+        'checkmark-content'
       ]"
       @click="appStore.setLayout('classic')"
-    ></div>
+    >
+      <div v-show="layout === 'classic'" class="checkmark checkmark-one"></div>
+    </div>
     <!--    <div-->
     <!--      :class="[-->
     <!--        `${prefixCls}__top-left`,-->
@@ -39,21 +42,26 @@ const layout = computed(() => appStore.getLayout)
         'relative w-80px h-60px cursor-pointer bg-gray-300',
         {
           'is-acitve': layout === 'top'
-        }
+        },
+        'checkmark-content'
       ]"
       @click="appStore.setLayout('top')"
-    ></div>
+    >
+      <div v-show="layout === 'top'" class="checkmark checkmark-one"></div>
+    </div>
     <div
       :class="[
         `${prefixCls}__cut-menu`,
         'relative w-80px h-60px cursor-pointer bg-gray-300',
         {
           'is-acitve': layout === 'cutMenu'
-        }
+        },
+        'checkmark-content'
       ]"
       @click="appStore.setLayout('cutMenu')"
     >
       <div class="absolute h-full w-[33%] top-0 left-[10%] bg-gray-200"></div>
+      <div v-show="layout === 'cutMenu'" class="checkmark checkmark-one"></div>
     </div>
   </div>
 </template>
@@ -166,5 +174,11 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
   .is-acitve {
     border-color: var(--el-color-primary);
   }
+}
+
+.total-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
 }
 </style>

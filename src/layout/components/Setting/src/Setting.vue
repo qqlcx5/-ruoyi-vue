@@ -34,14 +34,13 @@
             <ColorRadioPicker
               v-model="systemTheme"
               :schema="[
-                '#409eff',
-                '#009688',
-                '#536dfe',
-                '#ff5c93',
-                '#ee4f12',
-                '#0096c7',
-                '#9c27b0',
-                '#ff9800'
+                '#0081FF',
+                '#31C27C',
+                '#447EFD',
+                '#EB4A3B',
+                '#FF9B32',
+                '#D56D9D',
+                '#D8D8D8'
               ]"
               @change="setSystemTheme"
             />
@@ -53,16 +52,7 @@
           <div class="layout-radio-picker-content">
             <ColorRadioPicker
               v-model="headerTheme"
-              :schema="[
-                '#fff',
-                '#151515',
-                '#5172dc',
-                '#e74c3c',
-                '#24292e',
-                '#394664',
-                '#009688',
-                '#383f45'
-              ]"
+              :schema="['#fff', '#31C27C', '#597EFD', '#EB4A3B', '#FF9B32', '#846D9D', '#D8D8D8']"
               @change="setHeaderTheme"
             />
           </div>
@@ -74,16 +64,7 @@
           <div class="layout-radio-picker-content">
             <ColorRadioPicker
               v-model="menuTheme"
-              :schema="[
-                '#fff',
-                '#001529',
-                '#212121',
-                '#273352',
-                '#191b24',
-                '#383f45',
-                '#001628',
-                '#344058'
-              ]"
+              :schema="['#fff', '#31394A', '#111E41', '#232738', '#272C42', '#9F9F9F', '#D8D8D8']"
               @change="setMenuTheme"
             />
           </div>
@@ -380,9 +361,59 @@ $prefix-cls: #{$namespace}-setting;
   //布局/系统主题/头部主题/菜单主题content
   .layout-radio-picker-content {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-left: 15px;
     min-height: 79px;
+    width: 300px;
+  }
+
+  //=======圆圈内打钩start=======
+  .checkmark {
+    width: 20px;
+    height: 20px;
+    border-radius: 20px;
+    background: rgb(0, 129, 255);
+    display: inline-block;
+    position: relative;
+    z-index: 999;
+  }
+
+  .checkmark:before,
+  .checkmark::after {
+    content: '';
+    height: 14px;
+    width: 3px;
+    border-radius: 5px;
+    display: block;
+    background: white;
+    position: absolute;
+    top: 3px;
+    /*40-6=34*/
+    left: 10px;
+    /*make the two rects in the middle of the cycle */
+    transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+  }
+
+  .checkmark::before {
+    height: 7px;
+    transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    position: absolute;
+    top: 9px;
+    /*40-18=12  */
+    left: 4px;
+  }
+  //=======圆圈内打钩end=======
+  //圆圈内打钩位置
+  .checkmark-content {
+    position: relative;
+  }
+  .checkmark-one {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
   }
 }
 </style>
