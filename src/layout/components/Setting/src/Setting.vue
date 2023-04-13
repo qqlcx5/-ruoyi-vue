@@ -1,14 +1,124 @@
+<template>
+  <ElDrawer
+    v-model="drawer"
+    @close="closeDrawer"
+    direction="rtl"
+    size="350px"
+    :z-index="4000"
+    class="setting-drawer-content"
+  >
+    <template #header>
+      <span class="text-16px font-700">{{ t('setting.projectSetting') }}</span>
+    </template>
+
+    <ElDivider />
+    <!--     TODO:有空再抽 都一样的-->
+    <div class="layout-content-center">
+      <div class="text-center">
+        <!-- 主题 -->
+        <!--      <ElDivider>{{ t('setting.theme') }}</ElDivider>-->
+        <!--      <ThemeSwitch />-->
+
+        <!-- 布局 -->
+        <div class="general-content">
+          <div class="drawer-title"> {{ t('setting.layout') }}</div>
+          <div class="layout-radio-picker-content">
+            <LayoutRadioPicker />
+          </div>
+        </div>
+
+        <!-- 系统主题 -->
+        <div class="general-content">
+          <div class="drawer-title"> {{ t('setting.systemTheme') }}</div>
+          <div class="layout-radio-picker-content">
+            <ColorRadioPicker
+              v-model="systemTheme"
+              :schema="[
+                '#409eff',
+                '#009688',
+                '#536dfe',
+                '#ff5c93',
+                '#ee4f12',
+                '#0096c7',
+                '#9c27b0',
+                '#ff9800'
+              ]"
+              @change="setSystemTheme"
+            />
+          </div>
+        </div>
+        <!-- 头部主题 -->
+        <div class="general-content">
+          <div class="drawer-title"> {{ t('setting.headerTheme') }}</div>
+          <div class="layout-radio-picker-content">
+            <ColorRadioPicker
+              v-model="headerTheme"
+              :schema="[
+                '#fff',
+                '#151515',
+                '#5172dc',
+                '#e74c3c',
+                '#24292e',
+                '#394664',
+                '#009688',
+                '#383f45'
+              ]"
+              @change="setHeaderTheme"
+            />
+          </div>
+        </div>
+
+        <!-- 菜单主题 -->
+        <template v-if="layout !== 'top'">
+          <div class="drawer-title"> {{ t('setting.menuTheme') }}</div>
+          <div class="layout-radio-picker-content">
+            <ColorRadioPicker
+              v-model="menuTheme"
+              :schema="[
+                '#fff',
+                '#001529',
+                '#212121',
+                '#273352',
+                '#191b24',
+                '#383f45',
+                '#001628',
+                '#344058'
+              ]"
+              @change="setMenuTheme"
+            />
+          </div>
+        </template>
+      </div>
+
+      <!-- 界面显示 -->
+      <div class="general-content">
+        <div class="drawer-title"> {{ t('setting.interfaceDisplay') }}</div>
+        <div class="layout-radio-picker-content">
+          <InterfaceDisplay />
+        </div>
+      </div>
+    </div>
+    <div class="button-content">
+      <ElButton type="primary" @click="copyConfig" class="button-copy">{{
+        t('setting.copy')
+      }}</ElButton>
+
+      <ElButton type="plain" @click="clear" class="button-reset">
+        {{ t('setting.clearAndReset') }}
+      </ElButton>
+    </div>
+  </ElDrawer>
+</template>
 <script setup lang="ts">
 import { ElMessage } from 'element-plus'
 import { useCssVar, useClipboard } from '@vueuse/core'
 
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
-import { useDesign } from '@/hooks/web/useDesign'
 
 import { trim, setCssVar } from '@/utils'
 import { colorIsDark, lighten, hexToRGB } from '@/utils/color'
 import { useAppStore } from '@/store/modules/app'
-import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
+// import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
 import ColorRadioPicker from './components/ColorRadioPicker.vue'
 import InterfaceDisplay from './components/InterfaceDisplay.vue'
 import LayoutRadioPicker from './components/LayoutRadioPicker.vue'
@@ -16,8 +126,6 @@ import LayoutRadioPicker from './components/LayoutRadioPicker.vue'
 const { t } = useI18n()
 const appStore = useAppStore()
 
-const { getPrefixCls } = useDesign()
-const prefixCls = getPrefixCls('setting')
 const layout = computed(() => appStore.getLayout)
 const drawer = ref(false)
 
@@ -194,105 +302,87 @@ const clear = () => {
   wsCache.delete(CACHE_KEY.IS_DARK)
   window.location.reload()
 }
+
+//关闭布局设置回调
+const closeDrawer = () => {
+  appStore.setIShowSetting(!appStore.isShowSetting)
+}
+
+watch(
+  () => appStore.isShowSetting,
+  (isShowSetting) => {
+    drawer.value = isShowSetting
+  }
+)
 </script>
-
-<template>
-  <div
-    :class="prefixCls"
-    class="fixed top-[45%] right-0 w-40px h-40px text-center leading-40px bg-[var(--el-color-primary)] cursor-pointer"
-    @click="drawer = true"
-  >
-    <Icon icon="ep:setting" color="#fff" />
-  </div>
-
-  <ElDrawer v-model="drawer" direction="rtl" size="350px" :z-index="4000">
-    <template #header>
-      <span class="text-16px font-700">{{ t('setting.projectSetting') }}</span>
-    </template>
-
-    <div class="text-center">
-      <!-- 主题 -->
-      <ElDivider>{{ t('setting.theme') }}</ElDivider>
-      <ThemeSwitch />
-
-      <!-- 布局 -->
-      <ElDivider>{{ t('setting.layout') }}</ElDivider>
-      <LayoutRadioPicker />
-
-      <!-- 系统主题 -->
-      <ElDivider>{{ t('setting.systemTheme') }}</ElDivider>
-      <ColorRadioPicker
-        v-model="systemTheme"
-        :schema="[
-          '#409eff',
-          '#009688',
-          '#536dfe',
-          '#ff5c93',
-          '#ee4f12',
-          '#0096c7',
-          '#9c27b0',
-          '#ff9800'
-        ]"
-        @change="setSystemTheme"
-      />
-
-      <!-- 头部主题 -->
-      <ElDivider>{{ t('setting.headerTheme') }}</ElDivider>
-      <ColorRadioPicker
-        v-model="headerTheme"
-        :schema="[
-          '#fff',
-          '#151515',
-          '#5172dc',
-          '#e74c3c',
-          '#24292e',
-          '#394664',
-          '#009688',
-          '#383f45'
-        ]"
-        @change="setHeaderTheme"
-      />
-
-      <!-- 菜单主题 -->
-      <template v-if="layout !== 'top'">
-        <ElDivider>{{ t('setting.menuTheme') }}</ElDivider>
-        <ColorRadioPicker
-          v-model="menuTheme"
-          :schema="[
-            '#fff',
-            '#001529',
-            '#212121',
-            '#273352',
-            '#191b24',
-            '#383f45',
-            '#001628',
-            '#344058'
-          ]"
-          @change="setMenuTheme"
-        />
-      </template>
-    </div>
-
-    <!-- 界面显示 -->
-    <ElDivider>{{ t('setting.interfaceDisplay') }}</ElDivider>
-    <InterfaceDisplay />
-
-    <ElDivider />
-    <div>
-      <ElButton type="primary" class="w-full" @click="copyConfig">{{ t('setting.copy') }}</ElButton>
-    </div>
-    <div class="mt-5px">
-      <ElButton type="danger" class="w-full" @click="clear">
-        {{ t('setting.clearAndReset') }}
-      </ElButton>
-    </div>
-  </ElDrawer>
-</template>
 
 <style lang="scss" scoped>
 $prefix-cls: #{$namespace}-setting;
 
 .#{$prefix-cls} {
   border-radius: 6px 0 0 6px;
+  :deep(.el-drawer__header) {
+    margin-bottom: 0 !important;
+  }
+}
+//拷贝 重置
+.button-content {
+  width: 350px;
+  background: skyblue;
+  display: flex;
+  position: fixed;
+  bottom: 0;
+
+  //拷贝
+  .button-copy {
+    height: 37px;
+    border-radius: 0;
+    flex-grow: 1;
+    //background: $bg-color;
+  }
+  //重置
+  .button-reset {
+    height: 37px;
+    flex-grow: 1;
+    margin: 0;
+  }
+}
+</style>
+
+<style lang="scss">
+.setting-drawer-content {
+  .el-drawer__header {
+    margin-bottom: 0 !important;
+  }
+
+  .el-drawer__body {
+    padding: 0;
+  }
+
+  //详情底下content
+  .layout-content-center {
+    margin-left: 20px;
+    //background: skyblue;
+  }
+
+  //布局--title
+  .drawer-title {
+    height: 30px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  //横线
+  .el-divider--horizontal {
+    margin: 10px 0 0 0;
+  }
+  //布局/系统主题/头部主题/菜单主题content
+  .layout-radio-picker-content {
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+    min-height: 79px;
+  }
 }
 </style>

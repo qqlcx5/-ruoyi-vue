@@ -9,6 +9,7 @@ export default {
     loginOut: '退出系统',
     document: '项目文档',
     profile: '个人中心',
+    layoutSetting: '布局设置',
     reminder: '温馨提示',
     loginOutMessage: '是否退出本系统？',
     back: '返回',
@@ -67,7 +68,7 @@ export default {
     hasRole: `请设置角色权限标签值`
   },
   setting: {
-    projectSetting: '项目配置',
+    projectSetting: '详情',
     theme: '主题',
     layout: '布局',
     systemTheme: '系统主题',

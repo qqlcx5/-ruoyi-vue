@@ -1,0 +1,17 @@
+//全局样式
+
+//主色
+//也可以$bg-color: #ed795a !default;这样写 !default 表示是默认值
+$bg-color: #0081FF; //主要用于菜单栏、按钮、图标、突出文字，可点击文字
+//辅色
+$success-color: #52C41A;//成功、达标、下跌
+$warning-color: #E7A23C;//警告、显示、预警
+$error-color: #FF4141;//错误、上涨
+$title-color: #333;//主要用于文字颜色，标题、功能名称、列表标题等
+$text-color: #666;//用于文字颜色，表单内容，未选择可点击内容
+$tip-color: #999;//用于提示性文字
+$mask-color: #000;//主要用于弹窗遮罩
+$table-head-color: #F6F6F6;//主要用于表头背景颜色填充
+$page-bg-color: #F7F8FA;//主要用于页面默认背景
+$divider-color: #DCDFE6;//主要用于分割线/输入框
+$placeholder-color: #C0C4CC;//主要用于输入框提示文字

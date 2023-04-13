@@ -25,6 +25,7 @@ interface AppState {
   fixedHeader: boolean
   greyMode: boolean
   pageLoading: boolean
+  isShowSetting: boolean //打开布局设置
   layout: LayoutType
   title: string
   userInfo: string
@@ -63,6 +64,7 @@ export const useAppStore = defineStore('app', {
       greyMode: false, // 是否开始灰色模式，用于特殊悼念日
       fixedMenu: wsCache.get('fixedMenu') || false, // 是否固定菜单
 
+      isShowSetting: false, //打开布局设置
       layout: wsCache.get(CACHE_KEY.LAYOUT) || 'classic', // layout布局
       isDark: wsCache.get(CACHE_KEY.IS_DARK) || false, // 是否是暗黑模式
       currentSize: wsCache.get('default') || 'default', // 组件尺寸
@@ -147,6 +149,9 @@ export const useAppStore = defineStore('app', {
     getPageLoading(): boolean {
       return this.pageLoading
     },
+    getIsShowSetting(): boolean {
+      return this.isShowSetting
+    },
     getLayout(): LayoutType {
       return this.layout
     },
@@ -224,6 +229,10 @@ export const useAppStore = defineStore('app', {
     },
     setPageLoading(pageLoading: boolean) {
       this.pageLoading = pageLoading
+    },
+    setIShowSetting(isShowSetting: boolean) {
+      console.log('isShowSetting', isShowSetting)
+      this.isShowSetting = isShowSetting
     },
     setLayout(layout: LayoutType) {
       if (this.mobile && layout !== 'classic') {
