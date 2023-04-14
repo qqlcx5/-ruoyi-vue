@@ -31,7 +31,7 @@ const affixTagArr = ref<RouteLocationNormalizedLoaded[]>([])
 
 const appStore = useAppStore()
 
-const tagsViewIcon = computed(() => appStore.getTagsViewIcon)
+// const tagsViewIcon = computed(() => appStore.getTagsViewIcon)
 
 // 初始化tag
 const initTags = () => {
@@ -344,29 +344,30 @@ watch(
             ]"
             @visible-change="visibleChange"
           >
+            <!-- 顶部 标签 开启过的菜单页 -->
             <div>
               <router-link :ref="tagLinksRefs.set" :to="{ ...item }" custom v-slot="{ navigate }">
                 <div
                   @click="navigate"
-                  class="h-full flex justify-center items-center whitespace-nowrap pl-15px"
+                  class="tag-content h-full flex justify-center items-center whitespace-nowrap pl-15px"
                 >
-                  <Icon
-                    v-if="
-                      item?.matched &&
-                      item?.matched[1] &&
-                      item?.matched[1]?.meta?.icon &&
-                      tagsViewIcon
-                    "
-                    :icon="item?.matched[1]?.meta?.icon"
-                    :size="12"
-                    class="mr-5px"
-                  />
+                  <!--                  <Icon-->
+                  <!--                    v-if="-->
+                  <!--                      item?.matched &&-->
+                  <!--                      item?.matched[1] &&-->
+                  <!--                      item?.matched[1]?.meta?.icon &&-->
+                  <!--                      tagsViewIcon-->
+                  <!--                    "-->
+                  <!--                    :icon="item?.matched[1]?.meta?.icon"-->
+                  <!--                    :size="12"-->
+                  <!--                    class="mr-5px"-->
+                  <!--                  />-->
                   {{ t(item?.meta?.title as string) }}
                   <Icon
                     :class="`${prefixCls}__item--close`"
                     color="#333"
-                    icon="ep:close"
-                    :size="12"
+                    icon="ep:circle-close-filled"
+                    :size="15"
                     @click.prevent.stop="closeSelectedTag(item)"
                   />
                 </div>
@@ -496,7 +497,7 @@ $prefix-cls: #{$namespace}-tags-view;
     position: relative;
     top: 2px;
     height: calc(100% - 4px);
-    padding-right: 16px;
+    padding-right: 20px;
     margin-left: 4px;
     font-size: 12px;
     border-radius: 3px 3px 3px 3px;
@@ -520,6 +521,11 @@ $prefix-cls: #{$namespace}-tags-view;
   &__item:not(.is-active) {
     &:hover {
       color: var(--el-color-primary);
+    }
+    .#{$prefix-cls}__item--close {
+      :deep(span) {
+        color: var(--el-color-primary) !important;
+      }
     }
   }
 
@@ -554,7 +560,7 @@ $prefix-cls: #{$namespace}-tags-view;
       position: relative;
       top: 2px;
       height: calc(100% - 4px);
-      padding-right: 16px;
+      padding-right: 20px;
       font-size: 12px;
       border-radius: 3px 3px 3px 3px;
       cursor: pointer;
