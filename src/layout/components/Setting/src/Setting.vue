@@ -3,7 +3,7 @@
     v-model="drawer"
     @close="closeDrawer"
     direction="rtl"
-    size="350px"
+    size="365px"
     :z-index="4000"
     class="setting-drawer-content"
   >
@@ -33,15 +33,7 @@
           <div class="layout-radio-picker-content">
             <ColorRadioPicker
               v-model="systemTheme"
-              :schema="[
-                '#0081FF',
-                '#31C27C',
-                '#447EFD',
-                '#EB4A3B',
-                '#FF9B32',
-                '#D56D9D',
-                '#D8D8D8'
-              ]"
+              :schema="['#0081FF', '#31C27C', '#447EFD', '#EB4A3B', '#FF9B32', '#D56D9D']"
               @change="setSystemTheme"
             />
           </div>
@@ -52,7 +44,7 @@
           <div class="layout-radio-picker-content">
             <ColorRadioPicker
               v-model="headerTheme"
-              :schema="['#fff', '#31C27C', '#597EFD', '#EB4A3B', '#FF9B32', '#846D9D', '#D8D8D8']"
+              :schema="['#fff', '#31C27C', '#597EFD', '#EB4A3B', '#FF9B32', '#846D9D']"
               @change="setHeaderTheme"
             />
           </div>
@@ -64,7 +56,7 @@
           <div class="layout-radio-picker-content">
             <ColorRadioPicker
               v-model="menuTheme"
-              :schema="['#fff', '#31394A', '#111E41', '#232738', '#272C42', '#9F9F9F', '#D8D8D8']"
+              :schema="['#fff', '#31394A', '#111E41', '#232738', '#272C42', '#9F9F9F']"
               @change="setMenuTheme"
             />
           </div>
@@ -308,7 +300,7 @@ $prefix-cls: #{$namespace}-setting;
 }
 //拷贝 重置
 .button-content {
-  width: 350px;
+  width: 365px;
   background: skyblue;
   display: flex;
   position: fixed;
