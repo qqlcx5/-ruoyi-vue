@@ -48,7 +48,7 @@ export const useAppStore = defineStore('app', {
       pageLoading: false, // 路由跳转loading
 
       breadcrumb: true, // 面包屑
-      breadcrumbIcon: true, // 面包屑图标
+      breadcrumbIcon: false, // 面包屑图标
       collapse: false, // 折叠菜单
       uniqueOpened: true, // 是否只保持一个子菜单的展开
       hamburger: true, // 折叠图标
@@ -247,12 +247,15 @@ export const useAppStore = defineStore('app', {
     },
     setIsDark(isDark: boolean) {
       this.isDark = isDark
+      console.log('isDark', isDark)
       if (this.isDark) {
         document.documentElement.classList.add('dark')
         document.documentElement.classList.remove('light')
+        console.log('dark')
       } else {
-        document.documentElement.classList.add('light')
         document.documentElement.classList.remove('dark')
+        // document.documentElement.classList.add('light')
+        console.log('lig')
       }
       wsCache.set(CACHE_KEY.IS_DARK, this.isDark)
     },

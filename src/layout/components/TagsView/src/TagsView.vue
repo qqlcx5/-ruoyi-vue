@@ -266,7 +266,7 @@ watch(
       @click="move(-200)"
     >
       <Icon
-        icon="ep:d-arrow-left"
+        icon="ep:arrow-left"
         :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
       />
     </span>
@@ -383,7 +383,7 @@ watch(
       @click="move(200)"
     >
       <Icon
-        icon="ep:d-arrow-right"
+        icon="ep:arrow-right"
         :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
       />
     </span>
@@ -400,20 +400,35 @@ watch(
     <ContextMenu
       trigger="click"
       :schema="[
+        // {
+        //   icon: 'ep:refresh',
+        //   label: t('common.reload'),
+        //   command: () => {
+        //     refreshSelectedTag(selectedTag)
+        //   }
+        // },
+        // {
+        //   icon: 'ep:close',
+        //   label: t('common.closeTab'),
+        //   disabled: !!visitedViews?.length && selectedTag?.meta.affix
+        // },
         {
-          icon: 'ep:refresh',
-          label: t('common.reload'),
+          divided: false,
+          icon: 'ep:discount',
+          label: t('common.closeOther'),
           command: () => {
-            refreshSelectedTag(selectedTag)
+            closeOthersTags()
           }
         },
         {
           icon: 'ep:close',
-          label: t('common.closeTab'),
-          disabled: !!visitedViews?.length && selectedTag?.meta.affix
+          label: t('common.closeAll'),
+          command: () => {
+            closeAllTags()
+          }
         },
         {
-          divided: true,
+          divided: false, //分割线
           icon: 'ep:d-arrow-left',
           label: t('common.closeTheLeftTab'),
           disabled: !!visitedViews?.length && selectedTag?.fullPath === visitedViews[0].fullPath,
@@ -429,21 +444,6 @@ watch(
             selectedTag?.fullPath === visitedViews[visitedViews.length - 1].fullPath,
           command: () => {
             closeRightTags()
-          }
-        },
-        {
-          divided: true,
-          icon: 'ep:discount',
-          label: t('common.closeOther'),
-          command: () => {
-            closeOthersTags()
-          }
-        },
-        {
-          icon: 'ep:minus',
-          label: t('common.closeAll'),
-          command: () => {
-            closeAllTags()
           }
         }
       ]"
@@ -511,6 +511,18 @@ $prefix-cls: #{$namespace}-tags-view;
       display: none;
       transform: translate(0, -50%);
     }
+    &--close {
+      position: absolute;
+      top: 50%;
+      right: 3px;
+      display: none;
+      transform: translate(0, -50%);
+    }
+    &:not(.#{$prefix-cls}__item--affix) {
+      .#{$prefix-cls}__item--close {
+        display: block;
+      }
+    }
     &:not(.#{$prefix-cls}__item--affix):hover {
       .#{$prefix-cls}__item--close {
         display: block;
@@ -524,7 +536,8 @@ $prefix-cls: #{$namespace}-tags-view;
     }
     .#{$prefix-cls}__item--close {
       :deep(span) {
-        color: var(--el-color-primary) !important;
+        //color: var(--el-color-primary) !important;
+        color: var(--el-border-color) !important;
       }
     }
   }
