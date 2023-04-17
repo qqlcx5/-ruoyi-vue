@@ -53,6 +53,7 @@ export const useRenderLayout = () => {
               style="transition: all var(--transition-time-02);"
             ></Logo>
           ) : undefined}
+          {/*  左侧菜单 */}
           <Menu class={[{ '!h-[calc(100%-var(--logo-height))]': logo.value }]}></Menu>
         </div>
         <div
@@ -92,6 +93,7 @@ export const useRenderLayout = () => {
               ]}
               style="transition: all var(--transition-time-02);"
             >
+              {/*  顶部面包屑/标签  */}
               <ToolHeader class="border-bottom-1 border-solid border-[var(--top-tool-border-color)] bg-[var(--top-header-bg-color)] dark:border-[var(--el-border-color)]"></ToolHeader>
 
               {tagsView.value ? (

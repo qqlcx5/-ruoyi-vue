@@ -6,6 +6,10 @@ import { useDesign } from '@/hooks/web/useDesign'
 import avatarImg from '@/assets/imgs/avatar.gif'
 import { useUserStore } from '@/store/modules/user'
 import { useTagsViewStore } from '@/store/modules/tagsView'
+import { useAppStore } from '@/store/modules/app'
+import userImg from '@/assets/imgs/user.png'
+
+const appStore = useAppStore()
 
 const { t } = useI18n()
 
@@ -43,12 +47,26 @@ const loginOut = () => {
 const toProfile = async () => {
   push('/user/profile')
 }
+
+//打开布局设置
+const openSetting = () => {
+  appStore.setIShowSetting(!appStore.isShowSetting)
+}
 </script>
 
 <template>
   <ElDropdown :class="prefixCls" trigger="click">
     <div class="flex items-center">
-      <img :src="avatar" alt="" class="w-[calc(var(--logo-height)-25px)] rounded-[50%]" />
+      <img
+        :src="avatar"
+        alt=""
+        class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
+        @error="
+          (e) => {
+            e.target.src = userImg
+          }
+        "
+      />
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">
         {{ userName }}
       </span>
@@ -63,6 +81,10 @@ const toProfile = async () => {
           <Icon icon="ep:menu" />
           <div @click="toDocument">{{ t('common.document') }}</div>
         </ElDropdownItem> -->
+        <ElDropdownItem>
+          <Icon icon="ep:tools" />
+          <div @click="openSetting">{{ t('common.layoutSetting') }}</div>
+        </ElDropdownItem>
         <ElDropdownItem divided>
           <Icon icon="ep:switch-button" />
           <div @click="loginOut">{{ t('common.loginOut') }}</div>
@@ -71,3 +93,5 @@ const toProfile = async () => {
     </template>
   </ElDropdown>
 </template>
+
+<style lang="sass" scoped></style>

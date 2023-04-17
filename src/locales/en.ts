@@ -9,6 +9,7 @@ export default {
     loginOut: 'Login out',
     document: 'Document',
     profile: 'User Center',
+    layoutSetting: 'Layout setting',
     reminder: 'Reminder',
     loginOutMessage: 'Exit the system?',
     back: 'Back',
@@ -67,7 +68,7 @@ export default {
     hasRole: `Please set the role permission tag value`
   },
   setting: {
-    projectSetting: 'Project setting',
+    projectSetting: 'Details',
     theme: 'Theme',
     layout: 'Layout',
     systemTheme: 'System theme',
