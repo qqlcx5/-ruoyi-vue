@@ -17,6 +17,8 @@ import { useCache } from '@/hooks/web/useCache'
 
 const tenantEnable = import.meta.env.VITE_APP_TENANT_ENABLE
 const { result_code, base_url, request_timeout } = config
+// 版本（用于灰度）
+const regVersion = import.meta.env.VITE_REG_VERSION
 
 // 需要忽略的提示。忽略后，自动 Promise.reject('error')
 const ignoreMsgs = [
@@ -43,6 +45,9 @@ const service: AxiosInstance = axios.create({
 // request拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    if (regVersion) {
+      ;(config as Recordable).headers['Reg-Version'] = regVersion
+    }
     // 是否需要设置 token
     let isToken = (config!.headers || {}).isToken === false
     whiteList.some((v) => {
