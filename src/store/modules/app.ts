@@ -231,7 +231,6 @@ export const useAppStore = defineStore('app', {
       this.pageLoading = pageLoading
     },
     setIShowSetting(isShowSetting: boolean) {
-      console.log('isShowSetting', isShowSetting)
       this.isShowSetting = isShowSetting
     },
     setLayout(layout: LayoutType) {
@@ -247,15 +246,12 @@ export const useAppStore = defineStore('app', {
     },
     setIsDark(isDark: boolean) {
       this.isDark = isDark
-      console.log('isDark', isDark)
       if (this.isDark) {
         document.documentElement.classList.add('dark')
         document.documentElement.classList.remove('light')
-        console.log('dark')
       } else {
         document.documentElement.classList.remove('dark')
         // document.documentElement.classList.add('light')
-        console.log('lig')
       }
       wsCache.set(CACHE_KEY.IS_DARK, this.isDark)
     },

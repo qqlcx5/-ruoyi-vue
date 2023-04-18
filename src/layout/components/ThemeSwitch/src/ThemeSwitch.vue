@@ -6,7 +6,11 @@ import { propTypes } from '@/utils/propTypes'
 
 const { getPrefixCls } = useDesign()
 
-const prefixCls = getPrefixCls('theme-switch')
+defineProps({
+  color: propTypes.string.def('')
+})
+
+// const prefixCls = getPrefixCls('theme-switch')
 
 // const Sun = useIcon({ icon: 'emojione-monotone:sun', color: '#fde047' })
 
@@ -20,18 +24,36 @@ const isDark = computed(() => appStore.getIsDark)
 // // 设置switch的背景颜色
 // const blackColor = 'var(--el-color-black)'
 
+//黑暗模式下icon颜色
+const changeIconColor = (val) => {
+  const root = document.documentElement
+  // const style = getComputedStyle(root)
+  // const iconColor = style.getPropertyValue('--top-header-text-color')
+  //直接特殊判断改掉吧 - - 他原来这个有点乱 不好改 - -
+  if (val) {
+    //黑暗模式
+    setTimeout(() => {
+      root.style.setProperty('--top-header-text-color', '#FFF')
+    }, 0)
+  } else {
+    //非黑暗模式
+    root.style.setProperty('--top-header-text-color', 'inherit')
+  }
+}
+
 const themeChange = (val) => {
+  changeIconColor(!val)
   appStore.setIsDark(!val)
 }
 
-defineProps({
-  color: propTypes.string.def('')
+onMounted(() => {
+  changeIconColor(isDark.value)
 })
 </script>
 
 <template>
   <div class="icon-content" @click="themeChange(isDark)">
-    <Icon :size="18" icon="ep:sunny" :class="prefixCls" class="cursor-pointer" :color="color" />
+    <Icon :size="18" icon="ep:sunny" class="cursor-pointer" :color="color" />
     <!--  <ElSwitch-->
     <!--    :class="prefixCls"-->
     <!--    v-model="isDark"-->
