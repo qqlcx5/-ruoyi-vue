@@ -10,6 +10,13 @@ import { SizeDropdown } from '@/layout/components/SizeDropdown'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
 import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
+import { Icon } from '@/components/Icon'
+
+const state = reactive({
+  userInfo: {
+    company: '厦门分公司'
+  }
+})
 
 const { getPrefixCls, variables } = useDesign()
 
@@ -59,6 +66,11 @@ export default defineComponent({
           </div>
         ) : undefined}
         <div class="h-full flex items-center">
+          <div class="company-content">
+            {state.userInfo.company}
+            <Icon icon="ep:switch" />
+            <el-divider direction="vertical" />
+          </div>
           {screenfull.value ? (
             <Screenfull class="hover-trigger" color="var(--top-header-text-color)"></Screenfull>
           ) : undefined}
@@ -84,5 +96,9 @@ $prefix-cls: #{$namespace}-tool-header;
 
 .#{$prefix-cls} {
   transition: left var(--transition-time-02);
+}
+
+.company-content {
+  padding: 10px;
 }
 </style>
