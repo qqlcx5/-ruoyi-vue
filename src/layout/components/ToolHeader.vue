@@ -65,10 +65,12 @@ export default defineComponent({
           {size.value ? (
             <SizeDropdown class="hover-trigger" color="var(--top-header-text-color)"></SizeDropdown>
           ) : undefined}
+          <div class="hover-trigger" color="var(--top-header-text-color)">
+            <ThemeSwitch />
+          </div>
           {message.value ? (
             <Message class="hover-trigger" color="var(--top-header-text-color)"></Message>
           ) : undefined}
-          <ThemeSwitch />
           <UserInfo class="hover-trigger"></UserInfo>
         </div>
       </div>

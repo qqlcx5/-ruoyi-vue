@@ -497,12 +497,17 @@ $prefix-cls: #{$namespace}-tags-view;
     position: relative;
     top: 2px;
     height: calc(100% - 4px);
-    padding-right: 20px;
+    padding-right: 40px;
     margin-left: 4px;
     font-size: 12px;
     border-radius: 3px 3px 3px 3px;
     cursor: pointer;
     border: 1px solid #d9d9d9;
+
+    //首页
+    &.#{$prefix-cls}__item--affix {
+      padding-right: 20px;
+    }
 
     &--close {
       position: absolute;
