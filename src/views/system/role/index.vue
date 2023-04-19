@@ -155,7 +155,7 @@ import { SystemDataScopeEnum } from '@/utils/constants'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { rules, allSchemas } from './role.data'
 import * as RoleApi from '@/api/system/role'
-import { listSimpleMenusApi } from '@/api/system/menu'
+import { getSimpleMenusList } from '@/api/system/menu'
 import { listSimpleDeptApi } from '@/api/system/dept'
 import * as PermissionApi from '@/api/system/permission'
 
@@ -259,7 +259,7 @@ const handleScope = async (type: string, row: RoleApi.RoleVO) => {
   dataScopeForm.name = row.name
   dataScopeForm.code = row.code
   if (type === 'menu') {
-    const menuRes = await listSimpleMenusApi()
+    const menuRes = await getSimpleMenusList()
     treeOptions.value = handleTree(menuRes)
     const role = await PermissionApi.listRoleMenusApi(row.id)
     if (role) {
