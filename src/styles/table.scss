@@ -1,0 +1,12 @@
+:deep(.el-table .cell.el-tooltip) {
+  white-space: nowrap;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+}
+:deep(.el-table--border .el-table__cell) {
+  border-right: 0;
+}
+:deep(.el-table__header .el-table__cell) {
+  background: rgb(246, 246, 246);
+}

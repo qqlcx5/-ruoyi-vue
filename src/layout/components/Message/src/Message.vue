@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
 import * as NotifyMessageApi from '@/api/system/notify/message'
+import { propTypes } from '@/utils/propTypes'
 
+defineProps({
+  color: propTypes.string.def('')
+})
 const { push } = useRouter()
 const activeName = ref('notice')
 const unreadCount = ref(0) // 未读消息数量
@@ -43,7 +47,7 @@ onMounted(() => {
     <ElPopover placement="bottom" :width="400" trigger="click">
       <template #reference>
         <ElBadge :is-dot="unreadCount > 0" class="item">
-          <Icon icon="ep:bell" :size="18" class="cursor-pointer" @click="getList" />
+          <Icon icon="ep:bell" :size="18" class="cursor-pointer" @click="getList" :color="color" />
         </ElBadge>
       </template>
       <ElTabs v-model="activeName">

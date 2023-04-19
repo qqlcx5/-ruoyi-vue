@@ -73,21 +73,21 @@ const openSetting = () => {
     </div>
     <template #dropdown>
       <ElDropdownMenu>
-        <ElDropdownItem>
+        <ElDropdownItem @click="toProfile">
           <Icon icon="ep:tools" />
-          <div @click="toProfile">{{ t('common.profile') }}</div>
+          <div>{{ t('common.profile') }}</div>
         </ElDropdownItem>
         <!-- <ElDropdownItem>
           <Icon icon="ep:menu" />
           <div @click="toDocument">{{ t('common.document') }}</div>
         </ElDropdownItem> -->
-        <ElDropdownItem>
+        <ElDropdownItem @click="openSetting">
           <Icon icon="ep:tools" />
-          <div @click="openSetting">{{ t('common.layoutSetting') }}</div>
+          <div>{{ t('common.layoutSetting') }}</div>
         </ElDropdownItem>
-        <ElDropdownItem divided>
+        <ElDropdownItem divided @click="loginOut">
           <Icon icon="ep:switch-button" />
-          <div @click="loginOut">{{ t('common.loginOut') }}</div>
+          <div>{{ t('common.loginOut') }}</div>
         </ElDropdownItem>
       </ElDropdownMenu>
     </template>
