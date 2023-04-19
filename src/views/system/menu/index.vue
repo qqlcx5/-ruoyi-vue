@@ -59,10 +59,10 @@
 
   <!-- 列表 -->
   <ContentWrap>
-    <el-button type="primary" plain @click="openForm('create')" v-hasPermi="['system:menu:create']">
-      <Icon icon="ep:plus" class="mr-5px" /> 新增
+    <el-button type="primary" @click="openForm('create')" v-hasPermi="['system:menu:create']">
+      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增
     </el-button>
-    <el-button type="danger" plain @click="toggleExpandAll">
+    <el-button type="danger" @click="toggleExpandAll">
       <Icon icon="ep:sort" class="mr-5px" /> 展开/折叠
     </el-button>
     <el-table
