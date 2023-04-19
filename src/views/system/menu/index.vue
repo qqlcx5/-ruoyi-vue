@@ -76,8 +76,8 @@
       <el-table-column prop="name" label="菜单名称" :show-overflow-tooltip="true" width="250">
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <Icon :icon="scope.row.icon" />
-            <span style="margin-left: 10px">{{ scope.row.name }}</span>
+            <Icon :icon="scope.row.icon" v-if="scope.row.icon" style="margin-right: 5px" />
+            <span>{{ scope.row.name }}</span>
           </div>
         </template>
       </el-table-column>
