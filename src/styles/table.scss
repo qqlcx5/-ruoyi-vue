@@ -8,5 +8,8 @@
   border-right: 0;
 }
 :deep(.el-table__header .el-table__cell) {
-  background: rgb(246, 246, 246);
+  background: var(--table-bg-color);
+}
+:deep(.el-table.is-scrolling-none th.el-table-fixed-column--right) {
+  background: var(--table-bg-color);
 }

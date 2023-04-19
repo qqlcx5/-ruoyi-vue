@@ -64,6 +64,9 @@
   --app-footer-height: 50px;
 
   --transition-time-02: 0.2s;
+
+  /* 表格 表头 */
+  --table-bg-color: #F6F6F6;
 }
 
 html,

@@ -59,12 +59,17 @@
 
   <!-- 列表 -->
   <ContentWrap>
-    <el-button type="primary" @click="openForm('create')" v-hasPermi="['system:menu:create']">
-      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增
-    </el-button>
-    <el-button type="danger" @click="toggleExpandAll">
-      <Icon icon="ep:sort" class="mr-5px" /> 展开/折叠
-    </el-button>
+    <!-- 新增 折叠/展开-->
+    <div class="button-content">
+      <el-button type="primary" @click="openForm('create')" v-hasPermi="['system:menu:create']">
+        <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增
+      </el-button>
+      <el-button @click="toggleExpandAll">
+        <Icon icon="ep:sort" class="mr-5px" /> 展开/折叠
+      </el-button>
+      <div> </div>
+    </div>
+
     <el-table
       v-loading="loading"
       :data="list"
@@ -73,7 +78,7 @@
       :default-expand-all="isExpandAll"
       :border="true"
     >
-      <el-table-column prop="name" label="菜单名称" :show-overflow-tooltip="true" width="250">
+      <el-table-column prop="name" label="名称" :show-overflow-tooltip="true" width="250">
         <template #default="scope">
           <div style="display: flex; align-items: center">
             <Icon :icon="scope.row.icon" v-if="scope.row.icon" style="margin-right: 5px" />
@@ -269,4 +274,8 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 @import '@/styles/table.scss';
+.button-content {
+  display: flex;
+  margin-bottom: 10px;
+}
 </style>

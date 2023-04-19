@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useAppStore } from '@/store/modules/app'
 // import { useIcon } from '@/hooks/web/useIcon'
-import { useDesign } from '@/hooks/web/useDesign'
+// import { useDesign } from '@/hooks/web/useDesign'
 import { propTypes } from '@/utils/propTypes'
 
-const { getPrefixCls } = useDesign()
+// const { getPrefixCls } = useDesign()
 
 defineProps({
   color: propTypes.string.def('')
@@ -34,10 +34,15 @@ const changeIconColor = (val) => {
     //黑暗模式
     setTimeout(() => {
       root.style.setProperty('--top-header-text-color', '#FFF')
+
+      // 修改其他样式
+      root.style.setProperty('--table-bg-color', '#141414')
     }, 0)
   } else {
     //非黑暗模式
     root.style.setProperty('--top-header-text-color', 'inherit')
+    // 修改其他样式
+    root.style.setProperty('--table-bg-color', '#F6F6F6')
   }
 }
 
