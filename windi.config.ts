@@ -41,7 +41,7 @@ export default defineConfig({
         '.hover-trigger': {
           display: 'flex',
           height: '100%',
-          padding: '1px 10px 0',
+          // padding: '1px 10px 0',
           cursor: 'pointer',
           alignItems: 'center',
           transition: 'background var(--transition-time-02)',

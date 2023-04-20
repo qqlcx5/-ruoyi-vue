@@ -258,7 +258,7 @@ watch(
   <div
     :id="prefixCls"
     :class="prefixCls"
-    class="flex w-full relative bg-[#fff] dark:bg-[var(--el-bg-color)]"
+    class="total-tags-content flex w-full relative bg-[#fff] dark:bg-[var(--el-bg-color)]"
   >
     <span
       :class="`${prefixCls}__tool`"
@@ -270,7 +270,7 @@ watch(
         :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
       />
     </span>
-    <div class="overflow-hidden flex-1">
+    <div class="tags-content overflow-hidden flex-1">
       <ElScrollbar ref="scrollbarRef" class="h-full" @scroll="scroll">
         <div class="flex h-full">
           <ContextMenu
@@ -497,8 +497,8 @@ $prefix-cls: #{$namespace}-tags-view;
     position: relative;
     top: 2px;
     height: calc(100% - 4px);
-    padding-right: 40px;
-    margin-left: 4px;
+    //padding-right: 40px;
+    margin-left: 6px;
     font-size: 12px;
     border-radius: 3px 3px 3px 3px;
     cursor: pointer;
@@ -506,7 +506,7 @@ $prefix-cls: #{$namespace}-tags-view;
 
     //首页
     &.#{$prefix-cls}__item--affix {
-      padding-right: 20px;
+      //padding-right: 20px;
     }
 
     &--close {
@@ -519,7 +519,7 @@ $prefix-cls: #{$namespace}-tags-view;
     &--close {
       position: absolute;
       top: 50%;
-      right: 3px;
+      right: 9px;
       display: none;
       transform: translate(0, -50%);
     }
@@ -578,14 +578,14 @@ $prefix-cls: #{$namespace}-tags-view;
       position: relative;
       top: 2px;
       height: calc(100% - 4px);
-      padding-right: 40px;
+      //padding-right: 40px;
       font-size: 12px;
       border-radius: 3px 3px 3px 3px;
       cursor: pointer;
       border: 1px solid var(--el-border-color);
       //首页
       &.#{$prefix-cls}__item--affix {
-        padding-right: 20px;
+        //padding-right: 20px;
       }
     }
 
@@ -605,5 +605,25 @@ $prefix-cls: #{$namespace}-tags-view;
       }
     }
   }
+}
+
+.total-tags-content {
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.tags-content {
+  height: 30px;
+}
+.tag-content {
+  min-width: 110px;
+  padding: 0;
+  margin-left: 10px;
+  display: flex;
+  justify-content: flex-start;
+}
+.v-tags-view__item--affix {
+  width: 48px;
 }
 </style>

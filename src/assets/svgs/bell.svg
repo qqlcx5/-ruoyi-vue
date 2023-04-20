@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60px" height="60px" viewBox="0 0 60 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组_3</title>
+    <g id="系统管理" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="菜单管理" transform="translate(-1702.000000, 0.000000)">
+            <g id="编组_3" transform="translate(1702.000000, 0.000000)">
+                <rect id="矩形备份-5" x="0" y="0" width="60" height="60"></rect>
+                <g id="编组" transform="translate(22.000000, 21.000000)" fill-rule="nonzero" stroke="#8291A9" stroke-linejoin="bevel" stroke-width="2">
+                    <path d="M9.96783637,17.1001804 C9.70674351,17.7179237 9.22575955,18.0981535 8.70541811,18.0981535 C8.18507657,18.0981535 7.70409258,17.7179237 7.44299984,17.1001804 L9.96783637,17.1001804 Z M8.00131671,0 C11.0946204,0 13.6022386,2.836493 13.6022386,6.33548433 L13.6022386,10.860831 C13.6022386,12.3603989 14.6769317,13.5760385 16.0026334,13.5760385 L0,13.5760385 C1.32570159,13.5760385 2.40039506,12.3603989 2.40039506,10.860831 L2.40039506,6.33548433 C2.40039506,2.836493 4.90801304,0 8.00131671,0 Z" id="Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

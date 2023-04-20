@@ -2,6 +2,7 @@
 import { ref, watch, computed, onMounted, unref } from 'vue'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
+import userImg from '@/assets/imgs/user.png'
 
 const { getPrefixCls } = useDesign()
 
@@ -52,6 +53,10 @@ watch(
     }
   }
 )
+
+const editUserInfo = () => {
+  console.log('跳转至修个个人信息')
+}
 </script>
 
 <template>
@@ -65,10 +70,21 @@ watch(
       ]"
       to="/"
     >
+      <!-- 头像  title  -->
+      <img
+        :src="userImg"
+        alt=""
+        class="w-[calc(var(--logo-height)-30px)] rounded-[50%]"
+        @error="
+          (e) => {
+            e.target.src = userImg
+          }
+        "
+      />
       <div
         v-if="show"
         :class="[
-          'ml-10px text-16px font-700',
+          'ml-8px text-16px font-700',
           {
             'text-[var(--logo-title-text-color)]': layout === 'classic',
             'text-[var(--top-header-text-color)]':
@@ -78,6 +94,13 @@ watch(
       >
         {{ title }}
       </div>
+      <Icon
+        :size="18"
+        icon="svg-icon:edit"
+        color="#fff"
+        class="cursor-pointer ml-8px"
+        @click="editUserInfo"
+      />
     </router-link>
   </div>
 </template>

@@ -56,11 +56,11 @@ const openSetting = () => {
 
 <template>
   <ElDropdown :class="prefixCls" trigger="click">
-    <div class="flex items-center">
+    <div class="user-content flex items-center">
       <img
         :src="avatar"
         alt=""
-        class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
+        class="w-[calc(var(--logo-height)-28px)] rounded-[50%]"
         @error="
           (e) => {
             e.target.src = userImg
@@ -94,4 +94,13 @@ const openSetting = () => {
   </ElDropdown>
 </template>
 
-<style lang="sass" scoped></style>
+<style lang="scss" scoped>
+.user-content {
+  display: flex;
+  justify-content: center;
+  width: 158px;
+  height: 100%;
+  font-size: 20px;
+  cursor: pointer;
+}
+</style>

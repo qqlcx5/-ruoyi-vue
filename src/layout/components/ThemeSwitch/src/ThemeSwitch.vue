@@ -58,7 +58,8 @@ onMounted(() => {
 
 <template>
   <div class="icon-content" @click="themeChange(isDark)">
-    <Icon :size="18" icon="ep:sunny" class="cursor-pointer" :color="color" />
+    <!--    <Icon :size="18" icon="ep:sunny" class="cursor-pointer" :color="color" />-->
+    <Icon icon="svg-icon:sunny" :size="60" class="cursor-pointer" :color="color" />
     <!--  <ElSwitch-->
     <!--    :class="prefixCls"-->
     <!--    v-model="isDark"-->
