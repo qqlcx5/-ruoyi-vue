@@ -262,11 +262,16 @@ watch(
   >
     <span
       :class="`${prefixCls}__tool`"
-      class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] cursor-pointer"
+      class="arrow w-[var(--tags-view-height)] h-[var(--tags-view-height)] cursor-pointer"
       @click="move(-200)"
     >
+      <!--      <Icon-->
+      <!--        icon="ep:arrow-left"-->
+      <!--        :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+      <!--      />-->
       <Icon
-        icon="ep:arrow-left"
+        icon="svg-icon:arrow-left"
+        :size="16"
         :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
       />
     </span>
@@ -377,87 +382,105 @@ watch(
         </div>
       </ElScrollbar>
     </div>
-    <span
-      :class="`${prefixCls}__tool`"
-      class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
-      @click="move(200)"
-    >
-      <Icon
-        icon="ep:arrow-right"
-        :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
-      />
-    </span>
-    <span
-      :class="`${prefixCls}__tool`"
-      class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
-      @click="refreshSelectedTag(selectedTag)"
-    >
-      <Icon
-        icon="ep:refresh-right"
-        :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
-      />
-    </span>
-    <ContextMenu
-      trigger="click"
-      :schema="[
-        // {
-        //   icon: 'ep:refresh',
-        //   label: t('common.reload'),
-        //   command: () => {
-        //     refreshSelectedTag(selectedTag)
-        //   }
-        // },
-        // {
-        //   icon: 'ep:close',
-        //   label: t('common.closeTab'),
-        //   disabled: !!visitedViews?.length && selectedTag?.meta.affix
-        // },
-        {
-          divided: false,
-          icon: 'ep:discount',
-          label: t('common.closeOther'),
-          command: () => {
-            closeOthersTags()
-          }
-        },
-        {
-          icon: 'ep:close',
-          label: t('common.closeAll'),
-          command: () => {
-            closeAllTags()
-          }
-        },
-        {
-          divided: false, //分割线
-          icon: 'ep:d-arrow-left',
-          label: t('common.closeTheLeftTab'),
-          disabled: !!visitedViews?.length && selectedTag?.fullPath === visitedViews[0].fullPath,
-          command: () => {
-            closeLeftTags()
-          }
-        },
-        {
-          icon: 'ep:d-arrow-right',
-          label: t('common.closeTheRightTab'),
-          disabled:
-            !!visitedViews?.length &&
-            selectedTag?.fullPath === visitedViews[visitedViews.length - 1].fullPath,
-          command: () => {
-            closeRightTags()
-          }
-        }
-      ]"
-    >
+    <!-- 开启的菜单 标签页 右侧操作栏  -->
+    <div class="right-arrow">
       <span
         :class="`${prefixCls}__tool`"
-        class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer block"
+        class="arrow arrow-right w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
+        @click="move(200)"
       >
+        <!--        <Icon-->
+        <!--          icon="ep:arrow-right"-->
+        <!--          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+        <!--        />-->
         <Icon
-          icon="ep:menu"
-          :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
+          icon="svg-icon:arrow-right"
+          :size="16"
+          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
         />
       </span>
-    </ContextMenu>
+      <span
+        :class="`${prefixCls}__tool`"
+        class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
+        @click="refreshSelectedTag(selectedTag)"
+      >
+        <!--        <Icon-->
+        <!--          icon="ep:refresh-right"-->
+        <!--          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+        <!--        />-->
+        <Icon
+          icon="svg-icon:refresh-right"
+          :size="40"
+          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+        />
+      </span>
+      <ContextMenu
+        trigger="click"
+        :schema="[
+          // {
+          //   icon: 'ep:refresh',
+          //   label: t('common.reload'),
+          //   command: () => {
+          //     refreshSelectedTag(selectedTag)
+          //   }
+          // },
+          // {
+          //   icon: 'ep:close',
+          //   label: t('common.closeTab'),
+          //   disabled: !!visitedViews?.length && selectedTag?.meta.affix
+          // },
+          {
+            divided: false,
+            icon: 'ep:discount',
+            label: t('common.closeOther'),
+            command: () => {
+              closeOthersTags()
+            }
+          },
+          {
+            icon: 'ep:close',
+            label: t('common.closeAll'),
+            command: () => {
+              closeAllTags()
+            }
+          },
+          {
+            divided: false, //分割线
+            icon: 'ep:d-arrow-left',
+            label: t('common.closeTheLeftTab'),
+            disabled: !!visitedViews?.length && selectedTag?.fullPath === visitedViews[0].fullPath,
+            command: () => {
+              closeLeftTags()
+            }
+          },
+          {
+            icon: 'ep:d-arrow-right',
+            label: t('common.closeTheRightTab'),
+            disabled:
+              !!visitedViews?.length &&
+              selectedTag?.fullPath === visitedViews[visitedViews.length - 1].fullPath,
+            command: () => {
+              closeRightTags()
+            }
+          }
+        ]"
+      >
+        <span
+          :class="`${prefixCls}__tool`"
+          class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer block"
+        >
+          <!--          <Icon-->
+          <!--            icon="ep:menu"-->
+          <!--            :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+          <!--          />-->
+          <Icon
+            icon="svg-icon:menu"
+            :size="40"
+            :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+          />
+        </span>
+      </ContextMenu>
+    </div>
   </div>
 </template>
 
@@ -487,8 +510,8 @@ $prefix-cls: #{$namespace}-tags-view;
       left: 0;
       width: 100%;
       height: calc(100% - 1px);
-      border-right: 1px solid var(--tags-view-border-color);
-      border-left: 1px solid var(--tags-view-border-color);
+      //border-right: 1px solid var(--tags-view-border-color);
+      //border-left: 1px solid var(--tags-view-border-color);
       content: '';
     }
   }
@@ -625,5 +648,20 @@ $prefix-cls: #{$namespace}-tags-view;
 }
 .v-tags-view__item--affix {
   width: 48px;
+}
+
+.arrow {
+  width: 30px;
+  height: 48px;
+  border-right: 1px solid var(--tags-view-border-color);
+}
+.arrow-right {
+  border-width: 0;
+}
+.right-arrow {
+  display: flex;
+  height: 48px;
+  width: 130px;
+  border-left: 1px solid var(--tags-view-border-color);
 }
 </style>

@@ -70,6 +70,13 @@ const openSetting = () => {
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">
         {{ userName }}
       </span>
+
+      <Icon
+        icon="svg-icon:pull-down"
+        class="pull-down"
+        :size="16"
+        :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+      />
     </div>
     <template #dropdown>
       <ElDropdownMenu>
@@ -102,5 +109,8 @@ const openSetting = () => {
   height: 100%;
   font-size: 20px;
   cursor: pointer;
+}
+.pull-down {
+  margin-left: 4px;
 }
 </style>
