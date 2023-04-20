@@ -518,12 +518,13 @@ $prefix-cls: #{$namespace}-tags-view;
 
   &__item {
     position: relative;
-    top: 2px;
-    height: calc(100% - 4px);
+    //top: 2px;
+    //height: calc(100% - 4px);
     //padding-right: 40px;
     margin-left: 6px;
-    font-size: 12px;
-    border-radius: 3px 3px 3px 3px;
+    font-size: 14px;
+    font-family: PingFangSC-Regular;
+    border-radius: 4px;
     cursor: pointer;
     border: 1px solid #d9d9d9;
 
@@ -599,11 +600,12 @@ $prefix-cls: #{$namespace}-tags-view;
 
     &__item {
       position: relative;
-      top: 2px;
-      height: calc(100% - 4px);
+      //top: 2px;
+      //height: calc(100% - 4px);
       //padding-right: 40px;
-      font-size: 12px;
-      border-radius: 3px 3px 3px 3px;
+      font-size: 14px;
+      font-family: PingFangSC-Regular;
+      border-radius: 4px;
       cursor: pointer;
       border: 1px solid var(--el-border-color);
       //首页
@@ -640,7 +642,7 @@ $prefix-cls: #{$namespace}-tags-view;
   height: 30px;
 }
 .tag-content {
-  min-width: 110px;
+  min-width: 108px;
   padding: 0;
   margin-left: 10px;
   display: flex;
