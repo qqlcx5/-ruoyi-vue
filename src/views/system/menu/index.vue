@@ -60,14 +60,20 @@
   <!-- 列表 -->
   <ContentWrap>
     <!-- 新增 折叠/展开-->
-    <div class="button-content">
-      <el-button type="primary" @click="openForm('create')" v-hasPermi="['system:menu:create']">
-        <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增
-      </el-button>
-      <el-button @click="toggleExpandAll">
-        <Icon icon="ep:sort" class="mr-5px" /> 展开/折叠
-      </el-button>
-      <div> </div>
+    <div class="operation-content">
+      <div class="button-content">
+        <el-button type="primary" @click="openForm('create')" v-hasPermi="['system:menu:create']">
+          <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增
+        </el-button>
+        <el-button @click="toggleExpandAll">
+          <Icon icon="ep:sort" class="mr-5px" /> 展开/折叠
+        </el-button>
+      </div>
+      <div class="icon-operation-content">
+        <!--        <Icon :icon="'ep:full-screen'" :size="25" class="mr-10px" />-->
+        <Icon :icon="'ep:printer'" :size="18" class="mr-10px" />
+        <Icon :icon="'fa-solid:align-justify'" :size="18" class="mr-10px" />
+      </div>
     </div>
 
     <el-table
@@ -96,7 +102,13 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="type" label="员工数" :show-overflow-tooltip="true" width="250" />
+
+      <el-table-column prop="type" label="员工数" :show-overflow-tooltip="true" width="250">
+        <template #default="scope">
+          <span class="employee-number">{{ scope.row.type }}</span>
+        </template>
+      </el-table-column>
+
       <!--      <el-table-column prop="name" label="菜单名称" :show-overflow-tooltip="true" width="250" />-->
       <!--      <el-table-column prop="icon" label="图标" align="center" width="100">-->
       <!--        <template #default="scope">-->
@@ -120,7 +132,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="操作" fixed="right">
+      <el-table-column label="操作" fixed="right" min-width="220">
         <template #default="scope">
           <el-button
             link
@@ -146,6 +158,7 @@
           >
             详情
           </el-button>
+          <span class="more-button" v-hasPermi="['system:menu:create']"> ... </span>
           <!--          <el-button-->
           <!--            link-->
           <!--            type="danger"-->
@@ -274,8 +287,19 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 @import '@/styles/table.scss';
-.button-content {
+.operation-content {
   display: flex;
   margin-bottom: 10px;
+  justify-content: space-between;
+}
+.button-content {
+}
+:deep(.employee-number) {
+  color: #409eff;
+}
+.more-button {
+  text-align: center;
+  font-size: 30px !important;
+  cursor: pointer;
 }
 </style>
