@@ -29,8 +29,12 @@ watchEffect(() => {
 })
 </script>
 <template>
+  <!--  element plus 全局配置-->
   <ConfigGlobal :size="currentSize">
-    <RouterView :class="greyMode ? `${prefixCls}-grey-mode` : ''" />
+    <!--  antdV 全局配置  -->
+    <a-config-provider :componentSize="currentSize">
+      <RouterView :class="greyMode ? `${prefixCls}-grey-mode` : ''" />
+    </a-config-provider>
   </ConfigGlobal>
 </template>
 <style lang="scss">
