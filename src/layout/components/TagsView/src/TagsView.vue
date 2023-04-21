@@ -258,19 +258,24 @@ watch(
   <div
     :id="prefixCls"
     :class="prefixCls"
-    class="flex w-full relative bg-[#fff] dark:bg-[var(--el-bg-color)]"
+    class="total-tags-content flex w-full relative bg-[#fff] dark:bg-[var(--el-bg-color)]"
   >
     <span
       :class="`${prefixCls}__tool`"
-      class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] cursor-pointer"
+      class="arrow w-[var(--tags-view-height)] h-[var(--tags-view-height)] cursor-pointer"
       @click="move(-200)"
     >
+      <!--      <Icon-->
+      <!--        icon="ep:arrow-left"-->
+      <!--        :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+      <!--      />-->
       <Icon
-        icon="ep:arrow-left"
+        icon="svg-icon:arrow-left"
+        :size="16"
         :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
       />
     </span>
-    <div class="overflow-hidden flex-1">
+    <div class="tags-content overflow-hidden flex-1">
       <ElScrollbar ref="scrollbarRef" class="h-full" @scroll="scroll">
         <div class="flex h-full">
           <ContextMenu
@@ -377,87 +382,105 @@ watch(
         </div>
       </ElScrollbar>
     </div>
-    <span
-      :class="`${prefixCls}__tool`"
-      class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
-      @click="move(200)"
-    >
-      <Icon
-        icon="ep:arrow-right"
-        :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
-      />
-    </span>
-    <span
-      :class="`${prefixCls}__tool`"
-      class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
-      @click="refreshSelectedTag(selectedTag)"
-    >
-      <Icon
-        icon="ep:refresh-right"
-        :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
-      />
-    </span>
-    <ContextMenu
-      trigger="click"
-      :schema="[
-        // {
-        //   icon: 'ep:refresh',
-        //   label: t('common.reload'),
-        //   command: () => {
-        //     refreshSelectedTag(selectedTag)
-        //   }
-        // },
-        // {
-        //   icon: 'ep:close',
-        //   label: t('common.closeTab'),
-        //   disabled: !!visitedViews?.length && selectedTag?.meta.affix
-        // },
-        {
-          divided: false,
-          icon: 'ep:discount',
-          label: t('common.closeOther'),
-          command: () => {
-            closeOthersTags()
-          }
-        },
-        {
-          icon: 'ep:close',
-          label: t('common.closeAll'),
-          command: () => {
-            closeAllTags()
-          }
-        },
-        {
-          divided: false, //分割线
-          icon: 'ep:d-arrow-left',
-          label: t('common.closeTheLeftTab'),
-          disabled: !!visitedViews?.length && selectedTag?.fullPath === visitedViews[0].fullPath,
-          command: () => {
-            closeLeftTags()
-          }
-        },
-        {
-          icon: 'ep:d-arrow-right',
-          label: t('common.closeTheRightTab'),
-          disabled:
-            !!visitedViews?.length &&
-            selectedTag?.fullPath === visitedViews[visitedViews.length - 1].fullPath,
-          command: () => {
-            closeRightTags()
-          }
-        }
-      ]"
-    >
+    <!-- 开启的菜单 标签页 右侧操作栏  -->
+    <div class="right-arrow">
       <span
         :class="`${prefixCls}__tool`"
-        class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer block"
+        class="arrow arrow-right w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
+        @click="move(200)"
       >
+        <!--        <Icon-->
+        <!--          icon="ep:arrow-right"-->
+        <!--          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+        <!--        />-->
         <Icon
-          icon="ep:menu"
-          :color="appStore.getIsDark ? 'var(--el-text-color-regular)' : '#333'"
+          icon="svg-icon:arrow-right"
+          :size="16"
+          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
         />
       </span>
-    </ContextMenu>
+      <span
+        :class="`${prefixCls}__tool`"
+        class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer"
+        @click="refreshSelectedTag(selectedTag)"
+      >
+        <!--        <Icon-->
+        <!--          icon="ep:refresh-right"-->
+        <!--          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+        <!--        />-->
+        <Icon
+          icon="svg-icon:refresh-right"
+          :size="40"
+          :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+        />
+      </span>
+      <ContextMenu
+        trigger="click"
+        :schema="[
+          // {
+          //   icon: 'ep:refresh',
+          //   label: t('common.reload'),
+          //   command: () => {
+          //     refreshSelectedTag(selectedTag)
+          //   }
+          // },
+          // {
+          //   icon: 'ep:close',
+          //   label: t('common.closeTab'),
+          //   disabled: !!visitedViews?.length && selectedTag?.meta.affix
+          // },
+          {
+            divided: false,
+            icon: 'ep:discount',
+            label: t('common.closeOther'),
+            command: () => {
+              closeOthersTags()
+            }
+          },
+          {
+            icon: 'ep:close',
+            label: t('common.closeAll'),
+            command: () => {
+              closeAllTags()
+            }
+          },
+          {
+            divided: false, //分割线
+            icon: 'ep:d-arrow-left',
+            label: t('common.closeTheLeftTab'),
+            disabled: !!visitedViews?.length && selectedTag?.fullPath === visitedViews[0].fullPath,
+            command: () => {
+              closeLeftTags()
+            }
+          },
+          {
+            icon: 'ep:d-arrow-right',
+            label: t('common.closeTheRightTab'),
+            disabled:
+              !!visitedViews?.length &&
+              selectedTag?.fullPath === visitedViews[visitedViews.length - 1].fullPath,
+            command: () => {
+              closeRightTags()
+            }
+          }
+        ]"
+      >
+        <span
+          :class="`${prefixCls}__tool`"
+          class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] text-center leading-[var(--tags-view-height)] cursor-pointer block"
+        >
+          <!--          <Icon-->
+          <!--            icon="ep:menu"-->
+          <!--            :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"-->
+          <!--          />-->
+          <Icon
+            icon="svg-icon:menu"
+            :size="40"
+            :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+          />
+        </span>
+      </ContextMenu>
+    </div>
   </div>
 </template>
 
@@ -487,26 +510,27 @@ $prefix-cls: #{$namespace}-tags-view;
       left: 0;
       width: 100%;
       height: calc(100% - 1px);
-      border-right: 1px solid var(--tags-view-border-color);
-      border-left: 1px solid var(--tags-view-border-color);
+      //border-right: 1px solid var(--tags-view-border-color);
+      //border-left: 1px solid var(--tags-view-border-color);
       content: '';
     }
   }
 
   &__item {
     position: relative;
-    top: 2px;
-    height: calc(100% - 4px);
-    padding-right: 40px;
-    margin-left: 4px;
-    font-size: 12px;
-    border-radius: 3px 3px 3px 3px;
+    //top: 2px;
+    //height: calc(100% - 4px);
+    //padding-right: 40px;
+    margin-left: 6px;
+    font-size: 14px;
+    font-family: PingFangSC-Regular;
+    border-radius: 4px;
     cursor: pointer;
     border: 1px solid #d9d9d9;
 
     //首页
     &.#{$prefix-cls}__item--affix {
-      padding-right: 20px;
+      //padding-right: 20px;
     }
 
     &--close {
@@ -519,7 +543,7 @@ $prefix-cls: #{$namespace}-tags-view;
     &--close {
       position: absolute;
       top: 50%;
-      right: 3px;
+      right: 9px;
       display: none;
       transform: translate(0, -50%);
     }
@@ -576,16 +600,17 @@ $prefix-cls: #{$namespace}-tags-view;
 
     &__item {
       position: relative;
-      top: 2px;
-      height: calc(100% - 4px);
-      padding-right: 40px;
-      font-size: 12px;
-      border-radius: 3px 3px 3px 3px;
+      //top: 2px;
+      //height: calc(100% - 4px);
+      //padding-right: 40px;
+      font-size: 14px;
+      font-family: PingFangSC-Regular;
+      border-radius: 4px;
       cursor: pointer;
       border: 1px solid var(--el-border-color);
       //首页
       &.#{$prefix-cls}__item--affix {
-        padding-right: 20px;
+        //padding-right: 20px;
       }
     }
 
@@ -605,5 +630,40 @@ $prefix-cls: #{$namespace}-tags-view;
       }
     }
   }
+}
+
+.total-tags-content {
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.tags-content {
+  height: 30px;
+}
+.tag-content {
+  min-width: 108px;
+  padding: 0;
+  margin-left: 10px;
+  display: flex;
+  justify-content: flex-start;
+}
+.v-tags-view__item--affix {
+  width: 48px;
+}
+
+.arrow {
+  width: 30px;
+  height: 48px;
+  border-right: 1px solid var(--tags-view-border-color);
+}
+.arrow-right {
+  border-width: 0;
+}
+.right-arrow {
+  display: flex;
+  height: 48px;
+  width: 130px;
+  border-left: 1px solid var(--tags-view-border-color);
 }
 </style>

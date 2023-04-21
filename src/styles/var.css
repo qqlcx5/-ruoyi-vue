@@ -4,7 +4,7 @@
   /* left menu start */
   --left-menu-border-color: '#eee';
 
-  --left-menu-max-width: 200px;
+  --left-menu-max-width: 240px;
 
   --left-menu-min-width: 64px;
 
@@ -22,7 +22,7 @@
   /* left menu end */
 
   /* logo start */
-  --logo-height: 50px;
+  --logo-height: 60px;
 
   --logo-title-text-color: #fff;
 
@@ -42,7 +42,7 @@
 
   --top-tool-border-color: #eee;
 
-  --tags-view-height: 35px;
+  --tags-view-height: 50px;
 
   --tags-view-border-color: #eee;
   /* header start */
@@ -64,6 +64,9 @@
   --app-footer-height: 50px;
 
   --transition-time-02: 0.2s;
+
+  /* 表格 表头 */
+  --table-bg-color: #F6F6F6;
 }
 
 html,

@@ -47,7 +47,14 @@ onMounted(() => {
     <ElPopover placement="bottom" :width="400" trigger="click">
       <template #reference>
         <ElBadge :is-dot="unreadCount > 0" class="item">
-          <Icon icon="ep:bell" :size="18" class="cursor-pointer" @click="getList" :color="color" />
+          <!-- <Icon icon="ep:bell" :size="20" class="cursor-pointer" @click="getList" :color="color" />-->
+          <Icon
+            icon="svg-icon:bell"
+            :size="40"
+            class="cursor-pointer"
+            @click="getList"
+            :color="color"
+          />
         </ElBadge>
       </template>
       <ElTabs v-model="activeName">

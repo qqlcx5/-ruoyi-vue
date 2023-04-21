@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="14px" viewBox="0 0 20 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Menu_icon</title>
+    <g id="系统管理" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linejoin="bevel">
+        <g id="菜单管理" transform="translate(-255.000000, -23.000000)" fill-rule="nonzero" stroke="#8291A9" stroke-width="2">
+            <g id="Menu_icon" transform="translate(255.000000, 23.000000)">
+                <path d="M0,7 L18,7 M0,1 L18,1 M0,13 L18,13" id="Combined-Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

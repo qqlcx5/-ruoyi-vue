@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60px" height="60px" viewBox="0 0 60 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组_45</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="20" height="20"></rect>
+    </defs>
+    <g id="系统管理" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="菜单管理" transform="translate(-1642.000000, 0.000000)">
+            <g id="编组_45" transform="translate(1642.000000, 0.000000)">
+                <rect id="矩形备份-2" x="0" y="0" width="60" height="60"></rect>
+                <g id="general/sun" transform="translate(20.000000, 20.000000)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <g fill-rule="nonzero"></g>
+                    <circle id="Ellipse-98" stroke="#8291A9" stroke-width="1.49999988" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" cx="9.9999796" cy="10.0000405" r="2.9166664"></circle>
+                    <rect id="Rectangle-1105" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" x="9.5833132" y="2.91662587" width="1" height="1"></rect>
+                    <rect id="Rectangle-1106" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" x="9.5833132" y="16.25" width="1" height="1"></rect>
+                    <polygon id="Rectangle-1105" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(16.666647, 10.000040) rotate(90.000000) translate(-16.666647, -10.000040) " points="16.2499799 9.5833736 17.0833132 9.5833736 17.0833132 10.4167069 16.2499799 10.4167069"></polygon>
+                    <polygon id="Rectangle-1106" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(3.333333, 10.000040) rotate(90.000000) translate(-3.333333, -10.000040) " points="2.91666667 9.5833736 3.75 9.5833736 3.75 10.4167069 2.91666667 10.4167069"></polygon>
+                    <polygon id="Rectangle-1105" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(14.714028, 14.714112) rotate(135.000000) translate(-14.714028, -14.714112) " points="14.297361 14.2974451 15.1306943 14.2974451 15.1306943 15.1307784 14.297361 15.1307784"></polygon>
+                    <polygon id="Rectangle-1106" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(5.285928, 5.285889) rotate(135.000000) translate(-5.285928, -5.285889) " points="4.86926091 4.86922212 5.70259424 4.86922212 5.70259424 5.70255545 4.86926091 5.70255545"></polygon>
+                    <polygon id="Rectangle-1105" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(5.286194, 14.714028) rotate(-135.000000) translate(-5.286194, -14.714028) " points="4.86952729 14.297361 5.70286063 14.297361 5.70286063 15.1306943 4.86952729 15.1306943"></polygon>
+                    <polygon id="Rectangle-1106" stroke="#8291A9" stroke-width="1.49999988" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(14.714294, 5.285989) rotate(-135.000000) translate(-14.714294, -5.285989) " points="14.2976274 4.86932184 15.1309607 4.86932184 15.1309607 5.70265517 14.2976274 5.70265517"></polygon>
+                    <rect id="Rectangle-1107" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" x="9.5833132" y="2.91662587" width="1" height="1"></rect>
+                    <rect id="Rectangle-1108" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" x="9.5833132" y="16.25" width="1" height="1"></rect>
+                    <polygon id="Rectangle-1107" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(16.666647, 10.000040) rotate(90.000000) translate(-16.666647, -10.000040) " points="16.2499799 9.5833736 17.0833132 9.5833736 17.0833132 10.4167069 16.2499799 10.4167069"></polygon>
+                    <polygon id="Rectangle-1108" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(3.333333, 10.000040) rotate(90.000000) translate(-3.333333, -10.000040) " points="2.91666667 9.5833736 3.75 9.5833736 3.75 10.4167069 2.91666667 10.4167069"></polygon>
+                    <polygon id="Rectangle-1107" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(14.714028, 14.714112) rotate(135.000000) translate(-14.714028, -14.714112) " points="14.297361 14.2974451 15.1306943 14.2974451 15.1306943 15.1307784 14.297361 15.1307784"></polygon>
+                    <polygon id="Rectangle-1108" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(5.285928, 5.285889) rotate(135.000000) translate(-5.285928, -5.285889) " points="4.86926091 4.86922212 5.70259424 4.86922212 5.70259424 5.70255545 4.86926091 5.70255545"></polygon>
+                    <polygon id="Rectangle-1107" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(5.286194, 14.714028) rotate(-135.000000) translate(-5.286194, -14.714028) " points="4.86952729 14.297361 5.70286063 14.297361 5.70286063 15.1306943 4.86952729 15.1306943"></polygon>
+                    <polygon id="Rectangle-1108" fill="#8291A9" fill-rule="nonzero" mask="url(#mask-2)" transform="translate(14.714294, 5.285989) rotate(-135.000000) translate(-14.714294, -5.285989) " points="14.2976274 4.86932184 15.1309607 4.86932184 15.1309607 5.70265517 14.2976274 5.70265517"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

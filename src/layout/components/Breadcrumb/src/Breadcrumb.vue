@@ -78,7 +78,7 @@ export default defineComponent({
     )
 
     return () => (
-      <ElBreadcrumb separator="/" class={`${prefixCls} flex items-center h-full ml-[10px]`}>
+      <ElBreadcrumb separator="/" class={`${prefixCls} flex items-center h-full ml-[12px]`}>
         <TransitionGroup appear enter-active-class="animate__animated animate__fadeInRight">
           {renderBreadcrumb()}
         </TransitionGroup>

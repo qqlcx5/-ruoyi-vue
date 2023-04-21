@@ -10,6 +10,8 @@ const appStore = useAppStore()
 const currentSize = computed(() => appStore.getCurrentSize)
 const greyMode = computed(() => appStore.getGreyMode)
 const { wsCache } = useCache()
+//antdV黑暗模式
+import { DarkMode } from '@/styles/antdVTheme/changAntdModal'
 
 // 根据浏览器当前主题设置系统主题色
 const setDefaultTheme = () => {
@@ -20,6 +22,11 @@ const setDefaultTheme = () => {
   appStore.setIsDark(isDarkTheme)
 }
 setDefaultTheme()
+
+watchEffect(() => {
+  //antdV黑暗模式
+  DarkMode(appStore.isDark)
+})
 </script>
 <template>
   <ConfigGlobal :size="currentSize">

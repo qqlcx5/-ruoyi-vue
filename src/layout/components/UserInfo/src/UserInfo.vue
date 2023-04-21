@@ -56,11 +56,11 @@ const openSetting = () => {
 
 <template>
   <ElDropdown :class="prefixCls" trigger="click">
-    <div class="flex items-center">
+    <div class="user-content flex items-center">
       <img
         :src="avatar"
         alt=""
-        class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
+        class="w-[calc(var(--logo-height)-28px)] rounded-[50%]"
         @error="
           (e) => {
             e.target.src = userImg
@@ -70,6 +70,13 @@ const openSetting = () => {
       <span class="<lg:hidden text-14px pl-[5px] text-[var(--top-header-text-color)]">
         {{ userName }}
       </span>
+
+      <Icon
+        icon="svg-icon:pull-down"
+        class="pull-down"
+        :size="16"
+        :color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+      />
     </div>
     <template #dropdown>
       <ElDropdownMenu>
@@ -94,4 +101,16 @@ const openSetting = () => {
   </ElDropdown>
 </template>
 
-<style lang="sass" scoped></style>
+<style lang="scss" scoped>
+.user-content {
+  display: flex;
+  justify-content: center;
+  width: 158px;
+  height: 100%;
+  font-size: 20px;
+  cursor: pointer;
+}
+.pull-down {
+  margin-left: 4px;
+}
+</style>

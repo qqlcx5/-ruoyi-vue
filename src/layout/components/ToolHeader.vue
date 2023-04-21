@@ -60,17 +60,25 @@ export default defineComponent({
         {layout.value !== 'top' ? (
           <div class="h-full flex items-center">
             {hamburger.value && layout.value !== 'cutMenu' ? (
-              <Collapse class="hover-trigger" color="var(--top-header-text-color)"></Collapse>
+              <Collapse
+                class="hover-trigger collapse"
+                color="var(--top-header-text-color)"
+              ></Collapse>
             ) : undefined}
             {breadcrumb.value ? <Breadcrumb class="<md:hidden"></Breadcrumb> : undefined}
           </div>
         ) : undefined}
         <div class="h-full flex items-center">
-          <div class="company-content">
-            {state.userInfo.company}
-            <Icon icon="ep:switch" />
-            <el-divider direction="vertical" />
+          <div class="company-content hover-trigger">
+            <span class="company">{state.userInfo.company}</span>
+            <Icon
+              icon="svg-icon:switch"
+              size="14"
+              class="cursor-pointer"
+              color="var(--top-header-text-color)"
+            />
           </div>
+          <div class="vertical-line"></div>
           {screenfull.value ? (
             <Screenfull class="hover-trigger" color="var(--top-header-text-color)"></Screenfull>
           ) : undefined}
@@ -83,6 +91,7 @@ export default defineComponent({
           {message.value ? (
             <Message class="hover-trigger" color="var(--top-header-text-color)"></Message>
           ) : undefined}
+          <div class="vertical-line"></div>
           <UserInfo class="hover-trigger"></UserInfo>
         </div>
       </div>
@@ -99,6 +108,28 @@ $prefix-cls: #{$namespace}-tool-header;
 }
 
 .company-content {
-  padding: 10px;
+  padding-right: 23px;
+  cursor: pointer;
+}
+
+.company {
+  margin-right: 4px;
+}
+
+.hover-trigger {
+  display: flex;
+  justify-content: center;
+  min-width: 60px;
+}
+
+.collapse {
+  min-width: auto;
+  margin: 0 0 0 15px;
+}
+
+.vertical-line {
+  height: 23px;
+  width: 0;
+  border-right: 1px solid rgb(235, 235, 235);
 }
 </style>
