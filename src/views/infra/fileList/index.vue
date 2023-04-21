@@ -108,6 +108,7 @@ const updateSupport = ref(0)
 const uploadDisabled = ref(false)
 const uploadRef = ref<UploadInstance>()
 let updateUrl = import.meta.env.VITE_UPLOAD_URL
+let regVersion = import.meta.env.VITE_REG_VERSION
 const uploadHeaders = ref()
 // 文件上传之前判断
 const beforeUpload = (file: UploadRawFile) => {
@@ -125,7 +126,8 @@ const beforeUpload = (file: UploadRawFile) => {
 const submitFileForm = () => {
   uploadHeaders.value = {
     Authorization: 'Bearer ' + getAccessToken(),
-    'tenant-id': getTenantId()
+    'tenant-id': getTenantId(),
+    'Reg-Version': regVersion
   }
   uploadDisabled.value = true
   uploadRef.value!.submit()
