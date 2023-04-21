@@ -372,7 +372,7 @@ watch(
                     :class="`${prefixCls}__item--close`"
                     color="#333"
                     icon="ep:circle-close-filled"
-                    :size="15"
+                    :size="13"
                     @click.prevent.stop="closeSelectedTag(item)"
                   />
                 </div>
@@ -522,8 +522,8 @@ $prefix-cls: #{$namespace}-tags-view;
     //height: calc(100% - 4px);
     //padding-right: 40px;
     margin-left: 6px;
-    font-size: 14px;
-    font-family: PingFangSC-Regular;
+    font-size: $font-size;
+    font-family: $font-family;
     border-radius: 4px;
     cursor: pointer;
     border: 1px solid #d9d9d9;
@@ -603,8 +603,8 @@ $prefix-cls: #{$namespace}-tags-view;
       //top: 2px;
       //height: calc(100% - 4px);
       //padding-right: 40px;
-      font-size: 14px;
-      font-family: PingFangSC-Regular;
+      font-size: $font-size;
+      font-family: $font-family;
       border-radius: 4px;
       cursor: pointer;
       border: 1px solid var(--el-border-color);

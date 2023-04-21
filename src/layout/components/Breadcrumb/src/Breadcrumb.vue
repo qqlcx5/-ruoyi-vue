@@ -124,5 +124,17 @@ $prefix-cls: #{$elNamespace}-breadcrumb;
       }
     }
   }
+
+  :deep(.el-breadcrumb__inner) {
+    height: 20px;
+    line-height: 20px;
+    font-size: $font-size;
+    font-family: $font-family;
+    color: $text-color;
+  }
+
+  :deep(.el-breadcrumb__item):nth-last-child(1) .el-breadcrumb__inner {
+    color: $title-color;
+  }
 }
 </style>

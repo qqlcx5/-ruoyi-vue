@@ -1,6 +1,6 @@
 //引入ant design vue的css 白色和黑色的less文件都要引入
-import light from './light.css'
-import dark from './dark.css'
+import light from './light.css?inline'
+import dark from './dark.css?inline'
 import { changeTheme, changeCss } from './changeAntdStyle'
 
 // 切换黑暗模式或者白天模式

@@ -107,7 +107,8 @@ const openSetting = () => {
   justify-content: center;
   width: 158px;
   height: 100%;
-  font-size: 20px;
+  font-size: $font-size;
+  font-family: $font-family;
   cursor: pointer;
 }
 .pull-down {

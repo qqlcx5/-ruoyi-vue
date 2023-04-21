@@ -110,6 +110,8 @@ $prefix-cls: #{$namespace}-tool-header;
 .company-content {
   padding-right: 23px;
   cursor: pointer;
+  font-size: $font-size;
+  font-family: $font-family;
 }
 
 .company {
