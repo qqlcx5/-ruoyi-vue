@@ -58,11 +58,27 @@
   </ContentWrap>
 
   <!--  表格  -->
-  <ContentWrap>
+  <a-card :bordered="false" style="width: 1650px" id="card-content">
+    <!--  <ContentWrap>-->
     <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
     <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
     <!--    >-->
-    <a-button type="primary" @click="toggleExpandAll">展开收起</a-button>
+
+    <div class="card-content">
+      <!--  左侧按钮  -->
+      <div class="button-content">
+        <a-button type="primary" @click="toggleExpandAll">新增</a-button>
+        <a-button @click="toggleExpandAll">展开收起</a-button>
+      </div>
+      <!--  右侧操作  -->
+      <div class="operation-content">
+        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />
+        <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
+        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />
+        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" />
+        <Icon icon="svg-icon:custom-column" :size="50" class="cursor-pointer" />
+      </div>
+    </div>
 
     <a-table
       :columns="columns"
@@ -83,7 +99,7 @@
               }
             "
           >
-            <Icon icon="ep:caret-bottom" :size="15" />
+            <Icon icon="ep:caret-bottom" :size="12" />
           </div>
           <div
             v-else
@@ -94,13 +110,14 @@
               }
             "
           >
-            <Icon icon="ep:caret-right" :size="15" />
+            <Icon icon="ep:caret-right" :size="12" />
           </div>
         </span>
         <span v-else style="margin-right: 29px"></span>
       </template>
     </a-table>
-  </ContentWrap>
+    <!--  </ContentWrap>-->
+  </a-card>
 </template>
 
 <script lang="tsx" setup>
@@ -120,15 +137,15 @@ const list = ref<any>([]) // 列表的数据
 
 const state = reactive({
   isExpandAll: false, //展开折叠
-  refreshTable: true //v-if table
+  refreshTable: true, //v-if table
+  isFullScreen: false //全屏
 })
 
 const columns = [
   {
     title: '名称',
     dataIndex: 'name',
-    key: 'name',
-    width: 600
+    key: 'name'
   },
   {
     title: '类型',
@@ -203,6 +220,21 @@ const toggleExpandAll = () => {
     state.refreshTable = true
   })
 }
+
+//全屏/退出
+const fullScreen = () => {
+  const elem = document.getElementById('card-content')
+
+  if (state.isFullScreen === false) {
+    if (elem?.requestFullscreen) {
+      elem?.requestFullscreen()
+      state.isFullScreen = !state.isFullScreen
+    }
+  } else {
+    document.exitFullscreen()
+    state.isFullScreen = !state.isFullScreen
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -210,5 +242,39 @@ const toggleExpandAll = () => {
   width: 100px;
   height: 100px;
   background: skyblue;
+}
+
+//新增  导出 button
+.card-content {
+  min-width: 1650px;
+  height: 62px;
+  //background: skyblue;
+  padding: 0 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+//button
+:deep(.ant-btn) {
+  margin-right: 10px;
+  //min-width: 42px;
+  //height: 32px;
+  //padding: 6px 13px;
+}
+
+//antd card
+:deep(.ant-card-body) {
+  padding: 0;
+  max-height: 870px;
+}
+
+.operation-content {
+  //background: red;
+}
+
+//表格
+:deep(.ant-table-wrapper) {
+  padding: 0 15px;
 }
 </style>
