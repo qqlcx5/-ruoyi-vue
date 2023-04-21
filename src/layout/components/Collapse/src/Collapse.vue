@@ -26,7 +26,7 @@ const toggleCollapse = () => {
     <Icon
       :size="18"
       :icon="collapse ? 'ep:expand' : 'svg-icon:fold'"
-      :color="color"
+      :color="appStore.isDark ? color : '#8291A9'"
       class="cursor-pointer"
       @click="toggleCollapse"
     />
