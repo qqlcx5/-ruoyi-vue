@@ -24,7 +24,12 @@ const layout = computed(() => appStore.getLayout)
       ]"
       @click="appStore.setLayout('classic')"
     >
-      <div v-show="layout === 'classic'" class="checkmark checkmark-one"></div>
+      <Icon
+        v-show="layout === 'classic'"
+        class="checked-icon"
+        icon="svg-icon:tick-circle"
+        color="#3296fa"
+        :size="24" />
     </div>
     <!--    <div-->
     <!--      :class="[-->
@@ -47,7 +52,12 @@ const layout = computed(() => appStore.getLayout)
       ]"
       @click="appStore.setLayout('top')"
     >
-      <div v-show="layout === 'top'" class="checkmark checkmark-one"></div>
+      <Icon
+        v-show="layout === 'top'"
+        class="checked-icon"
+        icon="svg-icon:tick-circle"
+        color="#3296fa"
+        :size="24" />
     </div>
     <div
       :class="[
@@ -61,7 +71,12 @@ const layout = computed(() => appStore.getLayout)
       @click="appStore.setLayout('cutMenu')"
     >
       <div class="absolute h-full w-[33%] top-0 left-[10%] bg-gray-200"></div>
-      <div v-show="layout === 'cutMenu'" class="checkmark checkmark-one"></div>
+      <Icon
+        v-show="layout === 'cutMenu'"
+        class="checked-icon"
+        icon="svg-icon:tick-circle"
+        color="#3296fa"
+        :size="24" />
     </div>
   </div>
 </template>
@@ -174,6 +189,12 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
   .is-acitve {
     box-shadow: 0 0 4px #339DFF;
   }
+}
+
+.checked-icon {
+  position: absolute;
+  right: 0;
+  bottom: 0;
 }
 
 .total-content {

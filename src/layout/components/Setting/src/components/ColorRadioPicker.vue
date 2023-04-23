@@ -3,28 +3,26 @@
     <span
       v-for="(item, i) in schema"
       :key="`radio-${i}`"
-      class="checkbox w-20px h-20px cursor-pointer rounded-2px border-solid border-gray-300 border-1px text-center leading-20px mb-5px"
+      class="checkbox w-20px h-20px cursor-pointer rounded-2px border-solid border-gray-300 border-1px text-center leading-20px mb-5px flex justify-center items-center"
       :class="{ 'is-active': colorVal === item }"
       :style="{
         background: item
       }"
       @click="selectColor(item)"
     >
-      <!-- 取色器箭头v -->
-      <Icon v-if="item === '#D8D8D8'" color="#fff" icon="ep:arrow-down" :size="24" />
       <!-- 选中的颜色 -->
       <Icon
         v-if="colorVal === item && item !== '#D8D8D8' && item !== '#fff'"
         color="#fff"
-        icon="ep:check"
-        :size="24"
+        icon="svg-icon:tick"
+        :size="12"
       />
       <!-- 选中的颜色非取色器 -->
       <Icon
         v-if="colorVal === item && item !== '#D8D8D8' && item === '#fff'"
         color="#0081FF"
-        icon="ep:check"
-        :size="24"
+        icon="svg-icon:tick"
+        :size="12"
       />
     </span>
     <span
@@ -32,14 +30,15 @@
       @mouseenter="handleEnterFN"
       @mouseleave="handleLeaveFN"
       key="`radio-7`"
-      class="checkbox w-20px h-20px cursor-pointer rounded-2px border-solid border-gray-300 border-1px text-center leading-20px mb-5px"
+      class="checkbox w-20px h-20px cursor-pointer rounded-2px border-solid border-gray-300 border-1px text-center leading-20px mb-5px flex justify-center items-center"
       :class="{ 'is-active': colorVal === state.selectColor }"
       :style="{
         background: state.selectColor
       }"
     >
       <!-- 颜色选择器选中后的颜色 -->
-      <Icon v-if="state.isSelect" color="#fff" icon="ep:check" :size="24" />
+      <Icon v-if="state.isSelect" color="#fff" icon="svg-icon:tick" :size="12" />
+      <Icon v-else color="#fff" icon="ep:arrow-down" :size="12" />
     </span>
     <!-- 颜色选择器 -->
     <color-picker
