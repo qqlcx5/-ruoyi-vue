@@ -172,7 +172,7 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
   }
 
   .is-acitve {
-    border-color: var(--el-color-primary);
+    box-shadow: 0 0 4px #339DFF;
   }
 }
 
