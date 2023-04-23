@@ -130,11 +130,11 @@ $prefix-cls: #{$elNamespace}-breadcrumb;
     line-height: 20px;
     font-size: $font-size;
     font-family: $font-family;
-    color: $text-color;
+    //color: $text-color;
   }
 
-  :deep(.el-breadcrumb__item):nth-last-child(1) .el-breadcrumb__inner {
-    color: $title-color;
-  }
+  //:deep(.el-breadcrumb__item):nth-last-child(1) .el-breadcrumb__inner {
+  //  color: $title-color;
+  //}
 }
 </style>

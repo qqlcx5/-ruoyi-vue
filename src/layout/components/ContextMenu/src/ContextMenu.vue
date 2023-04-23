@@ -65,9 +65,15 @@ defineExpose({
           :disabled="item.disabled"
           :command="item"
         >
-          <Icon :icon="item.icon" /> {{ t(item.label) }}
+          <div class="flex items-center px-5px py-4px">
+            <Icon :icon="item.icon" /> {{ t(item.label) }}
+          </div>
         </ElDropdownItem>
       </ElDropdownMenu>
     </template>
   </ElDropdown>
 </template>
+
+<style lang="scss" scoped>
+
+</style>

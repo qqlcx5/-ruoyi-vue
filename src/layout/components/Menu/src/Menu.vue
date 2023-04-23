@@ -126,10 +126,10 @@ $prefix-cls: #{$namespace}-menu;
 .is-active--after {
   position: absolute;
   top: 0;
-  right: 0;
-  width: 4px;
+  left: 0;
+  width: 6px;
   height: 100%;
-  background-color: var(--el-color-primary);
+  background-color: var(--left-menu-bg-active-color);
   content: '';
 }
 
@@ -169,13 +169,11 @@ $prefix-cls: #{$namespace}-menu;
     // 设置选中时的高亮背景和高亮颜色
     .#{$elNamespace}-sub-menu.is-active,
     .#{$elNamespace}-menu-item.is-active {
-      //color: var(--left-menu-text-active-color) !important;
-      //background-color: var(--left-menu-bg-active-color) !important;
-      color: var(--left-menu-bg-active-color) !important;
-      //background-color: var(--left-menu-bg-active-color) !important;
+      color: var(--left-menu-text-active-color) !important;
+      background-color: var(--left-menu-bg-light-color) !important;
 
       &:hover {
-        //background-color: var(--left-menu-bg-active-color) !important;
+        background-color: var(--left-menu-bg-active-color) !important;
       }
     }
 

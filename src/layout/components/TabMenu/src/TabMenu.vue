@@ -163,20 +163,21 @@ export default defineComponent({
                   <div
                     class={[
                       `${prefixCls}__item`,
-                      'text-center text-12px relative py-12px cursor-pointer',
+                      'text-center text-12px relative h-60px cursor-pointer',
                       {
                         'is-active': isActive(v.path)
-                      }
+                      },
+                      'flex', 'items-center pl-38px'
                     ]}
                     onClick={() => {
                       tabClick(item)
                     }}
                   >
-                    <div>
-                      <Icon icon={item?.meta?.icon}></Icon>
+                    <div class="pr-16px">
+                      <Icon class="icon" icon={item?.meta?.icon}></Icon>
                     </div>
                     {!unref(showTitle) ? undefined : (
-                      <p class="break-words mt-5px px-2px">{t(item.meta?.title)}</p>
+                      <p class="break-words py-0 m-0">{t(item.meta?.title)}</p>
                     )}
                   </div>
                 )
@@ -244,8 +245,23 @@ $prefix-cls: #{$namespace}-tab-menu;
   }
 
   .is-active {
+    position: relative;
     color: var(--left-menu-text-active-color);
-    background-color: var(--left-menu-bg-active-color);
+
+    &:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background-color: var(--left-menu-bg-active-color);
+    }
+
+    & .icon {
+      color: var(--left-menu-bg-active-color);
+    }
+    background-color: var(--left-menu-bg-light-color);
   }
 }
 </style>

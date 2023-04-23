@@ -2,7 +2,7 @@
 <svg width="14px" height="11px" viewBox="0 0 14 11" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>编组</title>
     <g id="系统管理" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="菜单管理" transform="translate(-1425.000000, -25.000000)" fill="#8291A9" fill-rule="nonzero">
+        <g id="菜单管理" transform="translate(-1425.000000, -25.000000)" fill="currentColor" fill-rule="nonzero">
             <g id="编组" transform="translate(1425.000000, 25.000000)">
                 <path d="M1.94444445,3.96666667 L0,3.96666667 L1.55555555,2.4888889 L3.96666667,0 L4.9,0.933333333 L3.42222222,2.41111112 L14,2.41111112 L14,3.8888889 L1.94444445,3.8888889 L1.94444445,3.96666667 Z M12.1333333,6.22222223 L14,6.22222223 L12.4444445,7.7 L10.0333333,10.1111111 L9.1,9.17777778 L10.5777778,7.7 L0,7.7 L0,6.22222223 L12.1333333,6.22222223 Z" id="形状"></path>
             </g>

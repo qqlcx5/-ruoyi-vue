@@ -74,8 +74,8 @@
       </div>
     </el-scrollbar>
 
-    <div class="button-content w-450px flex text-center leading-60px z-10">
-      <div class="w-146px text-white" @click="copyConfig">{{ t('setting.copy') }}</div>
+    <div class="button-content w-450px flex text-center leading-60px cursor-pointer z-10">
+      <div class="w-146px text-white " @click="copyConfig">{{ t('setting.copy') }}</div>
       <div class="button-reset flex-grow" @click="clear">{{ t('setting.clearAndReset') }}</div>
     </div>
   </ElDrawer>
