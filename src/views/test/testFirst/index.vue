@@ -116,7 +116,7 @@
         </span>
         <span v-else style="margin-right: 29px"></span>
       </template>
-      <!--  名称  -->
+      <!--  单元格插槽  -->
       <template #bodyCell="{ column, record }">
         <!--  菜单名称   -->
         <template v-if="column.key === 'name'">
@@ -129,6 +129,12 @@
         <template v-if="column.key === 'employeesNumber'">
           <div class="employees-Number">{{ record.type }}</div>
         </template>
+        <!--  状态   -->
+        <template v-if="column.key === 'status'">
+          <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
+          <!-- <div class="employees-Number">{{ record.status }}</div>-->
+          <a-switch v-model:checked="record.status" />
+        </template>
         <!--  操作   -->
         <template v-if="column.key === 'operation'">
           <div class="employees-Number" @click="edit(record)">修改</div>
@@ -138,7 +144,7 @@
     <!--  </ContentWrap>-->
   </a-card>
 
-  <!-- 新增 Modal -->
+  <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
     title="新增"
@@ -398,7 +404,9 @@ const state = reactive({
   //   visible: true,
   //   alwaysShow: true
   // }) //新增表单
+  modalType: 'add', //add新增edit编辑
   formState: reactive<FormState>({
+    id: 0,
     name: '', //目录名称
     type: SystemMenuTypeEnum.DIR, //菜单类型
     parentId: 0, //上级目录
@@ -451,16 +459,6 @@ const columns = [
   }
 ]
 
-const updateStatus = (node) => {
-  if (node.children && node.children.length > 0) {
-    // 如果当前节点有子节点，则递归处理子节点
-    node.children.forEach((child) => updateStatus(child))
-  }
-
-  // 根据节点的 status 属性来添加节点的状态 不修改原值
-  node.statusHandled = node.status === 0
-}
-
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
@@ -468,7 +466,6 @@ const getList = async () => {
   try {
     const data = await MenuApi.getMenuList(queryParams)
     list.value = handleTree(data)
-    updateStatus(list.value)
     console.log('list====>', list.value)
   } finally {
     loading.value = false
@@ -521,6 +518,7 @@ const openModal = () => {
 const closeModal = () => {
   state.isShow = false
   formRef.value.resetFields()
+  state.modalType = 'add'
 }
 
 const options = [
@@ -548,6 +546,7 @@ interface FormState {
   // statusF: boolean
   // visible: boolean
   // alwaysShow: boolean
+  id?: number
   name: string
   type: number
   parentId: number
@@ -570,23 +569,34 @@ const saveForm = async () => {
   const valid = await formRef.value.validate()
   console.log('valid', valid)
   const params = state.formState as unknown as MenuApi.MenuVO
+
   //菜单状态 0开启 1关闭 ...
   if (params.status) {
     params.status = 0
   } else {
     params.status = 1
   }
-  console.log('params', params)
+
   //
   try {
-    const res = await MenuApi.createMenu(params)
+    let res = []
+    if (state.modalType === 'add') {
+      console.log('paramsAdd', params)
+      res = await MenuApi.createMenu(params)
+      message.success('新增成功')
+    } else {
+      console.log('paramsEdit', params)
+      res = await MenuApi.updateMenu(params)
+      message.success('编辑成功')
+    }
     console.log('res', res)
-    message.success('新增成功')
+
     closeModal()
     await getList()
   } finally {
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    // wsCache.get(CACHE_KEY.ROLE_ROUTERS) as AppCustomRouteRecordRaw[]
   }
 }
 /** 获取下拉框[上级菜单]的数据  */
@@ -617,6 +627,12 @@ const typeChange = (type) => {
 }
 
 const edit = (record) => {
+  console.log('reEEEE', record)
+  //菜单状态 0开启 1关闭
+  // record.statusSwitch = record.status === 0
+  record.status = record.status === 0
+
+  state.modalType = 'edit'
   //赋值
   state.formState = record
   openModal()
