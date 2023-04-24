@@ -27,12 +27,15 @@ watchEffect(() => {
   //antdV黑暗模式
   DarkMode(appStore.isDark)
 })
+
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import 'dayjs/locale/zh-cn'
 </script>
 <template>
   <!--  element plus 全局配置-->
   <ConfigGlobal :size="currentSize">
     <!--  antdV 全局配置  -->
-    <a-config-provider :componentSize="currentSize">
+    <a-config-provider :componentSize="currentSize" :locale="zhCN">
       <RouterView :class="greyMode ? `${prefixCls}-grey-mode` : ''" />
     </a-config-provider>
   </ConfigGlobal>
