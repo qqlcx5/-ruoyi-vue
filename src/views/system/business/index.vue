@@ -41,7 +41,7 @@
       <!--  左侧按钮  -->
       <div class="button-content">
         <a-button type="primary" @click="openModal">新增</a-button>
-        <a-button @click="toggleExpandAll">展开收起</a-button>
+        <a-button @click="toggleExpandAll" v-if="false">展开收起</a-button>
       </div>
       <!--  右侧操作  -->
       <div class="operation-content">
@@ -120,7 +120,10 @@
         </template>
         <!--  操作   -->
         <template v-if="column.key === 'operation'">
-          <div class="text-color" @click="edit(record)">修改</div>
+          <div class="operation-content">
+            <div class="text-color margin-right-5" @click="edit(record)">修改</div>
+            <div class="text-color margin-right-5">功能配置</div>
+          </div>
         </template>
       </template>
     </a-table>
@@ -130,7 +133,7 @@
   <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
-    title="新增"
+    :title="state.modalTitle"
     @ok="closeModal"
     @cancel="closeModal"
     :width="'900px'"
@@ -220,7 +223,11 @@
               :placeholder="['开始时间', '结束时间']"
             />
             <div>
-              <a-checkbox v-model:checked="state.formState.forever"> 永久有效</a-checkbox>
+              <a-form-item-rest>
+                <a-checkbox v-model:checked="state.formState.forever">
+                  永久有效</a-checkbox
+                ></a-form-item-rest
+              >
             </div>
           </div>
         </a-form-item>
@@ -291,18 +298,57 @@
           <div> 请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片 </div>
         </a-form-item>
 
-        <a-form-item :label="`成立日期`" name="effectiveStartEndTime">
+        <a-form-item :label="`成立日期`" name="establishDate">
           <a-date-picker
             v-model:value="state.formState.establishDate"
             format="YYYY/MM/DD"
             placeholder="请选择时间"
           />
         </a-form-item>
+
+        <!--  级联选择器  - -   -->
+        <a-form-item :label="`公司地址`" name="detailedAddress">
+          <div class="flex-content">
+            <a-form-item-rest>
+              <a-cascader
+                v-model:value="state.formState.companyAddress"
+                :options="state.proMunAreaList"
+                @change="cascadeChange"
+                placeholder="请选择省市区"
+              />
+            </a-form-item-rest>
+            <a-input
+              v-model:value="state.formState.detailedAddress"
+              placeholder="请输入详细的公司地址，具体门牌号"
+            />
+          </div>
+        </a-form-item>
+
+        <a-form-item label="营业执照" name="businessLicenseUrl">
+          <a-upload
+            v-model:file-list="fileList"
+            name="avatar"
+            list-type="picture-card"
+            class="avatar-uploader"
+            :show-upload-list="false"
+            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+            :before-upload="beforeUpload"
+            @change="handleChange"
+          >
+            <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
+            <div v-else>
+              <loading-outlined v-if="loading" />
+              <plus-outlined v-else />
+              <div class="ant-upload-text">Upload</div>
+            </div>
+          </a-upload>
+          <div> 请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片 </div>
+        </a-form-item>
       </a-form>
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="saveForm">确定</a-button>
+      <a-button type="primary" html-type="submit" @click="addMajorIndividualFN">确定</a-button>
       <a-button @click="closeModal">取消</a-button>
     </template>
   </a-modal>
@@ -315,8 +361,18 @@ import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
-import { getMajorIndividualList } from '@/api/system/business'
+import {
+  addMajorIndividual,
+  editMajorIndividual,
+  getMajorIndividualList,
+  updateEditMajorIndividual
+} from '@/api/system/business'
 const { wsCache } = useCache()
+
+import { provincesMunicipalitiesArea } from './pr'
+import { reconstructedTreeData } from '@/utils/utils'
+import dayjs from 'dayjs'
+// console.log('provincesMunicipalitiesArea', provincesMunicipalitiesArea)
 
 interface FormState {
   id?: number
@@ -363,16 +419,39 @@ const routeValidator = (rule, value) => {
   })
 }
 
+//手机号码正则校验 -  简单校验没有全按国内的号码段来  -
+const isValidPhoneNumber = (phoneNumber) => {
+  const regExp = /^1[3456789]\d{9}$/
+  return regExp.test(phoneNumber)
+}
+
+//负责人电话校验
 const contactMobileValidator = (rule, value) => {
   return new Promise<void>((resolve, reject) => {
-    resolve('负责人电话不能为空')
     if (value) {
-      //目录必须以/开头
-      // if (state.formState.type === SystemMenuTypeEnum.DIR && !value.startsWith('/')) {
-      // reject('负责人电话不能为空')
-      // }  else {
-      //   resolve()
-      // }
+      console.log(' isValidPhoneNumber(value)', isValidPhoneNumber(value))
+      if (!isValidPhoneNumber(value)) {
+        reject('请输入正确的手机号码')
+      } else {
+        resolve()
+      }
+    } else {
+      reject('负责人电话不能为空')
+    }
+  })
+}
+
+//法人电话校验
+const legalMobileValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      if (!isValidPhoneNumber(value)) {
+        reject('请输入正确的手机号码')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
     }
   })
 }
@@ -394,14 +473,16 @@ const state = reactive({
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false,
+  modalTitle: '新增', //modal title
   currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
   contactMobileRules: [
     { required: true, message: `负责人电话不能为空` },
     { validator: contactMobileValidator }
   ],
-  legalMobileRules: [{ validator: contactMobileValidator }],
+  legalMobileRules: [{ validator: legalMobileValidator }],
   modalType: 'add', //add新增edit编辑
+  proMunAreaList: [], //省市区数据
   formState: {
     code: '', //主体编码
     name: '', //主体名称
@@ -420,8 +501,14 @@ const state = reactive({
     legalRepresentative: '', //法定代表人
     legalMobile: '', //法人联系电话
     legalIdentityUrl: '', //法人身份证
-    establishDate: '' //成立日期
-  } //新增表单
+    establishDate: '', //成立日期
+    companyAddress: [], //公司地址
+    cascadeInfo: [], //选中的省市区全部信息
+    detailedAddress: '', //公司地址 详细地址
+
+    businessLicenseUrl: '' //营业执照
+  }, //新增表单
+  addSuccessId: '' //创建主体成功ID 主要是用于创建主体后配置权限
 })
 
 const columns = [
@@ -494,13 +581,6 @@ const getList = async () => {
     systemName: queryParams.systemName,
     status: queryParams.status
   }
-  //
-  // if (queryParams?.startEndTime[0]) {
-  //   params['effectiveStartDate'] = queryParams.startEndTime[0]?.format('YYYY-MM-DD')
-  // }
-  // if (queryParams?.startEndTime[1]) {
-  //   params['expireTime'] = queryParams.startEndTime[1]?.format('YYYY-MM-DD')
-  // }
 
   if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
     params['localDates'] = [
@@ -569,57 +649,41 @@ const openModal = () => {
 const closeModal = () => {
   state.isShow = false
   formRef.value.resetFields()
+  //级联选择器 需要单独清空
+  state.formState.companyAddress = []
+  state.formState = {
+    code: '', //主体编码
+    name: '', //主体名称
+    abbreviate: '', //主体简称
+    systemName: '', //系统名称
+    logoUrl: '', //系统logo
+    contactName: '', //负责人
+    contactMobile: '', //负责人电话
+    effectiveStartEndTime: [], //有效期
+    forever: false, //永久有效
+    accountCount: undefined, //可用名额
+    bindingDomainName: '', //绑定域名
+    status: true, //状态
+    creditCode: '', //统一社会信用代码
+    organizationCode: '', //组织机构代码
+    legalRepresentative: '', //法定代表人
+    legalMobile: '', //法人联系电话
+    legalIdentityUrl: '', //法人身份证
+    establishDate: '', //成立日期
+    companyAddress: [], //公司地址
+    cascadeInfo: [], //选中的省市区全部信息
+    detailedAddress: '', //公司地址 详细地址
+    businessLicenseUrl: '' //营业执照
+  }
+  delete state.formState?.id
+  state.modalTitle = '新增'
   state.modalType = 'add'
+  console.log('编辑完成之后的state.formState', state.formState)
 }
-
-const options = [
-  { value: SystemMenuTypeEnum.DIR, label: '目录' },
-  { value: SystemMenuTypeEnum.MENU, label: '菜单' },
-  { value: SystemMenuTypeEnum.BUTTON, label: '按钮' }
-]
 
 /** 添加/修改操作 */
 const formRef = ref()
 
-//保存
-const saveForm = async () => {
-  console.log('save')
-  // 校验表单
-  if (!formRef) return
-  const valid = await formRef.value.validate()
-  console.log('valid', valid)
-  return
-  const params = state.formState as unknown as MenuApi.MenuVO
-
-  //菜单状态 0开启 1关闭 ...
-  if (params.status) {
-    params.status = 0
-  } else {
-    params.status = 1
-  }
-
-  //
-  try {
-    let res = []
-    if (state.modalType === 'add') {
-      console.log('paramsAdd', params)
-      res = await MenuApi.createMenu(params)
-      message.success('新增成功')
-    } else {
-      console.log('paramsEdit', params)
-      res = await MenuApi.updateMenu(params)
-      message.success('编辑成功')
-    }
-    console.log('res', res)
-
-    closeModal()
-    await getList()
-  } finally {
-    // 清空，从而触发刷新
-    wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
-    // wsCache.get(CACHE_KEY.ROLE_ROUTERS) as AppCustomRouteRecordRaw[]
-  }
-}
 /** 获取下拉框[上级菜单]的数据  */
 const menuTree = ref<Tree[]>([]) // 树形结构
 const getTree = async () => {
@@ -632,32 +696,65 @@ const getTree = async () => {
 }
 getTree()
 
-//菜单类型切换
-const typeChange = (type) => {
-  switch (type?.target?.value) {
-    case 1:
-      state.currentMenu = '目录'
-      break
-    case 2:
-      state.currentMenu = '菜单'
-      console.log('', 1111)
-      break
-    default:
-      state.currentMenu = '按钮'
-  }
-}
+//编辑
+const edit = async (record) => {
+  //获取主体详情
+  const res = await editMajorIndividual({ id: record.id })
+  console.log('res', res)
 
-const edit = (record) => {
-  console.log('reEEEE', record)
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
 
   state.modalType = 'edit'
-  //赋值
-  state.formState = record
+  state.modalTitle = '编辑'
+  //赋值 回显
+  state.formState = {
+    id: record.id,
+    code: res.code, //主体编码
+    name: res.name, //主体名称
+    abbreviate: res.abbreviate, //主体简称
+    systemName: res.systemName, //系统名称
+    logoUrl: res.logoUrl, //系统logo
+    contactName: res.contactName, //负责人
+    contactMobile: res.contactMobile, //负责人电话
+    effectiveStartEndTime: [dayjs(res.effectiveStartDate), dayjs(res.expireTime)], //有效期 开始时间
+    // expireTime: , //有效期 结束时间
+    accountCount: res.accountCount, //可用名额
+    bindingDomainName: res.domain, //绑定域名
+    creditCode: res.creditCode, //统一社会信用代码
+    organizationCode: res.organizationCode, //组织机构代码
+    legalRepresentative: res.legalRepresentative, //法定代表人
+    legalMobile: res.legalMobile, //法人联系电话
+    legalIdentityUrl: res.legalIdentityUrl, //法人身份证
+    establishDate: dayjs(res.establishDate), //成立日期
+    detailedAddress: res.address, //公司地址 详细地址
+    businessLicenseUrl: res.businessLicenseUrl //营业执照
+  }
+
+  //永久有效 起始时间为当前时间 结束时间为2099-12-31
+  state.formState.forever = res.expireTime === '2099-12-31'
+
+  //状态0 开启 1关闭
+  state.formState.status = res.status === 0
+
+  //省市区
+  state.formState.companyAddress = [res?.provinceCode, res?.cityCode, res?.countyCode]
+  state.formState.cascadeInfo = [
+    {
+      label: res?.province,
+      value: res?.provinceCode
+    },
+    {
+      label: res?.city,
+      value: res?.cityCode
+    },
+    {
+      label: res?.county,
+      value: res?.countyCode
+    }
+  ]
   openModal()
-  console.log('record)', record)
 }
 
 //页码改变
@@ -665,6 +762,100 @@ const onChange = ({ pageSize, current }) => {
   queryParams.current = current
   queryParams.pageSize = pageSize
   getList()
+}
+
+//处理省市区数据
+// 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
+let needReplaceKey = [
+  ['label', 'fullname'],
+  ['value', 'code']
+]
+state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
+console.log('state.proMunAreaList', state.proMunAreaList)
+
+//新增主体
+const addMajorIndividualFN = async () => {
+  console.log('dayjs', dayjs().format('YYYY-MM-DD'))
+  // 校验表单
+  if (!formRef) return
+  const valid = await formRef.value.validate()
+  console.log('valid', valid)
+  console.log('formState', state.formState)
+  let params = {
+    code: state.formState.code, //主体编码
+    name: state.formState.name, //主体名称
+    abbreviate: state.formState.abbreviate, //主体简称
+    systemName: state.formState.systemName, //系统名称
+    logoUrl: state.formState.logoUrl, //系统logo
+    contactName: state.formState.contactName, //负责人
+    contactMobile: state.formState.contactMobile, //负责人电话
+    effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
+    expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD'), //有效期 结束时间
+    accountCount: state.formState.accountCount, //可用名额
+    domain: state.formState.bindingDomainName, //绑定域名
+    creditCode: state.formState.creditCode, //统一社会信用代码
+    organizationCode: state.formState.organizationCode, //组织机构代码
+    legalRepresentative: state.formState.legalRepresentative, //法定代表人
+    legalMobile: state.formState.legalMobile, //法人联系电话
+    legalIdentityUrl: state.formState.legalIdentityUrl, //法人身份证
+    establishDate: state.formState.establishDate.format('YYYY-MM-DD'), //成立日期
+    companyAddress: [], //公司地址
+    address: state.formState.detailedAddress, //公司地址 详细地址
+    //
+    businessLicenseUrl: state.formState.businessLicenseUrl //营业执照
+  }
+
+  //永久有效 起始时间为当前时间 结束时间为2099-12-31
+  if (state.formState.forever) {
+    params.effectiveStartDate = dayjs().format('YYYY-MM-DD')
+    params.expireTime = '2099-12-31'
+  }
+  //状态0 开启 1关闭
+  if (state.formState.status) {
+    params['status'] = 0
+  } else {
+    params['status'] = 1
+  }
+
+  //省市区
+  if (state.formState?.cascadeInfo[0]) {
+    params['province'] = state.formState.cascadeInfo[0].label
+    params['provinceCode'] = state.formState.cascadeInfo[0].value
+  }
+  if (state.formState?.cascadeInfo[1]) {
+    params['city'] = state.formState.cascadeInfo[1].label
+    params['cityCode'] = state.formState.cascadeInfo[1].value
+  }
+  if (state.formState?.cascadeInfo[2]) {
+    params['county'] = state.formState.cascadeInfo[2].label
+    params['countyCode'] = state.formState.cascadeInfo[2].value
+  }
+
+  console.log('params', params)
+
+  try {
+    let res = []
+    if (state.modalType === 'add') {
+      res = await addMajorIndividual(params)
+      console.log('res====>', res)
+      state.addSuccessId = res
+      message.success('新增成功')
+    } else {
+      params['id'] = state.formState.id
+      res = await updateEditMajorIndividual(params)
+      console.log('编辑res====>', res)
+      message.success('编辑成功')
+    }
+
+    closeModal()
+    await getList()
+  } finally {
+  }
+}
+
+//级联选择器选中的内容 改变
+const cascadeChange = (value, selectedOptions) => {
+  state.formState.cascadeInfo = selectedOptions
 }
 </script>
 
@@ -733,5 +924,14 @@ const onChange = ({ pageSize, current }) => {
 .flex-content {
   display: flex;
   align-items: center;
+}
+
+.operation-content {
+  display: flex;
+}
+
+.margin-right-5 {
+  margin-right: 5px;
+  cursor: pointer;
 }
 </style>
