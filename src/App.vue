@@ -60,4 +60,10 @@ body {
 .#{$prefix-cls}-grey-mode {
   filter: grayscale(100%);
 }
+
+/*antdV message图标居中校正 肯定是被哪里影响到了 - - */
+.ant-message-custom-content {
+  display: flex;
+  align-items: center;
+}
 </style>

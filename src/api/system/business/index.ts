@@ -1,4 +1,5 @@
 import request from '@/config/axios'
+import { TenantPackageVO } from '@/api/system/tenantPackage'
 
 export interface MajorIndividual {
   pageNo: number
@@ -29,6 +30,31 @@ export const editMajorIndividual = (params) => {
 export const updateEditMajorIndividual = (data) => {
   return request.put({ url: '/system/tenant/update', data })
 }
+
+// 更改主体状态
+export const updateEditMajorIndividualStatus = (data) => {
+  return request.put({ url: '/system/tenant/update-status', data })
+}
+
+// 创建功能配置模板
+export const addTenantPackage = (data) => {
+  return request.post({ url: '/system/tenant/create-package', data })
+}
+
+// 获取功能配置模板详情
+export const getTenantPackage = (params) => {
+  return request.get({ url: '/system/tenant/get-package', params })
+}
+
+// 修改功能配置模板
+export const editTenantPackageFn = (data) => {
+  return request.put({ url: '/system/tenant/update-package', data })
+}
+
+// // 查询主体列表
+// export const getMajorIndividualList = (params: MajorIndividual) => {
+//   return request.get({ url: '/system/tenant/page', params })
+// }
 
 // // 查询菜单列表
 // export const getMenuList = (params) => {

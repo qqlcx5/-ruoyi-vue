@@ -219,8 +219,8 @@
           >
             <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
             <div v-else>
-              <loading-outlined v-if="loading" />
-              <plus-outlined v-else />
+              <!--              <loading-outlined v-if="loading" />-->
+              <!--              <plus-outlined v-else />-->
               <div class="ant-upload-text">Upload</div>
             </div>
           </a-upload>
@@ -353,7 +353,7 @@
 import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+// import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'

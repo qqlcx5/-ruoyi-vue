@@ -66,3 +66,31 @@ export const fuzzyQuery = (list, keyWord) => {
   }
   return arr
 }
+
+//获取树结构所有id
+export const getAllIds = (tree) => {
+  let result = []
+  if (!Array.isArray(tree)) {
+    return result
+  }
+  tree.forEach((node) => {
+    // @ts-ignore
+    result.push(node.id)
+    if (Array.isArray(node.children)) {
+      result = result.concat(getAllIds(node.children))
+    }
+  })
+  return result
+}
+
+//过滤树结构 获取新树
+export function filterTree(tree = [], map = [], arr = []) {
+  if (!tree.length) return []
+  for (let item of tree) {
+    if (!map.includes(item.id)) continue
+    let node = { ...item, children: [] }
+    arr.push(node)
+    if (item.children && item.children.length) filterTree(item.children, map, node.children)
+  }
+  return arr
+}

@@ -116,13 +116,16 @@
         <template v-if="column.key === 'statusSwitch'">
           <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
           <!-- <div class="employees-Number">{{ record.status }}</div>-->
-          <a-switch v-model:checked="record.statusSwitch" />
+          <a-switch
+            v-model:checked="record.statusSwitch"
+            @change="(value) => tableStatusChange(value, record)"
+          />
         </template>
         <!--  操作   -->
         <template v-if="column.key === 'operation'">
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-            <div class="text-color margin-right-5">功能配置</div>
+            <div class="text-color margin-right-5" @click="assignPermission(record)">功能配置</div>
           </div>
         </template>
       </template>
@@ -352,6 +355,127 @@
       <a-button @click="closeModal">取消</a-button>
     </template>
   </a-modal>
+
+  <!-- 配置权限 Modal -->
+  <a-modal
+    v-model:visible="state.isShowPermission"
+    title="配置权限"
+    @ok="closePermissionModal"
+    @cancel="closePermissionModal"
+    :width="'665px'"
+    :bodyStyle="{ height: '700px', margin: '0', padding: '0', overflow: 'auto' }"
+  >
+    <div class="per-content">
+      <div class="text-content">请选择该主体的功能配置权限：</div>
+      <!--  左右两侧  -->
+      <div class="select-content">
+        <div class="left-content">
+          <a-tabs
+            v-model:activeKey="state.activeKey"
+            tabBarGutter="40px"
+            :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
+          >
+            <a-tab-pane key="frontDesk" tab="前台">
+              <div class="tab-search-content">
+                <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
+                <a-checkbox v-model:checked="state.isExpandAll" @change="expandAllFN"
+                  >展开/折叠</a-checkbox
+                >
+              </div>
+              <div>
+                <a-tree
+                  v-if="state.isShowTree"
+                  v-model:selectedKeys="state.selectedKeys"
+                  v-model:checkedKeys="state.checkedKeys"
+                  :defaultExpandAll="state.defaultExpandAll"
+                  checkable
+                  :height="533"
+                  :tree-data="state.menuTreeList"
+                  :fieldNames="state.fieldNames"
+                  @check="testCheck"
+                  multiple
+                >
+                  <!--                  <template #title="{ title, key }">-->
+                  <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
+                  <!--                    <template v-else>{{ title }}</template>-->
+                  <!--                  </template>-->
+                </a-tree>
+              </div>
+            </a-tab-pane>
+            <a-tab-pane key="backstage" tab="后台" force-render>Content of Tab Pane 2</a-tab-pane>
+          </a-tabs>
+        </div>
+        <div class="right-content">
+          <div>
+            <a-tree
+              v-if="state.isShowRightTree"
+              defaultExpandAll
+              :height="533"
+              :tree-data="state.selectTree"
+              :fieldNames="state.fieldNames"
+            >
+              <!--                  <template #title="{ title, key }">-->
+              <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
+              <!--                    <template v-else>{{ title }}</template>-->
+              <!--                  </template>-->
+            </a-tree>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <a-button type="primary" html-type="submit" @click="PermissionOk">确定选择</a-button>
+      <a-button @click="closePermissionModal">取消</a-button>
+    </template>
+  </a-modal>
+
+  <!--  短信Modal  -->
+  <a-modal
+    v-model:visible="state.isShowMessage"
+    :title="state.messageTitle"
+    @ok="statusOk"
+    @cancel="statusCancel"
+    width="560px"
+    :bodyStyle="{
+      width: '100%',
+      height: '150px',
+      margin: '0',
+      padding: '30px 0 0 20px',
+      overflow: 'auto'
+    }"
+  >
+    <div class="message-content">
+      <div>
+        <img :src="warningImg" alt="" />
+      </div>
+      <div class="message-text-content">
+        <div class="message-text">{{ state.messageText }} </div>
+        <div>
+          主体负责人绑定的手机号：{{
+            state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
+          }}
+        </div>
+        <div class="message-input-content"
+          >短信验证码:
+          <a-input
+            v-model:value="state.messageCode"
+            placeholder="请输入验证码"
+            style="width: 180px; margin-left: 8px"
+          />
+          <div v-if="state.canSendCode" class="send-code-btn" @click="senCodeFN"> 发送验证码 </div>
+          <div v-else class="countdown-code-btn">{{ state.codeCountdown }}s重新获取</div>
+        </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <a-button type="primary" html-type="submit" @click="statusOk">{{
+        state.messageBtnText
+      }}</a-button>
+      <a-button @click="statusCancel">取消</a-button>
+    </template>
+  </a-modal>
 </template>
 
 <script lang="tsx" setup>
@@ -363,15 +487,21 @@ import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
+  addTenantPackage,
   editMajorIndividual,
+  editTenantPackageFn,
   getMajorIndividualList,
-  updateEditMajorIndividual
+  updateEditMajorIndividual,
+  updateEditMajorIndividualStatus,
+  getTenantPackage
 } from '@/api/system/business'
 const { wsCache } = useCache()
 
 import { provincesMunicipalitiesArea } from './pr'
-import { reconstructedTreeData } from '@/utils/utils'
+import { getAllIds, reconstructedTreeData, filterTree } from '@/utils/utils'
 import dayjs from 'dayjs'
+import warningImg from '@/assets/imgs/system/warning.png'
+import * as TenantPackageApi from '@/api/system/tenantPackage'
 // console.log('provincesMunicipalitiesArea', provincesMunicipalitiesArea)
 
 interface FormState {
@@ -462,6 +592,13 @@ const layout = {
 }
 
 const state = reactive({
+  record: {}, //表格状态修改时存的整条数据
+  messageContactMobile: '18888888888', //短信验证手机号
+  messageText: '为了保护您的主体公司业务数据安全，请通过安全验证：',
+  canSendCode: true, //能否发送验证码
+  codeCountdown: 60, //短信发送倒计时 s
+  messageCode: '', //短信验证码
+  messageBtnText: '确认开启', //消息modal 确认button 文字内容
   total: 0, //总条数
   statusOptions: [
     { value: 0, label: '正常' },
@@ -472,7 +609,10 @@ const state = reactive({
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
-  isShow: false,
+  isShow: false, //新增编辑modal
+  isShowPermission: false, //功能配置modal
+  isShowMessage: false, //短信modal
+  messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
   currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
@@ -508,8 +648,35 @@ const state = reactive({
 
     businessLicenseUrl: '' //营业执照
   }, //新增表单
-  addSuccessId: '' //创建主体成功ID 主要是用于创建主体后配置权限
+  addSuccessId: '', //创建主体成功ID 主要是用于创建主体后配置权限
+  activeKey: 'frontDesk', // tabsKey frontDesk前台 backstage后台
+  selectAll: false, //权限配置 全选
+  isExpandAll: false, //权限配置 展开折叠
+  menuTreeList: [], //权限配置 前台列表
+  fieldNames: { children: 'children', title: 'name', key: 'id' }, //权限配置 前台列表 tree的对应字段替换
+  selectedKeys: [], //权限配置 前台列表 设置选中的树节点
+  checkedKeys: [], //权限配置 前台列表 选中复选框的树节点
+  parentCheckedKeys: [], //权限配置 前台列表 所有一级菜单ID 用于 全选全不选
+  defaultExpandAll: false, //权限配置 前台列表 默认展开折叠
+  isShowTree: false, //权限配置 前台列表 v-if 主要是配合用来 展开折叠的
+  idArr: [], //权限配置 创建所需的 id
+  selectTree: [], //权限配置 选中的树 数据 右侧
+  isShowRightTree: false, //权限配置 选中的树 是否显示
+  permissionRecord: {}, //权限配置 操作 时 存的整条数据
+  permissType: 'add', //权限配置 新增 修改
+  editPermissionID: undefined //编辑功能配置时的id
 })
+
+//存放功能配置 选中的所有keys(包括父节点id)
+const checkedKeysBack = ref([])
+
+//获取子节点的 父节点id
+const testCheck = (checkedKeys, e) => {
+  console.log('checkedKeys', checkedKeys)
+  console.log('e=====>', e)
+  //存放功能配置 选中的所有keys(包括父节点id)
+  checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
+}
 
 const columns = [
   {
@@ -601,6 +768,18 @@ const getList = async () => {
   } finally {
     state.loading = false
   }
+
+  //获取菜单列表
+  state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  console.log('state.menuTreeList', state.menuTreeList)
+  state.parentCheckedKeys = []
+  state.menuTreeList.map((item) => {
+    state.parentCheckedKeys.push(item.id)
+  })
+  // state.defaultExpandAll = true
+  await nextTick(() => {
+    state.isShowTree = true
+  })
 }
 
 /** 搜索按钮操作 */
@@ -857,6 +1036,197 @@ const addMajorIndividualFN = async () => {
 const cascadeChange = (value, selectedOptions) => {
   state.formState.cascadeInfo = selectedOptions
 }
+
+//关闭功能配置 modal
+const closePermissionModal = () => {
+  state.isShowPermission = false
+  state.permissType = 'add'
+}
+
+//开启功能配置 modal
+const openPermissionModal = async () => {
+  state.isShowPermission = true
+  //获取菜单列表
+  state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  console.log('state.menuTreeList', state.menuTreeList)
+}
+
+//监听  左侧选中数据  更新 右侧展示数据
+watch(
+  () => [state.checkedKeys, checkedKeysBack.value],
+  () => {
+    console.log('state.checkedKeys====', state.checkedKeys)
+    console.log('checkedKeysBack.value', checkedKeysBack.value)
+    state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
+    state.selectTree = filterTree(state.menuTreeList, state.idArr)
+    state.isShowRightTree = false
+    //右侧展开显示 左侧选中的数据
+    nextTick(() => {
+      state.isShowRightTree = true
+    })
+    console.log('temp', state.selectTree)
+  }
+)
+
+//功能配置 Modal 确认
+const PermissionOk = async () => {
+  console.log('state.selectedKeys', state.selectedKeys)
+  console.log('state.checkedKeys', state.checkedKeys)
+  console.log('checkedKeysBack.value', checkedKeysBack.value)
+  //去重 + 拼接全选id +拼接 部分选择时父子id
+  // const idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
+  // const temp = filterTree(state.menuTreeList, idArr)
+  // console.log('temp', temp)
+  console.log(' state.idArr', state.idArr)
+
+  const params = {
+    menuIds: state.idArr,
+    //TODO:主体编码
+    tenantId: state.addSuccessId || 137,
+    status: 0
+  }
+  if (state.permissType === 'add') {
+    await addTenantPackage(params)
+    message.success('新增成功')
+  } else {
+    params['id'] = state.editPermissionID
+    await editTenantPackageFn(params)
+    message.success('编辑成功')
+  }
+
+  closePermissionModal()
+}
+
+const assignPermission = async (record) => {
+  state.permissionRecord = record
+  state.permissType = 'edit'
+  console.log('record', record)
+  const res = await getTenantPackage({ id: record.packageId })
+  const { menuIds = [], id } = res
+  state.editPermissionID = id
+  state.checkedKeys = menuIds
+  state.selectTree = filterTree(state.menuTreeList, menuIds)
+  //右侧展开显示 左侧选中的数据
+  state.isShowRightTree = false
+  nextTick(() => {
+    state.isShowRightTree = true
+  })
+  console.log('res===', res)
+  openPermissionModal()
+}
+
+//表格状态开关
+const tableStatusChange = (value, record) => {
+  if (value) {
+    state.messageBtnText = '确认开启'
+    state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
+  } else {
+    state.messageBtnText = '确认关闭'
+    state.messageText =
+      '因您的主体公司还存在业务数据，如关闭则严重影响到业务，为了保护您的主体公司业务数据安全，请通过安全验证：'
+  }
+  state.isShowMessage = true
+  state.messageContactMobile = record.contactMobile
+  state.record = record
+  console.log('value', value)
+  console.log('record', record)
+}
+
+//发送短信验证码
+const senCodeFN = () => {
+  //TODO:发送短信请求
+  if (true) {
+    message.success(
+      `验证码已发送至${state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')}`
+    )
+  }
+  state.canSendCode = false
+  let codeIn = setInterval(() => {
+    state.codeCountdown -= 1
+    if (state.codeCountdown === 0) {
+      state.canSendCode = true
+      state.codeCountdown = 60
+      clearInterval(codeIn)
+    }
+  }, 1000)
+}
+
+//短信 modal 取消
+const statusCancel = () => {
+  state.isShowMessage = false
+  state.record = {}
+  state.messageContactMobile = '18888888888' //短信验证手机号
+  state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
+  state.canSendCode = true //能否发送验证码
+  state.codeCountdown = 60 //短信发送倒计时 s
+  state.messageCode = '' //短信验证码
+  //直接这里补一次请求吧 - -
+  getList()
+}
+//短信 modal 确认
+const statusOk = async () => {
+  if (!state.messageCode) {
+    message.warning('请输入短信验证码')
+    return
+  }
+
+  const params = {
+    id: state.record.id,
+    code: state.messageCode,
+    status: state.record.statusSwitch === true ? 0 : 1
+  }
+  console.log('params', params)
+
+  try {
+    await updateEditMajorIndividualStatus(params)
+    message.success('修改状态成功')
+    statusCancel()
+  } finally {
+  }
+}
+
+//功能配置 前台 全选全不选
+const selectAll = ({ target }) => {
+  if (target.checked) {
+    //全选
+    // state.checkedKeys = state.parentCheckedKeys
+    state.checkedKeys = getAllIds(state.menuTreeList)
+  } else {
+    //全不选
+    state.checkedKeys = []
+    checkedKeysBack.value = []
+  }
+}
+//功能配置 前台 展开折叠
+const expandAllFN = ({ target }) => {
+  if (target.checked) {
+    state.isShowTree = false
+    state.defaultExpandAll = true
+    nextTick(() => {
+      state.isShowTree = true
+    })
+  } else {
+    state.isShowTree = false
+    state.defaultExpandAll = false
+    nextTick(() => {
+      state.isShowTree = true
+    })
+  }
+}
+
+// 定义childArr存放所有子节点
+const childArr = ref([])
+// 遍历获取所有子节点
+function getChildArr(data) {
+  data.forEach((res) => {
+    if (res.children && res.children.length > 0) {
+      getChildArr(res.children)
+    } else {
+      childArr.value.push(res.id)
+    }
+  })
+  return childArr.value
+}
 </script>
 
 <style lang="scss" scoped>
@@ -933,5 +1303,96 @@ const cascadeChange = (value, selectedOptions) => {
 .margin-right-5 {
   margin-right: 5px;
   cursor: pointer;
+}
+
+//功能配置弹窗
+.per-content {
+  height: 680px;
+  padding: 20px 20px 23px 20px;
+}
+
+.text-content {
+  height: 20px;
+  color: rgba(51, 51, 51, 1);
+  font-size: 14px;
+  text-align: left;
+  font-family: PingFangSC-Regular;
+  display: flex;
+  flex-direction: column;
+}
+
+.select-content {
+  width: 625px;
+  display: flex;
+  justify-content: space-between;
+}
+//配置权限左侧
+.left-content {
+  width: 290px;
+  height: 620px;
+  border: 1px solid rgb(234, 235, 239);
+  //background: skyblue;
+}
+
+//配置权限右侧
+.right-content {
+  width: 290px;
+  height: 620px;
+  //background: red;
+}
+
+//短信 modal
+.message-content {
+  display: flex;
+}
+.message-text-content {
+  margin-left: 15px;
+}
+.message-text {
+  margin-right: 40px;
+  color: rgba(51, 51, 51, 1);
+  font-size: 16px;
+  text-align: left;
+  font-family: PingFangSC-Medium;
+}
+.message-input-content {
+  padding-left: 76px;
+  display: flex;
+  align-items: center;
+}
+//发送验证码 btn
+.send-code-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 94px;
+  height: 32px;
+  margin-left: 19px;
+  border-radius: 4px;
+  color: rgb(0, 129, 255);
+  background-color: rgba(237, 244, 251);
+  cursor: pointer;
+}
+//重新获取验证码
+.countdown-code-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 106px;
+  height: 32px;
+  margin-left: 19px;
+  border-radius: 4px;
+  color: rgba(0, 129, 255, 0.61);
+  background-color: rgb(237, 244, 251);
+}
+//权限配置前台底下搜索
+.tab-search-content {
+  height: 40px;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  //background: skyblue;
+  border-bottom: 1px solid rgb(234, 235, 239);
 }
 </style>
