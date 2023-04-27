@@ -110,7 +110,7 @@
         </template>
         <!--  有效期   -->
         <template v-if="column.key === 'validityPeriod'">
-          <div class="text-color">{{ record.effectiveStartDate }}—{{ record.expireTime }}</div>
+          <div>{{ record.effectiveStartDate }}—{{ record.expireTime }}</div>
         </template>
         <!--  状态   -->
         <template v-if="column.key === 'statusSwitch'">
@@ -126,6 +126,7 @@
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
             <div class="text-color margin-right-5" @click="assignPermission(record)">功能配置</div>
+            <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
           </div>
         </template>
       </template>
@@ -194,8 +195,8 @@
           >
             <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
             <div v-else>
-              <loading-outlined v-if="loading" />
-              <plus-outlined v-else />
+              <!--              <loading-outlined v-if="loading" />-->
+              <!--              <plus-outlined v-else />-->
               <div class="ant-upload-text">Upload</div>
             </div>
           </a-upload>
@@ -293,8 +294,8 @@
           >
             <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
             <div v-else>
-              <loading-outlined v-if="loading" />
-              <plus-outlined v-else />
+              <!--              <loading-outlined v-if="loading" />-->
+              <!--              <plus-outlined v-else />-->
               <div class="ant-upload-text">Upload</div>
             </div>
           </a-upload>
@@ -340,8 +341,8 @@
           >
             <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
             <div v-else>
-              <loading-outlined v-if="loading" />
-              <plus-outlined v-else />
+              <!--              <loading-outlined v-if="loading" />-->
+              <!--              <plus-outlined v-else />-->
               <div class="ant-upload-text">Upload</div>
             </div>
           </a-upload>
@@ -476,24 +477,136 @@
       <a-button @click="statusCancel">取消</a-button>
     </template>
   </a-modal>
+
+  <!--  详情  -->
+  <a-modal
+    v-model:visible="state.isShowDetails"
+    title="详情"
+    wrapClassName="details-modal"
+    width="763px"
+    @ok="setModal1Visible(false)"
+  >
+    <div class="details-edit" @click="edit(state.record, true)"
+      ><img :src="editImg" alt="" class="edit-Img" />修改</div
+    >
+    <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`">
+      <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
+      <div class="info-content" v-if="item.baseTitle !== '配置权限'">
+        <div
+          :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
+          v-for="(childItem, childIndex) in item.infoArr"
+          :key="`childItem${childIndex}`"
+          ><span>{{ childItem.textSpan }}</span>
+          <img v-if="childItem?.imgUrl" :src="childItem?.imgUrl" alt="" />
+          <template v-else>
+            {{ childItem.text }}
+          </template>
+
+          <div v-if="childItem?.isSuperAdmin" class="send-code-btn" @click="resetPassword">
+            重置密码
+          </div>
+        </div>
+      </div>
+      <div class="details-modal-content select-content" v-else>
+        <div class="details-modal-left">
+          <div class="details-heard">前台</div>
+          <a-tree
+            defaultExpandAll
+            :height="280"
+            :tree-data="item.treeArr"
+            :fieldNames="state.fieldNames"
+          >
+          </a-tree>
+        </div>
+        <div class="details-modal-left">
+          <div class="details-heard">后台</div>
+          <!--          <a-tree-->
+          <!--            defaultExpandAll-->
+          <!--            :height="280"-->
+          <!--            :tree-data="item.treeArr"-->
+          <!--            :fieldNames="state.fieldNames"-->
+          <!--          >-->
+          <!--          </a-tree>-->
+        </div>
+      </div>
+    </div>
+    <!--    <div class="title-content"><div class="blue-line"></div>基本信息</div>-->
+    <!--    <div class="info-content">-->
+    <!--      <div class="text-style"><span>主体名称：</span>福建ABC集团管理</div>-->
+    <!--      <div class="text-style"><span>主体编码：</span>fujian</div>-->
+    <!--      <div class="text-style"><span>主体简称：</span>福建ABC</div>-->
+    <!--      <div class="text-style"><span>系统名称：</span>福建ABC集团管理</div>-->
+    <!--    </div>-->
+  </a-modal>
+
+  <!--  重置密码 Modal  -->
+  <a-modal
+    v-model:visible="state.isShowResetPassWord"
+    :title="state.resetPasswordTitle"
+    :closable="state.closable"
+    :footer="null"
+    wrapClassName="reset-PassWord"
+    :width="`${state.resetModalStyle.width}px`"
+    :bodyStyle="{
+      width: `${state.resetModalStyle.width}px`,
+      height: `${state.resetModalStyle.height}px`,
+      margin: '0',
+      padding: '0',
+      overflow: 'auto'
+    }"
+  >
+    <div v-if="!state.isResetPasswordSuccessMark" class="reset-PassWord-tip">
+      重置密码后不可恢复，请谨慎操作。
+    </div>
+    <div v-else>
+      <div class="reset-Password-success">
+        <img :src="successImg" alt="" class="success-img" />
+        重置密码成功！
+      </div>
+      <div class="user-info1">
+        <span>超管用户名：</span>
+        <span>admin</span>
+      </div>
+      <div class="user-info2">
+        <span>新密码：</span>
+        <span>5464313</span>
+        <div class="copy-button" @click="copyText">复制</div>
+      </div>
+      <div class="user-info3">
+        重置密码的信息已成功发送到负责人手机号{{
+          state.resetPasswordSuccessInfo.mobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
+        }}中，请注意查收!
+      </div>
+    </div>
+
+    <!--  footer  -->
+    <div v-if="!state.isResetPasswordSuccessMark" class="reset-PassWord-btn-content">
+      <a-button type="primary" html-type="submit" @click="resetPasswordFN">确认</a-button>
+      <a-button @click="closePasswordModal">取消</a-button>
+    </div>
+    <div class="close-btn-content" v-else>
+      <a-button @click="closePasswordModal">关闭</a-button>
+    </div>
+  </a-modal>
 </template>
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+// import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
   addTenantPackage,
-  editMajorIndividual,
-  editTenantPackageFn,
+  getMajorIndividualDetails,
+  editTenantPackage,
   getMajorIndividualList,
   updateEditMajorIndividual,
   updateEditMajorIndividualStatus,
-  getTenantPackage
+  getTenantPackage,
+  putResetPassWord
 } from '@/api/system/business'
 const { wsCache } = useCache()
 
@@ -501,6 +614,10 @@ import { provincesMunicipalitiesArea } from './pr'
 import { getAllIds, reconstructedTreeData, filterTree } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
+import editImg from '@/assets/imgs/system/editImg.png'
+import successImg from '@/assets/imgs/system/successImg.png'
+import useClipboard from 'vue-clipboard3'
+const { toClipboard } = useClipboard()
 import * as TenantPackageApi from '@/api/system/tenantPackage'
 // console.log('provincesMunicipalitiesArea', provincesMunicipalitiesArea)
 
@@ -592,7 +709,7 @@ const layout = {
 }
 
 const state = reactive({
-  record: {}, //表格状态修改时存的整条数据
+  record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
   messageText: '为了保护您的主体公司业务数据安全，请通过安全验证：',
   canSendCode: true, //能否发送验证码
@@ -648,7 +765,7 @@ const state = reactive({
 
     businessLicenseUrl: '' //营业执照
   }, //新增表单
-  addSuccessId: '', //创建主体成功ID 主要是用于创建主体后配置权限
+  addSuccessId: undefined, //创建主体成功ID 主要是用于创建主体后配置权限
   activeKey: 'frontDesk', // tabsKey frontDesk前台 backstage后台
   selectAll: false, //权限配置 全选
   isExpandAll: false, //权限配置 展开折叠
@@ -664,7 +781,18 @@ const state = reactive({
   isShowRightTree: false, //权限配置 选中的树 是否显示
   permissionRecord: {}, //权限配置 操作 时 存的整条数据
   permissType: 'add', //权限配置 新增 修改
-  editPermissionID: undefined //编辑功能配置时的id
+  editPermissionID: undefined, //编辑功能配置时的id
+  isShowDetails: false, //详细modal
+  detailsInfo: [], //详情内容
+  isShowResetPassWord: false, //重置密码提示modal
+  resetPasswordTitle: '', //重置密码 modal title
+  resetPasswordSuccessInfo: {}, //重置密码成功后
+  closable: false, //重置密码 modal 右上角×
+  isResetPasswordSuccessMark: false,
+  resetModalStyle: {
+    width: 488,
+    height: 270
+  } //重置密码 modal样式
 })
 
 //存放功能配置 选中的所有keys(包括父节点id)
@@ -732,6 +860,7 @@ const columns = [
 
   {
     title: '操作',
+    width: 200,
     dataIndex: 'operation',
     key: 'operation'
   }
@@ -740,7 +869,7 @@ const columns = [
 /** 查询列表 */
 const getList = async () => {
   state.loading = true
-  console.log('queryParams', queryParams)
+  // console.log('queryParams', queryParams)
   const params = {
     pageNo: queryParams.current,
     pageSize: queryParams.pageSize,
@@ -753,25 +882,34 @@ const getList = async () => {
     params['localDates'] = [
       queryParams.startEndTime[0]?.format('YYYY-MM-DD'),
       queryParams.startEndTime[1]?.format('YYYY-MM-DD')
+      // queryParams.startEndTime[0]?.format('YYYY/MM/DD'),
+      // queryParams.startEndTime[1]?.format('YYYY/MM/DD')
     ]
   }
 
-  console.log('params', params)
+  // console.log('params', params)
   try {
     const res = await getMajorIndividualList(params)
-    state.tableDataList = res.list
+    state.tableDataList = res
     state.tableDataList.map((item) => {
       item.statusSwitch = item.status === 0
     })
     state.total = res.total
-    console.log('res====>', res)
+    // console.log('res====>', res)
   } finally {
     state.loading = false
   }
 
   //获取菜单列表
-  state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  console.log('state.menuTreeList', state.menuTreeList)
+  const menuList = await MenuApi.getSimpleMenusList()
+  //不要展示按钮 默认按钮全选 后端处理
+  const tempArr = menuList.filter((item) => item.type !== 3)
+  state.menuTreeList = handleTree(tempArr)
+  console.log('menuList', menuList)
+  console.log('tempArr======>', tempArr)
+
+  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  // console.log('state.menuTreeList', state.menuTreeList)
   state.parentCheckedKeys = []
   state.menuTreeList.map((item) => {
     state.parentCheckedKeys.push(item.id)
@@ -876,9 +1014,13 @@ const getTree = async () => {
 getTree()
 
 //编辑
-const edit = async (record) => {
+const edit = async (record, isCloseDetails = false) => {
+  if (isCloseDetails) {
+    //关闭详情moal
+    state.isShowDetails = false
+  }
   //获取主体详情
-  const res = await editMajorIndividual({ id: record.id })
+  const res = await getMajorIndividualDetails({ id: record.id })
   console.log('res', res)
 
   //菜单状态 0开启 1关闭
@@ -906,9 +1048,11 @@ const edit = async (record) => {
     legalRepresentative: res.legalRepresentative, //法定代表人
     legalMobile: res.legalMobile, //法人联系电话
     legalIdentityUrl: res.legalIdentityUrl, //法人身份证
-    establishDate: dayjs(res.establishDate), //成立日期
     detailedAddress: res.address, //公司地址 详细地址
     businessLicenseUrl: res.businessLicenseUrl //营业执照
+  }
+  if (res.establishDate) {
+    state.formState['establishDate'] = dayjs(res.establishDate) //成立日期
   }
 
   //永久有效 起始时间为当前时间 结束时间为2099-12-31
@@ -918,21 +1062,30 @@ const edit = async (record) => {
   state.formState.status = res.status === 0
 
   //省市区
-  state.formState.companyAddress = [res?.provinceCode, res?.cityCode, res?.countyCode]
-  state.formState.cascadeInfo = [
-    {
+  state.formState.companyAddress = []
+  state.formState.cascadeInfo = []
+  if (res?.provinceCode) {
+    state.formState.companyAddress.push(res?.provinceCode)
+    state.formState.cascadeInfo.push({
       label: res?.province,
       value: res?.provinceCode
-    },
-    {
+    })
+  }
+  if (res?.cityCode) {
+    state.formState.companyAddress.push(res?.cityCode)
+    state.formState.cascadeInfo.push({
       label: res?.city,
       value: res?.cityCode
-    },
-    {
+    })
+  }
+  if (res?.countyCode) {
+    state.formState.companyAddress.push(res?.countyCode)
+    state.formState.cascadeInfo.push({
       label: res?.county,
       value: res?.countyCode
-    }
-  ]
+    })
+  }
+
   openModal()
 }
 
@@ -954,7 +1107,7 @@ console.log('state.proMunAreaList', state.proMunAreaList)
 
 //新增主体
 const addMajorIndividualFN = async () => {
-  console.log('dayjs', dayjs().format('YYYY-MM-DD'))
+  // console.log('dayjs', dayjs().format('YYYY/MM/DD'))
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
@@ -970,6 +1123,8 @@ const addMajorIndividualFN = async () => {
     contactMobile: state.formState.contactMobile, //负责人电话
     effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
     expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD'), //有效期 结束时间
+    // effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY/MM/DD'), //有效期 开始时间
+    // expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY/MM/DD'), //有效期 结束时间
     accountCount: state.formState.accountCount, //可用名额
     domain: state.formState.bindingDomainName, //绑定域名
     creditCode: state.formState.creditCode, //统一社会信用代码
@@ -977,8 +1132,6 @@ const addMajorIndividualFN = async () => {
     legalRepresentative: state.formState.legalRepresentative, //法定代表人
     legalMobile: state.formState.legalMobile, //法人联系电话
     legalIdentityUrl: state.formState.legalIdentityUrl, //法人身份证
-    establishDate: state.formState.establishDate.format('YYYY-MM-DD'), //成立日期
-    companyAddress: [], //公司地址
     address: state.formState.detailedAddress, //公司地址 详细地址
     //
     businessLicenseUrl: state.formState.businessLicenseUrl //营业执照
@@ -987,6 +1140,7 @@ const addMajorIndividualFN = async () => {
   //永久有效 起始时间为当前时间 结束时间为2099-12-31
   if (state.formState.forever) {
     params.effectiveStartDate = dayjs().format('YYYY-MM-DD')
+    // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
     params.expireTime = '2099-12-31'
   }
   //状态0 开启 1关闭
@@ -1010,6 +1164,12 @@ const addMajorIndividualFN = async () => {
     params['countyCode'] = state.formState.cascadeInfo[2].value
   }
 
+  console.log('state.formState.establishDate', state.formState.establishDate)
+  if (state.formState.establishDate) {
+    params['establishDate'] = state.formState.establishDate?.format('YYYY-MM-DD') //成立日期
+    // establishDate: state.formState.establishDate.format('YYYY/MM/DD'), //成立日期
+  }
+
   console.log('params', params)
 
   try {
@@ -1019,6 +1179,8 @@ const addMajorIndividualFN = async () => {
       console.log('res====>', res)
       state.addSuccessId = res
       message.success('新增成功')
+      //配置权限
+      openPermissionModal()
     } else {
       params['id'] = state.formState.id
       res = await updateEditMajorIndividual(params)
@@ -1041,14 +1203,22 @@ const cascadeChange = (value, selectedOptions) => {
 const closePermissionModal = () => {
   state.isShowPermission = false
   state.permissType = 'add'
+  state.addSuccessId = undefined
 }
 
 //开启功能配置 modal
 const openPermissionModal = async () => {
   state.isShowPermission = true
+  // //获取菜单列表
+  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  // console.log('state.menuTreeList', state.menuTreeList)
   //获取菜单列表
-  state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  console.log('state.menuTreeList', state.menuTreeList)
+  const menuList = await MenuApi.getSimpleMenusList()
+  //不要展示按钮 默认按钮全选 后端处理
+  const tempArr = menuList.filter((item) => item.type !== 3)
+  state.menuTreeList = handleTree(tempArr)
+  console.log('menuList', menuList)
+  console.log('tempArr======>', tempArr)
 }
 
 //监听  左侧选中数据  更新 右侧展示数据
@@ -1081,8 +1251,7 @@ const PermissionOk = async () => {
 
   const params = {
     menuIds: state.idArr,
-    //TODO:主体编码
-    tenantId: state.addSuccessId || 137,
+    tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
     status: 0
   }
   if (state.permissType === 'add') {
@@ -1090,10 +1259,10 @@ const PermissionOk = async () => {
     message.success('新增成功')
   } else {
     params['id'] = state.editPermissionID
-    await editTenantPackageFn(params)
+    await editTenantPackage(params)
     message.success('编辑成功')
   }
-
+  await getList()
   closePermissionModal()
 }
 
@@ -1112,7 +1281,7 @@ const assignPermission = async (record) => {
     state.isShowRightTree = true
   })
   console.log('res===', res)
-  openPermissionModal()
+  await openPermissionModal()
 }
 
 //表格状态开关
@@ -1226,6 +1395,176 @@ function getChildArr(data) {
     }
   })
   return childArr.value
+}
+
+//详情(打开)
+const detailsInfo = async (record) => {
+  state.isShowDetails = true
+  // state.record = record
+  console.log('record', record)
+  //获取主体详情
+  const res = await getMajorIndividualDetails({ id: record.id })
+  ////不要展示按钮 默认按钮全选 后端处理
+  const tempArr = res.menus.filter((item) => item.type !== 3)
+
+  state.record = res
+
+  let companyAddress = ''
+  if (res?.province) {
+    companyAddress = res?.province + res?.city + res?.county + res?.address
+  }
+  console.log('companyAddress', companyAddress)
+
+  state.detailsInfo = [
+    {
+      baseTitle: '基本信息',
+      infoArr: [
+        {
+          textSpan: '主体名称：',
+          text: res.name
+        },
+        {
+          textSpan: '主体编码：',
+          text: res.code
+        },
+        {
+          textSpan: '主体简称：',
+          text: res.abbreviate
+        },
+        {
+          textSpan: '系统名称：',
+          text: res.systemName
+        },
+        {
+          textSpan: '系统logo：',
+          text: '暂无上传图片',
+          imgUrl: res.logoUrl
+        },
+        {
+          textSpan: '负责人：',
+          text: res.contactName
+        },
+        {
+          textSpan: '负责人电话：',
+          text: res.contactMobile
+        },
+        {
+          textSpan: '有效期：',
+          text:
+            res.expireTime === '2099-12-31'
+              ? '永久有效'
+              : `${res.effectiveStartDate}-${res.expireTime}`
+        },
+        {
+          textSpan: '绑定域名：',
+          text: res.domain
+        },
+        {
+          textSpan: '状态：',
+          text: res.status === 0 ? '开启' : '关闭'
+        }
+      ]
+    },
+    {
+      baseTitle: '账户信息',
+      infoArr: [
+        {
+          textSpan: '超级管理员：',
+          text: res.username,
+          isSuperAdmin: true
+        }
+      ]
+    },
+    {
+      baseTitle: '详细信息',
+      infoArr: [
+        {
+          textSpan: '统一社会信用代：：',
+          text: res.creditCode
+        },
+        {
+          textSpan: '组织机构代码：',
+          text: res.organizationCode
+        },
+        {
+          textSpan: '法定代表人：',
+          text: res.legalRepresentative
+        },
+        {
+          textSpan: '法人联系电话：',
+          text: res.legalMobile
+        },
+        {
+          textSpan: '法人身份证：',
+          text: '暂无上传图片',
+          imgUrl: res.legalIdentityUrl
+        },
+        {
+          textSpan: '成立日期：',
+          text: res.establishDate
+        },
+        {
+          textSpan: '公司地址：',
+          text: companyAddress
+        },
+        {
+          textSpan: '营业执照：',
+          text: '暂无上传图片',
+          imgUrl: res.businessLicenseUrl
+        }
+      ]
+    },
+    {
+      baseTitle: '配置权限',
+      treeArr: handleTree(tempArr)
+    }
+  ]
+
+  console.log('state.detailsInfo', state.detailsInfo)
+}
+
+//关闭 重置密码modal
+const closePasswordModal = () => {
+  state.isShowResetPassWord = false
+  state.isResetPasswordSuccessMark = false
+  state.resetPasswordTitle = '提示'
+  state.resetModalStyle = {
+    width: 488,
+    height: 270
+  }
+}
+
+//重置密码
+const resetPassword = () => {
+  state.isShowResetPassWord = true
+  state.resetPasswordTitle = '提示'
+  state.closable = true
+  state.resetModalStyle = {
+    width: 424,
+    height: 138
+  }
+}
+//重置密码 请求
+const resetPasswordFN = async () => {
+  state.resetPasswordSuccessInfo = await putResetPassWord({ id: state.record.contactUserId })
+  console.log('state.resetPasswordSuccessInfo ', state.resetPasswordSuccessInfo)
+  state.resetPasswordTitle = ''
+  state.closable = false
+  state.resetModalStyle = {
+    width: 488,
+    height: 270
+  }
+  state.isResetPasswordSuccessMark = true
+}
+
+//复制密码
+const copyText = async () => {
+  try {
+    await toClipboard(state.resetPasswordSuccessInfo.password) //实现复制
+    message.success('复制成功')
+  } catch (e) {
+    message.error('复制失败，您使用的浏览器可能不支持复制功能')
+  }
 }
 </script>
 
@@ -1394,5 +1733,166 @@ function getChildArr(data) {
   align-items: center;
   //background: skyblue;
   border-bottom: 1px solid rgb(234, 235, 239);
+}
+
+//详情
+.title-content {
+  display: flex;
+  align-items: center;
+  color: rgba(51, 51, 51, 1);
+  font-size: 16px;
+  font-weight: bold;
+  font-family: PingFangSC-Medium;
+}
+//详情修改文字
+.details-edit {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  color: rgba(0, 129, 255, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+  cursor: pointer;
+  .edit-Img {
+    width: 8.65px;
+    height: 8.81px;
+    margin-right: 8px;
+  }
+}
+//蓝色竖线
+.blue-line {
+  width: 3px;
+  height: 14px;
+  margin: 3px;
+  background-color: rgba(0, 129, 255, 1);
+}
+.info-content {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.text-style {
+  span {
+    font-weight: bold;
+    font-family: PingFangSC-Medium;
+  }
+  width: 50%;
+  display: block;
+  margin-top: 15px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  padding-left: 26px;
+  font-family: PingFangSC-Regular;
+}
+.super-admin-style {
+  display: flex;
+  align-items: center;
+}
+
+img {
+  width: 30px;
+  height: 30px;
+}
+
+.details-modal-content {
+  padding: 15px 0 0 26px;
+}
+
+.details-heard {
+  width: 100%;
+  height: 40px;
+  padding-left: 18px;
+  display: flex;
+  align-items: center;
+  background-color: rgba(246, 246, 246, 1);
+}
+
+//详情 权限配置 左侧 前台
+.details-modal-left {
+  width: 290px;
+  height: 320px;
+  border: 1px solid rgb(234, 235, 239);
+  //background: slateblue;
+}
+
+//重置密码成功
+.reset-Password-success {
+  padding: 43px 0 0 165px;
+  display: flex;
+  align-items: center;
+}
+.success-img {
+  margin-right: 8px;
+  width: 24px;
+  height: 24px;
+}
+.user-info1 {
+  padding: 28px 0 0 139px;
+}
+.user-info2 {
+  padding: 9px 0 0 167px;
+  display: flex;
+}
+.copy-button {
+  width: 52px;
+  height: 24px;
+  margin-left: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 1);
+  border-radius: 4px;
+  background-color: rgba(0, 129, 255, 1);
+}
+.user-info3 {
+  margin: 19px 0 0 50px;
+  //width: 388px;
+  height: 17px;
+  color: rgba(231, 162, 60, 1);
+  font-size: 12px;
+  text-align: left;
+  font-family: PingFangSC-Regular;
+}
+.close-btn-content {
+  margin-top: 37px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.reset-PassWord-tip {
+  margin-left: 20px;
+}
+
+.reset-PassWord-btn-content {
+  margin: 56px 0 0 249px;
+}
+</style>
+
+<style lang="scss">
+//修改 详细 modal位置
+.details-modal {
+  .ant-modal {
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: initial;
+    right: 0;
+    height: 1080px;
+  }
+  .ant-modal-body {
+    height: calc(1080px - 55px - 53px);
+  }
+}
+//重置密码 modal
+.reset-PassWord {
+  .ant-modal-header,
+  .ant-modal-footer {
+    border: 0;
+  }
 }
 </style>

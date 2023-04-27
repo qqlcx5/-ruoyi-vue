@@ -22,7 +22,7 @@ export const addMajorIndividual = (data) => {
 }
 
 // 查询主体详情
-export const editMajorIndividual = (params) => {
+export const getMajorIndividualDetails = (params) => {
   return request.get({ url: '/system/tenant/get', params })
 }
 
@@ -36,7 +36,12 @@ export const updateEditMajorIndividualStatus = (data) => {
   return request.put({ url: '/system/tenant/update-status', data })
 }
 
-// 创建功能配置模板
+// 查询菜单（精简）列表(功能配置模板)
+export const getSimpleTenantMenusList = () => {
+  return request.get({ url: '/system/tenant/get-package' })
+}
+
+// 新增功能配置模板
 export const addTenantPackage = (data) => {
   return request.post({ url: '/system/tenant/create-package', data })
 }
@@ -47,8 +52,13 @@ export const getTenantPackage = (params) => {
 }
 
 // 修改功能配置模板
-export const editTenantPackageFn = (data) => {
+export const editTenantPackage = (data) => {
   return request.put({ url: '/system/tenant/update-package', data })
+}
+
+// 重置密码
+export const putResetPassWord = (data) => {
+  return request.put({ url: '/system/tenant/update-password', data })
 }
 
 // // 查询主体列表
