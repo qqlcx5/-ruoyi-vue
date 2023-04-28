@@ -16,6 +16,11 @@ export const getMajorIndividualList = (params: MajorIndividual) => {
   return request.get({ url: '/system/tenant/page', params })
 }
 
+// 获取上级主体列表
+export const getSimpleTenantList = () => {
+  return request.get({ url: '/system/tenant/list-all-simple' })
+}
+
 // 新增主体
 export const addMajorIndividual = (data) => {
   return request.post({ url: '/system/tenant/create', data })

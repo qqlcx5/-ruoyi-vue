@@ -49,13 +49,18 @@
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
         <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />
         <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" />
-        <Icon icon="svg-icon:custom-column" :size="50" class="cursor-pointer" />
+        <Icon
+          icon="svg-icon:custom-column"
+          :size="50"
+          class="cursor-pointer"
+          @click="state.isShowCustomColumnModal = true"
+        />
       </div>
     </div>
 
     <a-table
       v-if="state.refreshTable"
-      :columns="columns"
+      :columns="state.columns"
       :data-source="state.tableDataList"
       :pagination="{
         pageSizeOptions: ['20', '30', '60', '100'],
@@ -125,6 +130,7 @@
         <template v-if="column.key === 'operation'">
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
+            <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
             <div class="text-color margin-right-5" @click="assignPermission(record)">功能配置</div>
             <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
           </div>
@@ -146,6 +152,21 @@
     <div class="base_info_content">
       <a-form :model="state.formState" ref="formRef" v-bind="layout">
         <div> 基本信息 </div>
+        <a-form-item
+          :label="`上级主体`"
+          name="belongTenantId"
+          :rules="[{ required: true, message: `主体不能为空` }]"
+        >
+          <a-tree-select
+            v-model:value="state.formState.belongTenantId"
+            show-search
+            style="width: 100%"
+            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+            placeholder="请选择上级目录"
+            :tree-data="state.optionalMenuTree"
+            :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
+          />
+        </a-form-item>
         <a-form-item
           :label="`主体编码`"
           name="code"
@@ -588,6 +609,56 @@
       <a-button @click="closePasswordModal">关闭</a-button>
     </div>
   </a-modal>
+
+  <!--  定制列  -->
+  <a-modal
+    v-model:visible="state.isShowCustomColumnModal"
+    title="定制列"
+    wrapClassName="details-modal"
+    width="240px"
+  >
+    <!--  type:checkboxGroup  -->
+    <div>
+      <!--      <div class="ship_text">船舶信息</div>-->
+      <div class="groupTotalContent">
+        <!--        <div class="select-all">-->
+        <!--          <a-checkbox-->
+        <!--            v-model:checked="state.checkAll"-->
+        <!--            :indeterminate="state.indeterminate"-->
+        <!--            @change="onCheckAllChange"-->
+        <!--          >-->
+        <!--            全选-->
+        <!--          </a-checkbox>-->
+        <!--        </div>-->
+
+        <a-checkbox-group v-model:value="state.checkedList" class="checkbox-group">
+          <!--拖拽插件-->
+          <VueDraggableNext
+            :list="state.columnsCheckList"
+            @dragend="dragEnd(state.columnsCheckList)"
+          >
+            <!--拖拽过渡 -->
+            <transition-group type="transition" name="flip-list">
+              <a-checkbox
+                v-for="item in state.columnsCheckList"
+                :value="item.key"
+                :key="item.title"
+                style="width: 100%"
+              >
+                {{ item.title }}
+              </a-checkbox>
+            </transition-group>
+          </VueDraggableNext>
+        </a-checkbox-group>
+      </div>
+    </div>
+
+    <!--  footer  -->
+    <template #footer>
+      <a-button type="primary" html-type="submit" @click="columnsSave">确认</a-button>
+      <a-button>还原</a-button>
+    </template>
+  </a-modal>
 </template>
 
 <script lang="tsx" setup>
@@ -595,30 +666,33 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 // import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
-import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
-import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
+import { SystemMenuTypeEnum } from '@/utils/constants'
+import { useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
   addTenantPackage,
-  getMajorIndividualDetails,
   editTenantPackage,
+  getMajorIndividualDetails,
   getMajorIndividualList,
-  updateEditMajorIndividual,
-  updateEditMajorIndividualStatus,
+  getSimpleTenantList,
   getTenantPackage,
-  putResetPassWord
+  putResetPassWord,
+  updateEditMajorIndividual,
+  updateEditMajorIndividualStatus
 } from '@/api/system/business'
-const { wsCache } = useCache()
-
 import { provincesMunicipalitiesArea } from './pr'
-import { getAllIds, reconstructedTreeData, filterTree } from '@/utils/utils'
+import { filterTree, getAllIds, reconstructedTreeData } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
 import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
+import { VueDraggableNext } from 'vue-draggable-next'
+
+const { wsCache } = useCache()
+
 const { toClipboard } = useClipboard()
-import * as TenantPackageApi from '@/api/system/tenantPackage'
+
 // console.log('provincesMunicipalitiesArea', provincesMunicipalitiesArea)
 
 interface FormState {
@@ -741,6 +815,7 @@ const state = reactive({
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
   formState: {
+    belongTenantId: undefined, //上级主体编号
     code: '', //主体编码
     name: '', //主体名称
     abbreviate: '', //主体简称
@@ -792,7 +867,98 @@ const state = reactive({
   resetModalStyle: {
     width: 488,
     height: 270
-  } //重置密码 modal样式
+  }, //重置密码 modal样式
+  isShowCustomColumnModal: false, //是否打开定制列modal
+  columnsCheckList: [
+    {
+      title: '测试',
+      key: 'test',
+      sort: 0,
+      disabled: true
+    },
+    {
+      title: '主体编码',
+      key: 'code',
+      sort: 1
+    },
+    {
+      title: '主体名称',
+      key: 'name',
+      sort: 2
+    },
+    {
+      title: '系统名称',
+      key: 'systemName',
+      sort: 3
+    },
+    {
+      title: '创建人',
+      key: 'creator',
+      sort: 4
+    }
+  ], //定制列 复选框
+  checkedList: ['test'], //定制列 选中的
+  columns: [
+    {
+      title: '主体名称',
+      dataIndex: 'name',
+      key: 'name',
+      width: 200,
+      ellipsis: true
+    },
+    {
+      title: '主体编码',
+      width: 200,
+      dataIndex: 'code',
+      key: 'code',
+      ellipsis: true
+    },
+    {
+      title: '系统名称',
+      dataIndex: 'systemName',
+      key: 'systemName'
+    },
+    {
+      title: '可用名额',
+      dataIndex: 'usableAmount',
+      key: 'usableAmount'
+    },
+    {
+      title: '有效期',
+      width: 200,
+      dataIndex: 'validityPeriod',
+      key: 'validityPeriod'
+    },
+
+    {
+      title: '绑定域名',
+      dataIndex: 'bindingDomainName',
+      key: 'bindingDomainName'
+    },
+    {
+      title: '负责人',
+      dataIndex: 'contactName',
+      key: 'contactName'
+    },
+    {
+      title: '负责人电话',
+      dataIndex: 'contactMobile',
+      key: 'contactMobile'
+    },
+    {
+      title: '状态',
+      dataIndex: 'statusSwitch',
+      key: 'statusSwitch'
+    },
+
+    {
+      title: '操作',
+      width: 240,
+      dataIndex: 'operation',
+      key: 'operation'
+    }
+  ], //表格 columns
+  optionalMenuTree: [] //上级主体 treeList
 })
 
 //存放功能配置 选中的所有keys(包括父节点id)
@@ -806,18 +972,19 @@ const testCheck = (checkedKeys, e) => {
   checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
 }
 
-const columns = [
+//ALL columns 用于定制列过滤 排序
+const allColumns = [
+  {
+    title: '主体名称',
+    dataIndex: 'name',
+    key: 'name',
+    ellipsis: true
+  },
   {
     title: '主体编码',
     width: 200,
     dataIndex: 'code',
     key: 'code',
-    ellipsis: true
-  },
-  {
-    title: '主体名称',
-    dataIndex: 'name',
-    key: 'name',
     ellipsis: true
   },
   {
@@ -859,8 +1026,29 @@ const columns = [
   },
 
   {
+    title: '创建人',
+    dataIndex: 'creator',
+    key: 'creator'
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createTime',
+    key: 'createTime'
+  },
+  {
+    title: '最近操作人',
+    dataIndex: 'updater',
+    key: 'updater'
+  },
+  {
+    title: '最近操作时间',
+    dataIndex: 'updateTime',
+    key: 'updateTime'
+  },
+
+  {
     title: '操作',
-    width: 200,
+    width: 240,
     dataIndex: 'operation',
     key: 'operation'
   }
@@ -894,6 +1082,9 @@ const getList = async () => {
     state.tableDataList.map((item) => {
       item.statusSwitch = item.status === 0
     })
+
+    state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
+    console.log('state.tableDataList', state.tableDataList)
     state.total = res.total
     // console.log('res====>', res)
   } finally {
@@ -959,7 +1150,21 @@ const fullScreen = () => {
 }
 
 //打开Modal
-const openModal = () => {
+const openModal = async (record = {}) => {
+  if (!(Object.keys(record).length === 0)) {
+    //非空对象判断 新增子项时回显
+    state.formState.belongTenantId = record.id
+  }
+  const res = await getSimpleTenantList()
+
+  let menuTree = []
+  // let menu = {}
+  let menu: Tree = { id: 0, name: '顶层主体', children: [] }
+  menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
+  menuTree.push(menu)
+
+  state.optionalMenuTree = menuTree
+
   state.isShow = true
 }
 //关闭Modal
@@ -1006,6 +1211,7 @@ const menuTree = ref<Tree[]>([]) // 树形结构
 const getTree = async () => {
   menuTree.value = []
   const res = await MenuApi.getSimpleMenusList()
+  console.log('目录列表===>res', res)
   let menu: Tree = { id: 0, name: '主类目', children: [] }
   menu.children = handleTree(res)
   menuTree.value.push(menu)
@@ -1015,13 +1221,14 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
+  console.log('编辑record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
   }
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
-  console.log('res', res)
+  console.log('主体详情res', res)
 
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
@@ -1031,6 +1238,7 @@ const edit = async (record, isCloseDetails = false) => {
   state.modalTitle = '编辑'
   //赋值 回显
   state.formState = {
+    belongTenantId: res.belongTenantId, //上级主体
     id: record.id,
     code: res.code, //主体编码
     name: res.name, //主体名称
@@ -1114,6 +1322,7 @@ const addMajorIndividualFN = async () => {
   console.log('valid', valid)
   console.log('formState', state.formState)
   let params = {
+    belongTenantId: state.formState.belongTenantId, //上级主体
     code: state.formState.code, //主体编码
     name: state.formState.name, //主体名称
     abbreviate: state.formState.abbreviate, //主体简称
@@ -1566,6 +1775,37 @@ const copyText = async () => {
     message.error('复制失败，您使用的浏览器可能不支持复制功能')
   }
 }
+
+//拖拽
+const dragEnd = (list) => {
+  //重写 sort
+  list.map((item, index) => {
+    item.sort = index + 1
+  })
+}
+
+//定制列 确定
+const columnsSave = () => {
+  //过滤出 勾选的项
+  const checkList = state.columnsCheckList.filter((item) => state.checkedList.includes(item?.key))
+  if (checkList.length) {
+    //过滤 从全部的表格列 中取到勾选的 列 并添加进当前 的sort
+    const filteredColumns = allColumns.filter((column) => {
+      return checkList.some((temp) => {
+        if (temp?.key === column.key) {
+          column['sort'] = temp?.sort
+          return column
+        }
+      })
+    })
+    // 升序
+    state.columns = filteredColumns.sort((a, b) => a.sort - b.sort)
+    state.refreshTable = false
+    state.refreshTable = true
+  } else {
+    message.warning('定制列不能为空')
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1870,6 +2110,16 @@ img {
 
 .reset-PassWord-btn-content {
   margin: 56px 0 0 249px;
+}
+
+//拖拽动画
+.flip-list-move {
+  transition: transform 0.5s;
+}
+
+//定制列 checkbox
+.ant-checkbox-wrapper + .ant-checkbox-wrapper {
+  margin-left: 0;
 }
 </style>
 
