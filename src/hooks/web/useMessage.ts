@@ -56,7 +56,8 @@ export const useMessage = () => {
       return ElMessageBox.confirm(content, tip ? tip : t('common.confirmTitle'), {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
-        type: 'warning'
+        type: 'warning',
+        lockScroll: false
       })
     },
     // 删除窗体
@@ -67,7 +68,8 @@ export const useMessage = () => {
         {
           confirmButtonText: t('common.ok'),
           cancelButtonText: t('common.cancel'),
-          type: 'warning'
+          type: 'warning',
+          lockScroll: false
         }
       )
     },
@@ -79,7 +81,8 @@ export const useMessage = () => {
         {
           confirmButtonText: t('common.ok'),
           cancelButtonText: t('common.cancel'),
-          type: 'warning'
+          type: 'warning',
+          lockScroll: false
         }
       )
     },
@@ -88,7 +91,8 @@ export const useMessage = () => {
       return ElMessageBox.prompt(content, tip, {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
-        type: 'warning'
+        type: 'warning',
+        lockScroll: false
       })
     }
   }

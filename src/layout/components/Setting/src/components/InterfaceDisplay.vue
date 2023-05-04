@@ -292,6 +292,10 @@ watch(
 }
 .checkbox-style {
   width: 50%;
+  margin-bottom: 16px;
+  .el-checkbox {
+    height: auto;
+  }
 }
 //水印
 .water-content {

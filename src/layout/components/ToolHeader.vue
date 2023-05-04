@@ -6,7 +6,7 @@ import { UserInfo } from '@/layout/components/UserInfo'
 import { Screenfull } from '@/layout/components/Screenfull'
 import { Breadcrumb } from '@/layout/components/Breadcrumb'
 import { SizeDropdown } from '@/layout/components/SizeDropdown'
-// import { LocaleDropdown } from '@/layout/components/LocaleDropdown'
+import { LocaleDropdown } from '@/layout/components/LocaleDropdown'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
 import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
@@ -39,8 +39,8 @@ const size = computed(() => appStore.getSize)
 // 布局
 const layout = computed(() => appStore.getLayout)
 
-// // 多语言图标
-// const locale = computed(() => appStore.getLocale)
+// 多语言图标
+const locale = computed(() => appStore.getLocale)
 
 // 消息图标
 const message = computed(() => appStore.getMessage)
@@ -61,7 +61,7 @@ export default defineComponent({
           <div class="h-full flex items-center">
             {hamburger.value && layout.value !== 'cutMenu' ? (
               <Collapse
-                class="hover-trigger collapse"
+                class="collapse"
                 color="var(--top-header-text-color)"
               ></Collapse>
             ) : undefined}
@@ -69,8 +69,10 @@ export default defineComponent({
           </div>
         ) : undefined}
         <div class="h-full flex items-center">
-          <div class="company-content hover-trigger">
-            <span class="company">{state.userInfo.company}</span>
+          <div class="company-content flex items-center px-22px">
+            <div class="company-text">
+              <span class="company">{state.userInfo.company}</span>
+            </div>
             <Icon
               icon="svg-icon:switch"
               size="14"
@@ -85,6 +87,12 @@ export default defineComponent({
           {size.value ? (
             <SizeDropdown class="hover-trigger" color="var(--top-header-text-color)"></SizeDropdown>
           ) : undefined}
+          {locale.value ? (
+            <LocaleDropdown
+              class="hover-trigger"
+              color="var(--top-header-text-color)"
+            ></LocaleDropdown>
+          ) : undefined}
           <div class="hover-trigger">
             <ThemeSwitch color="var(--top-header-text-color)" />
           </div>
@@ -92,7 +100,7 @@ export default defineComponent({
             <Message class="hover-trigger" color="var(--top-header-text-color)"></Message>
           ) : undefined}
           <div class="vertical-line"></div>
-          <UserInfo class="hover-trigger"></UserInfo>
+          <UserInfo></UserInfo>
         </div>
       </div>
     )
@@ -108,20 +116,25 @@ $prefix-cls: #{$namespace}-tool-header;
 }
 
 .company-content {
-  padding-right: 23px;
+  color: $header-icon-color;
   cursor: pointer;
   font-size: $font-size;
   font-family: $font-family;
-}
+  .company-text {
+    color: $header-text-color;
+  }
+  .el-icon {
+    color: var(--top-header-text-color);;
+  }
+  .company {
+    color: var(--top-header-text-color);
+    margin-right: 4px;
+  }
 
-.company {
-  margin-right: 4px;
 }
 
 .hover-trigger {
-  display: flex;
-  justify-content: center;
-  min-width: 60px;
+  color: #8291A9;
 }
 
 .collapse {

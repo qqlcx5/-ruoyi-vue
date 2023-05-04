@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组_29</title>
+    <defs>
+        <circle id="path-1" cx="8" cy="8" r="8"></circle>
+        <filter x="-43.8%" y="-31.2%" width="187.5%" height="187.5%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.54445503   0 0 0 0 0.774907192   0 0 0 0 1  0 0 0 1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="规范" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="项目配置" transform="translate(-1588.000000, -174.000000)">
+            <g id="编组_29" transform="translate(1592.000000, 176.000000)">
+                <g id="椭圆形">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                    <use fill="#0081FF" fill-rule="evenodd" xlink:href="#path-1"></use>
+                </g>
+                <g id="编组" transform="translate(3.000000, 4.000000)" fill="#FFFFFF" fill-rule="nonzero">
+                    <path d="M3.79706693,8 C4.43228654,6.83948902 6.65170462,4.7638777 8.23649468,3.70437901 L8.85923829,3.32407757 C9.10464892,3.19156365 9.31916006,3.10065047 9.49030627,3.06262033 C9.00185133,1.94905545 9.43029259,1.04405422 9.49981381,0 L9.49981381,0 C8.91093816,0.301272689 8.31671715,0.726734927 7.74388811,1.21161927 L7.08073747,1.80762557 C5.17091645,3.61702588 3.64910854,5.84713467 3.64910854,5.84713467 L2.53375836,3.68892398 L0,4.92074148 C1.07197469,5.30282823 2.71202466,6.66537435 3.79409846,7.99939786 L3.79706693,8 Z" id="路径"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

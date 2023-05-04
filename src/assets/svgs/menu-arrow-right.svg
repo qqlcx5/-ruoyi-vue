@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="10px" height="10px" viewBox="0 0 10 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组备份</title>
+    <g id="规范" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="系统样式1" transform="translate(-1813.000000, -252.000000)" fill="currentColor" fill-rule="nonzero">
+            <g id="编组备份" transform="translate(1813.000000, 252.000000)">
+                <path d="M9.07894737,4.93421053 L4.60526315,0.460526321 L5.06578947,0 L10,4.93421053 L5.06578947,9.86842106 L4.60526315,9.40789475 L9.07894737,4.93421053 Z M4.47368421,4.93421053 L0,0.460526321 L0.460526306,0 L5.39473683,4.93421053 L0.460526306,9.86842106 L0,9.40789475 L4.47368421,4.93421053 Z" id="形状"></path>
+            </g>
+        </g>
+    </g>
+</svg>

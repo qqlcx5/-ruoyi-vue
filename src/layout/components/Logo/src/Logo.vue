@@ -25,7 +25,7 @@ onMounted(() => {
 watch(
   () => collapse.value,
   (collapse: boolean) => {
-    if (unref(layout) === 'topLeft' || unref(layout) === 'cutMenu') {
+    if (unref(layout) === 'topLeft') {
       show.value = true
       return
     }
@@ -42,7 +42,7 @@ watch(
 watch(
   () => layout.value,
   (layout) => {
-    if (layout === 'top' || layout === 'cutMenu') {
+    if (layout === 'top') {
       show.value = true
     } else {
       if (unref(collapse)) {
@@ -66,7 +66,7 @@ const editUserInfo = () => {
         prefixCls,
         layout !== 'classic' ? `${prefixCls}__Top` : '',
         'flex !h-[var(--logo-height)] items-center cursor-pointer justify-center relative',
-        'dark:bg-[var(--el-bg-color)]'
+        'dark:bg-[var(--left-menu-bg-color)]'
       ]"
       to="/"
     >
@@ -84,12 +84,12 @@ const editUserInfo = () => {
       <div
         v-if="show"
         :class="[
-          'ml-8px text-16px font-700',
-          {
-            'text-[var(--logo-title-text-color)]': layout === 'classic',
-            'text-[var(--top-header-text-color)]':
-              layout === 'topLeft' || layout === 'top' || layout === 'cutMenu'
-          }
+          'ml-8px text-16px font-700 text-[var(--left-menu-text-color)]',
+          // {
+          //   'text-[var(--left-menu-text-color)]': layout === 'classic',
+          //   'text-[var(--left-menu-text-color)]':
+          //     layout === 'topLeft' || layout === 'top' || layout === 'cutMenu'
+          // }
         ]"
       >
         {{ title }}

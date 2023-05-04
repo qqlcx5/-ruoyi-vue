@@ -22,10 +22,10 @@ const toggleCollapse = () => {
 </script>
 
 <template>
-  <div :class="prefixCls">
+  <div :class="prefixCls" class="items-center flex items-center">
     <Icon
       :size="18"
-      :icon="collapse ? 'ep:expand' : 'svg-icon:fold'"
+      icon="svg-icon:fold"
       :color="appStore.isDark ? color : '#8291A9'"
       class="cursor-pointer"
       @click="toggleCollapse"
