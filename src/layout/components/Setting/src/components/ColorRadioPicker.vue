@@ -3,7 +3,7 @@
     <span
       v-for="(item, i) in schema"
       :key="`radio-${i}`"
-      class="checkbox w-20px h-20px cursor-pointer rounded-2px border-solid border-gray-300 border-1px text-center leading-20px mb-5px flex justify-center items-center"
+      class="checkbox w-20px h-20px cursor-pointer rounded-2px text-center leading-20px mb-5px flex justify-center items-center"
       :class="{ 'is-active': colorVal === item }"
       :style="{
         background: item
@@ -30,7 +30,7 @@
       @mouseenter="handleEnterFN"
       @mouseleave="handleLeaveFN"
       key="`radio-7`"
-      class="checkbox w-20px h-20px cursor-pointer rounded-2px border-solid border-gray-300 border-1px text-center leading-20px mb-5px flex justify-center items-center"
+      class="checkbox w-20px h-20px cursor-pointer rounded-2px text-center leading-20px mb-5px flex justify-center items-center"
       :class="{ 'is-active': colorVal === state.selectColor }"
       :style="{
         background: state.selectColor
@@ -172,6 +172,7 @@ $prefix-cls: #{$namespace}-color-radio-picker;
 .checkbox {
   width: 40px;
   height: 30px;
+  border: 1px solid #EFEFEF;
   border-radius: 4px;
 }
 .total-content {

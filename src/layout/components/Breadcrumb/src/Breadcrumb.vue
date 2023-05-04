@@ -107,6 +107,7 @@ $prefix-cls: #{$elNamespace}-breadcrumb;
 
   :deep(&__item):not(:last-child) {
     .#{$prefix-cls}__inner {
+      font-weight: normal;
       color: var(--top-header-text-color);
 
       &:hover {
@@ -130,11 +131,18 @@ $prefix-cls: #{$elNamespace}-breadcrumb;
     line-height: 20px;
     font-size: $font-size;
     font-family: $font-family;
-    //color: $text-color;
+    color: $text-color;
   }
 
-  //:deep(.el-breadcrumb__item):nth-last-child(1) .el-breadcrumb__inner {
-  //  color: $title-color;
-  //}
+  :deep(.el-breadcrumb__item):nth-last-child(1) .el-breadcrumb__inner {
+    font-weight: 700;
+    color: var(--top-header-text-color);
+  }
+  :deep(.el-breadcrumb__item):not(:nth-last-child(1)) .el-breadcrumb__inner {
+    font-weight: normal;
+    &:hover {
+      color: var(--el-color-primary);
+    }
+  }
 }
 </style>

@@ -70,7 +70,9 @@ export default defineComponent({
         ) : undefined}
         <div class="h-full flex items-center">
           <div class="company-content flex items-center px-22px">
-            <span class="company">{state.userInfo.company}</span>
+            <div class="company-text">
+              <span class="company">{state.userInfo.company}</span>
+            </div>
             <Icon
               icon="svg-icon:switch"
               size="14"
@@ -114,15 +116,21 @@ $prefix-cls: #{$namespace}-tool-header;
 }
 
 .company-content {
-  color: #333;
+  color: $header-icon-color;
   cursor: pointer;
   font-size: $font-size;
   font-family: $font-family;
-}
+  .company-text {
+    color: $header-text-color;
+  }
+  .el-icon {
+    color: var(--top-header-text-color);;
+  }
+  .company {
+    color: var(--top-header-text-color);
+    margin-right: 4px;
+  }
 
-.company {
-  color: var(--top-header-text-color);
-  margin-right: 4px;
 }
 
 .hover-trigger {

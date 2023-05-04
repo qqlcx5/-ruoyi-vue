@@ -8,7 +8,7 @@ export const useRenderMenuTitle = () => {
 
     return icon ? (
       <>
-        <Icon icon={meta.icon}></Icon>
+        <Icon icon={meta.icon} size={10}></Icon>
         <span class="v-menu__title">{t(title as string)}</span>
       </>
     ) : (

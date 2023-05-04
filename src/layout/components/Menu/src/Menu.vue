@@ -1,5 +1,5 @@
 <script lang="tsx">
-import { PropType } from 'vue'
+import {computed, PropType} from 'vue'
 import { ElMenu, ElScrollbar } from 'element-plus'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
@@ -73,7 +73,8 @@ export default defineComponent({
       if (unref(layout) === 'top') {
         return renderMenu()
       } else {
-        return <ElScrollbar>{renderMenu()}</ElScrollbar>
+        // return <ElScrollbar class="wg-scroll-bar">{renderMenu()}</ElScrollbar>
+        return <ElScrollbar class={unref(collapse) ? 'collapse-menu' : 'wg-scroll-bar'}>{renderMenu()}</ElScrollbar>
       }
     }
 
@@ -146,7 +147,7 @@ $prefix-cls: #{$namespace}-menu;
     content: '';
   }
 
-  :deep(.#{$elNamespace}-menu) {
+  :deep(.#{$elNamespace}-menu.el-menu--vertical) {
     width: 100% !important;
     border-right: none;
 
@@ -160,29 +161,33 @@ $prefix-cls: #{$namespace}-menu;
     // 设置子菜单悬停的高亮和背景色
     .#{$elNamespace}-sub-menu__title,
     .#{$elNamespace}-menu-item {
+      padding-left: 36px;
+      .#{$elNamespace}-icon {
+        margin-right: 10px;
+      }
       &:hover {
         color: var(--left-menu-text-active-color) !important;
-        background-color: var(--left-menu-bg-color) !important;
+        //background-color: var(--left-menu-bg-color) !important;
       }
     }
 
     // 设置选中时的高亮背景和高亮颜色
     .#{$elNamespace}-sub-menu.is-active,
     .#{$elNamespace}-menu-item.is-active {
-      color: var(--left-menu-text-active-color) !important;
-      background-color: var(--left-menu-bg-light-color) !important;
+      color: var(--el-color-primary) !important;
+      //background-color: var(--left-menu-bg-light-color) !important;
 
       &:hover {
-        background-color: var(--left-menu-bg-active-color) !important;
+        //background-color: var(--left-menu-bg-active-color) !important;
       }
     }
 
     .#{$elNamespace}-menu-item.is-active {
       position: relative;
-
-      &:after {
-        @extend .is-active--after;
-      }
+      //color: var(--left-menu-bg-active-color) !important;
+      //&:after {
+      //  @extend .is-active--after;
+      //}
     }
 
     // 设置子菜单的背景颜色
@@ -201,10 +206,13 @@ $prefix-cls: #{$namespace}-menu;
     & > .is-active,
     & > .is-active > .#{$elNamespace}-sub-menu__title {
       position: relative;
-      background-color: var(--left-menu-collapse-bg-active-color) !important;
+      //background-color: var(--left-menu-collapse-bg-active-color) !important;
 
-      &:after {
-        @extend .is-active--after;
+      //&:after {
+      //  @extend .is-active--after;
+      //}
+      .#{$elNamespace}-icon {
+        color: var(--el-color-primary) !important;
       }
     }
   }
@@ -245,6 +253,128 @@ $prefix-cls: #{$namespace}-menu;
         /* stylelint-disable-next-line */
         line-height: calc(var(--top-tool-height) - 2px);
       }
+      //.#{$elNamespace}-icon {
+      //  display:none !important;
+      //}
+    }
+  }
+}
+
+.hide-icon {
+  .#{$elNamespace}-sub-menu__title,
+  .#{$elNamespace}-menu-item,
+  .#{$elNamespace}-sub-menu {
+    display: none !important;
+  }
+}
+
+.wg-scroll-bar {
+  :deep(.#{$elNamespace}-scrollbar__wrap) {
+    >.#{$elNamespace}-scrollbar__view {
+      >.#{$elNamespace}-menu {
+        > .#{$elNamespace}-sub-menu__title,
+        > .#{$elNamespace}-menu-item,
+        > .#{$elNamespace}-sub-menu,
+        {
+          &.is-opened {
+            position: relative;
+            background-color: var(--left-menu-bg-light-color) !important;
+            .#{$elNamespace}-sub-menu__title,
+            .#{$elNamespace}-menu-item,
+            .#{$elNamespace}-sub-menu, {
+              background-color: var(--left-menu-bg-light-color) !important;
+            }
+            >.#{$elNamespace}-sub-menu__title, {
+              &:before {
+                position: absolute;
+                top: 0;
+                left: -36px;
+                width: 6px;
+                height: 100%;
+                background-color: var(--el-color-primary);
+                content: '';
+              }
+              .v-icon {
+                color: var(--el-color-primary);
+              }
+            }
+          }
+          padding-left: 36px !important;
+          >.el-menu {
+            >.el-menu-item {
+              //padding-left: 0 !important;
+              @extend .hide-icon;
+            }
+            >.el-sub-menu__title {
+              padding-left: 0 !important;
+            }
+            > .#{$elNamespace}-sub-menu {
+              >.el-sub-menu__title {
+                //padding-left: 0 !important;
+              }
+            }
+            .el-menu-item, .el-sub-menu__title {
+              padding-left: 28px !important;
+              .v-icon {
+                margin-right: 4px !important;
+              }
+            }
+          }
+          >.el-sub-menu__title {
+            padding-left: 0 !important;
+            >.el-icon {
+              //margin-right: 0 !important;
+              span {
+                font-size: 16px !important;
+              }
+            }
+          }
+          > .#{$elNamespace}-sub-menu {
+            padding-left: 0 !important;
+          }
+          >.el-icon {
+            span {
+              font-size: 16px !important;
+            }
+          }
+        }
+
+      }
+    }
+  }
+}
+
+:deep(.#{$elNamespace}-menu--horizontal) {
+  .el-icon span {
+    font-size: 16px !important;
+  }
+}
+
+
+.collapse-menu {
+  :deep(.#{$elNamespace}-menu) {
+
+    .#{$elNamespace}-menu-item,
+    .#{$elNamespace}-sub-menu__title,
+    {
+      display: flex;
+      align-items: center;
+      height: var(--el-menu-item-height);
+      line-height: var(--el-menu-item-height);
+      font-size: var(--el-menu-item-font-size);
+      color: var(--el-menu-text-color);
+      padding: 0 var(--el-menu-base-level-padding) !important;
+      list-style: none;
+      cursor: pointer;
+      position: relative;
+      transition: border-color var(--el-transition-duration),background-color var(--el-transition-duration),color var(--el-transition-duration);
+      box-sizing: border-box;
+      white-space: nowrap;
+    }
+    .el-icon {
+      span {
+        font-size: 16px !important;
+      }
     }
   }
 }
@@ -261,6 +391,35 @@ $prefix-cls: #{$namespace}-menu-popper;
   height: 100%;
   background-color: var(--el-color-primary);
   content: '';
+}
+
+.el-sub-menu__title .el-sub-menu__icon-arrow {
+  svg {
+    display: none;
+  }
+  position: absolute;
+  top: 50%;
+  right: var(--el-menu-base-level-padding);
+  margin-top: -6px;
+  transition: transform var(--el-transition-duration);
+  margin-right: 0;
+  width: inherit;
+  &:after {
+    content: "\e684";
+    font-family: "iconfont";
+    font-style: normal;
+    font-size: 14px;
+  }
+}
+/*close menu*/
+.el-sub-menu > .el-sub-menu__title .el-sub-menu__icon-arrow {
+  transition: transform .3s;//cancel move animation
+}
+/*open menu*/
+.el-sub-menu.is-opened > .el-sub-menu__title .el-sub-menu__icon-arrow {
+  -webkit-transform: rotateZ(180deg);
+  transform: rotateZ(180deg);
+  transition: transform .3s;
 }
 
 .#{$prefix-cls}--vertical,
@@ -284,15 +443,20 @@ $prefix-cls: #{$namespace}-menu-popper;
   // 设置选中时的高亮背景
   .el-menu-item.is-active {
     position: relative;
-    background-color: var(--left-menu-bg-active-color) !important;
+    //background-color: var(--left-menu-bg-active-color) !important;
+    //color: var(--left-menu-bg-active-color) !important;
 
     &:hover {
       background-color: var(--left-menu-bg-active-color) !important;
     }
 
-    &:after {
-      @extend .is-active--after;
-    }
+    //&:after {
+    //  @extend .is-active--after;
+    //}
   }
+}
+
+.el-menu .el-menu-item:not(.is-disabled):focus, .el-menu .el-menu-item:not(.is-disabled):hover {
+  background-color: unset !important;
 }
 </style>

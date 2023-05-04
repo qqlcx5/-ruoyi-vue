@@ -7,6 +7,7 @@ const props = defineProps({
   loading: propTypes.bool.def(false),
   preIcon: propTypes.string.def(''),
   postIcon: propTypes.string.def(''),
+  iconFont: propTypes.string.def(''),
   title: propTypes.string.def(''),
   type: propTypes.oneOf(['', 'primary', 'success', 'warning', 'danger', 'info']).def('primary'),
   circle: propTypes.bool.def(false),
@@ -29,6 +30,7 @@ const getBindValue = computed(() => {
 
 <template>
   <el-button link v-bind="getBindValue" @click="onClick">
+    <iconfont :name="iconFont" v-if="iconFont" class="mr-1px" />
     <Icon :icon="preIcon" v-if="preIcon" class="mr-1px" />
     {{ title ? title : '' }}
     <Icon :icon="postIcon" v-if="postIcon" class="mr-1px" />

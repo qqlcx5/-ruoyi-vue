@@ -89,6 +89,22 @@ export default defineComponent({
     // 是否显示菜单
     const showMenu = ref(unref(fixedMenu) ? true : false)
 
+    watch(
+      () => showMenu.value,
+      (value: boolean) => {
+        console.log(value);
+        // console.log(document.getElementById("menuContainer"));
+        // let el = document.getElementById("menuContainer")
+        // if (value) {
+        //   el?.classList.add('!w-[calc(100%-var(--tab-menu-max-width)-var(--tab-sub-menu-max-width))]')
+        //   el?.classList.add('!left-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]')
+        // } else {
+        //   el?.classList.remove('!w-[calc(100%-var(--tab-menu-max-width)-var(--tab-sub-menu-max-width))]')
+        //   el?.classList.remove('!left-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]')
+        // }
+      }
+    )
+    //
     // tab高亮
     const tabActive = ref('')
 
@@ -139,10 +155,12 @@ export default defineComponent({
         id={`${variables.namespace}-menu`}
         class={[
           prefixCls,
-          'relative bg-[var(--left-menu-bg-color)] top-1px z-3000',
+          'relative bg-[var(--left-menu-bg-color)] z-3000 flex-shrink-0',
           {
             'w-[var(--tab-menu-max-width)]': !unref(collapse),
-            'w-[var(--tab-menu-min-width)]': unref(collapse)
+            'w-[var(--tab-menu-min-width)]': unref(collapse),
+            'w-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]': unref(collapse) && unref(showMenu),
+            'w-[calc(var(--tab-menu-max-width)+var(--tab-sub-menu-max-width))]': !unref(collapse) && unref(showMenu),
           }
         ]}
         onMouseleave={mouseleave}
@@ -196,7 +214,7 @@ export default defineComponent({
         </div>
         <Menu
           class={[
-            '!absolute top-0 border-left-1 border-solid border-[var(--left-menu-bg-light-color)]',
+            '!absolute top-0 border-solid border-[var(--left-menu-bg-light-color)]',
             {
               '!left-[var(--tab-menu-min-width)]': unref(collapse),
               '!left-[var(--tab-menu-max-width)]': !unref(collapse),
@@ -230,7 +248,19 @@ $prefix-cls: #{$namespace}-tab-menu;
 
   &__item {
     color: var(--left-menu-text-color);
-    transition: all var(--transition-time-02);
+    display: flex;
+    align-items: center;
+    height: var(--el-menu-item-height);
+    line-height: var(--el-menu-item-height);
+    font-size: var(--el-menu-item-font-size);
+    /* color: var(--el-menu-text-color); */
+    padding: 0 var(--el-menu-base-level-padding) !important;
+    list-style: none;
+    cursor: pointer;
+    position: relative;
+    transition: border-color var(--el-transition-duration),background-color var(--el-transition-duration),color var(--el-transition-duration);
+    box-sizing: border-box;
+    white-space: nowrap;
 
     &:hover {
       color: var(--left-menu-text-active-color);
@@ -248,15 +278,15 @@ $prefix-cls: #{$namespace}-tab-menu;
     position: relative;
     color: var(--left-menu-text-active-color);
 
-    &:before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 6px;
-      background-color: var(--left-menu-bg-active-color);
-    }
+    //&:before {
+    //  content: "";
+    //  position: absolute;
+    //  left: 0;
+    //  top: 0;
+    //  bottom: 0;
+    //  width: 6px;
+    //  background-color: var(--left-menu-bg-active-color);
+    //}
 
     & .icon {
       color: var(--left-menu-bg-active-color);

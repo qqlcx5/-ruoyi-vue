@@ -78,11 +78,6 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       },
     },
     {
-      title: '子项数量',
-      field: 'childCount',
-      isForm: false
-    },
-    {
       title: t('common.creater'),
       field: 'creatorName',
       isForm: false

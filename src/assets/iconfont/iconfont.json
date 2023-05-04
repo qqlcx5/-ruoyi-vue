@@ -1,0 +1,51 @@
+{
+  "id": "4036267",
+  "name": "万国投资管理系统",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "35307123",
+      "name": "编组 3",
+      "font_class": "a-bianzu3",
+      "unicode": "e684",
+      "unicode_decimal": 59012
+    },
+    {
+      "icon_id": "35230561",
+      "name": "打印",
+      "font_class": "dayin",
+      "unicode": "e67b",
+      "unicode_decimal": 59003
+    },
+    {
+      "icon_id": "35230562",
+      "name": "刷新",
+      "font_class": "shuaxin",
+      "unicode": "e67c",
+      "unicode_decimal": 59004
+    },
+    {
+      "icon_id": "35230563",
+      "name": "定制列",
+      "font_class": "dingzhilie",
+      "unicode": "e67d",
+      "unicode_decimal": 59005
+    },
+    {
+      "icon_id": "35230564",
+      "name": "搜索",
+      "font_class": "sousuo",
+      "unicode": "e67e",
+      "unicode_decimal": 59006
+    },
+    {
+      "icon_id": "35230565",
+      "name": "全屏",
+      "font_class": "quanping",
+      "unicode": "e67f",
+      "unicode_decimal": 59007
+    }
+  ]
+}

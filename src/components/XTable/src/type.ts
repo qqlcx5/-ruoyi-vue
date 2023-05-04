@@ -16,6 +16,7 @@ export type XTableProps<D = any> = VxeGridProps<D> & {
   params?: any // 其他查询参数
   pagination?: boolean | VxeGridPropTypes.PagerConfig // 分页配置参数
   toolBar?: boolean | VxeGridPropTypes.ToolbarConfig // 右侧工具栏配置参数
+  wgTools?: WGVxeTools
 }
 export type XColumns = VxeGridPropTypes.Columns
 
@@ -24,3 +25,9 @@ export type VxeTableColumn = {
   title?: string
   children?: VxeTableColumn[]
 } & Recordable
+
+export interface WGVxeTools {
+  key: string,
+  show?: boolean,
+  disable?: boolean,
+}

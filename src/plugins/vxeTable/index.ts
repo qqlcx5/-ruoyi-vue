@@ -67,13 +67,18 @@ VXETable.setup({
       showIcon: true
     }
   },
+  icon: {
+    TOOLBAR_TOOLS_REFRESH: 'iconfont icon-shuaxin',
+    TOOLBAR_TOOLS_PRINT: 'iconfont icon-dayin',
+    TOOLBAR_TOOLS_FULLSCREEN: 'iconfont icon-quanping',
+  },
   grid: {
     toolbarConfig: {
-      refresh: true,
-      export: true,
-      print: true,
-      zoom: true,
-      custom: true
+      // refresh: true,
+      // export: true,
+      // print: true,
+      // zoom: true,
+      // custom: false
     },
     pagerConfig: {
       border: false,

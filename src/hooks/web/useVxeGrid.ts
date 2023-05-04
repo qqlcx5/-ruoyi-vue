@@ -56,7 +56,7 @@ export const useVxeGrid = <T = any>(config?: UseVxeGridConfig<T>) => {
     toolbarConfig: {
       slots:
         !config?.topActionSlots && config?.topActionSlots != false
-          ? { buttons: 'toolbar_buttons' }
+          ? { buttons: 'toolbar_buttons', tools: 'toolbar_tools' }
           : {}
     },
     printConfig: {

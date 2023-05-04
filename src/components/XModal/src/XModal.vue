@@ -42,3 +42,31 @@ const getBindValue = computed(() => {
     </template>
   </vxe-modal>
 </template>
+
+<style lang="scss">
+.vxe-modal--wrapper {
+  .vxe-modal--content {
+    padding: 14px 20px;
+  }
+  .vxe-modal--header-title {
+    padding: 20px !important;
+  }
+  .vxe-modal--header-right {
+    display: flex;
+    align-items: center;
+  }
+  .vxe-modal--footer {
+    padding: 15px 26px !important;
+    border-top: 1px solid #EAEBEF;
+  }
+  .el-select {
+    width: 100%;
+  }
+}
+
+.wg-xmodal {
+  &.vxe-modal--wrapper .vxe-modal--content {
+    padding: 34px 45px;
+  }
+}
+</style>

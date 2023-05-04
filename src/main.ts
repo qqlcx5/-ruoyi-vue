@@ -4,6 +4,10 @@ import '@/plugins/windi.css'
 // 导入全局的svg图标
 import '@/plugins/svgIcon'
 
+// iconfont
+import './assets/iconfont/iconfont.css'
+import './assets/iconfont/iconfont.js'
+
 // 初始化多语言
 import { setupI18n } from '@/plugins/vueI18n'
 

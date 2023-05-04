@@ -14,14 +14,14 @@
 <!--    <ElDivider />-->
     <!--     TODO:有空再抽 都一样的-->
     <el-scrollbar>
-      <div class="layout-content-center pt-20px pb-80px">
+      <div class="layout-content-center pt-14px pb-80px">
         <div class="text-center">
           <!-- 主题 -->
           <!--      <ElDivider>{{ t('setting.theme') }}</ElDivider>-->
           <!--      <ThemeSwitch />-->
 
           <!-- 布局 -->
-          <div class="general-content">
+          <div class="general-content mb-20px">
             <div class="drawer-title"> {{ t('setting.layout') }}</div>
             <div class="layout-radio-picker-content px-20px pt-20px">
               <LayoutRadioPicker />
@@ -31,7 +31,7 @@
           <!-- 系统主题 -->
           <div class="general-content pt-20px">
             <div class="drawer-title"> {{ t('setting.systemTheme') }}</div>
-            <div class="layout-radio-picker-content px-20px pt-20px">
+            <div class="layout-radio-picker-content px-20px pt-35px">
               <ColorRadioPicker
                 v-model="systemTheme"
                 :schema="['#0081FF', '#31C27C', '#447EFD', '#EB4A3B', '#FF9B32', '#D56D9D']"
@@ -40,9 +40,9 @@
             </div>
           </div>
           <!-- 头部主题 -->
-          <div class="general-content pt-20px">
+          <div class="general-content pt-40px">
             <div class="drawer-title"> {{ t('setting.headerTheme') }}</div>
-            <div class="layout-radio-picker-content px-20px pt-20px">
+            <div class="layout-radio-picker-content px-20px pt-35px">
               <ColorRadioPicker
                 v-model="headerTheme"
                 :schema="['#fff', '#31C27C', '#597EFD', '#EB4A3B', '#FF9B32', '#D56D9D']"
@@ -52,9 +52,9 @@
           </div>
 
           <!-- 菜单主题 -->
-          <div class="pt-20px" v-if="layout !== 'top'">
+          <div class="pt-40px" v-if="layout !== 'top'">
             <div class="drawer-title"> {{ t('setting.menuTheme') }}</div>
-            <div class="layout-radio-picker-content px-20px pt-20px">
+            <div class="layout-radio-picker-content px-20px pt-35px">
               <ColorRadioPicker
                 v-model="menuTheme"
                 :schema="['#fff', '#31394A', '#111E41', '#232738', '#272C42', '#9F9F9F']"
@@ -65,9 +65,9 @@
         </div>
 
         <!-- 界面显示 -->
-        <div class="general-content pt-20px">
+        <div class="general-content pt-40px">
           <div class="drawer-title"> {{ t('setting.interfaceDisplay') }}</div>
-          <div class="layout-radio-picker-content px-20px">
+          <div class="layout-radio-picker-content px-20px pt-25px">
             <InterfaceDisplay />
           </div>
         </div>
@@ -75,7 +75,7 @@
     </el-scrollbar>
 
     <div class="button-content w-450px flex text-center leading-60px cursor-pointer z-10">
-      <div class="w-146px text-white " @click="copyConfig">{{ t('setting.copy') }}</div>
+      <div class="button-copy w-146px" @click="copyConfig">{{ t('setting.copy') }}</div>
       <div class="button-reset flex-grow" @click="clear">{{ t('setting.clearAndReset') }}</div>
     </div>
   </ElDrawer>
@@ -299,6 +299,9 @@ $prefix-cls: #{$namespace}-setting;
   bottom: 0;
   background-color: var(--el-color-primary);
 
+  .button-copy {
+    color: #ffffff;
+  }
   //重置
   .button-reset {
     color: var(--el-color-primary);
@@ -310,8 +313,9 @@ $prefix-cls: #{$namespace}-setting;
 <style lang="scss">
 .setting-drawer-content {
   .el-drawer__header {
+    color: #333333;
     margin-bottom: 0;
-    padding-bottom: 20px;
+    padding: 25px 20px;
     border-bottom: 1px solid #EAEBEF;
   }
 
