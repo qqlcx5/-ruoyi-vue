@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite-plugin-windicss'
 import plugin from 'windicss/plugin'
+import { customWindi } from './src/plugins/windi.css/windi-custom'
 
 function range(size, startAt = 1) {
   return Array.from(Array(size).keys()).map((i) => i + startAt)
@@ -18,7 +19,8 @@ export default defineConfig({
         // 暗黑背景色
         'v-dark': 'var(--dark-bg-color)'
       }
-    }
+    },
+    ...customWindi
   },
   plugins: [
     plugin(({ addComponents }) => {

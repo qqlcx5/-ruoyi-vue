@@ -3,6 +3,8 @@
 //主色
 //也可以$bg-color: #ed795a !default;这样写 !default 表示是默认值
 $bg-color: #0081FF; //主要用于菜单栏、按钮、图标、突出文字，可点击文字
+$header-text-color: #333333; // 顶部header高亮文字颜色
+$header-icon-color: #8291a9; // 顶部header图标颜色
 //辅色
 $success-color: #52C41A;//成功、达标、下跌
 $warning-color: #E7A23C;//警告、显示、预警

@@ -169,7 +169,7 @@ export const useRenderLayout = () => {
     return (
       <>
         <div class="flex items-center justify-between bg-[var(--top-header-bg-color)] border-bottom-1 border-solid border-[var(--top-tool-border-color)] dark:border-[var(--el-border-color)]">
-          {logo.value ? <Logo class="hover-trigger"></Logo> : undefined}
+          {logo.value ? <Logo class="hover-trigger px-16px dark:bg-[var(--left-menu-bg-color)]"></Logo> : undefined}
           <Menu class="flex-1 px-10px h-[var(--top-tool-height)]"></Menu>
           <ToolHeader></ToolHeader>
         </div>
@@ -206,13 +206,30 @@ export const useRenderLayout = () => {
     return (
       <>
         <div class="flex items-center bg-[var(--top-header-bg-color)] border-bottom-1 border-solid border-[var(--top-tool-border-color)] dark:border-[var(--el-border-color)]">
-          {logo.value ? <Logo class="hover-trigger !pr-15px"></Logo> : undefined}
+          {/*<div class="flex justify-center text-center bg-[var(--left-menu-bg-color)] dark:bg-[var(--left-menu-bg-color)]">{logo.value ? <Logo></Logo> : undefined}</div>*/}
+            {logo.value ? (
+                <Logo
+                    class={[
+                        'bg-[var(--left-menu-bg-color)] border-bottom-1 border-solid border-[var(--logo-border-color)] dark:border-[var(--el-border-color)]',
+                        {
+                            '!pl-0': mobile.value && collapse.value,
+                            'w-[var(--left-menu-min-width)]': appStore.getCollapse,
+                            'w-[var(--left-menu-max-width)]': !appStore.getCollapse
+                        }
+                    ]}
+                    style="transition: all var(--transition-time-02);"
+                ></Logo>
+            ) : undefined}
 
           <ToolHeader class="flex-1"></ToolHeader>
         </div>
-        <div class="absolute top-[var(--logo-height)] left-0 w-full h-[calc(100%-var(--logo-height))] flex">
+        <div
+            class="absolute top-[var(--logo-height)] left-0 w-full h-[calc(100%-var(--logo-height))] flex"
+        >
           <TabMenu></TabMenu>
+            {/*-var(--tab-sub-menu-max-width) 展开二级菜单宽度 */}
           <div
+              id={'menuContainer'}
             class={[
               `${prefixCls}-content`,
               'h-[100%]',
@@ -233,34 +250,8 @@ export const useRenderLayout = () => {
               v-loading={pageLoading.value}
               class={[
                 `${prefixCls}-content-scrollbar`,
-                {
-                  '!h-[calc(100%-var(--tags-view-height))] mt-[calc(var(--tags-view-height))]':
-                    fixedHeader.value && tagsView.value
-                }
               ]}
             >
-              {tagsView.value ? (
-                <TagsView
-                  class={[
-                    'border-bottom-1 border-top-1 border-solid border-[var(--tags-view-border-color)] dark:border-[var(--el-border-color)]',
-                    {
-                      '!fixed top-0 left-0 z-10': fixedHeader.value,
-                      'w-[calc(100%-var(--tab-menu-min-width))] left-[var(--tab-menu-min-width)] mt-[var(--logo-height)]':
-                        collapse.value && fixedHeader.value,
-                      'w-[calc(100%-var(--tab-menu-max-width))] left-[var(--tab-menu-max-width)] mt-[var(--logo-height)]':
-                        !collapse.value && fixedHeader.value,
-                      '!fixed top-0 left-[var(--tab-menu-min-width)+var(--left-menu-max-width)] z-10':
-                        fixedHeader.value && fixedMenu.value,
-                      'w-[calc(100%-var(--tab-menu-min-width)-var(--left-menu-max-width))] left-[var(--tab-menu-min-width)+var(--left-menu-max-width)] mt-[var(--logo-height)]':
-                        collapse.value && fixedHeader.value && fixedMenu.value,
-                      'w-[calc(100%-var(--tab-menu-max-width)-var(--left-menu-max-width))] left-[var(--tab-menu-max-width)+var(--left-menu-max-width)] mt-[var(--logo-height)]':
-                        !collapse.value && fixedHeader.value && fixedMenu.value
-                    }
-                  ]}
-                  style="transition: width var(--transition-time-02), left var(--transition-time-02);"
-                ></TagsView>
-              ) : undefined}
-
               <AppView></AppView>
             </ElScrollbar>
           </div>

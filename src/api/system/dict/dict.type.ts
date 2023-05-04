@@ -1,5 +1,5 @@
 import request from '@/config/axios'
-import type { DictTypeVO, DictTypePageReqVO, DictTypeExportReqVO } from './types'
+import type {DictTypeExportReqVO, DictTypeReqVO, DictTypePageReqVO} from "./types";
 
 // 查询字典（精简)列表
 export const listSimpleDictTypeApi = () => {
@@ -17,12 +17,12 @@ export const getDictTypeApi = (id: number) => {
 }
 
 // 新增字典
-export const createDictTypeApi = (data: DictTypeVO) => {
+export const createDictTypeApi = (data: DictTypeReqVO) => {
   return request.post({ url: '/system/dict-type/create', data })
 }
 
 // 修改字典
-export const updateDictTypeApi = (data: DictTypeVO) => {
+export const updateDictTypeApi = (data: DictTypeReqVO) => {
   return request.put({ url: '/system/dict-type/update', data })
 }
 
@@ -34,3 +34,4 @@ export const deleteDictTypeApi = (id: number) => {
 export const exportDictTypeApi = (params: DictTypeExportReqVO) => {
   return request.get({ url: '/system/dict-type/export', params })
 }
+

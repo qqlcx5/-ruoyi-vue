@@ -3,82 +3,80 @@
     v-model="drawer"
     @close="closeDrawer"
     direction="rtl"
-    size="365px"
+    size="450px"
     :z-index="4000"
     class="setting-drawer-content"
   >
     <template #header>
-      <span class="text-16px font-700">{{ t('setting.projectSetting') }}</span>
+      <span class="text-16px font-700 text-black">{{ t('setting.projectSetting') }}</span>
     </template>
 
-    <ElDivider />
+<!--    <ElDivider />-->
     <!--     TODO:有空再抽 都一样的-->
-    <div class="layout-content-center">
-      <div class="text-center">
-        <!-- 主题 -->
-        <!--      <ElDivider>{{ t('setting.theme') }}</ElDivider>-->
-        <!--      <ThemeSwitch />-->
+    <el-scrollbar>
+      <div class="layout-content-center pt-14px pb-80px">
+        <div class="text-center">
+          <!-- 主题 -->
+          <!--      <ElDivider>{{ t('setting.theme') }}</ElDivider>-->
+          <!--      <ThemeSwitch />-->
 
-        <!-- 布局 -->
-        <div class="general-content">
-          <div class="drawer-title"> {{ t('setting.layout') }}</div>
-          <div class="layout-radio-picker-content">
-            <LayoutRadioPicker />
+          <!-- 布局 -->
+          <div class="general-content mb-20px">
+            <div class="drawer-title"> {{ t('setting.layout') }}</div>
+            <div class="layout-radio-picker-content px-20px pt-20px">
+              <LayoutRadioPicker />
+            </div>
+          </div>
+
+          <!-- 系统主题 -->
+          <div class="general-content pt-20px">
+            <div class="drawer-title"> {{ t('setting.systemTheme') }}</div>
+            <div class="layout-radio-picker-content px-20px pt-35px">
+              <ColorRadioPicker
+                v-model="systemTheme"
+                :schema="['#0081FF', '#31C27C', '#447EFD', '#EB4A3B', '#FF9B32', '#D56D9D']"
+                @change="setSystemTheme"
+              />
+            </div>
+          </div>
+          <!-- 头部主题 -->
+          <div class="general-content pt-40px">
+            <div class="drawer-title"> {{ t('setting.headerTheme') }}</div>
+            <div class="layout-radio-picker-content px-20px pt-35px">
+              <ColorRadioPicker
+                v-model="headerTheme"
+                :schema="['#fff', '#31C27C', '#597EFD', '#EB4A3B', '#FF9B32', '#D56D9D']"
+                @change="setHeaderTheme"
+              />
+            </div>
+          </div>
+
+          <!-- 菜单主题 -->
+          <div class="pt-40px" v-if="layout !== 'top'">
+            <div class="drawer-title"> {{ t('setting.menuTheme') }}</div>
+            <div class="layout-radio-picker-content px-20px pt-35px">
+              <ColorRadioPicker
+                v-model="menuTheme"
+                :schema="['#fff', '#31394A', '#111E41', '#232738', '#272C42', '#9F9F9F']"
+                @change="setMenuTheme"
+              />
+            </div>
           </div>
         </div>
 
-        <!-- 系统主题 -->
-        <div class="general-content">
-          <div class="drawer-title"> {{ t('setting.systemTheme') }}</div>
-          <div class="layout-radio-picker-content">
-            <ColorRadioPicker
-              v-model="systemTheme"
-              :schema="['#0081FF', '#31C27C', '#447EFD', '#EB4A3B', '#FF9B32', '#D56D9D']"
-              @change="setSystemTheme"
-            />
+        <!-- 界面显示 -->
+        <div class="general-content pt-40px">
+          <div class="drawer-title"> {{ t('setting.interfaceDisplay') }}</div>
+          <div class="layout-radio-picker-content px-20px pt-25px">
+            <InterfaceDisplay />
           </div>
         </div>
-        <!-- 头部主题 -->
-        <div class="general-content">
-          <div class="drawer-title"> {{ t('setting.headerTheme') }}</div>
-          <div class="layout-radio-picker-content">
-            <ColorRadioPicker
-              v-model="headerTheme"
-              :schema="['#fff', '#31C27C', '#597EFD', '#EB4A3B', '#FF9B32', '#846D9D']"
-              @change="setHeaderTheme"
-            />
-          </div>
-        </div>
-
-        <!-- 菜单主题 -->
-        <template v-if="layout !== 'top'">
-          <div class="drawer-title"> {{ t('setting.menuTheme') }}</div>
-          <div class="layout-radio-picker-content">
-            <ColorRadioPicker
-              v-model="menuTheme"
-              :schema="['#fff', '#31394A', '#111E41', '#232738', '#272C42', '#9F9F9F']"
-              @change="setMenuTheme"
-            />
-          </div>
-        </template>
       </div>
+    </el-scrollbar>
 
-      <!-- 界面显示 -->
-      <div class="general-content">
-        <div class="drawer-title"> {{ t('setting.interfaceDisplay') }}</div>
-        <div class="layout-radio-picker-content">
-          <InterfaceDisplay />
-        </div>
-      </div>
-    </div>
-    <div class="button-content">
-      <ElButton type="primary" @click="copyConfig" class="button-copy">{{
-        t('setting.copy')
-      }}</ElButton>
-
-      <ElButton type="plain" @click="clear" class="button-reset">
-        {{ t('setting.clearAndReset') }}
-      </ElButton>
+    <div class="button-content w-450px flex text-center leading-60px cursor-pointer z-10">
+      <div class="button-copy w-146px" @click="copyConfig">{{ t('setting.copy') }}</div>
+      <div class="button-reset flex-grow" @click="clear">{{ t('setting.clearAndReset') }}</div>
     </div>
   </ElDrawer>
 </template>
@@ -294,30 +292,20 @@ $prefix-cls: #{$namespace}-setting;
 
 .#{$prefix-cls} {
   border-radius: 6px 0 0 6px;
-  :deep(.el-drawer__header) {
-    margin-bottom: 0 !important;
-  }
 }
 //拷贝 重置
 .button-content {
-  width: 365px;
-  background: skyblue;
-  display: flex;
   position: fixed;
   bottom: 0;
+  background-color: var(--el-color-primary);
 
-  //拷贝
   .button-copy {
-    height: 37px;
-    border-radius: 0;
-    flex-grow: 1;
-    //background: $bg-color;
+    color: #ffffff;
   }
   //重置
   .button-reset {
-    height: 37px;
-    flex-grow: 1;
-    margin: 0;
+    color: var(--el-color-primary);
+    background-color: #EDF4FB;
   }
 }
 </style>
@@ -325,7 +313,10 @@ $prefix-cls: #{$namespace}-setting;
 <style lang="scss">
 .setting-drawer-content {
   .el-drawer__header {
-    margin-bottom: 0 !important;
+    color: #333333;
+    margin-bottom: 0;
+    padding: 25px 20px;
+    border-bottom: 1px solid #EAEBEF;
   }
 
   .el-drawer__body {
@@ -334,13 +325,12 @@ $prefix-cls: #{$namespace}-setting;
 
   //详情底下content
   .layout-content-center {
-    margin-left: 20px;
+    margin: 0 20px;
     //background: skyblue;
   }
 
   //布局--title
   .drawer-title {
-    height: 30px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -355,9 +345,7 @@ $prefix-cls: #{$namespace}-setting;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-left: 15px;
-    min-height: 79px;
-    width: 300px;
+    width: 410px;
   }
 
   //=======圆圈内打钩start=======

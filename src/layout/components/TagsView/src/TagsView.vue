@@ -431,7 +431,7 @@ watch(
           // },
           {
             divided: false,
-            icon: 'ep:discount',
+            icon: 'svg-icon:menu-close-all',
             label: t('common.closeOther'),
             command: () => {
               closeOthersTags()
@@ -526,7 +526,7 @@ $prefix-cls: #{$namespace}-tags-view;
     font-family: $font-family;
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid #d9d9d9;
+    border: 1px solid #DCDFE6;
 
     //首页
     &.#{$prefix-cls}__item--affix {
@@ -543,7 +543,7 @@ $prefix-cls: #{$namespace}-tags-view;
     &--close {
       position: absolute;
       top: 50%;
-      right: 9px;
+      right: 6px;
       display: none;
       transform: translate(0, -50%);
     }

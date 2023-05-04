@@ -46,15 +46,17 @@ onMounted(() => {
   <div class="message">
     <ElPopover placement="bottom" :width="400" trigger="click">
       <template #reference>
-        <ElBadge :is-dot="unreadCount > 0" class="item">
-          <!-- <Icon icon="ep:bell" :size="20" class="cursor-pointer" @click="getList" :color="color" />-->
-          <Icon
-            icon="svg-icon:bell"
-            :size="40"
-            class="cursor-pointer"
-            @click="getList"
-            :color="color"
-          />
+        <ElBadge :is-dot="unreadCount > 0" class="item flex items-center justify-center w-60px h-60px">
+<!--           <Icon icon="ep:bell" :size="20" class="cursor-pointer" @click="getList" :color="color" />-->
+          <div class="flex items-center justify-center w-60px h-60px">
+            <Icon
+              icon="svg-icon:bell"
+              :size="16"
+              class="cursor-pointer"
+              @click="getList"
+              :color="color"
+            />
+          </div>
         </ElBadge>
       </template>
       <ElTabs v-model="activeName">
@@ -84,6 +86,11 @@ onMounted(() => {
   </div>
 </template>
 <style scoped lang="scss">
+.message {
+  :deep(.el-badge) {
+    display: flex;
+  }
+}
 .message-empty {
   display: flex;
   flex-direction: column;

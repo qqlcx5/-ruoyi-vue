@@ -51,11 +51,14 @@ export default {
     delSuccess: '删除成功',
     index: '序号',
     status: '状态',
+    creater: '创建人',
     createTime: '创建时间',
     updateTime: '更新时间',
     copy: '复制',
     copySuccess: '复制成功',
-    copyError: '复制失败'
+    copyError: '复制失败',
+    operator: '最近操作人',
+    operationTime: '最近操作时间',
   },
   error: {
     noPermission: `抱歉，您无权访问此页面。`,

@@ -16,7 +16,7 @@ const layout = computed(() => appStore.getLayout)
     <div
       :class="[
         `${prefixCls}__classic`,
-        'relative w-80px h-60px cursor-pointer bg-gray-300',
+        'relative w-80px h-60px cursor-pointer bg-white',
         {
           'is-acitve': layout === 'classic'
         },
@@ -24,7 +24,12 @@ const layout = computed(() => appStore.getLayout)
       ]"
       @click="appStore.setLayout('classic')"
     >
-      <div v-show="layout === 'classic'" class="checkmark checkmark-one"></div>
+      <Icon
+        v-show="layout === 'classic'"
+        class="checked-icon"
+        icon="svg-icon:tick-circle"
+        color="#3296fa"
+        :size="24" />
     </div>
     <!--    <div-->
     <!--      :class="[-->
@@ -39,7 +44,7 @@ const layout = computed(() => appStore.getLayout)
     <div
       :class="[
         `${prefixCls}__top`,
-        'relative w-80px h-60px cursor-pointer bg-gray-300',
+        'relative w-80px h-60px cursor-pointer bg-white',
         {
           'is-acitve': layout === 'top'
         },
@@ -47,12 +52,17 @@ const layout = computed(() => appStore.getLayout)
       ]"
       @click="appStore.setLayout('top')"
     >
-      <div v-show="layout === 'top'" class="checkmark checkmark-one"></div>
+      <Icon
+        v-show="layout === 'top'"
+        class="checked-icon"
+        icon="svg-icon:tick-circle"
+        color="#3296fa"
+        :size="24" />
     </div>
     <div
       :class="[
         `${prefixCls}__cut-menu`,
-        'relative w-80px h-60px cursor-pointer bg-gray-300',
+        'relative w-80px h-60px cursor-pointer bg-white',
         {
           'is-acitve': layout === 'cutMenu'
         },
@@ -60,8 +70,13 @@ const layout = computed(() => appStore.getLayout)
       ]"
       @click="appStore.setLayout('cutMenu')"
     >
-      <div class="absolute h-full w-[33%] top-0 left-[10%] bg-gray-200"></div>
-      <div v-show="layout === 'cutMenu'" class="checkmark checkmark-one"></div>
+      <div class="absolute w-[20%] top-[16%] bottom-0 left-[20%] bg-gray-200"></div>
+      <Icon
+        v-show="layout === 'cutMenu'"
+        class="checked-icon"
+        icon="svg-icon:tick-circle"
+        color="#3296fa"
+        :size="24" />
     </div>
   </div>
 </template>
@@ -71,18 +86,18 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
 
 .#{$prefix-cls} {
   &__classic {
-    border: 2px solid #e5e7eb;
-    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
 
     &:before {
       position: absolute;
       top: 0;
       left: 0;
       z-index: 1;
-      width: 33%;
+      width: 20%;
       height: 100%;
       background-color: #273352;
-      border-radius: 4px 0 0 4px;
+      border-radius: 8px 0 0 8px;
       content: '';
     }
 
@@ -91,16 +106,17 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
       top: 0;
       left: 0;
       width: 100%;
-      height: 25%;
+      height: 16%;
       background-color: #fff;
-      border-radius: 4px 4px 0 4px;
+      border-bottom: 1px solid #e5e7eb;
+      border-radius: 8px 8px 0 8px;
       content: '';
     }
   }
 
   &__top-left {
-    border: 2px solid #e5e7eb;
-    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
 
     &:before {
       position: absolute;
@@ -108,9 +124,9 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
       left: 0;
       z-index: 1;
       width: 100%;
-      height: 33%;
+      height: 20%;
       background-color: #273352;
-      border-radius: 4px 4px 0 0;
+      border-radius: 8px 8px 0 0;
       content: '';
     }
 
@@ -121,14 +137,14 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
       width: 33%;
       height: 100%;
       background-color: #fff;
-      border-radius: 4px 0 0 4px;
+      border-radius: 8px 0 0 8px;
       content: '';
     }
   }
 
   &__top {
-    border: 2px solid #e5e7eb;
-    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
 
     &:before {
       position: absolute;
@@ -136,26 +152,26 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
       left: 0;
       z-index: 1;
       width: 100%;
-      height: 33%;
+      height: 30%;
       background-color: #273352;
-      border-radius: 4px 4px 0 0;
+      border-radius: 8px 8px 0 0;
       content: '';
     }
   }
 
   &__cut-menu {
-    border: 2px solid #e5e7eb;
-    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
 
     &:before {
       position: absolute;
       top: 0;
       left: 0;
-      z-index: 1;
       width: 100%;
-      height: 33%;
-      background-color: #273352;
-      border-radius: 4px 4px 0 0;
+      height: 16%;
+      background-color: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      border-radius: 8px 8px 0 0;
       content: '';
     }
 
@@ -163,17 +179,24 @@ $prefix-cls: #{$namespace}-layout-radio-picker;
       position: absolute;
       top: 0;
       left: 0;
-      width: 10%;
+      width: 20%;
       height: 100%;
-      background-color: #fff;
-      border-radius: 4px 0 0 4px;
+      background-color: #273352;
+      border-radius: 8px 0 0 8px;
       content: '';
+      z-index: 1;
     }
   }
 
   .is-acitve {
-    border-color: var(--el-color-primary);
+    box-shadow: 0px 0px 9px 0px rgba(51, 157, 255, 0.51);
   }
+}
+
+.checked-icon {
+  position: absolute;
+  right: 0;
+  bottom: 0;
 }
 
 .total-content {

@@ -3,10 +3,15 @@
     <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
       <slot :name="item" v-bind="data || {}"></slot>
     </template>
+    <template #toolbar_tools>
+      <!-- 操作：操作table columns -->
+      <WGTools @toolClick="handleToolClick" />
+    </template>
   </VxeGrid>
+  <WGColumnDrawer v-model="drawerVisible" :columns="getTableColumns" @columnChange="handleColumnChange" />
 </template>
 <script setup lang="ts" name="XTable">
-import { PropType } from 'vue'
+import {PropType} from 'vue'
 import { SizeType, VxeGridInstance } from 'vxe-table'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -14,6 +19,8 @@ import { XTableProps } from './type'
 import { isBoolean, isFunction } from '@/utils/is'
 
 import download from '@/utils/download'
+import {log} from "util";
+import WGTools from "@/components/XTable/src/WGTools.vue";
 
 const { t } = useI18n()
 const message = useMessage() // 消息弹窗
@@ -29,11 +36,11 @@ const emit = defineEmits(['register'])
 watch(
   () => appStore.getIsDark,
   () => {
+    const t = new Date().getTime();
     if (appStore.getIsDark == true) {
-      import('./style/dark.scss')
-    }
-    if (appStore.getIsDark == false) {
-      import('./style/light.scss')
+      import(`./style/dark.scss`);
+    } else {
+      import(`./style/light.scss`)
     }
   },
   { immediate: true }
@@ -66,6 +73,7 @@ const innerProps = ref<Partial<XTableProps>>()
 
 const getProps = computed(() => {
   const options = innerProps.value || props.options
+
   options.size = currentSize as any
   options.height = 700
   getOptionInitConfig(options)
@@ -73,7 +81,6 @@ const getProps = computed(() => {
   getProxyConfig(options)
   getPageConfig(options)
   getToolBarConfig(options)
-  // console.log(options);
   return {
     ...options,
     ...attrs
@@ -81,6 +88,44 @@ const getProps = computed(() => {
 })
 
 const xGrid = ref<VxeGridInstance>() // 列表 Grid Ref
+
+const getTableColumns = computed(() => {
+  const g = unref(xGrid)
+  if (!g) {
+    return []
+  }
+  return g.columns;
+})
+
+const handleColumnChange = (columns):void => {
+  const g = unref(xGrid)
+  if (!g) {
+    return
+  }
+  function sort(prop) {
+    return function (obj1, obj2) {
+      var val1 = obj1[prop]
+      var val2 = obj2[prop]
+      if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+        val1 = Number(val1)
+        val2 = Number(val2)
+      }
+      if (val1 < val2) {
+        return -1
+      } else if (val1 > val2) {
+        return 1
+      } else {
+        return 0
+      }
+    }
+  }
+  let currentColumns = reactive<any>(g.columns);
+  currentColumns.forEach(item => {
+    item.sortId = columns.findIndex(c => c.field === item.field);
+  })
+  let changedColumn = currentColumns.sort(sort("sortId"));
+  g.reloadColumn(currentColumns);
+}
 
 let proxyForm = false
 
@@ -252,21 +297,44 @@ const getPageConfig = (options: XTableProps) => {
 // tool bar
 const getToolBarConfig = (options: XTableProps) => {
   const { toolBar, toolbarConfig, topActionSlots } = options
-  if (toolbarConfig) return
+  if (toolbarConfig) return console.log(1);
   if (toolBar) {
     if (!isBoolean(toolBar)) {
-      console.info(2)
       options.toolbarConfig = toolBar
       return
     }
   } else if (topActionSlots != false) {
     options.toolbarConfig = {
-      slots: { buttons: 'toolbar_buttons' }
+      slots: { buttons: 'toolbar_buttons', tools: 'toolbar_tools' }
     }
   } else {
     options.toolbarConfig = {
       enabled: true
     }
+  }
+}
+
+let drawerVisible = ref<boolean> (false)
+
+const handleToolClick = (key):void => {
+  console.log(key);
+  const g = unref(xGrid)
+  if (!g) {
+    return
+  }
+  switch (key) {
+    case 'print':
+      exportList();
+      break;
+    case 'refresh':
+      reload();
+      break;
+    case 'fullScreen':
+      g.zoom();
+      break;
+    case 'custom':
+      drawerVisible.value = true;
+      break;
   }
 }
 
@@ -279,8 +347,20 @@ const reload = () => {
   g.commitProxy('query')
 }
 
+// 刷新列
+const refreshColumn = () => {
+  const g = unref(xGrid)
+  if (!g) {
+    return
+  }
+  let a = reactive<any>(g.columns);
+
+  [a[0], a[1]] = [a[1], a[0]];
+  setTimeout(() => g.reloadColumn(a))
+}
+
 // 删除
-const deleteData = async (id: string | number) => {
+const deleteData = async (id: string | number, msg?: string) => {
   const g = unref(xGrid)
   if (!g) {
     return
@@ -291,7 +371,7 @@ const deleteData = async (id: string | number) => {
     return
   }
   return new Promise(async () => {
-    message.delConfirm().then(async () => {
+    message.delConfirm(msg).then(async () => {
       await (options?.deleteApi && options?.deleteApi(id))
       message.success(t('common.delSuccess'))
       // 刷新列表
@@ -404,6 +484,7 @@ const setProps = (prop: Partial<XTableProps>) => {
 defineExpose({ reload, Ref: xGrid, getSearchData, deleteData, exportList })
 emit('register', {
   reload,
+  refreshColumn,
   getSearchData,
   setProps,
   deleteData,
@@ -416,4 +497,9 @@ emit('register', {
 </script>
 <style lang="scss">
 @import './style/index.scss';
+.xtable-scrollbar {
+  .vxe-toolbar {
+    padding: 0 0 16px 0;
+  }
+}
 </style>

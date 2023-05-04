@@ -57,9 +57,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="icon-content" @click="themeChange(isDark)">
+  <div class="flex items-center justify-center w-60px h-60px" @click="themeChange(isDark)">
     <!--    <Icon :size="18" icon="ep:sunny" class="cursor-pointer" :color="color" />-->
-    <Icon icon="svg-icon:sunny" :size="60" class="cursor-pointer" :color="color" />
+    <Icon icon="svg-icon:sunny" :size="20" class="cursor-pointer" :color="color" />
     <!--  <ElSwitch-->
     <!--    :class="prefixCls"-->
     <!--    v-model="isDark"-->
@@ -73,13 +73,3 @@ onMounted(() => {
     <!--  />-->
   </div>
 </template>
-
-<style lang="scss" scoped>
-.icon-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-</style>

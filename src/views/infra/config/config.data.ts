@@ -14,31 +14,64 @@ const crudSchemas = reactive<VxeCrudSchema>({
   primaryKey: 'id',
   primaryType: null,
   action: true,
+  actionWidth: '160px',
   columns: [
     {
+      title: '参数主键',
+      field: 'category',
+      isForm: false,
+      form: {
+        colProps: {
+          span: 24
+        }
+      }
+    },
+    {
       title: '参数分类',
-      field: 'category'
+      field: 'category',
+      form: {
+        colProps: {
+          span: 24
+        }
+      }
     },
     {
       title: '参数名称',
       field: 'name',
-      isSearch: true
+      form: {
+        colProps: {
+          span: 24
+        }
+      }
     },
     {
       title: '参数键名',
       field: 'key',
-      isSearch: true
+      form: {
+        colProps: {
+          span: 24
+        }
+      }
     },
     {
       title: '参数键值',
-      field: 'value'
+      field: 'value',
+      form: {
+        colProps: {
+          span: 24
+        }
+      }
     },
     {
       title: '系统内置',
       field: 'type',
       dictType: DICT_TYPE.INFRA_CONFIG_TYPE,
       dictClass: 'number',
-      isSearch: true
+      form: {
+        colProps: {
+          span: 24
+        }
+      }
     },
     {
       title: '是否可见',
@@ -49,19 +82,22 @@ const crudSchemas = reactive<VxeCrudSchema>({
         }
       },
       form: {
-        component: 'RadioButton',
+        value: true,
+        component: 'Switch',
         componentProps: {
           options: [
             { label: '是', value: true },
             { label: '否', value: false }
           ]
+        },
+        colProps: {
+          span: 24
         }
       }
     },
     {
       title: t('form.remark'),
       field: 'remark',
-      isTable: false,
       form: {
         component: 'Input',
         componentProps: {
@@ -74,17 +110,27 @@ const crudSchemas = reactive<VxeCrudSchema>({
       }
     },
     {
+      title: t('common.creater'),
+      field: 'creator',
+      isForm: false
+    },
+    {
       title: t('common.createTime'),
       field: 'createTime',
       formatter: 'formatDate',
       isForm: false,
-      search: {
-        show: true,
-        itemRender: {
-          name: 'XDataTimePicker'
-        }
-      }
-    }
+    },
+    {
+      title: t('common.operator'),
+      field: 'updater',
+      isForm: false
+    },
+    {
+      title: t('common.operationTime'),
+      field: 'updateTime',
+      formatter: 'formatDate',
+      isForm: false
+    },
   ]
 })
 export const { allSchemas } = useVxeCrudSchemas(crudSchemas)
