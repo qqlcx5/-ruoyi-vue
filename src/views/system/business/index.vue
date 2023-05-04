@@ -62,6 +62,7 @@
       v-if="state.refreshTable"
       :columns="state.columns"
       :data-source="state.tableDataList"
+      :scroll="{ x: true, y: true }"
       :pagination="{
         pageSizeOptions: ['20', '30', '60', '100'],
         showSizeChanger: true,
@@ -115,7 +116,7 @@
         </template>
         <!--  有效期   -->
         <template v-if="column.key === 'validityPeriod'">
-          <div>{{ record.effectiveStartDate }}—{{ record.expireTime }}</div>
+          <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
         </template>
         <!--  状态   -->
         <template v-if="column.key === 'statusSwitch'">
@@ -144,7 +145,6 @@
   <a-modal
     v-model:visible="state.isShow"
     :title="state.modalTitle"
-    @ok="closeModal"
     @cancel="closeModal"
     :width="'900px'"
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
@@ -205,22 +205,36 @@
 
         <a-form-item label="系统logo" name="logoUrl">
           <a-upload
-            v-model:file-list="fileList"
-            name="avatar"
+            v-model:file-list="state.logoListUrl"
+            :action="updateUrl + '?updateSupport=' + updateSupport"
             list-type="picture-card"
+            @preview="handlePreview"
+            accept=".jpg, .png, .gif"
             class="avatar-uploader"
-            :show-upload-list="false"
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            :before-upload="beforeUpload"
-            @change="handleChange"
+            :show-upload-list="true"
+            :headers="uploadHeaders"
+            :before-upload="
+              (file, fileList) => {
+                beforeUpload(file, fileList, 'logo')
+              }
+            "
+            @change="
+              (file, fileList) => {
+                handleChange(file, fileList, 'logo')
+              }
+            "
+            @remove="
+              (file) => {
+                removeImg(file, 'logo')
+              }
+            "
           >
-            <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
-            <div v-else>
-              <!--              <loading-outlined v-if="loading" />-->
-              <!--              <plus-outlined v-else />-->
-              <div class="ant-upload-text">Upload</div>
+            <div v-if="state.logoListUrl.length < 1">
+              <plus-outlined />
+              <div style="margin-top: 8px">Upload</div>
             </div>
           </a-upload>
+          <div> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
         </a-form-item>
 
         <a-form-item
@@ -249,7 +263,7 @@
             />
             <div>
               <a-form-item-rest>
-                <a-checkbox v-model:checked="state.formState.forever">
+                <a-checkbox v-model:checked="state.formState.forever" @change="foreverChange">
                   永久有效</a-checkbox
                 ></a-form-item-rest
               >
@@ -304,22 +318,36 @@
 
         <a-form-item label="法人身份证" name="legalIdentityUrl">
           <a-upload
-            v-model:file-list="fileList"
-            name="avatar"
+            v-model:file-list="state.legalPersonListUrl"
+            :action="updateUrl + '?updateSupport=' + updateSupport"
             list-type="picture-card"
+            @preview="handlePreview"
+            accept=".jpg, .png, .gif"
             class="avatar-uploader"
-            :show-upload-list="false"
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            :before-upload="beforeUpload"
-            @change="handleChange"
+            :show-upload-list="true"
+            :headers="uploadHeaders"
+            :before-upload="
+              (file, fileList) => {
+                beforeUpload(file, fileList, 'legalPerson')
+              }
+            "
+            @change="
+              (file, fileList) => {
+                handleChange(file, fileList, 'legalPerson')
+              }
+            "
+            @remove="
+              (file) => {
+                removeImg(file, 'legalPerson')
+              }
+            "
           >
-            <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
-            <div v-else>
-              <!--              <loading-outlined v-if="loading" />-->
-              <!--              <plus-outlined v-else />-->
-              <div class="ant-upload-text">Upload</div>
+            <div v-if="state.legalPersonListUrl.length < 1">
+              <plus-outlined />
+              <div style="margin-top: 8px">Upload</div>
             </div>
           </a-upload>
+
           <div> 请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片 </div>
         </a-form-item>
 
@@ -351,29 +379,49 @@
 
         <a-form-item label="营业执照" name="businessLicenseUrl">
           <a-upload
-            v-model:file-list="fileList"
-            name="avatar"
+            v-model:file-list="state.businessLicenseListUrl"
+            :action="updateUrl + '?updateSupport=' + updateSupport"
             list-type="picture-card"
+            @preview="handlePreview"
+            accept=".jpg, .png, .gif"
             class="avatar-uploader"
-            :show-upload-list="false"
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            :before-upload="beforeUpload"
-            @change="handleChange"
+            :show-upload-list="true"
+            :headers="uploadHeaders"
+            :before-upload="
+              (file, fileList) => {
+                beforeUpload(file, fileList, 'businessLicense')
+              }
+            "
+            @change="
+              (file, fileList) => {
+                handleChange(file, fileList, 'businessLicense')
+              }
+            "
+            @remove="
+              (file) => {
+                removeImg(file, 'businessLicense')
+              }
+            "
           >
-            <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
-            <div v-else>
-              <!--              <loading-outlined v-if="loading" />-->
-              <!--              <plus-outlined v-else />-->
-              <div class="ant-upload-text">Upload</div>
+            <div v-if="state.businessLicenseListUrl.length < 1">
+              <plus-outlined />
+              <div style="margin-top: 8px">Upload</div>
             </div>
           </a-upload>
+
           <div> 请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片 </div>
         </a-form-item>
       </a-form>
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="addMajorIndividualFN">确定</a-button>
+      <a-button
+        type="primary"
+        html-type="submit"
+        @click="addMajorIndividualFN"
+        :loading="state.addEditLoading"
+        >确定</a-button
+      >
       <a-button @click="closeModal">取消</a-button>
     </template>
   </a-modal>
@@ -586,11 +634,11 @@
       </div>
       <div class="user-info1">
         <span>超管用户名：</span>
-        <span>admin</span>
+        <span>{{ state.resetPasswordSuccessInfo?.username }}</span>
       </div>
       <div class="user-info2">
         <span>新密码：</span>
-        <span>5464313</span>
+        <span>{{ state.resetPasswordSuccessInfo?.password }}</span>
         <div class="copy-button" @click="copyText">复制</div>
       </div>
       <div class="user-info3">
@@ -644,6 +692,7 @@
                 :value="item.key"
                 :key="item.title"
                 style="width: 100%"
+                :disabled="item?.disabled"
               >
                 {{ item.title }}
               </a-checkbox>
@@ -656,16 +705,34 @@
     <!--  footer  -->
     <template #footer>
       <a-button type="primary" html-type="submit" @click="columnsSave">确认</a-button>
-      <a-button>还原</a-button>
+      <a-button @click="setDefaultColumns">还原</a-button>
     </template>
+  </a-modal>
+
+  <!--  上传图片预览  -->
+  <a-modal
+    :visible="previewVisible"
+    :title="previewTitle"
+    :footer="null"
+    @cancel="handleCancel"
+    :bodyStyle="{
+      width: `100%`,
+      height: `100%`,
+      margin: '0',
+      padding: '0',
+      overflow: 'auto'
+    }"
+  >
+    <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
   </a-modal>
 </template>
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
-// import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
+import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+import { message, Upload } from 'ant-design-vue'
+import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum } from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
 import {
@@ -688,12 +755,12 @@ import editImg from '@/assets/imgs/system/editImg.png'
 import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
 import { VueDraggableNext } from 'vue-draggable-next'
+import { UploadRawFile } from 'element-plus'
+import { getAccessToken, getTenantId } from '@/utils/auth'
 
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
-
-// console.log('provincesMunicipalitiesArea', provincesMunicipalitiesArea)
 
 interface FormState {
   id?: number
@@ -750,7 +817,6 @@ const isValidPhoneNumber = (phoneNumber) => {
 const contactMobileValidator = (rule, value) => {
   return new Promise<void>((resolve, reject) => {
     if (value) {
-      console.log(' isValidPhoneNumber(value)', isValidPhoneNumber(value))
       if (!isValidPhoneNumber(value)) {
         reject('请输入正确的手机号码')
       } else {
@@ -782,6 +848,18 @@ const layout = {
   wrapperCol: { span: 14 }
 }
 
+let updateUrl = import.meta.env.VITE_UPLOAD_URL
+let regVersion = import.meta.env.VITE_REG_VERSION
+const updateSupport = ref(0)
+const uploadHeaders = ref({
+  Authorization: 'Bearer ' + getAccessToken(),
+  'tenant-id': getTenantId(),
+  'Reg-Version': regVersion
+})
+
+const loading = ref<boolean>(false)
+const imageUrl = ref<string>('')
+
 const state = reactive({
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -796,6 +874,7 @@ const state = reactive({
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
   loading: true, //表格加载中
+  rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
@@ -871,55 +950,29 @@ const state = reactive({
   isShowCustomColumnModal: false, //是否打开定制列modal
   columnsCheckList: [
     {
-      title: '测试',
-      key: 'test',
-      sort: 0,
-      disabled: true
-    },
-    {
-      title: '主体编码',
-      key: 'code',
-      sort: 1
-    },
-    {
       title: '主体名称',
-      key: 'name',
-      sort: 2
-    },
-    {
-      title: '系统名称',
-      key: 'systemName',
-      sort: 3
-    },
-    {
-      title: '创建人',
-      key: 'creator',
-      sort: 4
-    }
-  ], //定制列 复选框
-  checkedList: ['test'], //定制列 选中的
-  columns: [
-    {
-      title: '主体名称',
+      width: 200,
       dataIndex: 'name',
       key: 'name',
-      width: 200,
-      ellipsis: true
+      ellipsis: true,
+      disabled: true
     },
     {
       title: '主体编码',
       width: 200,
       dataIndex: 'code',
       key: 'code',
-      ellipsis: true
+      ellipsis: true,
+      disabled: true
     },
     {
       title: '系统名称',
       dataIndex: 'systemName',
-      key: 'systemName'
+      key: 'systemName',
+      disabled: true
     },
     {
-      title: '可用名额',
+      title: '可用/可用名额',
       dataIndex: 'usableAmount',
       key: 'usableAmount'
     },
@@ -952,13 +1005,285 @@ const state = reactive({
     },
 
     {
+      title: '创建人',
+      dataIndex: 'creator',
+      key: 'creator'
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
+      key: 'createTime'
+    },
+    {
+      title: '最近操作人',
+      dataIndex: 'updater',
+      key: 'updater'
+    },
+    {
+      title: '最近操作时间',
+      dataIndex: 'updateTime',
+      key: 'updateTime'
+    },
+
+    {
       title: '操作',
       width: 240,
       dataIndex: 'operation',
       key: 'operation'
     }
+  ], //定制列 复选框
+  defaultColumnsCheckList: [
+    {
+      title: '主体名称',
+      width: 200,
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true,
+      disabled: true
+    },
+    {
+      title: '主体编码',
+      width: 200,
+      dataIndex: 'code',
+      key: 'code',
+      ellipsis: true,
+      disabled: true
+    },
+    {
+      title: '系统名称',
+      dataIndex: 'systemName',
+      key: 'systemName',
+      disabled: true
+    },
+    {
+      title: '可用/可用名额',
+      dataIndex: 'usableAmount',
+      key: 'usableAmount'
+    },
+    {
+      title: '有效期',
+      width: 200,
+      dataIndex: 'validityPeriod',
+      key: 'validityPeriod'
+    },
+
+    {
+      title: '绑定域名',
+      dataIndex: 'bindingDomainName',
+      key: 'bindingDomainName'
+    },
+    {
+      title: '负责人',
+      dataIndex: 'contactName',
+      key: 'contactName'
+    },
+    {
+      title: '负责人电话',
+      dataIndex: 'contactMobile',
+      key: 'contactMobile'
+    },
+    {
+      title: '状态',
+      dataIndex: 'statusSwitch',
+      key: 'statusSwitch'
+    },
+
+    {
+      title: '创建人',
+      dataIndex: 'creator',
+      key: 'creator'
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createTime',
+      key: 'createTime'
+    },
+    {
+      title: '最近操作人',
+      dataIndex: 'updater',
+      key: 'updater'
+    },
+    {
+      title: '最近操作时间',
+      dataIndex: 'updateTime',
+      key: 'updateTime'
+    },
+
+    {
+      title: '操作',
+      width: 240,
+      dataIndex: 'operation',
+      key: 'operation'
+    }
+  ], //定制列 默认 复选框 用于还原
+  checkedList: [
+    'code',
+    'name',
+    'systemName',
+    'usableAmount',
+    'validityPeriod',
+    'bindingDomainName',
+    'contactName',
+    'contactMobile',
+    'statusSwitch',
+    'operation'
+  ], //定制列 选中的
+  columns: [
+    {
+      title: '主体名称',
+      width: 200,
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true
+    },
+    {
+      title: '主体编码',
+      width: 100,
+      dataIndex: 'code',
+      key: 'code',
+      ellipsis: true
+    },
+    {
+      title: '系统名称',
+      width: 100,
+      dataIndex: 'systemName',
+      key: 'systemName',
+      ellipsis: true
+    },
+    {
+      title: '可用/可用名额',
+      width: 100,
+      dataIndex: 'usableAmount',
+      key: 'usableAmount',
+      ellipsis: true
+    },
+    {
+      title: '有效期',
+      width: 200,
+      dataIndex: 'validityPeriod',
+      key: 'validityPeriod',
+      ellipsis: true
+    },
+
+    {
+      title: '绑定域名',
+      width: 100,
+      dataIndex: 'bindingDomainName',
+      key: 'bindingDomainName',
+      ellipsis: true
+    },
+    {
+      title: '负责人',
+      width: 100,
+      dataIndex: 'contactName',
+      key: 'contactName',
+      ellipsis: true
+    },
+    {
+      title: '负责人电话',
+      width: 100,
+      dataIndex: 'contactMobile',
+      key: 'contactMobile',
+      ellipsis: true
+    },
+    {
+      title: '状态',
+      width: 100,
+      dataIndex: 'statusSwitch',
+      key: 'statusSwitch',
+      ellipsis: true
+    },
+
+    {
+      title: '操作',
+      width: 240,
+      dataIndex: 'operation',
+      key: 'operation',
+      ellipsis: true
+    }
   ], //表格 columns
-  optionalMenuTree: [] //上级主体 treeList
+  defaultColumns: [
+    {
+      title: '主体名称',
+      width: 200,
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true
+    },
+    {
+      title: '主体编码',
+      width: 100,
+      dataIndex: 'code',
+      key: 'code',
+      ellipsis: true
+    },
+    {
+      title: '系统名称',
+      width: 100,
+      dataIndex: 'systemName',
+      key: 'systemName',
+      ellipsis: true
+    },
+    {
+      title: '可用/可用名额',
+      width: 100,
+      dataIndex: 'usableAmount',
+      key: 'usableAmount',
+      ellipsis: true
+    },
+    {
+      title: '有效期',
+      width: 200,
+      dataIndex: 'validityPeriod',
+      key: 'validityPeriod',
+      ellipsis: true
+    },
+
+    {
+      title: '绑定域名',
+      width: 100,
+      dataIndex: 'bindingDomainName',
+      key: 'bindingDomainName',
+      ellipsis: true
+    },
+    {
+      title: '负责人',
+      width: 100,
+      dataIndex: 'contactName',
+      key: 'contactName',
+      ellipsis: true
+    },
+    {
+      title: '负责人电话',
+      width: 100,
+      dataIndex: 'contactMobile',
+      key: 'contactMobile',
+      ellipsis: true
+    },
+    {
+      title: '状态',
+      width: 100,
+      dataIndex: 'statusSwitch',
+      key: 'statusSwitch',
+      ellipsis: true
+    },
+
+    {
+      title: '操作',
+      width: 240,
+      dataIndex: 'operation',
+      key: 'operation',
+      ellipsis: true
+    }
+  ], //默认的表格 columns  定制列还原使用
+  optionalMenuTree: [], //上级主体 treeList
+  logoListUrl: [], //系统logo 上传 回显 - -
+  logoUrlSuccess: '', //系统logo 新增编辑入参
+  legalPersonListUrl: [], //法人身份证 上传回显
+  legalPersonUrlSuccess: '', //法人身份证 新增编辑入参
+  businessLicenseListUrl: [], //营业执照 上传回显
+  businessLicenseSuccess: '', //营业执照 新增编辑入参
+  addEditLoading: false //新增编辑 modal button 异步loading
 })
 
 //存放功能配置 选中的所有keys(包括父节点id)
@@ -966,8 +1291,6 @@ const checkedKeysBack = ref([])
 
 //获取子节点的 父节点id
 const testCheck = (checkedKeys, e) => {
-  console.log('checkedKeys', checkedKeys)
-  console.log('e=====>', e)
   //存放功能配置 选中的所有keys(包括父节点id)
   checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
 }
@@ -976,88 +1299,110 @@ const testCheck = (checkedKeys, e) => {
 const allColumns = [
   {
     title: '主体名称',
+    width: 200,
     dataIndex: 'name',
     key: 'name',
     ellipsis: true
   },
   {
     title: '主体编码',
-    width: 200,
+    width: 100,
     dataIndex: 'code',
     key: 'code',
     ellipsis: true
   },
   {
     title: '系统名称',
+    width: 100,
     dataIndex: 'systemName',
-    key: 'systemName'
+    key: 'systemName',
+    ellipsis: true
   },
   {
-    title: '可用名额',
+    title: '可用/可用名额',
+    width: 100,
     dataIndex: 'usableAmount',
-    key: 'usableAmount'
+    key: 'usableAmount',
+    ellipsis: true
   },
   {
     title: '有效期',
     width: 200,
     dataIndex: 'validityPeriod',
-    key: 'validityPeriod'
+    key: 'validityPeriod',
+    ellipsis: true
   },
 
   {
     title: '绑定域名',
+    width: 100,
     dataIndex: 'bindingDomainName',
-    key: 'bindingDomainName'
+    key: 'bindingDomainName',
+    ellipsis: true
   },
   {
     title: '负责人',
+    width: 100,
     dataIndex: 'contactName',
-    key: 'contactName'
+    key: 'contactName',
+    ellipsis: true
   },
   {
     title: '负责人电话',
+    width: 100,
     dataIndex: 'contactMobile',
-    key: 'contactMobile'
+    key: 'contactMobile',
+    ellipsis: true
   },
   {
     title: '状态',
+    width: 100,
     dataIndex: 'statusSwitch',
-    key: 'statusSwitch'
+    key: 'statusSwitch',
+    ellipsis: true
   },
 
   {
     title: '创建人',
     dataIndex: 'creator',
-    key: 'creator'
+    width: 100,
+    key: 'creator',
+    ellipsis: true
   },
   {
     title: '创建时间',
+    width: 100,
     dataIndex: 'createTime',
-    key: 'createTime'
+    key: 'createTime',
+    ellipsis: true
   },
   {
     title: '最近操作人',
+    width: 100,
     dataIndex: 'updater',
-    key: 'updater'
+    key: 'updater',
+    ellipsis: true
   },
   {
     title: '最近操作时间',
+    width: 100,
     dataIndex: 'updateTime',
-    key: 'updateTime'
+    key: 'updateTime',
+    ellipsis: true
   },
 
   {
     title: '操作',
     width: 240,
     dataIndex: 'operation',
-    key: 'operation'
+    key: 'operation',
+    ellipsis: true
   }
 ]
 
 /** 查询列表 */
 const getList = async () => {
   state.loading = true
-  // console.log('queryParams', queryParams)
   const params = {
     pageNo: queryParams.current,
     pageSize: queryParams.pageSize,
@@ -1075,18 +1420,16 @@ const getList = async () => {
     ]
   }
 
-  // console.log('params', params)
   try {
     const res = await getMajorIndividualList(params)
+    state.rawData = res
     state.tableDataList = res
     state.tableDataList.map((item) => {
       item.statusSwitch = item.status === 0
     })
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
-    console.log('state.tableDataList', state.tableDataList)
     state.total = res.total
-    // console.log('res====>', res)
   } finally {
     state.loading = false
   }
@@ -1096,11 +1439,8 @@ const getList = async () => {
   //不要展示按钮 默认按钮全选 后端处理
   const tempArr = menuList.filter((item) => item.type !== 3)
   state.menuTreeList = handleTree(tempArr)
-  console.log('menuList', menuList)
-  console.log('tempArr======>', tempArr)
 
   // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  // console.log('state.menuTreeList', state.menuTreeList)
   state.parentCheckedKeys = []
   state.menuTreeList.map((item) => {
     state.parentCheckedKeys.push(item.id)
@@ -1197,10 +1537,16 @@ const closeModal = () => {
     detailedAddress: '', //公司地址 详细地址
     businessLicenseUrl: '' //营业执照
   }
+
+  state.logoListUrl = [] //系统logo 上传 回显 - -
+  state.logoUrlSuccess = '' //系统logo 新增编辑入参
+  state.legalPersonListUrl = [] //法人身份证 上传回显
+  state.legalPersonUrlSuccess = '' //法人身份证 新增编辑入参
+  state.businessLicenseListUrl = [] //营业执照 上传回显
+  state.businessLicenseSuccess = '' //营业执照 新增编辑入参
   delete state.formState?.id
   state.modalTitle = '新增'
   state.modalType = 'add'
-  console.log('编辑完成之后的state.formState', state.formState)
 }
 
 /** 添加/修改操作 */
@@ -1211,24 +1557,20 @@ const menuTree = ref<Tree[]>([]) // 树形结构
 const getTree = async () => {
   menuTree.value = []
   const res = await MenuApi.getSimpleMenusList()
-  console.log('目录列表===>res', res)
   let menu: Tree = { id: 0, name: '主类目', children: [] }
   menu.children = handleTree(res)
   menuTree.value.push(menu)
-  console.log('menuTree', menuTree)
 }
 getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
-  console.log('编辑record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
   }
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
-  console.log('主体详情res', res)
 
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
@@ -1244,7 +1586,7 @@ const edit = async (record, isCloseDetails = false) => {
     name: res.name, //主体名称
     abbreviate: res.abbreviate, //主体简称
     systemName: res.systemName, //系统名称
-    logoUrl: res.logoUrl, //系统logo
+    // logoUrl: res.logoUrl, //系统logo
     contactName: res.contactName, //负责人
     contactMobile: res.contactMobile, //负责人电话
     effectiveStartEndTime: [dayjs(res.effectiveStartDate), dayjs(res.expireTime)], //有效期 开始时间
@@ -1255,10 +1597,38 @@ const edit = async (record, isCloseDetails = false) => {
     organizationCode: res.organizationCode, //组织机构代码
     legalRepresentative: res.legalRepresentative, //法定代表人
     legalMobile: res.legalMobile, //法人联系电话
-    legalIdentityUrl: res.legalIdentityUrl, //法人身份证
-    detailedAddress: res.address, //公司地址 详细地址
-    businessLicenseUrl: res.businessLicenseUrl //营业执照
+    // legalIdentityUrl: res.legalIdentityUrl, //法人身份证
+    detailedAddress: res.address //公司地址 详细地址
+    // businessLicenseUrl: res.businessLicenseUrl //营业执照
   }
+
+  if (res.logoUrl) {
+    state.logoListUrl = [
+      {
+        url: res.logoUrl //系统logo
+      }
+    ]
+    state.logoUrlSuccess = res.logoUrl
+  }
+
+  if (res.legalIdentityUrl) {
+    state.legalPersonListUrl = [
+      {
+        url: res.legalIdentityUrl //法人身份证
+      }
+    ]
+    state.legalPersonUrlSuccess = res.legalIdentityUrl
+  }
+
+  if (res.businessLicenseUrl) {
+    state.businessLicenseListUrl = [
+      {
+        url: res.businessLicenseUrl //营业执照
+      }
+    ]
+    state.businessLicenseSuccess = res.businessLicenseUrl
+  }
+
   if (res.establishDate) {
     state.formState['establishDate'] = dayjs(res.establishDate) //成立日期
   }
@@ -1311,7 +1681,6 @@ let needReplaceKey = [
   ['value', 'code']
 ]
 state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
-console.log('state.proMunAreaList', state.proMunAreaList)
 
 //新增主体
 const addMajorIndividualFN = async () => {
@@ -1319,15 +1688,14 @@ const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
-  console.log('valid', valid)
-  console.log('formState', state.formState)
+  state.addEditLoading = true
   let params = {
     belongTenantId: state.formState.belongTenantId, //上级主体
     code: state.formState.code, //主体编码
     name: state.formState.name, //主体名称
     abbreviate: state.formState.abbreviate, //主体简称
     systemName: state.formState.systemName, //系统名称
-    logoUrl: state.formState.logoUrl, //系统logo
+    logoUrl: state.logoUrlSuccess, //系统logo
     contactName: state.formState.contactName, //负责人
     contactMobile: state.formState.contactMobile, //负责人电话
     effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
@@ -1340,10 +1708,10 @@ const addMajorIndividualFN = async () => {
     organizationCode: state.formState.organizationCode, //组织机构代码
     legalRepresentative: state.formState.legalRepresentative, //法定代表人
     legalMobile: state.formState.legalMobile, //法人联系电话
-    legalIdentityUrl: state.formState.legalIdentityUrl, //法人身份证
+    legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
     address: state.formState.detailedAddress, //公司地址 详细地址
     //
-    businessLicenseUrl: state.formState.businessLicenseUrl //营业执照
+    businessLicenseUrl: state.businessLicenseSuccess //营业执照
   }
 
   //永久有效 起始时间为当前时间 结束时间为2099-12-31
@@ -1351,6 +1719,10 @@ const addMajorIndividualFN = async () => {
     params.effectiveStartDate = dayjs().format('YYYY-MM-DD')
     // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
     params.expireTime = '2099-12-31'
+  } else {
+    params.effectiveStartDate = state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD') //有效期 开始时间
+    // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
+    params.expireTime = state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD') //有效期 结束时间
   }
   //状态0 开启 1关闭
   if (state.formState.status) {
@@ -1373,19 +1745,15 @@ const addMajorIndividualFN = async () => {
     params['countyCode'] = state.formState.cascadeInfo[2].value
   }
 
-  console.log('state.formState.establishDate', state.formState.establishDate)
   if (state.formState.establishDate) {
     params['establishDate'] = state.formState.establishDate?.format('YYYY-MM-DD') //成立日期
     // establishDate: state.formState.establishDate.format('YYYY/MM/DD'), //成立日期
   }
 
-  console.log('params', params)
-
   try {
     let res = []
     if (state.modalType === 'add') {
       res = await addMajorIndividual(params)
-      console.log('res====>', res)
       state.addSuccessId = res
       message.success('新增成功')
       //配置权限
@@ -1393,13 +1761,13 @@ const addMajorIndividualFN = async () => {
     } else {
       params['id'] = state.formState.id
       res = await updateEditMajorIndividual(params)
-      console.log('编辑res====>', res)
       message.success('编辑成功')
     }
 
     closeModal()
     await getList()
   } finally {
+    state.addEditLoading = false
   }
 }
 
@@ -1420,22 +1788,17 @@ const openPermissionModal = async () => {
   state.isShowPermission = true
   // //获取菜单列表
   // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  // console.log('state.menuTreeList', state.menuTreeList)
   //获取菜单列表
   const menuList = await MenuApi.getSimpleMenusList()
   //不要展示按钮 默认按钮全选 后端处理
   const tempArr = menuList.filter((item) => item.type !== 3)
   state.menuTreeList = handleTree(tempArr)
-  console.log('menuList', menuList)
-  console.log('tempArr======>', tempArr)
 }
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
   () => {
-    console.log('state.checkedKeys====', state.checkedKeys)
-    console.log('checkedKeysBack.value', checkedKeysBack.value)
     state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
     state.selectTree = filterTree(state.menuTreeList, state.idArr)
     state.isShowRightTree = false
@@ -1443,21 +1806,11 @@ watch(
     nextTick(() => {
       state.isShowRightTree = true
     })
-    console.log('temp', state.selectTree)
   }
 )
 
 //功能配置 Modal 确认
 const PermissionOk = async () => {
-  console.log('state.selectedKeys', state.selectedKeys)
-  console.log('state.checkedKeys', state.checkedKeys)
-  console.log('checkedKeysBack.value', checkedKeysBack.value)
-  //去重 + 拼接全选id +拼接 部分选择时父子id
-  // const idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
-  // const temp = filterTree(state.menuTreeList, idArr)
-  // console.log('temp', temp)
-  console.log(' state.idArr', state.idArr)
-
   const params = {
     menuIds: state.idArr,
     tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
@@ -1478,7 +1831,6 @@ const PermissionOk = async () => {
 const assignPermission = async (record) => {
   state.permissionRecord = record
   state.permissType = 'edit'
-  console.log('record', record)
   const res = await getTenantPackage({ id: record.packageId })
   const { menuIds = [], id } = res
   state.editPermissionID = id
@@ -1489,12 +1841,17 @@ const assignPermission = async (record) => {
   nextTick(() => {
     state.isShowRightTree = true
   })
-  console.log('res===', res)
   await openPermissionModal()
 }
 
 //表格状态开关
 const tableStatusChange = (value, record) => {
+  //过滤得到父级项
+  const parentItem = state.rawData.filter((item) => item.id === record.belongTenantId)
+  if (parentItem.length > 0 && parentItem[0]?.status === 1) {
+    record.statusSwitch = !record.statusSwitch
+    return message.warning('请先开启父级状态')
+  }
   if (value) {
     state.messageBtnText = '确认开启'
     state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
@@ -1506,8 +1863,6 @@ const tableStatusChange = (value, record) => {
   state.isShowMessage = true
   state.messageContactMobile = record.contactMobile
   state.record = record
-  console.log('value', value)
-  console.log('record', record)
 }
 
 //发送短信验证码
@@ -1553,7 +1908,6 @@ const statusOk = async () => {
     code: state.messageCode,
     status: state.record.statusSwitch === true ? 0 : 1
   }
-  console.log('params', params)
 
   try {
     await updateEditMajorIndividualStatus(params)
@@ -1610,7 +1964,6 @@ function getChildArr(data) {
 const detailsInfo = async (record) => {
   state.isShowDetails = true
   // state.record = record
-  console.log('record', record)
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
   ////不要展示按钮 默认按钮全选 后端处理
@@ -1622,7 +1975,6 @@ const detailsInfo = async (record) => {
   if (res?.province) {
     companyAddress = res?.province + res?.city + res?.county + res?.address
   }
-  console.log('companyAddress', companyAddress)
 
   state.detailsInfo = [
     {
@@ -1728,8 +2080,6 @@ const detailsInfo = async (record) => {
       treeArr: handleTree(tempArr)
     }
   ]
-
-  console.log('state.detailsInfo', state.detailsInfo)
 }
 
 //关闭 重置密码modal
@@ -1756,7 +2106,6 @@ const resetPassword = () => {
 //重置密码 请求
 const resetPasswordFN = async () => {
   state.resetPasswordSuccessInfo = await putResetPassWord({ id: state.record.contactUserId })
-  console.log('state.resetPasswordSuccessInfo ', state.resetPasswordSuccessInfo)
   state.resetPasswordTitle = ''
   state.closable = false
   state.resetModalStyle = {
@@ -1805,6 +2154,204 @@ const columnsSave = () => {
   } else {
     message.warning('定制列不能为空')
   }
+}
+
+//上传图片转base64
+function getBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = (error) => reject(error)
+  })
+}
+const previewVisible = ref(false)
+const previewImage = ref('')
+const previewTitle = ref('')
+// const fileList = ref([
+//   {
+//     url: 'https://wcl.shenghuoduo.com:10102/v2/wclpro/local/files/2023/05/04/67129b133a5d4c8b9ed555e09775fba8.png'
+//   }
+// ])
+const handleCancel = () => {
+  previewVisible.value = false
+  previewTitle.value = ''
+}
+//上传图片预览
+const handlePreview = async (file) => {
+  if (!file.url && !file.preview) {
+    file.preview = await getBase64(file.originFileObj)
+  }
+  previewImage.value = file.url || file.preview
+  previewVisible.value = true
+  previewTitle.value = file.name || file.url.substring(file.url.lastIndexOf('/') + 1)
+}
+
+//判断上传图片的宽高
+const checkImageWH = (file, width, height) => {
+  return new Promise((resolve, reject) => {
+    let filereader = new FileReader()
+    let isTrue = false
+    filereader.onload = (e) => {
+      let src = e.target.result
+      const image = new Image()
+      image.onload = function () {
+        if (width && this.width > width) {
+          message.error('请上传宽小于' + width + 'px的图片')
+          resolve(false)
+          // reject(false)
+        } else if (height && this.height > height) {
+          message.error('请上传高小于' + height + 'px的图片')
+          resolve(false)
+          // reject(false)
+        } else {
+          resolve(true)
+          // resolve(true)
+        }
+      }
+      image.onerror = reject
+      image.src = src
+    }
+    filereader.readAsDataURL(file)
+  })
+}
+//上传前
+const beforeUpload = async (file: UploadProps['fileList'][number], fileList, type) => {
+  const isJpgOrPng = file.type === 'image/jpg' || file.type === 'image/png'
+  if (!isJpgOrPng) {
+    message.error('仅支持jpg/png格式')
+    return Upload.LIST_IGNORE
+  }
+  switch (type) {
+    case 'logo':
+      const isTrue = await checkImageWH(file, 400, 400)
+      if (!isTrue) {
+        //不上传 包括前端不显示
+        return Upload.LIST_IGNORE
+      }
+
+      const isLt30kb = file.size / 1024 / 1024 < 0.3
+      //max 300kb
+      if (!isLt30kb) {
+        message.error('图片不能超过300kb')
+        return Upload.LIST_IGNORE
+      }
+      break
+  }
+
+  // const isLt2M = file.size / 1024 / 1024 < 2
+  // if (!isLt2M) {
+  //   message.error('Image must smaller than 2MB!')
+  // }
+  // return isJpgOrPng && isLt30kb
+}
+
+const handleChange = (info: UploadChangeParam, fileList, type) => {
+  if (info.file.status === 'uploading') {
+    loading.value = true
+    return
+  }
+  if (info.file.status === 'done') {
+    switch (type) {
+      case 'logo':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          state.logoListUrl = []
+          return
+        }
+        state.logoUrlSuccess = info?.file.response?.data?.store || ''
+        break
+      case 'legalPerson':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          state.legalPersonListUrl = []
+          return
+        }
+        state.legalPersonUrlSuccess = info?.file.response?.data?.store || ''
+        break
+      case 'businessLicense':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          state.businessLicenseListUrl = []
+          return
+        }
+        state.businessLicenseSuccess = info?.file.response?.data?.store || ''
+        break
+    }
+
+    // Get this url from response in real world.
+    getBase64(info.file.originFileObj, (base64Url: string) => {
+      imageUrl.value = base64Url
+      loading.value = false
+    })
+    message.success('上传成功')
+  }
+  if (info.file.status === 'error') {
+    loading.value = false
+    message.error('上传失败')
+  }
+}
+
+//删除上传的图片 回调  - -
+const removeImg = (file, type) => {
+  switch (type) {
+    case 'logo':
+      //系统logo
+      state.logoListUrl = [] //系统logo 上传 回显 - -
+      state.logoUrlSuccess = '' //系统logo 新增编辑入参
+      break
+    case 'legalPerson':
+      //法人身份证
+      state.legalPersonListUrl = [] //法人身份证 上传回显
+      state.legalPersonUrlSuccess = '' //法人身份证 新增编辑入参
+      break
+    case 'businessLicense':
+      //营业执照
+      state.businessLicenseListUrl = [] //营业执照 上传回显
+      state.businessLicenseSuccess = '' //营业执照 新增编辑入参
+      break
+  }
+}
+
+//永久有效 取消勾选清空 日期选择器值
+const foreverChange = (e) => {
+  console.log('e', e)
+  if (e.target.checked === false) {
+    state.formState.effectiveStartEndTime = []
+  }
+}
+//定制列还原
+const setDefaultColumns = () => {
+  state.columns = state.defaultColumns
+  // state.columnsCheckList = { ...state.defaultColumnsCheckList }
+
+  // //重写 sort
+  // state.defaultColumnsCheckList.map((item, index) => {
+  //   item.sort = index + 1
+  // })
+
+  state.defaultColumnsCheckList.map((item, index) => {
+    state.columnsCheckList.map((children) => {
+      if (children.key === item.key) {
+        children.sort = index
+      }
+    })
+  })
+
+  // 升序
+  state.columnsCheckList = state.columnsCheckList.sort((a, b) => a.sort - b.sort)
+  state.checkedList = [
+    'code',
+    'name',
+    'systemName',
+    'usableAmount',
+    'validityPeriod',
+    'bindingDomainName',
+    'contactName',
+    'contactMobile',
+    'statusSwitch',
+    'operation'
+  ]
 }
 </script>
 
