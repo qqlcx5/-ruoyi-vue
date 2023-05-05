@@ -45,10 +45,10 @@
       </div>
       <!--  右侧操作  -->
       <div class="operation-content">
-        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />
+        <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
-        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" />
+        <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
+        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
         <Icon
           icon="svg-icon:custom-column"
           :size="50"
@@ -1852,6 +1852,7 @@ const closePermissionModal = () => {
   state.permissType = 'add'
   state.addSuccessId = undefined
   state.selectTree = []
+  state.checkedKeys = []
 }
 
 //开启功能配置 modal
@@ -1888,12 +1889,15 @@ const PermissionOk = async () => {
 const assignPermission = async (record) => {
   state.permissionRecord = record
   state.permissType = 'edit'
-  const res = await getTenantPackage({ id: record.packageId })
-  //... res 可能为null
-  const { menuIds = [], id } = res || []
-  state.editPermissionID = id
-  state.checkedKeys = menuIds
-  state.selectTree = filterTree(state.menuTreeList, menuIds)
+  if (record.packageId) {
+    const res = await getTenantPackage({ id: record.packageId })
+    console.log('res', res)
+    //... res 可能为null
+    const { menuIds = [], id } = res || []
+    state.editPermissionID = id
+    state.checkedKeys = menuIds
+    state.selectTree = filterTree(state.menuTreeList, menuIds)
+  }
   //右侧展开显示 左侧选中的数据
   state.isShowRightTree = false
   nextTick(() => {
@@ -2519,7 +2523,8 @@ watch(
 watch(
   () => state.checkedKeys,
   (val) => {
-    state.selectAll = val.length === getAllIds(state.menuTreeList).length
+    console.log('val', val)
+    state.selectAll = val.length === getAllIds(state.menuTreeList).length && val.length > 0
   },
   {
     immediate: true
