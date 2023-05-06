@@ -13,7 +13,7 @@ export interface MajorIndividual {
 
 // 查询主体列表
 export const getMajorIndividualList = (params: MajorIndividual) => {
-  return request.get({ url: '/system/tenant/page', params })
+  return request.get({ url: '/system/tenant/list', params })
 }
 
 // 获取上级主体列表

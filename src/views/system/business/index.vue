@@ -31,7 +31,7 @@
   </ContentWrap>
 
   <!--  表格  -->
-  <a-card :bordered="false" style="width: 1650px" id="card-content">
+  <a-card :bordered="false" style="width: 1650px; padding-bottom: 30px" id="card-content">
     <!--  <ContentWrap>-->
     <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
     <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -41,7 +41,7 @@
       <!--  左侧按钮  -->
       <div class="button-content">
         <a-button type="primary" @click="openModal">新增</a-button>
-        <a-button @click="toggleExpandAll" v-if="false">展开收起</a-button>
+        <a-button @click="toggleExpandAll">展开收起</a-button>
       </div>
       <!--  右侧操作  -->
       <div class="operation-content">
@@ -58,20 +58,23 @@
       </div>
     </div>
 
+    <!--  分页 - - 之前有 后面去掉了  -->
+    <!--    :pagination="{-->
+    <!--    pageSizeOptions: ['20', '30', '60', '100'],-->
+    <!--    showSizeChanger: true,-->
+    <!--    showQuickJumper: true,-->
+    <!--    pageSize: queryParams.pageSize,-->
+    <!--    current: queryParams.current,-->
+    <!--    total: state.total,-->
+    <!--    showTotal: (total) => `总共 ${total} 条`-->
+    <!--    }"-->
+
     <a-table
       v-if="state.refreshTable"
       :columns="state.columns"
       :data-source="state.tableDataList"
-      :scroll="{ x: '100%', y: true }"
-      :pagination="{
-        pageSizeOptions: ['20', '30', '60', '100'],
-        showSizeChanger: true,
-        showQuickJumper: true,
-        pageSize: queryParams.pageSize,
-        current: queryParams.current,
-        total: state.total,
-        showTotal: (total) => `总共 ${total} 条`
-      }"
+      :scroll="{ x: '100%' }"
+      :pagination="false"
       @change="onChange"
       :row-key="(record) => record.id"
       :loading="state.loading"
@@ -125,6 +128,7 @@
           <!--            @change="(value) => tableStatusChange(value, record)"-->
           <!--          />-->
           <a-switch
+            :disabled="record.level === 1"
             v-model:checked="record.statusSwitch"
             @change="(value) => setTableStatusChangeInfo(value, record)"
           />
@@ -476,7 +480,7 @@
             <a-tab-pane key="backstage" tab="后台">
               <div class="tab-search-content">
                 <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
-                <a-checkbox v-model:checked="state.isExpandAll" @change="expandAllFN"
+                <a-checkbox v-model:checked="state.isExpandAllTab" @change="expandAllFN"
                   >展开/折叠</a-checkbox
                 >
               </div>
@@ -630,7 +634,13 @@
           v-for="(childItem, childIndex) in item.infoArr"
           :key="`childItem${childIndex}`"
           ><span>{{ childItem.textSpan }}</span>
-          <img v-if="childItem?.imgUrl" :src="childItem?.imgUrl" alt="" class="details-img" />
+          <img
+            v-if="childItem?.imgUrl"
+            :src="childItem?.imgUrl"
+            alt=""
+            class="details-img"
+            @click="setPreviewImage(childItem?.imgUrl)"
+          />
           <template v-else>
             <a-tooltip>
               <template #title> {{ childItem.text }}</template>
@@ -658,7 +668,7 @@
           <div class="details-heard">后台</div>
           <a-tree
             defaultExpandAll
-            :height="280"
+            :height="250"
             :tree-data="item.treeArr"
             :fieldNames="state.fieldNames"
           />
@@ -979,7 +989,7 @@ const state = reactive({
   addSuccessId: undefined, //创建主体成功ID 主要是用于创建主体后配置权限
   activeKey: 'backstage', // tabsKey frontDesk前台 backstage后台
   selectAll: false, //权限配置 全选
-  isExpandAll: false, //权限配置 展开折叠
+  isExpandAllTab: false, //权限配置 展开折叠
   menuTreeList: [], //权限配置 前台列表
   fieldNames: { children: 'children', title: 'name', key: 'id' }, //权限配置 前台列表 tree的对应字段替换
   selectedKeys: [], //权限配置 前台列表 设置选中的树节点
@@ -991,7 +1001,7 @@ const state = reactive({
   selectTree: [], //权限配置 选中的树 数据 右侧
   isShowRightTree: false, //权限配置 选中的树 是否显示
   permissionRecord: {}, //权限配置 操作 时 存的整条数据
-  permissType: 'add', //权限配置 新增 修改
+  PermissionType: 'add', //权限配置 新增 修改
   editPermissionID: undefined, //编辑功能配置时的id
   isShowDetails: false, //详细modal
   detailsInfo: [], //详情内容
@@ -1470,8 +1480,8 @@ const allColumns = [
 const getList = async () => {
   state.loading = true
   const params = {
-    pageNo: queryParams.current,
-    pageSize: queryParams.pageSize,
+    // pageNo: queryParams.current,
+    // pageSize: queryParams.pageSize,
     keyword: queryParams.keyword,
     systemName: queryParams.systemName,
     status: queryParams.status
@@ -1849,7 +1859,7 @@ const cascadeChange = (value, selectedOptions) => {
 //关闭功能配置 modal
 const closePermissionModal = () => {
   state.isShowPermission = false
-  state.permissType = 'add'
+  state.PermissionType = 'add'
   state.addSuccessId = undefined
   state.selectTree = []
   state.checkedKeys = []
@@ -1874,7 +1884,7 @@ const PermissionOk = async () => {
     tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
     status: 0
   }
-  if (state.permissType === 'add') {
+  if (state.PermissionType === 'add') {
     await addTenantPackage(params)
     message.success('新增成功')
   } else {
@@ -1888,10 +1898,9 @@ const PermissionOk = async () => {
 
 const assignPermission = async (record) => {
   state.permissionRecord = record
-  state.permissType = 'edit'
+  state.PermissionType = 'edit'
   if (record.packageId) {
     const res = await getTenantPackage({ id: record.packageId })
-    console.log('res', res)
     //... res 可能为null
     const { menuIds = [], id } = res || []
     state.editPermissionID = id
@@ -2496,6 +2505,13 @@ const onCheckAllChange = (e) => {
   })
 }
 
+//详情modal 预览图片
+const setPreviewImage = (imgUrl = '') => {
+  previewImage.value = imgUrl
+  previewTitle.value = '预览'
+  previewVisible.value = true
+}
+
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
@@ -2523,7 +2539,6 @@ watch(
 watch(
   () => state.checkedKeys,
   (val) => {
-    console.log('val', val)
     state.selectAll = val.length === getAllIds(state.menuTreeList).length && val.length > 0
   },
   {
@@ -2791,6 +2806,7 @@ watch(
 .details-img {
   width: 20px;
   height: 20px;
+  cursor: pointer;
 }
 
 .details-modal-content {
