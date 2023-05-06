@@ -2341,7 +2341,7 @@ const checkImageWH = (file, width, height) => {
 }
 //上传前
 const beforeUpload = async (file: UploadProps['beforeUpload'][number], fileList, type) => {
-  const isJpgOrPng = file.type === 'image/jpg' || file.type === 'image/png'
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
   if (!isJpgOrPng) {
     message.error('仅支持jpg/png格式')
     return Upload.LIST_IGNORE
