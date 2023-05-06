@@ -1,60 +1,31 @@
 <template>
   <!-- 搜索工作栏 -->
+
   <ContentWrap>
-    <el-form
-      class="-mb-15px"
-      :model="queryParams"
-      ref="queryFormRef"
-      :inline="true"
-      label-width="68px"
-    >
-      <el-form-item label="菜单名称" prop="name">
-        <el-input
-          v-model="queryParams.name"
-          placeholder="请输入菜单名称"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="菜单类型" prop="status">
-        <el-select
-          v-model="queryParams.type"
+    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
+      <a-form-item :label="`菜单名称`" name="name">
+        <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
+      </a-form-item>
+      <a-form-item :label="`菜单类型`" name="type">
+        <a-select
+          v-model:value="queryParams.type"
           placeholder="请选择菜单类型"
-          clearable
-          class="!w-240px"
-        >
-          <el-option
-            v-for="dict in state.typeArr"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select
-          v-model="queryParams.status"
+          style="width: 200px"
+          :options="getIntDictOptions(DICT_TYPE.SYSTEM_MENU_TYPE)"
+        />
+      </a-form-item>
+      <a-form-item :label="`状态`" name="status">
+        <a-select
+          v-model:value="queryParams.status"
           placeholder="请选择菜单状态"
-          clearable
-          class="!w-240px"
-        >
-          <el-option
-            v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="handleQuery" type="primary" v-hasPermi="['system:menu:query']"
-          >查询</el-button
-        >
-        <!--  TODO:重置权限 - - -->
-        <el-button @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+          style="width: 200px"
+          :options="getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+        />
+      </a-form-item>
+      <!-- TODO:权限-->
+      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button @click="resetQuery">重置</a-button>
+    </a-form>
   </ContentWrap>
 
   <!--  表格  -->
@@ -125,6 +96,12 @@
             <div>{{ record.name }}</div>
           </div>
         </template>
+        <!--  类型   -->
+        <template v-if="column.key === 'type'">
+          <span v-show="record.type === 1">目录</span>
+          <span v-show="record.type === 2">菜单</span>
+          <span v-show="record.type === 3">按钮</span>
+        </template>
         <!--  员工数   -->
         <template v-if="column.key === 'employeesNumber'">
           <div class="employees-Number">{{ record.type }}</div>
@@ -133,11 +110,16 @@
         <template v-if="column.key === 'status'">
           <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
           <!-- <div class="employees-Number">{{ record.status }}</div>-->
-          <a-switch v-model:checked="record.status" />
+          <a-switch v-model:checked="record.statusSwitch" />
         </template>
         <!--  操作   -->
         <template v-if="column.key === 'operation'">
-          <div class="employees-Number" @click="edit(record)">修改</div>
+          <div class="operation-content">
+            <div class="text-color margin-right-5" @click="edit(record)">修改</div>
+            <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
+            <div class="text-color margin-right-5">详情</div>
+            <div class="text-color margin-right-5" @click="deleteFN(record.id)">删除</div>
+          </div>
         </template>
       </template>
     </a-table>
@@ -146,15 +128,16 @@
 
   <!-- 新增 编辑 Modal -->
   <a-modal
+    v-if="state.isShow"
     v-model:visible="state.isShow"
-    title="新增"
+    :title="state.addEditTitle"
     @ok="closeModal"
     @cancel="closeModal"
     :width="'900px'"
     :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
   >
     <div class="base_info_content">
-      <a-form :model="state.formState" ref="formRef">
+      <a-form :model="state.formState" ref="formRef" v-bind="layout">
         <a-form-item
           :label="`${state.currentMenu}名称`"
           name="name"
@@ -204,26 +187,10 @@
 
         <a-form-item
           label="图标"
-          name="fileList"
+          name="icon"
           v-if="state.formState.type !== SystemMenuTypeEnum.BUTTON"
         >
-          <a-upload
-            v-model:file-list="fileList"
-            name="avatar"
-            list-type="picture-card"
-            class="avatar-uploader"
-            :show-upload-list="false"
-            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-            :before-upload="beforeUpload"
-            @change="handleChange"
-          >
-            <img v-if="imageUrl" :src="imageUrl" alt="avatar" />
-            <div v-else>
-              <!--              <loading-outlined v-if="loading" />-->
-              <!--              <plus-outlined v-else />-->
-              <div class="ant-upload-text">Upload</div>
-            </div>
-          </a-upload>
+          <IconSelect v-model="state.formState.icon" clearable />
         </a-form-item>
 
         <a-form-item
@@ -256,15 +223,17 @@
           label="权限标识"
           name="permission"
         >
-          <a-input v-model:value="state.formState.permission" />
-          <a-tooltip placement="topLeft">
-            <template #title>
-              <span>
-                Controller方法上的权限字符，如：@PreAuthorize(`@ss.hasPermission('system:user:list')`)</span
-              >
-            </template>
-            <Icon icon="ep:question-filled" color="rgb(176, 176, 176)" />
-          </a-tooltip>
+          <div class="flex-content">
+            <a-input v-model:value="state.formState.permission" />
+            <a-tooltip placement="topLeft">
+              <template #title>
+                <span>
+                  Controller方法上的权限字符，如：@PreAuthorize(`@ss.hasPermission('system:user:list')`)</span
+                >
+              </template>
+              <Icon icon="ep:question-filled" color="rgb(176, 176, 176)" />
+            </a-tooltip>
+          </div>
         </a-form-item>
 
         <a-form-item label="排序" name="sort" :rules="[{ required: true, message: '排序!' }]">
@@ -277,7 +246,7 @@
           :rules="[{ required: true, message: '菜单状态!' }]"
         >
           <a-switch
-            v-model:checked="state.formState.status"
+            v-model:checked="state.formState.statusSwitch"
             checked-children="开启"
             un-checked-children="关闭"
           />
@@ -351,6 +320,7 @@
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
+import * as TenantMenuApi from '@/api/system/TenantMenu'
 import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 // import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
@@ -405,67 +375,101 @@ const state = reactive({
   //   alwaysShow: true
   // }) //新增表单
   modalType: 'add', //add新增edit编辑
-  formState: reactive<FormState>({
+  addEditTitle: '新增', //新增编辑 modal title
+  typeArr: [
+    {
+      label: '目录',
+      value: 1
+    },
+    {
+      label: '菜单',
+      value: 2
+    },
+    {
+      label: '按钮',
+      value: 3
+    }
+  ],
+  formState: {
     id: 0,
     name: '', //目录名称
     type: SystemMenuTypeEnum.DIR, //菜单类型
     parentId: 0, //上级目录
-    icon: 'ep:alarm-clock', //图标
+    icon: '', //图标
     path: '', //路由地址
     sort: 0, //排序
     status: CommonStatusEnum.ENABLE, //菜单状态
+    statusSwitch: true, //菜单状态 - - switch boolean
     visible: true, //显示状态
     alwaysShow: true, //总是显示
     component: '', //====菜单===组件地址
     componentName: '', //====菜单===组件名称
     permission: '', //====菜单===权限标识
     keepAlive: true //====菜单===缓存状态
-  }) //新增表单
+  } //新增表单
 })
 
 const columns = [
   {
     title: '名称',
-    width: 600,
+    width: 200,
     dataIndex: 'name',
     key: 'name',
     ellipsis: true
   },
   {
     title: '类型',
+    width: 100,
     dataIndex: 'type',
     key: 'type',
     ellipsis: true
   },
   {
     title: '员工数',
+    width: 100,
     dataIndex: 'employeesNumber',
-    key: 'employeesNumber'
+    key: 'employeesNumber',
+    ellipsis: true
   },
   {
     title: '排序',
+    width: 100,
     dataIndex: 'sort',
-    key: 'sort'
+    key: 'sort',
+    ellipsis: true
   },
   {
     title: '状态',
+    width: 100,
     dataIndex: 'status',
-    key: 'status'
+    key: 'status',
+    ellipsis: true
   },
   {
     title: '操作',
+    width: 200,
     dataIndex: 'operation',
-    key: 'operation'
+    key: 'operation',
+    ellipsis: true
   }
 ]
+
+const layout = {
+  labelCol: { span: 4 },
+  wrapperCol: { span: 14 }
+}
 
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
   console.log('queryParams', queryParams)
   try {
-    const data = await MenuApi.getMenuList(queryParams)
-    list.value = handleTree(data)
+    const res = await MenuApi.getMenuList(queryParams)
+    console.log('res', res)
+    res.map((item) => {
+      item.statusSwitch = item.status === 0
+    })
+    list.value = handleTree(res)
     console.log('list====>', list.value)
   } finally {
     loading.value = false
@@ -511,14 +515,40 @@ const fullScreen = () => {
 }
 
 //打开Modal
-const openModal = () => {
+const openModal = (record = {}) => {
+  console.log('record', record)
+  if (!(Object.keys(record).length === 0)) {
+    //非空对象判断 新增子项时回显
+    state.formState.parentId = record.id
+  }
   state.isShow = true
 }
 //关闭Modal
 const closeModal = () => {
   state.isShow = false
   formRef.value.resetFields()
+  state.formState = {
+    id: 0,
+    name: '', //目录名称
+    type: SystemMenuTypeEnum.DIR, //菜单类型
+    parentId: 0, //上级目录
+    icon: '', //图标
+    path: '', //路由地址
+    sort: 0, //排序
+    status: CommonStatusEnum.ENABLE, //菜单状态
+    statusSwitch: true, //菜单状态 - - switch boolean
+    visible: true, //显示状态
+    alwaysShow: true, //总是显示
+    component: '', //====菜单===组件地址
+    componentName: '', //====菜单===组件名称
+    permission: '', //====菜单===权限标识
+    keepAlive: true //====菜单===缓存状态
+  }
+
+  console.log('formRef.value', formRef.value)
+  console.log('state.formState', state.formState)
   state.modalType = 'add'
+  state.addEditTitle = '新增'
 }
 
 const options = [
@@ -569,9 +599,9 @@ const saveForm = async () => {
   const valid = await formRef.value.validate()
   console.log('valid', valid)
   const params = state.formState as unknown as MenuApi.MenuVO
-
+  console.log('params', params)
   //菜单状态 0开启 1关闭 ...
-  if (params.status) {
+  if (params?.statusSwitch) {
     params.status = 0
   } else {
     params.status = 1
@@ -593,10 +623,11 @@ const saveForm = async () => {
 
     closeModal()
     await getList()
+    await getTree()
   } finally {
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
-    // wsCache.get(CACHE_KEY.ROLE_ROUTERS) as AppCustomRouteRecordRaw[]
+    console.log('delete路由')
   }
 }
 /** 获取下拉框[上级菜单]的数据  */
@@ -630,13 +661,29 @@ const edit = (record) => {
   console.log('reEEEE', record)
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
-  record.status = record.status === 0
+  // record.status = record.status === 0
 
   state.modalType = 'edit'
+  state.addEditTitle = '修改'
   //赋值
-  state.formState = record
+  state.formState = { ...record }
   openModal()
-  console.log('record)', record)
+  // console.log('record)', record)
+}
+
+/** 删除按钮操作 */
+const deleteFN = async (id: number) => {
+  console.log('删除', id)
+  try {
+    // 发起删除
+    await MenuApi.deleteMenu(id)
+    message.success('删除成功')
+    // 刷新列表
+    await getList()
+    await getTree()
+    // 清空，从而触发刷新
+    wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+  } catch {}
 }
 </script>
 
@@ -673,7 +720,7 @@ const edit = (record) => {
 }
 
 .operation-content {
-  //background: red;
+  display: flex;
 }
 
 //表格
@@ -701,5 +748,16 @@ const edit = (record) => {
 .avatar-uploader > .ant-upload {
   width: 128px;
   height: 128px;
+}
+.flex-content {
+  display: flex;
+  align-items: center;
+}
+.text-color {
+  color: rgba(0, 129, 255, 100);
+}
+.margin-right-5 {
+  margin-right: 5px;
+  cursor: pointer;
 }
 </style>

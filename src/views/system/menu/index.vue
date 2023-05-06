@@ -96,9 +96,9 @@
       <el-table-column prop="type" label="类型" :show-overflow-tooltip="true" width="250">
         <template #default="scope">
           <div style="display: flex; align-items: center">
-            <span v-show="scope.row.type === 0">目录</span>
-            <span v-show="scope.row.type === 1">菜单</span>
-            <span v-show="scope.row.type === 2">按钮</span>
+            <span v-show="scope.row.type === 1">目录</span>
+            <span v-show="scope.row.type === 2">菜单</span>
+            <span v-show="scope.row.type === 3">按钮</span>
           </div>
         </template>
       </el-table-column>
@@ -207,7 +207,7 @@ const state = reactive({
     }
   ]
 })
-
+console.log('getIntDictOptions(DICT_TYPE.SYSTEM_MENU_TYPE)', getIntDictOptions(DICT_TYPE.SYSTEM_MENU_TYPE))
 const statusChange = (switchValue, rowObj) => {
   console.log('switchValue', switchValue)
   console.log('rowObj', rowObj)

@@ -2,8 +2,8 @@ import request from '@/config/axios'
 import { TenantPackageVO } from '@/api/system/tenantPackage'
 
 export interface MajorIndividual {
-  pageNo: number
-  pageSize: number
+  pageNo?: number
+  pageSize?: number
   keyword?: string
   systemName?: string
   status?: number

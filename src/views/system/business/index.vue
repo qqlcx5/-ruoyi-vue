@@ -31,7 +31,7 @@
   </ContentWrap>
 
   <!--  表格  -->
-  <a-card :bordered="false" style="width: 1650px; padding-bottom: 30px" id="card-content">
+  <a-card :bordered="false" style="min-width: 1650px; padding-bottom: 30px" id="card-content">
     <!--  <ContentWrap>-->
     <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
     <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -80,6 +80,7 @@
       :loading="state.loading"
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
       :defaultExpandAllRows="state.isExpandAll"
+      @resizeColumn="handleResizeColumn"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -107,7 +108,7 @@
             <Icon icon="ep:caret-right" :size="12" />
           </div>
         </span>
-        <span v-else style="margin-right: 29px"></span>
+        <span v-else style="margin-right: 22px"></span>
       </template>
       <!--  单元格插槽  -->
       <template #bodyCell="{ column, record }">
@@ -1021,6 +1022,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'name',
       key: 'name',
+      resizable: true,
       ellipsis: true,
       disabled: true
     },
@@ -1029,6 +1031,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'code',
       key: 'code',
+      resizable: true,
       ellipsis: true,
       disabled: true
     },
@@ -1036,60 +1039,71 @@ const state = reactive({
       title: '系统名称',
       dataIndex: 'systemName',
       key: 'systemName',
+      resizable: true,
       disabled: true
     },
     {
       title: '已用/可用名额',
       dataIndex: 'usableAmount',
-      key: 'usableAmount'
+      key: 'usableAmount',
+      resizable: true
     },
     {
       title: '有效期',
       width: 200,
       dataIndex: 'validityPeriod',
-      key: 'validityPeriod'
+      key: 'validityPeriod',
+      resizable: true
     },
 
     {
       title: '绑定域名',
       dataIndex: 'bindingDomainName',
-      key: 'bindingDomainName'
+      key: 'bindingDomainName',
+      resizable: true
     },
     {
       title: '负责人',
       dataIndex: 'contactName',
-      key: 'contactName'
+      key: 'contactName',
+      resizable: true
     },
     {
       title: '负责人电话',
       dataIndex: 'contactMobile',
-      key: 'contactMobile'
+      key: 'contactMobile',
+      resizable: true
     },
     {
       title: '状态',
       dataIndex: 'statusSwitch',
-      key: 'statusSwitch'
+      key: 'statusSwitch',
+      resizable: true
     },
 
     {
       title: '创建人',
       dataIndex: 'creator',
-      key: 'creator'
+      key: 'creator',
+      resizable: true
     },
     {
       title: '创建时间',
       dataIndex: 'createTime',
-      key: 'createTime'
+      key: 'createTime',
+      resizable: true
     },
     {
       title: '最近操作人',
       dataIndex: 'updater',
-      key: 'updater'
+      key: 'updater',
+      resizable: true
     },
     {
       title: '最近操作时间',
       dataIndex: 'updateTime',
-      key: 'updateTime'
+      key: 'updateTime',
+      resizable: true
     },
 
     {
@@ -1097,7 +1111,8 @@ const state = reactive({
       fixed: 'right',
       width: 240,
       dataIndex: 'operation',
-      key: 'operation'
+      key: 'operation',
+      resizable: true
     }
   ], //定制列 复选框
   defaultColumnsCheckList: [
@@ -1106,6 +1121,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'name',
       key: 'name',
+      resizable: true,
       ellipsis: true,
       disabled: true
     },
@@ -1114,6 +1130,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'code',
       key: 'code',
+      resizable: true,
       ellipsis: true,
       disabled: true
     },
@@ -1121,60 +1138,71 @@ const state = reactive({
       title: '系统名称',
       dataIndex: 'systemName',
       key: 'systemName',
+      resizable: true,
       disabled: true
     },
     {
       title: '已用/可用名额',
       dataIndex: 'usableAmount',
-      key: 'usableAmount'
+      key: 'usableAmount',
+      resizable: true
     },
     {
       title: '有效期',
       width: 200,
       dataIndex: 'validityPeriod',
-      key: 'validityPeriod'
+      key: 'validityPeriod',
+      resizable: true
     },
 
     {
       title: '绑定域名',
       dataIndex: 'bindingDomainName',
-      key: 'bindingDomainName'
+      key: 'bindingDomainName',
+      resizable: true
     },
     {
       title: '负责人',
       dataIndex: 'contactName',
-      key: 'contactName'
+      key: 'contactName',
+      resizable: true
     },
     {
       title: '负责人电话',
       dataIndex: 'contactMobile',
-      key: 'contactMobile'
+      key: 'contactMobile',
+      resizable: true
     },
     {
       title: '状态',
       dataIndex: 'statusSwitch',
-      key: 'statusSwitch'
+      key: 'statusSwitch',
+      resizable: true
     },
 
     {
       title: '创建人',
       dataIndex: 'creator',
-      key: 'creator'
+      key: 'creator',
+      resizable: true
     },
     {
       title: '创建时间',
       dataIndex: 'createTime',
-      key: 'createTime'
+      key: 'createTime',
+      resizable: true
     },
     {
       title: '最近操作人',
       dataIndex: 'updater',
-      key: 'updater'
+      key: 'updater',
+      resizable: true
     },
     {
       title: '最近操作时间',
       dataIndex: 'updateTime',
-      key: 'updateTime'
+      key: 'updateTime',
+      resizable: true
     },
 
     {
@@ -1182,7 +1210,8 @@ const state = reactive({
       fixed: 'right',
       width: 240,
       dataIndex: 'operation',
-      key: 'operation'
+      key: 'operation',
+      resizable: true
     }
   ], //定制列 默认 复选框 用于还原
   checkedList: [
@@ -1203,6 +1232,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'name',
       key: 'name',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1210,6 +1240,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'code',
       key: 'code',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1217,6 +1248,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'systemName',
       key: 'systemName',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1224,6 +1256,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'usableAmount',
       key: 'usableAmount',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1231,6 +1264,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'validityPeriod',
       key: 'validityPeriod',
+      resizable: true,
       ellipsis: true
     },
 
@@ -1239,6 +1273,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'bindingDomainName',
       key: 'bindingDomainName',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1246,6 +1281,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'contactName',
       key: 'contactName',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1253,6 +1289,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'contactMobile',
       key: 'contactMobile',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1260,6 +1297,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'statusSwitch',
       key: 'statusSwitch',
+      resizable: true,
       ellipsis: true
     },
 
@@ -1269,6 +1307,7 @@ const state = reactive({
       width: 240,
       dataIndex: 'operation',
       key: 'operation',
+      resizable: true,
       ellipsis: true
     }
   ], //表格 columns
@@ -1278,6 +1317,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'name',
       key: 'name',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1285,6 +1325,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'code',
       key: 'code',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1292,6 +1333,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'systemName',
       key: 'systemName',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1299,6 +1341,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'usableAmount',
       key: 'usableAmount',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1306,6 +1349,7 @@ const state = reactive({
       width: 200,
       dataIndex: 'validityPeriod',
       key: 'validityPeriod',
+      resizable: true,
       ellipsis: true
     },
 
@@ -1314,6 +1358,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'bindingDomainName',
       key: 'bindingDomainName',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1321,6 +1366,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'contactName',
       key: 'contactName',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1328,6 +1374,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'contactMobile',
       key: 'contactMobile',
+      resizable: true,
       ellipsis: true
     },
     {
@@ -1335,6 +1382,7 @@ const state = reactive({
       width: 100,
       dataIndex: 'statusSwitch',
       key: 'statusSwitch',
+      resizable: true,
       ellipsis: true
     },
 
@@ -1344,6 +1392,7 @@ const state = reactive({
       width: 240,
       dataIndex: 'operation',
       key: 'operation',
+      resizable: true,
       ellipsis: true
     }
   ], //默认的表格 columns  定制列还原使用
@@ -1377,6 +1426,7 @@ const allColumns = [
     width: 200,
     dataIndex: 'name',
     key: 'name',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1384,6 +1434,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'code',
     key: 'code',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1391,6 +1442,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'systemName',
     key: 'systemName',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1398,6 +1450,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'usableAmount',
     key: 'usableAmount',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1405,6 +1458,7 @@ const allColumns = [
     width: 200,
     dataIndex: 'validityPeriod',
     key: 'validityPeriod',
+    resizable: true,
     ellipsis: true
   },
 
@@ -1413,6 +1467,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'bindingDomainName',
     key: 'bindingDomainName',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1420,6 +1475,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'contactName',
     key: 'contactName',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1427,6 +1483,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'contactMobile',
     key: 'contactMobile',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1434,6 +1491,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'statusSwitch',
     key: 'statusSwitch',
+    resizable: true,
     ellipsis: true
   },
 
@@ -1442,6 +1500,7 @@ const allColumns = [
     dataIndex: 'creator',
     width: 100,
     key: 'creator',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1449,6 +1508,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'createTime',
     key: 'createTime',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1456,6 +1516,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'updater',
     key: 'updater',
+    resizable: true,
     ellipsis: true
   },
   {
@@ -1463,6 +1524,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'updateTime',
     key: 'updateTime',
+    resizable: true,
     ellipsis: true
   },
 
@@ -1472,6 +1534,7 @@ const allColumns = [
     fixed: 'right',
     dataIndex: 'operation',
     key: 'operation',
+    resizable: true,
     ellipsis: true
   }
 ]
@@ -2505,6 +2568,11 @@ const onCheckAllChange = (e) => {
   })
 }
 
+//table 列伸缩
+const handleResizeColumn = (w, col) => {
+  col.width = w
+}
+
 //详情modal 预览图片
 const setPreviewImage = (imgUrl = '') => {
   previewImage.value = imgUrl
@@ -2912,16 +2980,20 @@ watch(
 <style lang="scss">
 //修改 详细 modal位置
 .details-modal {
+  display: flex;
   .ant-modal {
     margin: 0;
     position: absolute;
     top: 0;
     left: initial;
     right: 0;
-    height: 1080px;
+    padding: 0;
+    //height: 1080px;
+    min-height: 100vh;
   }
   .ant-modal-body {
-    height: calc(1080px - 55px - 53px);
+    //height: calc(1080px - 55px - 53px);
+    min-height: 100vh;
   }
 }
 //重置密码 modal
