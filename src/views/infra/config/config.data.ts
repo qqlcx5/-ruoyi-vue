@@ -18,13 +18,13 @@ const crudSchemas = reactive<VxeCrudSchema>({
   columns: [
     {
       title: '参数主键',
-      field: 'category',
+      field: 'id',
       isForm: false,
       form: {
         colProps: {
           span: 24
         }
-      }
+      },
     },
     {
       title: '参数分类',

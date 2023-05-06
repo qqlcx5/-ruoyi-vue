@@ -8,19 +8,22 @@ const props = defineProps({
     type: Array as PropType<WGVxeTools[]>,
     default: () => []
   },
+  tableKey: {
+    type: String
+  }
 })
 
-console.log(props.tools);
+// console.log(props.tools);
 
 const emit = defineEmits(['toolClick'])
 
-const defaultTools: WGVxeTools[] = [
+const defaultTools = ref<WGVxeTools[]>([
   // { key: 'export', show: true, disable: false },
   { key: 'fullScreen', show: true, disable: false },
   { key: 'print', show: true, disable: false },
   { key: 'refresh', show: true, disable: false },
   { key: 'custom', show: true, disable: false },
-]
+])
 
 const toolOptions = {
   fullScreen: { icon: "iconfont icon-quanping" },
@@ -32,6 +35,12 @@ const toolOptions = {
 const onToolClick = (key) => {
   emit("toolClick", key);
 }
+
+onMounted(() => {
+  if (!props.tableKey) {
+    defaultTools.value = defaultTools.value.filter(i => i.key !== 'custom');
+  }
+});
 
 </script>
 

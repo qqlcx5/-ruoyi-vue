@@ -5,13 +5,19 @@
     </template>
     <template #toolbar_tools>
       <!-- 操作：操作table columns -->
-      <WGTools @toolClick="handleToolClick" />
+      <WGTools v-bind="getProps" @toolClick="handleToolClick" />
     </template>
   </VxeGrid>
-  <WGColumnDrawer v-model="drawerVisible" :columns="getTableColumns" @columnChange="handleColumnChange" />
+  <WGColumnDrawer
+    v-model="drawerVisible"
+    :table-key="getTableKey"
+    :columns="getColumnSchema"
+    @columnChange="handleColumnChange"
+    @confirm="handleColumnChange"
+    @reset="handleReset" />
 </template>
 <script setup lang="ts" name="XTable">
-import {PropType} from 'vue'
+import {nextTick, PropType} from 'vue'
 import { SizeType, VxeGridInstance } from 'vxe-table'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -21,6 +27,7 @@ import { isBoolean, isFunction } from '@/utils/is'
 import download from '@/utils/download'
 import {log} from "util";
 import WGTools from "@/components/XTable/src/WGTools.vue";
+import {getTableColumnConfig} from "@/utils/tableColumn";
 
 const { t } = useI18n()
 const message = useMessage() // 消息弹窗
@@ -75,7 +82,7 @@ const getProps = computed(() => {
   const options = innerProps.value || props.options
 
   options.size = currentSize as any
-  options.height = 700
+  options.height = innerProps.value?.height || 700
   getOptionInitConfig(options)
   getColumnsConfig(options)
   getProxyConfig(options)
@@ -89,13 +96,33 @@ const getProps = computed(() => {
 
 const xGrid = ref<VxeGridInstance>() // 列表 Grid Ref
 
-const getTableColumns = computed(() => {
+const getColumnSchema = computed(() => {
+  return getProps.value?.allSchemas?.columnSchema;
+})
+const getTableKey = computed(() => {
+  return getProps.value?.tableKey;
+})
+
+let drawerVisible = ref<boolean> (false)
+
+const handleReset = async () => {
   const g = unref(xGrid)
   if (!g) {
-    return []
+    return
   }
-  return g.columns;
-})
+  let originColumn = getProps.value?.allSchemas?.columnSchema;
+  let currentColumns = reactive<any>(g.columns);
+  let newColumn: any[] = [];
+  originColumn.map((col) => {
+    currentColumns.map((item) => {
+      if (item.field === col.field) {
+        newColumn.push(item);
+      }
+    });
+  });
+  g.reloadColumn(newColumn);
+  drawerVisible.value = false;
+}
 
 const handleColumnChange = (columns):void => {
   const g = unref(xGrid)
@@ -121,10 +148,13 @@ const handleColumnChange = (columns):void => {
   }
   let currentColumns = reactive<any>(g.columns);
   currentColumns.forEach(item => {
-    item.sortId = columns.findIndex(c => c.field === item.field);
+    let index = columns.findIndex(c => c.field === item.field)
+    item.sortId = index;
+    item.check = index !== -1 ? columns[index].check : true;
   })
-  let changedColumn = currentColumns.sort(sort("sortId"));
+  currentColumns = currentColumns.filter(col => col.check).sort(sort("sortId"));
   g.reloadColumn(currentColumns);
+  drawerVisible.value = false;
 }
 
 let proxyForm = false
@@ -297,7 +327,7 @@ const getPageConfig = (options: XTableProps) => {
 // tool bar
 const getToolBarConfig = (options: XTableProps) => {
   const { toolBar, toolbarConfig, topActionSlots } = options
-  if (toolbarConfig) return console.log(1);
+  if (toolbarConfig) return;
   if (toolBar) {
     if (!isBoolean(toolBar)) {
       options.toolbarConfig = toolBar
@@ -314,10 +344,7 @@ const getToolBarConfig = (options: XTableProps) => {
   }
 }
 
-let drawerVisible = ref<boolean> (false)
-
 const handleToolClick = (key):void => {
-  console.log(key);
   const g = unref(xGrid)
   if (!g) {
     return
@@ -345,18 +372,6 @@ const reload = () => {
     return
   }
   g.commitProxy('query')
-}
-
-// 刷新列
-const refreshColumn = () => {
-  const g = unref(xGrid)
-  if (!g) {
-    return
-  }
-  let a = reactive<any>(g.columns);
-
-  [a[0], a[1]] = [a[1], a[0]];
-  setTimeout(() => g.reloadColumn(a))
 }
 
 // 删除
@@ -481,10 +496,22 @@ const setProps = (prop: Partial<XTableProps>) => {
   innerProps.value = { ...unref(innerProps), ...prop }
 }
 
+const columnInit = () => {
+  nextTick(() => {
+    if (getTableKey.value) {
+      const columnConfig = getTableColumnConfig(getTableKey.value, getColumnSchema.value);
+      if (columnConfig) handleColumnChange(columnConfig);
+    }
+  })
+}
+
+onMounted(() => {
+  columnInit();
+})
+
 defineExpose({ reload, Ref: xGrid, getSearchData, deleteData, exportList })
 emit('register', {
   reload,
-  refreshColumn,
   getSearchData,
   setProps,
   deleteData,

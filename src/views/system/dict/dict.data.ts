@@ -28,6 +28,9 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         colProps: {
           span: 24
         }
+      },
+      table: {
+        width: 120,
       }
     },
     {
@@ -37,6 +40,9 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         colProps: {
           span: 24
         }
+      },
+      table: {
+        width: 120,
       }
     },
     {

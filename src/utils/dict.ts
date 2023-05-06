@@ -27,13 +27,14 @@ export const getDictOptions = (dictType: string) => {
 export const getIntDictOptions = (dictType: string) => {
   const dictOption: DictDataType[] = []
   const dictOptions: DictDataType[] = getDictOptions(dictType)
-  dictOptions.forEach((dict: DictDataType) => {
-    dictOption.push({
-      ...dict,
-      value: parseInt(dict.value + '')
+  if (dictOptions) {
+    dictOptions.forEach((dict: DictDataType) => {
+      dictOption.push({
+        ...dict,
+        value: parseInt(dict.value + '')
+      })
     })
-  })
-
+  }
   return dictOption
 }
 

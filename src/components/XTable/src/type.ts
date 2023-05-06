@@ -2,6 +2,7 @@ import { CrudSchema } from '@/hooks/web/useCrudSchemas'
 import type { VxeGridProps, VxeGridPropTypes, VxeTablePropTypes } from 'vxe-table'
 
 export type XTableProps<D = any> = VxeGridProps<D> & {
+  tableKey?: string
   allSchemas?: CrudSchema
   height?: number // 高度 默认730
   topActionSlots?: boolean // 是否开启表格内顶部操作栏插槽
