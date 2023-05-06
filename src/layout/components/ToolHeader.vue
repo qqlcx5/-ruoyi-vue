@@ -75,7 +75,7 @@ export default defineComponent({
             </div>
             <Icon
               icon="svg-icon:switch"
-              size="14"
+              size={14}
               class="cursor-pointer"
               color="var(--top-header-text-color)"
             />

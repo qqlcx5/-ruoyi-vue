@@ -73,6 +73,7 @@ export type VxeAllSchemas = {
   formSchema: FormSchema[]
   detailSchema: DescriptionsSchema[]
   printSchema: VxeTableDefines.ColumnInfo[]
+  columnSchema: any[]
 }
 
 // 过滤所有结构
@@ -87,7 +88,8 @@ export const useVxeCrudSchemas = (
     tableSchema: [],
     formSchema: [],
     detailSchema: [],
-    printSchema: []
+    printSchema: [],
+    columnSchema: []
   })
 
   const searchSchema = filterSearchSchema(crudSchema)
@@ -104,6 +106,9 @@ export const useVxeCrudSchemas = (
 
   const printSchema = filterPrintSchema(crudSchema)
   allSchemas.printSchema = printSchema
+
+  const columnSchema = filterColumnSchema(crudSchema)
+  allSchemas.columnSchema = columnSchema || []
 
   return {
     allSchemas
@@ -333,6 +338,39 @@ const filterDescriptionsSchema = (crudSchema: VxeCrudSchema): DescriptionsSchema
   })
 
   return descriptionsSchema
+}
+
+// 过滤 columnschema 结构
+const filterColumnSchema = (crudSchema: VxeCrudSchema): any[] => {
+  const { t } = useI18n()
+  const columnSchema: any[] = []
+
+  eachTree(crudSchema.columns, (schemaItem: VxeCrudColumns) => {
+    // 判断是否显示
+    if (schemaItem?.isTable !== false && schemaItem.table?.show !== false) {
+      const descriptionsSchemaItem = {
+        ...schemaItem.table,
+        field: schemaItem.field,
+        title: schemaItem.table?.title || schemaItem.title,
+        check: true,
+      }
+      columnSchema.push(descriptionsSchemaItem)
+    }
+  })
+  if (crudSchema.action && crudSchema.action == true) {
+    const tableSchemaItem = {
+      title: crudSchema.actionTitle ? crudSchema.actionTitle : t('table.action'),
+      field: 'actionbtns',
+      fixed: 'right' as unknown as VxeColumnPropTypes.Fixed,
+      width: crudSchema.actionWidth ? crudSchema.actionWidth : '200px',
+      slots: {
+        default: 'actionbtns_default'
+      }
+    }
+    columnSchema.push(tableSchemaItem)
+  }
+
+  return columnSchema
 }
 
 // 过滤 打印 结构

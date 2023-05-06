@@ -23,6 +23,9 @@ const crudSchemas = reactive<VxeCrudSchema>({
           span: 24
         },
       },
+      table: {
+        width: 140,
+      }
     },
     {
       title: '字典类型',
@@ -32,6 +35,9 @@ const crudSchemas = reactive<VxeCrudSchema>({
         colProps: {
           span: 24
         }
+      },
+      table: {
+        width: 140,
       }
     },
     {

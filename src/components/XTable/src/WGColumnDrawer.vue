@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import { PropType } from 'vue'
 import { propTypes } from '@/utils/propTypes'
+import { getTableColumnConfig } from '@/utils/tableColumn'
 import vuedraggable from "vuedraggable";
+import {ColumnType, useTableColumnStoreWithOut } from '@/store/modules/tableColumn'
+
+const attrs = useAttrs()
+
+const tableColumnStore = useTableColumnStoreWithOut();
 
 const props = defineProps({
   title: propTypes.string.def(''),
   destroyOnClose: propTypes.bool.def(false),
   lockScroll: propTypes.bool.def(false),
   columns: propTypes.any.def([]),
+  tableKey: propTypes.string.def(''),
   beforeClose: { type: Function as PropType<(...args) => any>, default: null }
 })
 
-const emits = defineEmits(['columnChange'])
+const emits = defineEmits(['columnChange', 'confirm', 'reset'])
 
 const getBindValue = computed(() => {
   let attrs = useAttrs()
@@ -31,22 +38,38 @@ const state: any = reactive({
 })
 
 watch(() => props.columns, (data) => {
-  console.log(data);
   if (state.columnSet.length === 0) {
     state.columnSet = data.filter(column => !column.fixed);
   }
 }, {immediate: true})
 
-watch(() => state.columnSet, (data) => {
-  console.log(JSON.parse(JSON.stringify(data)));
-  emits('columnChange', data)
+watch(() => attrs.modelValue, (data) => {
+  // 这里获取缓存进行比较
+  if (data) {
+    // 打开时的column配置，从缓存获取
+    const columnConfig = getTableColumnConfig(props.tableKey, props.columns);
+    if (columnConfig) state.columnSet = columnConfig;
+  }
 }, {immediate: true})
 
-const checkboxGroup = ref([])
-
-const list = ref([1,2,3,4,5,6,7,8,9])
+// 动态变更
+// watch(() => state.columnSet, (data) => {
+//   // console.log(JSON.parse(JSON.stringify(data)));
+//   emits('columnChange', data)
+// }, {immediate: true})
 
 const drag = ref(false);
+
+const reset = () => {
+  state.columnSet = props.columns.filter(column => !column.fixed);
+  tableColumnStore.setTableColumn({tableKey: props.tableKey, column: null})
+  emits('reset');
+}
+
+const confirm = () => {
+  tableColumnStore.setTableColumn({tableKey: props.tableKey, column: state.columnSet});
+  emits('confirm', state.columnSet);
+}
 
 </script>
 
@@ -56,7 +79,7 @@ const drag = ref(false);
       <h4 class="text-18px font-black m-0">定制列</h4>
     </template>
     <template #default>
-      <el-checkbox-group v-model="checkboxGroup">
+<!--      <el-checkbox-group v-model="checkboxGroup">-->
         <vuedraggable
           class="flex flex-col justify-center"
           v-model="state.columnSet"
@@ -65,26 +88,20 @@ const drag = ref(false);
           @end="drag=false"
           item-key="field">
           <template #item="{element, index}">
-            <el-checkbox @click.native.stop>
+            <el-checkbox v-model="element.check" @click.native.stop>
               {{ element.title }}
+              {{ element.check }}
             </el-checkbox>
           </template>
         </vuedraggable>
-<!--        <vuedraggable v-model="props.columns" draggable=".item">-->
-<!--&lt;!&ndash;          <transition-group>&ndash;&gt;-->
-<!--            -->
-<!--&lt;!&ndash;          </transition-group>&ndash;&gt;-->
-<!--        </vuedraggable>-->
-      </el-checkbox-group>
-
+<!--      </el-checkbox-group>-->
     </template>
-    <!--        <template #footer>-->
-    <!--          <div style="flex: auto">-->
-    <!--            <el-button @click="cancelClick">cancel</el-button>-->
-    <!--            <el-button type="primary" @click="confirmClick">confirm</el-button>-->
-    <!--          </div>-->
-    <!--        </template>-->
-
+    <template #footer>
+      <div>
+        <el-button type="primary" @click="confirm">确认</el-button>
+        <el-button @click="reset">还原</el-button>
+      </div>
+    </template>
   </el-drawer>
 </template>
 <style lang="scss">

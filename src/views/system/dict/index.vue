@@ -9,7 +9,7 @@
       <!-- ====== 字典分类 ====== -->
       <div class="w-1/2 overflow-hidden">
         <el-form class="query-form w-full" ref="elFormRef" :model="typeSearchForm" label-position="left" label-width="70px">
-          <el-row gutter="12">
+          <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label="字典名称">
                 <el-input v-model="typeSearchForm.name" />
@@ -51,7 +51,7 @@
           </el-row>
         </el-form>
         <el-divider class="!mt-0 !mb-16px" />
-        <XTable class="dict" border @register="registerType" @cell-click="cellClickEvent" :pagerConfig="{border: false, background: false, perfect: false, pagerCount: 4}">
+        <XTable @register="registerType" @cell-click="cellClickEvent">
           <!-- 操作：新增类型 -->
           <template #toolbar_buttons>
             <XButton
@@ -102,7 +102,7 @@
         <div v-if="!tableTypeSelect" class="text-20px text-tip text-center mt-248px">请从左侧选择</div>
         <div v-else>
           <el-form class="query-form w-full" ref="elFormRef" :model="queryParams" label-position="left" label-width="70px">
-            <el-row gutter="12">
+            <el-row :gutter="12">
               <el-col :span="8">
                 <el-form-item label="数据标签">
                   <el-input v-model="queryParams.label" />
@@ -118,7 +118,7 @@
           </el-form>
           <el-divider class="!mt-0 !mb-16px" />
           <!-- 列表 -->
-          <XTable border @register="registerData">
+          <XTable @register="registerData">
             <!-- 操作：新增数据 -->
             <template #toolbar_buttons>
               <XButton
@@ -199,9 +199,9 @@
         <XButton :title="t('dialog.close')" @click="dialogVisible = false" />
       </template>
     </XModal>
-    <XModal class="wg-vxe-modal" v-model="dictDataVisible" :title="`${dictDataSelected?.label}数据详情`" width="1045px">
+    <XModal v-model="dictDataVisible" :title="`${dictDataSelected?.label}数据详情`" width="1045px">
       <el-form class="query-form w-full" ref="elFormRef" :model="dataLevel3queryParams" label-position="left" label-width="70px">
-        <el-row gutter="12">
+        <el-row :gutter="12">
           <el-col :span="8">
             <el-form-item label="数据标签" class="!mb-0">
               <el-input v-model="dataLevel3queryParams.label" />
@@ -216,7 +216,7 @@
         </el-row>
       </el-form>
       <el-divider class="!my-12px" />
-      <XTable border @register="registerDataLevel3">
+      <XTable @register="registerDataLevel3">
         <!-- 操作：新增数据 -->
         <template #toolbar_buttons>
           <XButton
@@ -280,7 +280,10 @@ const [registerType, { reload: typeGetList, deleteData: typeDeleteData, refreshC
   allSchemas: DictTypeSchemas.allSchemas,
   params: typeSearchForm,
   getListApi: DictTypeApi.getDictTypePageApi,
-  deleteApi: DictTypeApi.deleteDictTypeApi
+  deleteApi: DictTypeApi.deleteDictTypeApi,
+  border: true,
+  pagerConfig: {border: false, background: false, perfect: false, pagerCount: 4},
+  height: 660,
 })
 
 const queryParams = reactive({
@@ -292,7 +295,9 @@ const [registerData, { reload: dataGetList, deleteData: dataDeleteData }] = useX
   allSchemas: DictDataSchemas.allSchemas,
   params: queryParams,
   getListApi: DictDataApi.getDictDataPageApi,
-  deleteApi: DictDataApi.deleteDictDataApi
+  deleteApi: DictDataApi.deleteDictDataApi,
+  border: true,
+  height: 606,
 })
 
 const dataLevel3queryParams = reactive({
@@ -303,7 +308,8 @@ const [registerDataLevel3, { reload: dataLevel3GetList, deleteData: dataLevel3De
   allSchemas: DictDataLevel3Schemas.allSchemas,
   params: dataLevel3queryParams,
   getListApi: DictDataApi.getDictDataPageApi,
-  deleteApi: DictDataApi.deleteDictDataApi
+  deleteApi: DictDataApi.deleteDictDataApi,
+  border: true,
 })
 
 // ========== 字典分类列表相关 ==========

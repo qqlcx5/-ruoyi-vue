@@ -28,35 +28,35 @@ export interface ConfigExportReqVO {
 
 // 查询参数列表
 export const getConfigPageApi = (params: ConfigPageReqVO) => {
-  return request.get({ url: '/system/config/page', params })
+  return request.get({ url: '/system/tenant/config/page', params })
 }
 
 // 查询参数详情
 export const getConfigApi = (id: number) => {
-  return request.get({ url: '/system/config/get?id=' + id })
+  return request.get({ url: '/system/tenant/config/get?id=' + id })
 }
 
 // 根据参数键名查询参数值
 export const getConfigKeyApi = (configKey: string) => {
-  return request.get({ url: '/system/config/get-value-by-key?key=' + configKey })
+  return request.get({ url: '/system/tenant/config/get-value-by-key?key=' + configKey })
 }
 
 // 新增参数
 export const createConfigApi = (data: ConfigVO) => {
-  return request.post({ url: '/system/config/create', data })
+  return request.post({ url: '/system/tenant/config/create', data })
 }
 
 // 修改参数
 export const updateConfigApi = (data: ConfigVO) => {
-  return request.put({ url: '/system/config/update', data })
+  return request.put({ url: '/system/tenant/config/update', data })
 }
 
 // 删除参数
 export const deleteConfigApi = (id: number) => {
-  return request.delete({ url: '/system/config/delete?id=' + id })
+  return request.delete({ url: '/system/tenant/config/delete?id=' + id })
 }
 
 // 导出参数
 export const exportConfigApi = (params: ConfigExportReqVO) => {
-  return request.download({ url: '/system/config/export', params })
+  return request.download({ url: '/system/tenant/config/export', params })
 }

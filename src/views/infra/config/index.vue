@@ -1,7 +1,7 @@
 <template>
   <ContentWrap>
     <el-form class="query-form w-full" ref="elFormRef" :model="searchParams" label-position="left" label-width="70px">
-      <el-row gutter="12">
+      <el-row :gutter="12">
         <el-col :span="4">
           <el-form-item label="参数名称">
             <el-input v-model="searchParams.name" />
@@ -39,7 +39,7 @@
   </ContentWrap>
   <ContentWrap>
     <!-- 列表 -->
-    <XTable @register="registerTable" border>
+    <XTable @register="registerTable">
       <template #toolbar_buttons>
         <!-- 操作：新增 -->
         <XButton
@@ -154,11 +154,13 @@ const searchParams = ref({
 })
 // 列表相关的变量
 const [registerTable, { reload, deleteData, exportList }] = useXTable({
+  tableKey: 'wg-infra-config',
   allSchemas: allSchemas,
   params: searchParams,
   getListApi: ConfigApi.getConfigPageApi,
   deleteApi: ConfigApi.deleteConfigApi,
-  exportListApi: ConfigApi.exportConfigApi
+  exportListApi: ConfigApi.exportConfigApi,
+  border: true,
 })
 
 const onSubmit = async () => {
