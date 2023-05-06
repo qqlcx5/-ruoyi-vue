@@ -79,22 +79,20 @@ const confirm = () => {
       <h4 class="text-18px font-black m-0">定制列</h4>
     </template>
     <template #default>
-<!--      <el-checkbox-group v-model="checkboxGroup">-->
-        <vuedraggable
-          class="flex flex-col justify-center"
-          v-model="state.columnSet"
-          group="column"
-          @start="drag=true"
-          @end="drag=false"
-          item-key="field">
-          <template #item="{element, index}">
-            <el-checkbox v-model="element.check" @click.native.stop>
-              {{ element.title }}
-              {{ element.check }}
-            </el-checkbox>
-          </template>
-        </vuedraggable>
-<!--      </el-checkbox-group>-->
+      <vuedraggable
+        class="flex flex-col justify-center"
+        v-model="state.columnSet"
+        group="column"
+        @start="drag=true"
+        @end="drag=false"
+        item-key="field">
+        <template #item="{element, index}">
+          <el-checkbox v-model="element.check" @click.native.stop>
+            {{ element.title }}
+            {{ element.check }}
+          </el-checkbox>
+        </template>
+      </vuedraggable>
     </template>
     <template #footer>
       <div>
