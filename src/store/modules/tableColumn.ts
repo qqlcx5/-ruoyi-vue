@@ -31,7 +31,8 @@ export const useTableColumn = defineStore('tableColumn', {
     },
     getTableColumn(tableKey: string) {
       const tableColumnMap = wsCache.get(CACHE_KEY.TABLE_COLUMN)
-      return tableColumnMap[tableKey];
+      if (tableColumnMap) return tableColumnMap[tableKey];
+      return null
     },
   }
 })
