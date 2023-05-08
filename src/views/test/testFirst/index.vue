@@ -475,7 +475,7 @@
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
-import * as TenantMenuApi from '@/api/system/TenantMenu'
+import * as TenantMenuApi from '@/api/system/tenantMenu'
 import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 // import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
