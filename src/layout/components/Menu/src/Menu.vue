@@ -469,7 +469,7 @@ $prefix-cls: #{$namespace}-menu-popper;
 
 .el-sub-menu__title .el-sub-menu__icon-arrow {
   &:after {
-    content: "\e684";
+    content: "\e688";
     font-family: "iconfont";
     font-style: normal;
     font-size: 14px;
