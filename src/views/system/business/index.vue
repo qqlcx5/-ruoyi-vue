@@ -40,8 +40,17 @@
     <div class="card-content">
       <!--  左侧按钮  -->
       <div class="button-content">
-        <a-button type="primary" @click="openModal">新增</a-button>
-        <a-button @click="toggleExpandAll">展开收起</a-button>
+        <a-button type="primary" @click="openModal">
+          <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
+          新增
+        </a-button>
+        <a-button @click="toggleExpandAll">
+          <template #icon>
+            <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
+            <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
+          </template>
+          展开收起
+        </a-button>
       </div>
       <!--  右侧操作  -->
       <div class="operation-content">
@@ -113,15 +122,15 @@
       <!--  单元格插槽  -->
       <template #bodyCell="{ column, record }">
         <!--  可用名额   -->
-        <template v-if="column.key === 'usableAmount'">
+        <template v-if="column?.key === 'usableAmount'">
           <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
         </template>
         <!--  有效期   -->
-        <template v-if="column.key === 'validityPeriod'">
+        <template v-if="column?.key === 'validityPeriod'">
           <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
         </template>
         <!--  状态   -->
-        <template v-if="column.key === 'statusSwitch'">
+        <template v-if="column?.key === 'statusSwitch'">
           <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
           <!-- <div class="employees-Number">{{ record.status }}</div>-->
           <!--          <a-switch-->
@@ -135,12 +144,17 @@
           />
         </template>
         <!--  操作   -->
-        <template v-if="column.key === 'operation'">
+        <template v-if="column?.key === 'operation'">
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
             <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
             <div class="text-color margin-right-5" @click="assignPermission(record)">功能配置</div>
-            <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+            <a-popover placement="bottom">
+              <template #content>
+                <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+              </template>
+              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="10" />
+            </a-popover>
           </div>
         </template>
       </template>
@@ -154,7 +168,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'900px'"
+    :width="'665px'"
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
@@ -541,7 +555,7 @@
     width="560px"
     :bodyStyle="{
       width: '100%',
-      height: '180px',
+      height: '200px',
       margin: '0',
       padding: '30px 0 0 0',
       overflow: 'auto'
@@ -736,58 +750,14 @@
     </div>
   </a-modal>
 
-<!--  &lt;!&ndash;  定制列 v-if是为销毁 - -否则非第一次打开会带入过渡动画 - - &ndash;&gt;-->
-<!--  <a-modal-->
-<!--    v-if="state.isShowCustomColumnModal"-->
-<!--    v-model:visible="state.isShowCustomColumnModal"-->
-<!--    title="定制列"-->
-<!--    wrapClassName="details-modal"-->
-<!--    width="240px"-->
-<!--  >-->
-<!--    <div>-->
-<!--      <div class="groupTotalContent">-->
-<!--        <div class="select-all">-->
-<!--          <a-checkbox v-model:checked="state.checkAll" @change="onCheckAllChange">-->
-<!--            全选-->
-<!--          </a-checkbox>-->
-<!--        </div>-->
-
-<!--        <a-checkbox-group v-model:value="state.checkedList" class="checkbox-group">-->
-<!--          &lt;!&ndash;拖拽插件&ndash;&gt;-->
-<!--          <VueDraggableNext-->
-<!--            :list="state.columnsCheckList"-->
-<!--            @dragend="dragEnd(state.columnsCheckList)"-->
-<!--          >-->
-<!--            &lt;!&ndash;拖拽过渡 &ndash;&gt;-->
-<!--            <transition-group type="transition" name="flip-list">-->
-<!--              <a-checkbox-->
-<!--                v-for="item in state.columnsCheckList"-->
-<!--                :value="item.key"-->
-<!--                :key="item.title"-->
-<!--                style="width: 100%"-->
-<!--                :disabled="item?.disabled"-->
-<!--              >-->
-<!--                {{ item.title }}-->
-<!--              </a-checkbox>-->
-<!--            </transition-group>-->
-<!--          </VueDraggableNext>-->
-<!--        </a-checkbox-group>-->
-<!--      </div>-->
-<!--    </div>-->
-
-<!--    &lt;!&ndash;  footer  &ndash;&gt;-->
-<!--    <template #footer>-->
-<!--      <a-button type="primary" html-type="submit" @click="columnsSave">确认</a-button>-->
-<!--      <a-button @click="setDefaultColumns">还原</a-button>-->
-<!--    </template>-->
-<!--  </a-modal>-->
-
   <!--  定制列  -->
   <CustomColumn
     v-if="state.isShowCustomColumnModal"
     @change-column="changeColumn"
     :allColumns="allColumns"
     :defaultKeys="state.defaultKeys"
+    :changedColumnsObj="state.changedColumnsObj"
+    pageKey="business"
   />
 
   <!--  上传图片预览  -->
@@ -815,7 +785,7 @@ import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum } from '@/utils/constants'
-import { useCache } from '@/hooks/web/useCache'
+import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
   addTenantPackage,
@@ -835,8 +805,6 @@ import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
 import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
-import { VueDraggableNext } from 'vue-draggable-next'
-import { UploadRawFile } from 'element-plus'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 
@@ -926,7 +894,7 @@ const legalMobileValidator = (rule, value) => {
 }
 
 const layout = {
-  labelCol: { span: 4 },
+  labelCol: { span: 6 },
   wrapperCol: { span: 14 }
 }
 
@@ -1031,386 +999,7 @@ const state = reactive({
     height: 270
   }, //重置密码 modal样式
   isShowCustomColumnModal: false, //是否打开定制列modal
-  columnsCheckList: [
-    {
-      title: '主体名称',
-      width: 200,
-      dataIndex: 'name',
-      key: 'name',
-      resizable: true,
-      ellipsis: true,
-      disabled: true
-    },
-    {
-      title: '主体编码',
-      width: 200,
-      dataIndex: 'code',
-      key: 'code',
-      resizable: true,
-      ellipsis: true,
-      disabled: true
-    },
-    {
-      title: '系统名称',
-      dataIndex: 'systemName',
-      key: 'systemName',
-      resizable: true,
-      disabled: true
-    },
-    {
-      title: '已用/可用名额',
-      dataIndex: 'usableAmount',
-      key: 'usableAmount',
-      resizable: true
-    },
-    {
-      title: '有效期',
-      width: 200,
-      dataIndex: 'validityPeriod',
-      key: 'validityPeriod',
-      resizable: true
-    },
-
-    {
-      title: '绑定域名',
-      dataIndex: 'bindingDomainName',
-      key: 'bindingDomainName',
-      resizable: true
-    },
-    {
-      title: '负责人',
-      dataIndex: 'contactName',
-      key: 'contactName',
-      resizable: true
-    },
-    {
-      title: '负责人电话',
-      dataIndex: 'contactMobile',
-      key: 'contactMobile',
-      resizable: true
-    },
-    {
-      title: '状态',
-      dataIndex: 'statusSwitch',
-      key: 'statusSwitch',
-      resizable: true
-    },
-
-    {
-      title: '创建人',
-      dataIndex: 'creator',
-      key: 'creator',
-      resizable: true
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createTime',
-      key: 'createTime',
-      resizable: true
-    },
-    {
-      title: '最近操作人',
-      dataIndex: 'updater',
-      key: 'updater',
-      resizable: true
-    },
-    {
-      title: '最近操作时间',
-      dataIndex: 'updateTime',
-      key: 'updateTime',
-      resizable: true
-    },
-
-    {
-      title: '操作',
-      fixed: 'right',
-      width: 240,
-      dataIndex: 'operation',
-      key: 'operation',
-      resizable: true
-    }
-  ], //定制列 复选框
-  defaultColumnsCheckList: [
-    {
-      title: '主体名称',
-      width: 200,
-      dataIndex: 'name',
-      key: 'name',
-      resizable: true,
-      ellipsis: true,
-      disabled: true
-    },
-    {
-      title: '主体编码',
-      width: 200,
-      dataIndex: 'code',
-      key: 'code',
-      resizable: true,
-      ellipsis: true,
-      disabled: true
-    },
-    {
-      title: '系统名称',
-      dataIndex: 'systemName',
-      key: 'systemName',
-      resizable: true,
-      disabled: true
-    },
-    {
-      title: '已用/可用名额',
-      dataIndex: 'usableAmount',
-      key: 'usableAmount',
-      resizable: true
-    },
-    {
-      title: '有效期',
-      width: 200,
-      dataIndex: 'validityPeriod',
-      key: 'validityPeriod',
-      resizable: true
-    },
-
-    {
-      title: '绑定域名',
-      dataIndex: 'bindingDomainName',
-      key: 'bindingDomainName',
-      resizable: true
-    },
-    {
-      title: '负责人',
-      dataIndex: 'contactName',
-      key: 'contactName',
-      resizable: true
-    },
-    {
-      title: '负责人电话',
-      dataIndex: 'contactMobile',
-      key: 'contactMobile',
-      resizable: true
-    },
-    {
-      title: '状态',
-      dataIndex: 'statusSwitch',
-      key: 'statusSwitch',
-      resizable: true
-    },
-
-    {
-      title: '创建人',
-      dataIndex: 'creator',
-      key: 'creator',
-      resizable: true
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createTime',
-      key: 'createTime',
-      resizable: true
-    },
-    {
-      title: '最近操作人',
-      dataIndex: 'updater',
-      key: 'updater',
-      resizable: true
-    },
-    {
-      title: '最近操作时间',
-      dataIndex: 'updateTime',
-      key: 'updateTime',
-      resizable: true
-    },
-
-    {
-      title: '操作',
-      fixed: 'right',
-      width: 240,
-      dataIndex: 'operation',
-      key: 'operation',
-      resizable: true
-    }
-  ], //定制列 默认 复选框 用于还原
-  checkedList: [
-    'code',
-    'name',
-    'systemName',
-    'usableAmount',
-    'validityPeriod',
-    'bindingDomainName',
-    'contactName',
-    'contactMobile',
-    'statusSwitch',
-    'operation'
-  ], //定制列 选中的
-  columns: [
-    {
-      title: '主体名称',
-      width: 200,
-      dataIndex: 'name',
-      key: 'name',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '主体编码',
-      width: 100,
-      dataIndex: 'code',
-      key: 'code',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '系统名称',
-      width: 100,
-      dataIndex: 'systemName',
-      key: 'systemName',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '已用/可用名额',
-      width: 100,
-      dataIndex: 'usableAmount',
-      key: 'usableAmount',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '有效期',
-      width: 200,
-      dataIndex: 'validityPeriod',
-      key: 'validityPeriod',
-      resizable: true,
-      ellipsis: true
-    },
-
-    {
-      title: '绑定域名',
-      width: 100,
-      dataIndex: 'bindingDomainName',
-      key: 'bindingDomainName',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '负责人',
-      width: 100,
-      dataIndex: 'contactName',
-      key: 'contactName',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '负责人电话',
-      width: 100,
-      dataIndex: 'contactMobile',
-      key: 'contactMobile',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '状态',
-      width: 100,
-      dataIndex: 'statusSwitch',
-      key: 'statusSwitch',
-      resizable: true,
-      ellipsis: true
-    },
-
-    {
-      title: '操作',
-      fixed: 'right',
-      width: 240,
-      dataIndex: 'operation',
-      key: 'operation',
-      resizable: true,
-      ellipsis: true
-    }
-  ], //表格 columns
-  defaultColumns: [
-    {
-      title: '主体名称',
-      width: 200,
-      dataIndex: 'name',
-      key: 'name',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '主体编码',
-      width: 100,
-      dataIndex: 'code',
-      key: 'code',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '系统名称',
-      width: 100,
-      dataIndex: 'systemName',
-      key: 'systemName',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '已用/可用名额',
-      width: 100,
-      dataIndex: 'usableAmount',
-      key: 'usableAmount',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '有效期',
-      width: 200,
-      dataIndex: 'validityPeriod',
-      key: 'validityPeriod',
-      resizable: true,
-      ellipsis: true
-    },
-
-    {
-      title: '绑定域名',
-      width: 100,
-      dataIndex: 'bindingDomainName',
-      key: 'bindingDomainName',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '负责人',
-      width: 100,
-      dataIndex: 'contactName',
-      key: 'contactName',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '负责人电话',
-      width: 100,
-      dataIndex: 'contactMobile',
-      key: 'contactMobile',
-      resizable: true,
-      ellipsis: true
-    },
-    {
-      title: '状态',
-      width: 100,
-      dataIndex: 'statusSwitch',
-      key: 'statusSwitch',
-      resizable: true,
-      ellipsis: true
-    },
-
-    {
-      title: '操作',
-      fixed: 'right',
-      width: 240,
-      dataIndex: 'operation',
-      key: 'operation',
-      resizable: true,
-      ellipsis: true
-    }
-  ], //默认的表格 columns  定制列还原使用
+  columns: [], //表格 columns
   optionalMenuTree: [], //上级主体 treeList
   logoListUrl: [], //系统logo 上传 回显 - -
   logoUrlSuccess: '', //系统logo 新增编辑入参
@@ -1419,11 +1008,21 @@ const state = reactive({
   businessLicenseListUrl: [], //营业执照 上传回显
   businessLicenseSuccess: '', //营业执照 新增编辑入参
   addEditLoading: false, //新增编辑 modal button 异步loading
-  indeterminate: true, //全选checkbox样式
-  checkAll: false, //是否全选
   tableStatusChangeInfo: {}, //存当前表格item项以及switch值
   tableStatusModalInfo: {}, //存当前表格item项 modal
-  defaultKeys: ['name', 'code', 'systemName',  'usableAmount', 'validityPeriod', 'bindingDomainName','contactName','contactMobile','statusSwitch', 'operation'], //定制列默认的keys
+  defaultKeys: [
+    'name',
+    'code',
+    'systemName',
+    'usableAmount',
+    'validityPeriod',
+    'bindingDomainName',
+    'contactName',
+    'contactMobile',
+    'statusSwitch',
+    'operation'
+  ], //定制列默认的keys
+  changedColumnsObj: {} //定制列组件接收到的当前列信息
 })
 
 //存放功能配置 选中的所有keys(包括父节点id)
@@ -2170,7 +1769,6 @@ function getChildArr(data) {
 
 //详情(打开)
 const detailsInfo = async (record) => {
-  state.isShowDetails = true
   // state.record = record
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
@@ -2295,6 +1893,8 @@ const detailsInfo = async (record) => {
       treeArr: handleTree(tempArr)
     }
   ]
+
+  state.isShowDetails = true
 }
 
 //关闭 重置密码modal
@@ -2340,38 +1940,6 @@ const copyText = async () => {
     message.success('复制成功')
   } catch (e) {
     message.error('复制失败，您使用的浏览器可能不支持复制功能')
-  }
-}
-
-//拖拽
-const dragEnd = (list) => {
-  //重写 sort
-  list.map((item, index) => {
-    item.sort = index + 1
-  })
-}
-
-//定制列 确定
-const columnsSave = () => {
-  //过滤出 勾选的项
-  const checkList = state.columnsCheckList.filter((item) => state.checkedList.includes(item?.key))
-  if (checkList.length) {
-    //过滤 从全部的表格列 中取到勾选的 列 并添加进当前 的sort
-    const filteredColumns = allColumns.filter((column) => {
-      return checkList.some((temp) => {
-        if (temp?.key === column.key) {
-          column['sort'] = temp?.sort
-          // return column
-        }
-        return temp?.key === column.key
-      })
-    })
-    // 升序
-    state.columns = filteredColumns.sort((a, b) => a.sort - b.sort)
-    state.refreshTable = false
-    state.refreshTable = true
-  } else {
-    message.warning('定制列不能为空')
   }
 }
 
@@ -2541,65 +2109,6 @@ const removeImg = (file, type) => {
 //     state.formState.effectiveStartEndTime = []
 //   }
 // }
-//定制列还原
-const setDefaultColumns = () => {
-  state.columns = state.defaultColumns
-  // state.columnsCheckList = { ...state.defaultColumnsCheckList }
-
-  // //重写 sort
-  // state.defaultColumnsCheckList.map((item, index) => {
-  //   item.sort = index + 1
-  // })
-
-  state.defaultColumnsCheckList.map((item, index) => {
-    state.columnsCheckList.map((children) => {
-      if (children.key === item.key) {
-        children.sort = index
-      }
-    })
-  })
-
-  // 升序
-  state.columnsCheckList = state.columnsCheckList.sort((a, b) => a.sort - b.sort)
-  state.checkedList = [
-    'code',
-    'name',
-    'systemName',
-    'usableAmount',
-    'validityPeriod',
-    'bindingDomainName',
-    'contactName',
-    'contactMobile',
-    'statusSwitch',
-    'operation'
-  ]
-
-  // 全选
-  state.checkAll = false
-}
-
-//全选checkbox onchange
-const onCheckAllChange = (e) => {
-  const tempArr = []
-  if (e.target.checked === true) {
-    state.defaultColumnsCheckList.map((item) => {
-      tempArr.push(item.key)
-    })
-  } else {
-    state.defaultColumnsCheckList.map((item) => {
-      if (item.disabled) {
-        tempArr.push(item.key)
-      }
-    })
-    state.checkAll = false
-  }
-
-  Object.assign(state, {
-    // checkedList: e.target.checked ? tempArr : [],
-    checkedList: tempArr,
-    indeterminate: false
-  })
-}
 
 //table 列伸缩
 const handleResizeColumn = (w, col) => {
@@ -2614,16 +2123,33 @@ const setPreviewImage = (imgUrl = '') => {
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
-const changeColumn = (columns, isCloseModal = false) => {
+const changeColumn = (columnsObj, isCloseModal = false) => {
   if (isCloseModal) {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columns
-  console.log('state.columns====>', state.columns)
+  state.columns = columnsObj.currentColumns
+  state.changedColumnsObj = columnsObj
   state.refreshTable = false
   state.refreshTable = true
 }
+
+//获取默认的columns
+const getColumns = () => {
+  //business 为当前存储的页面
+  const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ)?.business
+  //有缓存 取缓存
+  if (columnsObj) {
+    state.changedColumnsObj = columnsObj
+    return columnsObj.currentColumns
+  }
+  const currentColumns = allColumns.filter((columnsItem) => {
+    return state.defaultKeys.some((item) => columnsItem.key === item)
+  })
+  return currentColumns
+}
+//初始化 获取默认的 columns
+state.columns = getColumns()
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
@@ -2636,26 +2162,6 @@ watch(
     nextTick(() => {
       state.isShowRightTree = true
     })
-  }
-)
-
-//复选框 全选中 全选checkbox 勾选
-watch(
-  () => state.checkedList,
-  (val) => {
-    // state.indeterminate = !!val.length && val.length < state.columnsCheckList.length
-    state.checkAll = val.length === state.columnsCheckList.length
-  }
-)
-
-//功能配置 modal 复选框 全选中 全选checkbox 勾选
-watch(
-  () => state.checkedKeys,
-  (val) => {
-    state.selectAll = val.length === getAllIds(state.menuTreeList).length && val.length > 0
-  },
-  {
-    immediate: true
   }
 )
 </script>
@@ -2693,7 +2199,8 @@ watch(
 }
 
 .operation-content {
-  //background: red;
+  display: flex;
+  align-items: center;
 }
 
 //表格
@@ -2725,10 +2232,6 @@ watch(
 .flex-content {
   display: flex;
   align-items: center;
-}
-
-.operation-content {
-  display: flex;
 }
 
 .margin-right-5 {
@@ -3043,6 +2546,11 @@ watch(
   text-align: left;
   font-family: PingFangSC-Regular;
 }
+//新增 等按钮内 icon
+.btn-icon {
+  margin-right: 4px;
+  cursor: pointer;
+}
 </style>
 
 <style lang="scss">
@@ -3081,6 +2589,14 @@ watch(
   //级联选择器 清除icon 应该是被全局哪里影响到了
   .ant-select-clear {
     display: flex !important;
+  }
+  //新增修改表单
+  .ant-form-item {
+    margin-bottom: 14px;
+  }
+  //可用名额
+  .ant-input-number {
+    width: 200px;
   }
 }
 </style>

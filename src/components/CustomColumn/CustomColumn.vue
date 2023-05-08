@@ -17,10 +17,10 @@
 
         <a-checkbox-group v-model:value="state.checkedList" class="checkbox-group">
           <!--拖拽插件-->
+          <!-- v-if="state.columnsCheckList.length > 0"-->
           <VueDraggableNext
             :list="state.columnsCheckList"
             @dragend="dragEnd(state.columnsCheckList)"
-            v-if="state.columnsCheckList.length > 0"
           >
             <!--拖拽过渡 -->
             <transition-group type="transition" name="flip-list">
@@ -48,7 +48,14 @@
 import { VueDraggableNext } from 'vue-draggable-next'
 import { cloneDeep } from 'lodash-es'
 import dragImg from '@/assets/imgs/system/drag.png'
+import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 
+/**
+ * allColumns table所有的 columns 属性跟随antd，但须加入sort 排序 ，若是复选框禁选 需要额外加入属性 disabled: true,
+ * defaultKeys 默认选中的 复选框 key
+ * changedColumnsObj 设置过的表格列信息 包括 currentColumnsCheckList //当前复选框列表 currentCheckedList //当前选中的复选框 currentColumns//当前的表格列
+ * pageKey 为当前使用页面 存在 localStorage里 对象对应的key
+ * */
 const props = defineProps({
   allColumns: {
     type: Array,
@@ -60,6 +67,18 @@ const props = defineProps({
     type: Array,
     default() {
       return []
+    }
+  },
+  changedColumnsObj: {
+    type: Object,
+    default() {
+      return {}
+    }
+  },
+  pageKey: {
+    type: String,
+    default() {
+      return ''
     }
   }
 })
@@ -76,7 +95,7 @@ const state = reactive({
   checkedList: [], //定制列 选中的
   columnsCheckList: cloneDeep(allColumns) //定制列 复选框
 })
-
+const { wsCache } = useCache()
 //定制列
 //全选checkbox onchange
 const onCheckAllChange = (e) => {
@@ -112,7 +131,21 @@ const columnsSave = () => {
   //过滤出 勾选的项
   const checkList = state.columnsCheckList.filter((item) => state.checkedList.includes(item?.key))
   state.columns = checkList.sort((a, b) => a.sort - b.sort)
-  emit('changeColumn', state.columns)
+  const tempObj = {
+    currentColumnsCheckList: state.columnsCheckList, //当前复选框列表
+    currentCheckedList: state.checkedList, //当前选中的复选框
+    currentColumns: state.columns //当前的表格列
+  }
+
+  //获取当前的缓存
+  const tempCache = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ)
+  //设置缓存 localStorage
+  const tempObjCache = { ...tempCache }
+  tempObjCache[props.pageKey] = tempObj
+  wsCache.set(CACHE_KEY.TABLE_COLUMNS_OBJ, tempObjCache)
+
+  // emit('changeColumn', state.columns)
+  emit('changeColumn', tempObj)
 }
 //定制列还原
 const setDefaultColumns = () => {
@@ -125,7 +158,14 @@ const setDefaultColumns = () => {
   //复选框list位置还原
   state.columnsCheckList = cloneDeep(allColumns)
 
-  emit('changeColumn', state.columns)
+  const tempObj = {
+    currentColumnsCheckList: [], //当前复选框列表
+    currentCheckedList: [], //当前选中的复选框
+    currentColumns: state.columns //当前的表格列
+  }
+  emit('changeColumn', tempObj)
+
+  // emit('changeColumn', state.columns)
 }
 
 //获取默认的columns
@@ -142,6 +182,18 @@ const closeModal = () => {
 }
 //初始化 获取默认的 columns
 state.columns = getColumns()
+// emit('changeColumn', state.columns)
+
+//对当前外部表格 的columns进行判断 是否是已经修改过的的 改过的话需要对 复选框顺序以及勾选状态进行 重置
+// eslint-disable-next-line vue/no-setup-props-destructure
+const { currentCheckedList = [], currentColumnsCheckList = [] } = props.changedColumnsObj
+// if (!(Object.keys(currentColumnsCheckList).length === 0)) {
+if (currentColumnsCheckList.length > 0) {
+  //定制列 复选框选中的
+  state.checkedList = currentCheckedList
+  //复选框列表
+  state.columnsCheckList = cloneDeep(props.changedColumnsObj.currentColumnsCheckList) //定制列 复选框
+}
 
 //复选框 全选中 全选checkbox 勾选
 watch(

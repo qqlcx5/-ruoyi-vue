@@ -1,6 +1,5 @@
 <template>
   <!-- 搜索工作栏 -->
-
   <ContentWrap>
     <a-form :model="queryParams" ref="queryFormRef" layout="inline">
       <a-form-item :label="`菜单名称`" name="name">
@@ -38,15 +37,24 @@
     <div class="card-content">
       <!--  左侧按钮  -->
       <div class="button-content">
-        <a-button type="primary" @click="openModal">新增</a-button>
-        <a-button @click="toggleExpandAll">展开收起</a-button>
+        <a-button type="primary" @click="openModal">
+          <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
+          新增
+        </a-button>
+        <a-button @click="toggleExpandAll">
+          <template #icon>
+            <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
+            <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
+          </template>
+          展开收起
+        </a-button>
       </div>
       <!--  右侧操作  -->
       <div class="operation-content">
-        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />
+        <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
-        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" />
+        <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
+        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
         <Icon
           icon="svg-icon:custom-column"
           :size="50"
@@ -126,7 +134,12 @@
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
             <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
             <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
-            <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
+            <a-popover placement="bottom">
+              <template #content>
+                <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
+              </template>
+              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="10" />
+            </a-popover>
           </div>
         </template>
       </template>
@@ -140,7 +153,7 @@
     v-model:visible="state.isShow"
     :title="state.addEditTitle"
     @cancel="closeModal"
-    :width="'900px'"
+    :width="'534px'"
     :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
   >
     <div class="base_info_content">
@@ -320,7 +333,7 @@
 
     <template #footer>
       <a-button type="primary" html-type="submit" @click="saveForm" :loading="state.modalBtnLoading"
-      >确定</a-button
+        >确定</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -355,8 +368,8 @@
             state.tableStatusChangeInfo.record.name
           }}底下
           <span class="status-span">{{
-              state.tableStatusChangeInfo.record?.children?.length
-            }}</span>
+            state.tableStatusChangeInfo.record?.children?.length
+          }}</span>
           个菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
@@ -364,8 +377,8 @@
 
     <template #footer>
       <a-button type="primary" html-type="submit" @click="tableStatusConfirm">{{
-          state.tableStatusChangeInfo.statusBtnText
-        }}</a-button>
+        state.tableStatusChangeInfo.statusBtnText
+      }}</a-button>
       <a-button @click="closeStatusModal">取消</a-button>
     </template>
   </a-modal>
@@ -409,7 +422,7 @@
       <div class="delete-text-tip"> 删除后，该菜单信息将全部删除，且不可恢复， 请谨慎操作。 </div>
       <div class="delete-btn-content">
         <a-button type="primary" @click="okDelete" :loading="state.modalBtnLoading"
-        >确定删除</a-button
+          >确定删除</a-button
         >
         <a-button @click="closeDeleteModal">取消</a-button>
       </div>
@@ -431,7 +444,7 @@
     :footer="null"
   >
     <div class="details-edit" @click="edit(state.currentRecord, true)"
-    ><img :src="editImg" alt="" class="edit-Img" />修改</div
+      ><img :src="editImg" alt="" class="edit-Img" />修改</div
     >
     <div class="details-content">
       <div class="text-style" v-for="(item, index) in state.detailsInfo" :key="`info${index}`">
@@ -453,6 +466,8 @@
     @change-column="changeColumn"
     :allColumns="allColumns"
     :defaultKeys="state.defaultKeys"
+    :changedColumnsObj="state.changedColumnsObj"
+    pageKey="menu"
   />
 </template>
 
@@ -474,7 +489,6 @@ import {
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
 import { updateMenuStatus } from '@/api/system/TenantMenu'
-import { VueDraggableNext } from 'vue-draggable-next'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 
 const queryParams = reactive({
@@ -569,20 +583,6 @@ const state = reactive({
   isShowStatus: false, //table 状态开启关闭 modal
   modalType: 'add', //add新增edit编辑
   addEditTitle: '新增', //新增编辑 modal title
-  typeArr: [
-    {
-      label: '目录',
-      value: 1
-    },
-    {
-      label: '菜单',
-      value: 2
-    },
-    {
-      label: '按钮',
-      value: 3
-    }
-  ],
   formState: {
     id: 0,
     name: '', //目录名称
@@ -606,16 +606,14 @@ const state = reactive({
   deleteModalWidth: '488px', //删除modal width
   modalBtnLoading: false,
   isShowCustomColumnModal: false, //是否打开定制列modal
-  checkAll: false, //是否全选
   columns: [],
   defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'operation'], //定制列默认的keys
-  checkedList: [], //定制列 选中的
-  columnsCheckList: [...allColumns] //定制列 复选框
+  changedColumnsObj: {} //定制列组件接收到的当前列信息
 })
 
 const layout = {
   labelCol: { span: 4 },
-  wrapperCol: { span: 14 }
+  wrapperCol: { span: 18 }
 }
 
 /** 查询列表 */
@@ -1055,118 +1053,34 @@ const detailsInfo = async (record) => {
   }
 }
 
-//定制列
-//全选checkbox onchange
-const onCheckAllChange = (e) => {
-  const tempArr = []
-  if (e.target.checked === true) {
-    state.columnsCheckList.map((item) => {
-      tempArr.push(item.key)
-    })
-  } else {
-    state.columnsCheckList.map((item) => {
-      if (item.disabled) {
-        tempArr.push(item.key)
-      }
-    })
-    // state.checkAll = false
-  }
-
-  Object.assign(state, {
-    // checkedList: e.target.checked ? tempArr : [],
-    checkedList: tempArr,
-    indeterminate: false
-  })
-}
-//拖拽
-const dragEnd = (list) => {
-  //重写 sort
-  list.map((item, index) => {
-    item.sort = index + 1
-  })
-  console.log('拖拽list', list)
-}
-//定制列 确定
-const columnsSave = () => {
-  console.log('state.columnsCheckList', state.columnsCheckList)
-  //过滤出 勾选的项
-  const checkList = state.columnsCheckList.filter((item) => state.checkedList.includes(item?.key))
-  console.log('checkList', checkList)
-  if (checkList.length) {
-    //过滤 从全部的表格列 中取到勾选的 列 并添加进当前 的sort
-    const filteredColumns = allColumns.filter((column) => {
-      return checkList.some((temp) => {
-        if (temp?.key === column.key) {
-          column['sort'] = temp?.sort
-          // return column
-        }
-        return temp?.key === column.key
-      })
-    })
-    console.log('filteredColumns ', filteredColumns)
-    // 升序
-    state.columns = filteredColumns.sort((a, b) => a.sort - b.sort)
-    state.refreshTable = false
-    state.refreshTable = true
-  } else {
-    message.warning('定制列不能为空')
-  }
-}
-//定制列还原
-const setDefaultColumns = () => {
-  //初始化 获取默认的 columns
-  state.columns = getColumns()
-
-  //复选框 选中keys 还原
-  state.checkedList = [...state.defaultKeys]
-
-  //复选框list位置还原
-  state.columnsCheckList = [...state.columns]
-
-  // // 全选
-  // state.checkAll = false
-}
-
-//获取默认的columns
-const getColumns = () => {
-  console.log('allColumns', allColumns)
-  console.log('state.defaultKeys', state.defaultKeys)
-  state.checkedList = [...state.defaultKeys]
-  const currentColumns = allColumns.filter((columnsItem) => {
-    return state.defaultKeys.some((item) => columnsItem.key === item)
-  })
-  return currentColumns
-  console.log('currentColumns', currentColumns)
-}
-//初始化 获取默认的 columns
-state.columns = getColumns()
-
-//复选框 全选中 全选checkbox 勾选
-watch(
-  () => state.checkedList,
-  (val) => {
-    console.log('val', val)
-    console.log(' state.columnsCheckList', state.columnsCheckList)
-    // state.indeterminate = !!val.length && val.length < state.columnsCheckList.length
-    state.checkAll = val.length === state.columnsCheckList.length
-    console.log('state.checkAll', state.checkAll)
-  },
-  {
-    immediate: true
-  }
-)
-
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
-const changeColumn = (columns, isCloseModal = false) => {
+const changeColumn = (columnsObj, isCloseModal = false) => {
   if (isCloseModal) {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columns
-  console.log('state.columns====>', state.columns)
+  state.columns = columnsObj.currentColumns
+  state.changedColumnsObj = columnsObj
   state.refreshTable = false
   state.refreshTable = true
 }
+
+//获取默认的columns
+const getColumns = () => {
+  //menu 为当前存储的页面
+  const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ)?.menu
+  //有缓存 取缓存
+  if (columnsObj) {
+    state.changedColumnsObj = columnsObj
+    return columnsObj.currentColumns
+  }
+  const currentColumns = allColumns.filter((columnsItem) => {
+    return state.defaultKeys.some((item) => columnsItem.key === item)
+  })
+  return currentColumns
+}
+//初始化 获取默认的 columns
+state.columns = getColumns()
 </script>
 
 <style lang="scss" scoped>
@@ -1203,6 +1117,7 @@ const changeColumn = (columns, isCloseModal = false) => {
 
 .operation-content {
   display: flex;
+  align-items: center;
 }
 
 //表格
@@ -1376,6 +1291,15 @@ const changeColumn = (columns, isCloseModal = false) => {
 //定制列 checkbox
 .ant-checkbox-wrapper + .ant-checkbox-wrapper {
   margin-left: 0;
+}
+//新增修改表单
+:deep(.ant-form-item) {
+  margin-bottom: 14px;
+}
+//新增 等按钮内 icon
+.btn-icon {
+  margin-right: 4px;
+  cursor: pointer;
 }
 </style>
 
