@@ -38,6 +38,7 @@ export const useRenderMenuItem = (
           return (
             <ElSubMenu
               index={fullPath}
+              popperOffset={0}
               popperClass={
                 menuMode === 'vertical' ? `${preFixCls}--vertical` : `${preFixCls}--horizontal`
               }

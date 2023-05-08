@@ -185,7 +185,7 @@ export default defineComponent({
                     <div
                       class={[
                         `${prefixCls}__item`,
-                        'text-center text-12px relative h-60px cursor-pointer flex items-center',
+                        'text-center text-14px relative h-60px cursor-pointer flex items-center',
                         {
                           'no-children': v?.children?.length === 1,
                           'is-active': isActive(v.path),

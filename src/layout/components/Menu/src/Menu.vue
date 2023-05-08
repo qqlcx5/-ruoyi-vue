@@ -7,8 +7,8 @@ import { useRenderMenuItem } from './components/useRenderMenuItem'
 import { isUrl } from '@/utils/is'
 import { useDesign } from '@/hooks/web/useDesign'
 import { LayoutType } from '@/types/layout'
-// import { Icon } from '@/components/Icon'
-// import {useScrollTo} from "@/hooks/event/useScrollTo";
+import { Icon } from '@/components/Icon'
+import {useScrollTo} from "@/hooks/event/useScrollTo";
 
 const { getPrefixCls } = useDesign()
 
@@ -72,59 +72,55 @@ export default defineComponent({
     }
 
     // elscroll 实例
-    // const scrollbar1Ref = ref<ComponentRef<typeof ElScrollbar>>()
-    // const elMenuRef = ref<ComponentRef<typeof ElMenu>>()
-    //
-    // const menuScroll = (direction: string) => {
-    //   const wrap$ = unref(scrollbar1Ref)?.wrapRef
-    //   console.log(wrap$);
-    //   console.log(scrollbar1Ref);
-    //   // const { start } = useScrollTo({
-    //   //   el: wrap$!,
-    //   //   position: 'scrollLeft',
-    //   //   to: direction === 'right' ? (unref(scrollLeftNumber)+200) : (unref(scrollLeftNumber)-200),
-    //   //   duration: 500
-    //   // })
-    //   // start()
-    // }
-    //
-    // // 保存滚动位置
-    // const scrollLeftNumber = ref(0)
-    //
-    // const scroll = ({ scrollLeft }) => {
-    //   console.log(scrollLeft);
-    //   scrollLeftNumber.value = scrollLeft as number
-    // }
+    const scrollbarRef = ref<ComponentRef<typeof ElScrollbar>>()
+    const elMenuRef = ref<ComponentRef<typeof ElMenu>>()
+
+    const menuScroll = (direction: string) => {
+      const wrap$ = unref(scrollbarRef)?.wrapRef
+      const { start } = useScrollTo({
+        el: wrap$!,
+        position: 'scrollLeft',
+        to: direction === 'right' ? (unref(scrollLeftNumber)+150) : (unref(scrollLeftNumber)-150),
+        duration: 300
+      })
+      start()
+    }
+
+    // 保存滚动位置
+    const scrollLeftNumber = ref(0)
+
+    const scroll = ({ scrollLeft }) => {
+      scrollLeftNumber.value = scrollLeft as number
+    }
 
     const renderMenuWrap = () => {
       if (unref(layout) === 'top') {
-        // return (
-        //   <div class="flex relative">
-        //     <div
-        //       onClick={() => menuScroll('left')}
-        //       class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] hover-trigger sticky left-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
-        //       <Icon
-        //         icon="svg-icon:arrow-left"
-        //         size={16}
-        //         color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
-        //       />
-        //     </div>
-        //     <ElScrollbar ref="scrollbar1Ref" class="h-full" always={true}>
-        //       {renderMenu()}
-        //     </ElScrollbar>
-        //
-        //     <div
-        //       onClick={() => menuScroll('right')}
-        //       class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] hover-trigger sticky right-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
-        //       <Icon
-        //         icon="svg-icon:arrow-right"
-        //         size={16}
-        //         color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
-        //       />
-        //     </div>
-        //   </div>
-        // )
-        return renderMenu()
+        return (
+          <div class="flex relative">
+            <div
+              onClick={() => menuScroll('left')}
+              class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] px-8px hover-trigger sticky left-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
+              <Icon
+                icon="svg-icon:arrow-left"
+                size={16}
+                color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+              />
+            </div>
+            <ElScrollbar ref={scrollbarRef} class="h-full" onScroll={scroll}>
+              {renderMenu()}
+            </ElScrollbar>
+
+            <div
+              onClick={() => menuScroll('right')}
+              class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] px-8px hover-trigger sticky right-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
+              <Icon
+                icon="svg-icon:arrow-right"
+                size={16}
+                color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+              />
+            </div>
+          </div>
+        )
       } else {
         // return <ElScrollbar class="wg-scroll-bar">{renderMenu()}</ElScrollbar>
         return <ElScrollbar class={unref(collapse) ? 'collapse-menu' : 'wg-scroll-bar'}>{renderMenu()}</ElScrollbar>
@@ -134,6 +130,7 @@ export default defineComponent({
     const renderMenu = () => {
       return (
         <ElMenu
+          ref={elMenuRef}
           defaultActive={unref(activeMenu)}
           mode={unref(menuMode)}
           collapse={
@@ -472,7 +469,7 @@ $prefix-cls: #{$namespace}-menu-popper;
 
 .el-sub-menu__title .el-sub-menu__icon-arrow {
   &:after {
-    content: "\e684";
+    content: "\e688";
     font-family: "iconfont";
     font-style: normal;
     font-size: 14px;
