@@ -59,7 +59,7 @@ export default defineComponent({
       >
         {layout.value !== 'top' ? (
           <div class="h-full flex items-center">
-            {hamburger.value && layout.value !== 'cutMenu' ? (
+            {hamburger.value ? (
               <Collapse
                 class="collapse"
                 color="var(--top-header-text-color)"

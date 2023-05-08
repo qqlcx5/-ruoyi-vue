@@ -230,6 +230,7 @@ const scroll = ({ scrollLeft }) => {
 
 // 移动到某个位置
 const move = (to: number) => {
+  console.log(scrollbarRef);
   const wrap$ = unref(scrollbarRef)?.wrapRef
   const { start } = useScrollTo({
     el: wrap$!,
@@ -655,7 +656,7 @@ $prefix-cls: #{$namespace}-tags-view;
 .arrow {
   width: 30px;
   height: 48px;
-  border-right: 1px solid var(--tags-view-border-color);
+  border-right: 1px solid var(--el-border-color);
 }
 .arrow-right {
   border-width: 0;
@@ -664,6 +665,6 @@ $prefix-cls: #{$namespace}-tags-view;
   display: flex;
   height: 48px;
   width: 130px;
-  border-left: 1px solid var(--tags-view-border-color);
+  border-left: 1px solid var(--el-border-color);
 }
 </style>

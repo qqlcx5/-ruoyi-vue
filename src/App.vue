@@ -41,6 +41,8 @@ import 'dayjs/locale/zh-cn'
   </ConfigGlobal>
 </template>
 <style lang="scss">
+@import "@/styles/el-plus-var.scss";
+
 $prefix-cls: #{$namespace}-app;
 .size {
   width: 100%;

@@ -53,23 +53,7 @@
         <el-divider class="!mt-0 !mb-16px" />
         <XTable @register="registerType" @cell-click="cellClickEvent">
           <!-- 操作：新增类型 -->
-          <template #toolbar_buttons>
-            <XButton
-              type="primary"
-              preIcon="ep:zoom-in"
-              :title="t('action.add')"
-              v-hasPermi="['system:dict:create']"
-              @click="handleTypeCreate()"
-            />
-          </template>
-          <!--        <template #toolbar_tools>-->
-          <!--          &lt;!&ndash; 操作：新增 &ndash;&gt;-->
-          <!--          <XButton-->
-          <!--            type="primary"-->
-          <!--            preIcon="ep:zoom-in"-->
-          <!--            title="dddddasd"-->
-          <!--          />-->
-          <!--        </template>-->
+          <template #toolbar_buttons></template>
           <template #status_default="{ row }">
             <el-switch
               v-model="row.status"
@@ -86,12 +70,6 @@
               :title="t('action.edit')"
               v-hasPermi="['system:dict:update']"
               @click="handleTypeUpdate(row.id)"
-            />
-            <!-- 操作：删除类型 -->
-            <XTextButton
-              :title="t('action.del')"
-              v-hasPermi="['system:dict:delete']"
-              @click="typeDeleteData(row.id, `是否删除字典名称为''${row.name}''的数据项?`)"
             />
           </template>
         </XTable>
@@ -135,6 +113,7 @@
                 :active-value="0"
                 :inactive-value="1"
                 @change="handleStatusChange(row, 'data')"
+                disabled
               />
             </template>
             <template #actionbtns_default="{ row }">
@@ -234,6 +213,7 @@
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(row, 'dataLevel3')"
+            disabled
           />
         </template>
         <template #actionbtns_default="{ row }">

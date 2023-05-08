@@ -35,6 +35,9 @@ const mobile = computed(() => appStore.getMobile)
 // 固定菜单
 const fixedMenu = computed(() => appStore.getFixedMenu)
 
+// cut模式下是否打开二级菜单
+const isShowCutSubMenu = computed(() => appStore.getIsShowCutSubMenu)
+
 export const useRenderLayout = () => {
   const renderClassic = () => {
     return (
@@ -170,7 +173,7 @@ export const useRenderLayout = () => {
       <>
         <div class="flex items-center justify-between bg-[var(--top-header-bg-color)] border-bottom-1 border-solid border-[var(--top-tool-border-color)] dark:border-[var(--el-border-color)]">
           {logo.value ? <Logo class="hover-trigger px-16px dark:bg-[var(--left-menu-bg-color)]"></Logo> : undefined}
-          <Menu class="flex-1 px-10px h-[var(--top-tool-height)]"></Menu>
+          <Menu class="flex-1 h-[var(--top-tool-height)]"></Menu>
           <ToolHeader></ToolHeader>
         </div>
         <div class={[`${prefixCls}-content`, 'h-full w-full']}>
@@ -238,10 +241,14 @@ export const useRenderLayout = () => {
                   collapse.value && !fixedMenu.value,
                 'w-[calc(100%-var(--tab-menu-max-width))] left-[var(--tab-menu-max-width)]':
                   !collapse.value && !fixedMenu.value,
-                'w-[calc(100%-var(--tab-menu-min-width)-var(--left-menu-max-width))] ml-[var(--left-menu-max-width)]':
+                'w-[calc(100%-var(--tab-menu-min-width)-var(--left-menu-max-width))] ml-[var(--left-menu-min-width)]':
                   collapse.value && fixedMenu.value,
                 'w-[calc(100%-var(--tab-menu-max-width)-var(--left-menu-max-width))] ml-[var(--left-menu-max-width)]':
-                  !collapse.value && fixedMenu.value
+                  !collapse.value && fixedMenu.value,
+                'w-[calc(100%-var(--tab-menu-min-width)-var(--left-sub-menu-max-width))]':
+                  collapse.value && !fixedMenu.value && isShowCutSubMenu.value,
+                'w-[calc(100%-var(--tab-menu-max-width)-var(--left-sub-menu-max-width))]':
+                  !collapse.value && !fixedMenu.value && isShowCutSubMenu.value,
               }
             ]}
             style="transition: all var(--transition-time-02);"

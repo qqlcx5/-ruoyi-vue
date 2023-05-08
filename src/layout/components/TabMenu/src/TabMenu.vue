@@ -34,9 +34,9 @@ export default defineComponent({
 
     const tabRouters = computed(() => unref(routers).filter((v) => !v?.meta?.hidden))
 
-    const setCollapse = () => {
-      appStore.setCollapse(!unref(collapse))
-    }
+    // const setCollapse = () => {
+    //   appStore.setCollapse(!unref(collapse))
+    // }
 
     onMounted(() => {
       if (unref(fixedMenu)) {
@@ -91,20 +91,11 @@ export default defineComponent({
 
     watch(
       () => showMenu.value,
-      (value: boolean) => {
-        console.log(value);
-        // console.log(document.getElementById("menuContainer"));
-        // let el = document.getElementById("menuContainer")
-        // if (value) {
-        //   el?.classList.add('!w-[calc(100%-var(--tab-menu-max-width)-var(--tab-sub-menu-max-width))]')
-        //   el?.classList.add('!left-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]')
-        // } else {
-        //   el?.classList.remove('!w-[calc(100%-var(--tab-menu-max-width)-var(--tab-sub-menu-max-width))]')
-        //   el?.classList.remove('!left-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]')
-        // }
+      (visible: boolean) => {
+        appStore.setIsShowCutSubMenu(visible)
       }
     )
-    //
+
     // tab高亮
     const tabActive = ref('')
 
@@ -145,86 +136,105 @@ export default defineComponent({
       return false
     }
 
-    const mouseleave = () => {
-      if (!unref(showMenu) || unref(fixedMenu)) return
-      showMenu.value = false
-    }
+    // const mouseleave = () => {
+    //   if (!unref(showMenu) || unref(fixedMenu)) return
+    //   showMenu.value = false
+    // }
 
     return () => (
       <div
         id={`${variables.namespace}-menu`}
         class={[
           prefixCls,
-          'relative bg-[var(--left-menu-bg-color)] z-3000 flex-shrink-0',
+          'relative bg-[var(--left-menu-bg-color)] z-3000 flex-shrink-0 flex',
           {
-            'w-[var(--tab-menu-max-width)]': !unref(collapse),
-            'w-[var(--tab-menu-min-width)]': unref(collapse),
-            'w-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]': unref(collapse) && unref(showMenu),
-            'w-[calc(var(--tab-menu-max-width)+var(--tab-sub-menu-max-width))]': !unref(collapse) && unref(showMenu),
+            // 'w-[var(--tab-menu-max-width)]': !unref(collapse),
+            // 'w-[var(--tab-menu-min-width)]': unref(collapse),
+            // 'w-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]': unref(collapse) && unref(showMenu),
+            // 'w-[calc(var(--tab-menu-max-width)+var(--tab-sub-menu-max-width))]': !unref(collapse) && unref(showMenu),
           }
         ]}
-        onMouseleave={mouseleave}
+        // onMouseleave={mouseleave}
       >
-        <ElScrollbar class="!h-[calc(100%-var(--tab-menu-collapse-height)-1px)]">
-          <div>
-            {() => {
-              return unref(tabRouters).map((v) => {
-                const item = (
-                  v.meta?.alwaysShow || (v?.children?.length && v?.children?.length > 1)
-                    ? v
-                    : {
+        <div
+          class={[
+            prefixCls,
+            'relative bg-[var(--left-menu-bg-color)] z-3000 flex-shrink-0',
+            {
+              'collapse': !unref(collapse),
+              'w-[var(--tab-menu-max-width)]': !unref(collapse),
+              'w-[var(--tab-menu-min-width)]': unref(collapse),
+              // 'w-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]': unref(collapse) && unref(showMenu),
+              // 'w-[calc(var(--tab-menu-max-width)+var(--tab-sub-menu-max-width))]': !unref(collapse) && unref(showMenu),
+            }
+          ]}
+        >
+          <ElScrollbar class="!h-[calc(100%-var(--tab-menu-collapse-height)-1px)]">
+            <div>
+              {() => {
+                return unref(tabRouters).map((v) => {
+                  const item = (
+                    v.meta?.alwaysShow || (v?.children?.length && v?.children?.length > 1)
+                      ? v
+                      : {
                         ...(v?.children && v?.children[0]),
                         path: pathResolve(v.path, (v?.children && v?.children[0])?.path as string)
                       }
-                ) as AppRouteRecordRaw
-                return (
-                  <div
-                    class={[
-                      `${prefixCls}__item`,
-                      'text-center text-12px relative h-60px cursor-pointer',
-                      {
-                        'is-active': isActive(v.path)
-                      },
-                      'flex', 'items-center pl-38px'
-                    ]}
-                    onClick={() => {
-                      tabClick(item)
-                    }}
-                  >
-                    <div class="pr-16px">
-                      <Icon class="icon" icon={item?.meta?.icon}></Icon>
+                  ) as AppRouteRecordRaw
+                  return (
+                    <div
+                      class={[
+                        `${prefixCls}__item`,
+                        'text-center text-12px relative h-60px cursor-pointer flex items-center',
+                        {
+                          'no-children': v?.children?.length === 1,
+                          'is-active': isActive(v.path),
+                          '!pl-38px': !unref(collapse),
+                          'px-[var(--el-menu-base-level-padding)] justify-center': unref(collapse),
+                        },
+                      ]}
+                      onClick={() => {
+                        tabClick(item)
+                      }}
+                    >
+                      <div class={[ `flex items-center justify-center`, { 'pr-16px': !unref(collapse) } ]}>
+                        <Icon class="icon" icon={item?.meta?.icon}></Icon>
+                      </div>
+                      {unref(collapse) ? undefined : (
+                        <p class="break-words py-0 m-0">{t(item.meta?.title)}</p>
+                      )}
                     </div>
-                    {!unref(showTitle) ? undefined : (
-                      <p class="break-words py-0 m-0">{t(item.meta?.title)}</p>
-                    )}
-                  </div>
-                )
-              })
-            }}
-          </div>
-        </ElScrollbar>
-        <div
-          class={[
-            `${prefixCls}--collapse`,
-            'text-center h-[var(--tab-menu-collapse-height)] leading-[var(--tab-menu-collapse-height)] cursor-pointer'
-          ]}
-          onClick={setCollapse}
-        >
-          <Icon icon={unref(collapse) ? 'ep:d-arrow-right' : 'ep:d-arrow-left'}></Icon>
+                  )
+                })
+              }}
+            </div>
+          </ElScrollbar>
         </div>
+
         <Menu
+          v-show="unref(showMenu) && unref(fixedMenu)"
           class={[
-            '!absolute top-0 border-solid border-[var(--left-menu-bg-light-color)]',
+            'wg-cut-sub-menu top-0 border-solid border-[var(--el-border-color)] border-r-1 border-t-1 bg-white',
             {
-              '!left-[var(--tab-menu-min-width)]': unref(collapse),
-              '!left-[var(--tab-menu-max-width)]': !unref(collapse),
-              '!w-[calc(var(--left-menu-max-width)+1px)]': unref(showMenu) || unref(fixedMenu),
+              '!w-[calc(var(--left-sub-menu-max-width)+1px)]': unref(showMenu) || unref(fixedMenu),
               '!w-0': !unref(showMenu) && !unref(fixedMenu)
             }
           ]}
           style="transition: width var(--transition-time-02), left var(--transition-time-02);"
         ></Menu>
       </div>
+    // <Menu
+    //   class={[
+    //     '!absolute top-0 border-solid border-[var(--left-menu-bg-light-color)]',
+    //     {
+    //       '!left-[var(--tab-menu-min-width)]': unref(collapse),
+    //       '!left-[var(--tab-menu-max-width)]': !unref(collapse),
+    //       '!w-[calc(var(--left-sub-menu-max-width)+1px)]': unref(showMenu) || unref(fixedMenu),
+    //       '!w-0': !unref(showMenu) && !unref(fixedMenu)
+    //     }
+    //   ]}
+    //   style="transition: width var(--transition-time-02), left var(--transition-time-02);"
+    // ></Menu>
     )
   }
 })
@@ -248,23 +258,22 @@ $prefix-cls: #{$namespace}-tab-menu;
 
   &__item {
     color: var(--left-menu-text-color);
-    display: flex;
-    align-items: center;
-    height: var(--el-menu-item-height);
-    line-height: var(--el-menu-item-height);
-    font-size: var(--el-menu-item-font-size);
-    /* color: var(--el-menu-text-color); */
-    padding: 0 var(--el-menu-base-level-padding) !important;
-    list-style: none;
-    cursor: pointer;
-    position: relative;
-    transition: border-color var(--el-transition-duration),background-color var(--el-transition-duration),color var(--el-transition-duration);
-    box-sizing: border-box;
-    white-space: nowrap;
+    //display: flex;
+    //align-items: center;
+    //height: var(--el-menu-item-height);
+    //line-height: var(--el-menu-item-height);
+    //font-size: var(--el-menu-item-font-size);
+    ///* color: var(--el-menu-text-color); */
+    //padding-right: var(--el-menu-base-level-padding) !important;
+    //list-style: none;
+    //cursor: pointer;
+    //position: relative;
+    //transition: border-color var(--el-transition-duration),background-color var(--el-transition-duration),color var(--el-transition-duration);
+    //box-sizing: border-box;
+    //white-space: nowrap;
 
     &:hover {
       color: var(--left-menu-text-active-color);
-      // background-color: var(--left-menu-bg-active-color);
     }
   }
 
@@ -278,20 +287,72 @@ $prefix-cls: #{$namespace}-tab-menu;
     position: relative;
     color: var(--left-menu-text-active-color);
 
-    //&:before {
-    //  content: "";
-    //  position: absolute;
-    //  left: 0;
-    //  top: 0;
-    //  bottom: 0;
-    //  width: 6px;
-    //  background-color: var(--left-menu-bg-active-color);
-    //}
-
     & .icon {
-      color: var(--left-menu-bg-active-color);
+      //color: var(--left-menu-bg-active-color);
     }
     background-color: var(--left-menu-bg-light-color);
+
+    &.no-children {
+      color: var(--el-color-primary);
+      &:before {
+        display: none;
+      }
+    }
+  }
+
+  .collapse {
+    .is-active {
+      &:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background-color: var(--left-menu-bg-active-color);
+      }
+    }
+  }
+
+  .wg-cut-sub-menu {
+    :deep(.el-menu) {
+      background-color: var(--el-bg-color);
+      .el-menu-item, .el-sub-menu.is-opened {
+        color: var(--el-text-color-regular) !important;
+        background-color: var(--el-bg-color) !important;
+      }
+      .el-sub-menu__title {
+        color: var(--el-text-color-regular) !important;
+        background-color: var(--el-bg-color) !important;
+      }
+
+      // 设置子菜单悬停的高亮和背景色
+      .el-sub-menu__title,
+      .el-menu-item {
+        height: 60px !important;
+        &:hover {
+          color: var(--el-color-primary) !important;
+        }
+      }
+      .is-active {
+        & > .el-sub-menu__title {
+          color: inherit !important;
+          &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background-color: var(--el-color-primary);
+            content: '';
+          }
+          .v-icon {
+            color: var(--el-color-primary);
+          }
+        }
+      }
+
+    }
   }
 }
 </style>
