@@ -6,6 +6,8 @@
 
   --left-menu-max-width: 240px;
 
+  --left-sub-menu-max-width: 200px;
+
   --left-menu-min-width: 64px;
 
   --left-menu-bg-color: #001529;
@@ -50,7 +52,7 @@
   /* tab menu start */
   --tab-menu-max-width: 240px;
 
-  --tab-sub-menu-max-width: 240px;
+  --tab-sub-menu-max-width: 200px;
 
   --tab-menu-min-width: 64px;
 

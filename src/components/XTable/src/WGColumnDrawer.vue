@@ -87,15 +87,14 @@ const confirm = () => {
         @end="drag=false"
         item-key="field">
         <template #item="{element, index}">
-          <el-checkbox v-model="element.check" @click.native.stop>
+          <el-checkbox class="mb-4px" v-model="element.check" @click.native.stop>
             {{ element.title }}
-            {{ element.check }}
           </el-checkbox>
         </template>
       </vuedraggable>
     </template>
     <template #footer>
-      <div>
+      <div class="text-center mb-18px">
         <el-button type="primary" @click="confirm">确认</el-button>
         <el-button @click="reset">还原</el-button>
       </div>

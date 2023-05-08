@@ -26,6 +26,7 @@ interface AppState {
   greyMode: boolean
   pageLoading: boolean
   isShowSetting: boolean //打开布局设置
+  isShowCutSubMenu: boolean //打开布局设置
   layout: LayoutType
   title: string
   userInfo: string
@@ -65,6 +66,7 @@ export const useAppStore = defineStore('app', {
       fixedMenu: wsCache.get('fixedMenu') || false, // 是否固定菜单
 
       isShowSetting: false, //打开布局设置
+      isShowCutSubMenu: false, // layout的cutMenu布局下二级菜单
       layout: wsCache.get(CACHE_KEY.LAYOUT) || 'classic', // layout布局
       isDark: wsCache.get(CACHE_KEY.IS_DARK) || false, // 是否是暗黑模式
       currentSize: wsCache.get('default') || 'default', // 组件尺寸
@@ -178,6 +180,9 @@ export const useAppStore = defineStore('app', {
     },
     getFooter(): boolean {
       return this.footer
+    },
+    getIsShowCutSubMenu(): boolean {
+      return this.isShowCutSubMenu
     }
   },
   actions: {
@@ -232,6 +237,9 @@ export const useAppStore = defineStore('app', {
     },
     setIShowSetting(isShowSetting: boolean) {
       this.isShowSetting = isShowSetting
+    },
+    setIsShowCutSubMenu(isShowCutSubMenu: boolean) {
+      this.isShowCutSubMenu = isShowCutSubMenu
     },
     setLayout(layout: LayoutType) {
       if (this.mobile && layout !== 'classic') {

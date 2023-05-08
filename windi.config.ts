@@ -56,6 +56,13 @@ export default defineConfig({
             backgroundColor: 'var(--el-bg-color-overlay)'
           }
         },
+        '.no-scrollbar': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          }
+        },
         ...obj
       })
     })

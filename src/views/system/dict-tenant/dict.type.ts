@@ -11,7 +11,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
   primaryKey: 'id',
   primaryType: null,
   action: true,
-  actionWidth: '100px',
+  actionWidth: '60px',
   searchSpan: 12,
   columns: [
     {

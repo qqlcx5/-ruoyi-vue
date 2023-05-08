@@ -7,6 +7,8 @@ import { useRenderMenuItem } from './components/useRenderMenuItem'
 import { isUrl } from '@/utils/is'
 import { useDesign } from '@/hooks/web/useDesign'
 import { LayoutType } from '@/types/layout'
+// import { Icon } from '@/components/Icon'
+// import {useScrollTo} from "@/hooks/event/useScrollTo";
 
 const { getPrefixCls } = useDesign()
 
@@ -69,8 +71,59 @@ export default defineComponent({
       }
     }
 
+    // elscroll 实例
+    // const scrollbar1Ref = ref<ComponentRef<typeof ElScrollbar>>()
+    // const elMenuRef = ref<ComponentRef<typeof ElMenu>>()
+    //
+    // const menuScroll = (direction: string) => {
+    //   const wrap$ = unref(scrollbar1Ref)?.wrapRef
+    //   console.log(wrap$);
+    //   console.log(scrollbar1Ref);
+    //   // const { start } = useScrollTo({
+    //   //   el: wrap$!,
+    //   //   position: 'scrollLeft',
+    //   //   to: direction === 'right' ? (unref(scrollLeftNumber)+200) : (unref(scrollLeftNumber)-200),
+    //   //   duration: 500
+    //   // })
+    //   // start()
+    // }
+    //
+    // // 保存滚动位置
+    // const scrollLeftNumber = ref(0)
+    //
+    // const scroll = ({ scrollLeft }) => {
+    //   console.log(scrollLeft);
+    //   scrollLeftNumber.value = scrollLeft as number
+    // }
+
     const renderMenuWrap = () => {
       if (unref(layout) === 'top') {
+        // return (
+        //   <div class="flex relative">
+        //     <div
+        //       onClick={() => menuScroll('left')}
+        //       class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] hover-trigger sticky left-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
+        //       <Icon
+        //         icon="svg-icon:arrow-left"
+        //         size={16}
+        //         color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+        //       />
+        //     </div>
+        //     <ElScrollbar ref="scrollbar1Ref" class="h-full" always={true}>
+        //       {renderMenu()}
+        //     </ElScrollbar>
+        //
+        //     <div
+        //       onClick={() => menuScroll('right')}
+        //       class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] hover-trigger sticky right-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
+        //       <Icon
+        //         icon="svg-icon:arrow-right"
+        //         size={16}
+        //         color="appStore.getIsDark ? 'var(&#45;&#45;el-text-color-regular)' : '#333'"
+        //       />
+        //     </div>
+        //   </div>
+        // )
         return renderMenu()
       } else {
         // return <ElScrollbar class="wg-scroll-bar">{renderMenu()}</ElScrollbar>
@@ -91,6 +144,7 @@ export default defineComponent({
           textColor="var(--left-menu-text-color)"
           activeTextColor="var(--left-menu-text-active-color)"
           onSelect={menuSelect}
+          ellipsis={false}
         >
           {{
             default: () => {
@@ -278,11 +332,11 @@ $prefix-cls: #{$namespace}-menu;
         {
           &.is-opened {
             position: relative;
-            background-color: var(--left-menu-bg-light-color) !important;
+            //background-color: var(--left-menu-bg-light-color) !important;
             .#{$elNamespace}-sub-menu__title,
             .#{$elNamespace}-menu-item,
             .#{$elNamespace}-sub-menu, {
-              background-color: var(--left-menu-bg-light-color) !important;
+              //background-color: var(--left-menu-bg-light-color) !important;
             }
             >.#{$elNamespace}-sub-menu__title, {
               &:before {
@@ -393,7 +447,7 @@ $prefix-cls: #{$namespace}-menu-popper;
   content: '';
 }
 
-.el-sub-menu__title .el-sub-menu__icon-arrow {
+.wg-menu__arrow, .el-sub-menu__title .el-sub-menu__icon-arrow {
   svg {
     display: none;
   }
@@ -404,12 +458,6 @@ $prefix-cls: #{$namespace}-menu-popper;
   transition: transform var(--el-transition-duration);
   margin-right: 0;
   width: inherit;
-  &:after {
-    content: "\e684";
-    font-family: "iconfont";
-    font-style: normal;
-    font-size: 14px;
-  }
 }
 /*close menu*/
 .el-sub-menu > .el-sub-menu__title .el-sub-menu__icon-arrow {
@@ -420,6 +468,15 @@ $prefix-cls: #{$namespace}-menu-popper;
   -webkit-transform: rotateZ(180deg);
   transform: rotateZ(180deg);
   transition: transform .3s;
+}
+
+.el-sub-menu__title .el-sub-menu__icon-arrow {
+  &:after {
+    content: "\e684";
+    font-family: "iconfont";
+    font-style: normal;
+    font-size: 14px;
+  }
 }
 
 .#{$prefix-cls}--vertical,
@@ -453,6 +510,18 @@ $prefix-cls: #{$namespace}-menu-popper;
     //&:after {
     //  @extend .is-active--after;
     //}
+  }
+}
+
+.#{$prefix-cls}--vertical {
+  .el-menu-item.is-active {
+    position: relative;
+    //background-color: var(--left-menu-bg-active-color) !important;
+    color: var(--left-menu-bg-active-color) !important;
+
+    &:hover {
+      background-color: var(--left-menu-bg-active-color) !important;
+    }
   }
 }
 
