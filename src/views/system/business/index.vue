@@ -541,17 +541,20 @@
     width="560px"
     :bodyStyle="{
       width: '100%',
-      height: '150px',
+      height: '180px',
       margin: '0',
-      padding: '30px 0 0 20px',
+      padding: '30px 0 0 0',
       overflow: 'auto'
     }"
   >
     <div class="message-content">
-      <img :src="warningImg" alt="" class="tip-img" />
+      <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="message-text-content">
-        <div class="message-text">{{ state.messageText }} </div>
-        <div>
+        <div class="message-text">
+          <img :src="warningImg" alt="" class="tip-img message-img" />
+          {{ state.messageText }}
+        </div>
+        <div class="message-phone">
           主体负责人绑定的手机号：{{
             state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
           }}
@@ -586,18 +589,23 @@
       width: '100%',
       height: '139px',
       margin: '0',
-      padding: '33px 0 0 32px',
+      padding: '33px 0 0 0px',
       overflow: 'auto'
     }"
   >
     <div class="status-content">
-      <img :src="warningImg" alt="" class="tip-img" />
+      <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="status-text-content">
-        <div class="status-text"
-          >{{ state.tableStatusChangeInfo.statusBtnText }}
+        <div class="status-text">
+          <img :src="warningImg" alt="" class="tip-img" />{{
+            state.tableStatusChangeInfo.statusBtnText
+          }}
           {{ state.tableStatusChangeInfo.record.name }} 吗？</div
         >
-        <div v-if="state.tableStatusChangeInfo.record?.children?.length > 0">
+        <div
+          v-if="state.tableStatusChangeInfo.record?.children?.length > 0"
+          class="status-text-info"
+        >
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
@@ -728,53 +736,59 @@
     </div>
   </a-modal>
 
-  <!--  定制列 v-if是为销毁 - -否则非第一次打开会带入过渡动画 - - -->
-  <a-modal
+<!--  &lt;!&ndash;  定制列 v-if是为销毁 - -否则非第一次打开会带入过渡动画 - - &ndash;&gt;-->
+<!--  <a-modal-->
+<!--    v-if="state.isShowCustomColumnModal"-->
+<!--    v-model:visible="state.isShowCustomColumnModal"-->
+<!--    title="定制列"-->
+<!--    wrapClassName="details-modal"-->
+<!--    width="240px"-->
+<!--  >-->
+<!--    <div>-->
+<!--      <div class="groupTotalContent">-->
+<!--        <div class="select-all">-->
+<!--          <a-checkbox v-model:checked="state.checkAll" @change="onCheckAllChange">-->
+<!--            全选-->
+<!--          </a-checkbox>-->
+<!--        </div>-->
+
+<!--        <a-checkbox-group v-model:value="state.checkedList" class="checkbox-group">-->
+<!--          &lt;!&ndash;拖拽插件&ndash;&gt;-->
+<!--          <VueDraggableNext-->
+<!--            :list="state.columnsCheckList"-->
+<!--            @dragend="dragEnd(state.columnsCheckList)"-->
+<!--          >-->
+<!--            &lt;!&ndash;拖拽过渡 &ndash;&gt;-->
+<!--            <transition-group type="transition" name="flip-list">-->
+<!--              <a-checkbox-->
+<!--                v-for="item in state.columnsCheckList"-->
+<!--                :value="item.key"-->
+<!--                :key="item.title"-->
+<!--                style="width: 100%"-->
+<!--                :disabled="item?.disabled"-->
+<!--              >-->
+<!--                {{ item.title }}-->
+<!--              </a-checkbox>-->
+<!--            </transition-group>-->
+<!--          </VueDraggableNext>-->
+<!--        </a-checkbox-group>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash;  footer  &ndash;&gt;-->
+<!--    <template #footer>-->
+<!--      <a-button type="primary" html-type="submit" @click="columnsSave">确认</a-button>-->
+<!--      <a-button @click="setDefaultColumns">还原</a-button>-->
+<!--    </template>-->
+<!--  </a-modal>-->
+
+  <!--  定制列  -->
+  <CustomColumn
     v-if="state.isShowCustomColumnModal"
-    v-model:visible="state.isShowCustomColumnModal"
-    title="定制列"
-    wrapClassName="details-modal"
-    width="240px"
-  >
-    <!--  type:checkboxGroup  -->
-    <div>
-      <!--      <div class="ship_text">船舶信息</div>-->
-      <div class="groupTotalContent">
-        <div class="select-all">
-          <a-checkbox v-model:checked="state.checkAll" @change="onCheckAllChange">
-            全选
-          </a-checkbox>
-        </div>
-
-        <a-checkbox-group v-model:value="state.checkedList" class="checkbox-group">
-          <!--拖拽插件-->
-          <VueDraggableNext
-            :list="state.columnsCheckList"
-            @dragend="dragEnd(state.columnsCheckList)"
-          >
-            <!--拖拽过渡 -->
-            <transition-group type="transition" name="flip-list">
-              <a-checkbox
-                v-for="item in state.columnsCheckList"
-                :value="item.key"
-                :key="item.title"
-                style="width: 100%"
-                :disabled="item?.disabled"
-              >
-                {{ item.title }}
-              </a-checkbox>
-            </transition-group>
-          </VueDraggableNext>
-        </a-checkbox-group>
-      </div>
-    </div>
-
-    <!--  footer  -->
-    <template #footer>
-      <a-button type="primary" html-type="submit" @click="columnsSave">确认</a-button>
-      <a-button @click="setDefaultColumns">还原</a-button>
-    </template>
-  </a-modal>
+    @change-column="changeColumn"
+    :allColumns="allColumns"
+    :defaultKeys="state.defaultKeys"
+  />
 
   <!--  上传图片预览  -->
   <a-modal
@@ -824,6 +838,7 @@ import useClipboard from 'vue-clipboard3'
 import { VueDraggableNext } from 'vue-draggable-next'
 import { UploadRawFile } from 'element-plus'
 import { getAccessToken, getTenantId } from '@/utils/auth'
+import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 
 const { wsCache } = useCache()
 
@@ -1407,7 +1422,8 @@ const state = reactive({
   indeterminate: true, //全选checkbox样式
   checkAll: false, //是否全选
   tableStatusChangeInfo: {}, //存当前表格item项以及switch值
-  tableStatusModalInfo: {} //存当前表格item项 modal
+  tableStatusModalInfo: {}, //存当前表格item项 modal
+  defaultKeys: ['name', 'code', 'systemName',  'usableAmount', 'validityPeriod', 'bindingDomainName','contactName','contactMobile','statusSwitch', 'operation'], //定制列默认的keys
 })
 
 //存放功能配置 选中的所有keys(包括父节点id)
@@ -1427,7 +1443,9 @@ const allColumns = [
     dataIndex: 'name',
     key: 'name',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    disabled: true,
+    sort: 1
   },
   {
     title: '主体编码',
@@ -1435,7 +1453,9 @@ const allColumns = [
     dataIndex: 'code',
     key: 'code',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    disabled: true,
+    sort: 2
   },
   {
     title: '系统名称',
@@ -1443,7 +1463,9 @@ const allColumns = [
     dataIndex: 'systemName',
     key: 'systemName',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    disabled: true,
+    sort: 3
   },
   {
     title: '已用/可用名额',
@@ -1451,7 +1473,8 @@ const allColumns = [
     dataIndex: 'usableAmount',
     key: 'usableAmount',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 4
   },
   {
     title: '有效期',
@@ -1459,7 +1482,8 @@ const allColumns = [
     dataIndex: 'validityPeriod',
     key: 'validityPeriod',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 5
   },
 
   {
@@ -1468,7 +1492,8 @@ const allColumns = [
     dataIndex: 'bindingDomainName',
     key: 'bindingDomainName',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 6
   },
   {
     title: '负责人',
@@ -1476,7 +1501,8 @@ const allColumns = [
     dataIndex: 'contactName',
     key: 'contactName',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 7
   },
   {
     title: '负责人电话',
@@ -1484,7 +1510,8 @@ const allColumns = [
     dataIndex: 'contactMobile',
     key: 'contactMobile',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 8
   },
   {
     title: '状态',
@@ -1492,7 +1519,8 @@ const allColumns = [
     dataIndex: 'statusSwitch',
     key: 'statusSwitch',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 9
   },
 
   {
@@ -1501,7 +1529,8 @@ const allColumns = [
     width: 100,
     key: 'creator',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 10
   },
   {
     title: '创建时间',
@@ -1509,7 +1538,8 @@ const allColumns = [
     dataIndex: 'createTime',
     key: 'createTime',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 11
   },
   {
     title: '最近操作人',
@@ -1517,7 +1547,8 @@ const allColumns = [
     dataIndex: 'updater',
     key: 'updater',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 12
   },
   {
     title: '最近操作时间',
@@ -1525,7 +1556,8 @@ const allColumns = [
     dataIndex: 'updateTime',
     key: 'updateTime',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 12
   },
 
   {
@@ -1535,7 +1567,8 @@ const allColumns = [
     dataIndex: 'operation',
     key: 'operation',
     resizable: true,
-    ellipsis: true
+    ellipsis: true,
+    sort: 13
   }
 ]
 
@@ -2580,6 +2613,18 @@ const setPreviewImage = (imgUrl = '') => {
   previewVisible.value = true
 }
 
+//接收 定制列modal事件  - -关闭modal也一起吧 - -
+const changeColumn = (columns, isCloseModal = false) => {
+  if (isCloseModal) {
+    state.isShowCustomColumnModal = false
+    return
+  }
+  state.columns = columns
+  console.log('state.columns====>', state.columns)
+  state.refreshTable = false
+  state.refreshTable = true
+}
+
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
@@ -2734,16 +2779,28 @@ watch(
 }
 
 .status-text-content {
-  margin-left: 15px;
+  //margin-left: 15px;
   color: rgba(102, 102, 102, 1);
   font-size: 14px;
   font-family: PingFangSC-Regular;
 }
 .status-text {
+  margin-left: 32px;
+  display: flex;
+  align-items: center;
   color: rgba(51, 51, 51, 1);
   font-size: 16px;
   font-weight: bold;
   font-family: PingFangSC-Medium;
+}
+.status-text-info {
+  margin-left: 68px;
+  margin-top: 12px;
+  height: 40px;
+  color: rgba(102, 102, 102, 1);
+  font-size: 14px;
+  text-align: left;
+  font-family: PingFangSC-Regular;
 }
 .status-span {
   color: red;
@@ -2754,19 +2811,29 @@ watch(
   display: flex;
 }
 .message-text-content {
-  width: 504px;
-  margin-left: 15px;
+  width: 520px;
+  //margin-left: 15px;
+}
+.message-img {
+  margin-top: 3px;
 }
 .message-text {
-  margin-right: 40px;
+  margin-left: 20px;
+  display: flex;
+  //align-items: center;
+  //margin-right: 40px;
   color: rgba(51, 51, 51, 1);
   font-size: 16px;
   font-weight: bold;
   text-align: left;
   font-family: PingFangSC-Medium;
 }
+.message-phone {
+  margin: 12px 0 0 56px;
+}
 .message-input-content {
-  padding-left: 76px;
+  //padding-left: 76px;
+  margin: 26px 0 0 132px;
   display: flex;
   align-items: center;
 }
@@ -2777,7 +2844,7 @@ watch(
   align-items: center;
   width: 94px;
   height: 32px;
-  margin-left: 19px;
+  margin-left: 8px;
   border-radius: 4px;
   color: rgb(0, 129, 255);
   background-color: rgba(237, 244, 251);
@@ -2869,6 +2936,7 @@ watch(
 .tip-img {
   width: 20px;
   height: 20px;
+  margin-right: 16px;
 }
 //详情img
 .details-img {

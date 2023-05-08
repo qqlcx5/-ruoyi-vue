@@ -35,12 +35,17 @@ export const getMenu = (id: number) => {
 
 // 新增菜单
 export const createMenu = (data: MenuVO) => {
-  return request.post({ url: '/system/menu/create', data })
+  return request.post({ url: '/system/tenant-menu/create', data })
 }
 
 // 修改菜单
 export const updateMenu = (data: MenuVO) => {
   return request.put({ url: '/system/menu/update', data })
+}
+
+// 修改菜单状态
+export const updateMenuStatus = (data) => {
+  return request.put({ url: '/system/tenant-menu/update/status', data })
 }
 
 // 删除菜单

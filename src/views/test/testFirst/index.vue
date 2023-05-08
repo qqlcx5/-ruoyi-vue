@@ -47,12 +47,17 @@
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
         <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />
         <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" />
-        <Icon icon="svg-icon:custom-column" :size="50" class="cursor-pointer" />
+        <Icon
+          icon="svg-icon:custom-column"
+          :size="50"
+          class="cursor-pointer"
+          @click="state.isShowCustomColumnModal = true"
+        />
       </div>
     </div>
 
     <a-table
-      :columns="columns"
+      :columns="state.columns"
       :data-source="list"
       :row-key="(record) => record.id"
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
@@ -110,15 +115,18 @@
         <template v-if="column.key === 'status'">
           <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
           <!-- <div class="employees-Number">{{ record.status }}</div>-->
-          <a-switch v-model:checked="record.statusSwitch" />
+          <a-switch
+            v-model:checked="record.statusSwitch"
+            @change="(value) => tableStatusChange(value, record)"
+          />
         </template>
         <!--  操作   -->
         <template v-if="column.key === 'operation'">
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
             <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
-            <div class="text-color margin-right-5">详情</div>
-            <div class="text-color margin-right-5" @click="deleteFN(record.id)">删除</div>
+            <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+            <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
           </div>
         </template>
       </template>
@@ -131,7 +139,6 @@
     v-if="state.isShow"
     v-model:visible="state.isShow"
     :title="state.addEditTitle"
-    @ok="closeModal"
     @cancel="closeModal"
     :width="'900px'"
     :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
@@ -312,10 +319,141 @@
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="saveForm">确定</a-button>
+      <a-button type="primary" html-type="submit" @click="saveForm" :loading="state.modalBtnLoading"
+        >确定</a-button
+      >
       <a-button @click="closeModal">取消</a-button>
     </template>
   </a-modal>
+
+  <!--  状态开始关闭 确认Modal  -->
+  <a-modal
+    v-model:visible="state.isShowStatus"
+    :closable="false"
+    width="424px"
+    :bodyStyle="{
+      width: '100%',
+      height: '139px',
+      margin: '0',
+      padding: '33px 0 0 0px',
+      overflow: 'auto'
+    }"
+  >
+    <div class="status-content">
+      <!--      <img :src="warningImg" alt="" class="tip-img" />-->
+      <div class="status-text-content">
+        <div class="status-text">
+          <img :src="warningImg" alt="" class="tip-img" />
+          {{ state.tableStatusChangeInfo.statusBtnText }}
+          {{ state.tableStatusChangeInfo.record?.name }} 吗？</div
+        >
+        <div
+          v-if="state.tableStatusChangeInfo.record?.children?.length > 0"
+          class="status-text-info"
+        >
+          {{ state.tableStatusChangeInfo.statusTopText }} ，{{
+            state.tableStatusChangeInfo.record.name
+          }}底下
+          <span class="status-span">{{
+            state.tableStatusChangeInfo.record?.children?.length
+          }}</span>
+          个菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+        </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <a-button type="primary" html-type="submit" @click="tableStatusConfirm">{{
+        state.tableStatusChangeInfo.statusBtnText
+      }}</a-button>
+      <a-button @click="closeStatusModal">取消</a-button>
+    </template>
+  </a-modal>
+
+  <!--  删除确认modal  -->
+  <a-modal
+    v-model:visible="state.isShowDelete"
+    :closable="false"
+    :width="state.deleteModalWidth"
+    :bodyStyle="{
+      width: '100%',
+      height: '192px',
+      margin: '0',
+      padding: '0',
+      overflow: 'auto'
+    }"
+    :footer="null"
+  >
+    <!--  不可删除提示  -->
+    <div v-if="state.currentRecord.children?.length > 0">
+      <div class="delete-title"> 提示 </div>
+      <div class="delete-content">
+        <img :src="warningImg" alt="" class="tip-img delete-img" />
+        <div class="delete-text">
+          {{ state.currentRecord.name }} 该菜单底下还存在
+          <span class="delete-red-text">{{ state.currentRecord.children?.length }} </span>
+          个子菜单，不允许删除， 请删除或转移子菜单再操作删除
+        </div>
+      </div>
+
+      <a-button class="delete-cancel-btn" @click="closeDeleteModal">返回</a-button>
+    </div>
+    <!--  删除确认  -->
+    <div v-else>
+      <div class="delete-content delete-content-two">
+        <img :src="warningImg" alt="" class="tip-img delete-img" />
+        <div class="delete-text delete-text-two">
+          确定删除菜单 {{ state.currentRecord.name }} 吗？
+        </div>
+      </div>
+      <div class="delete-text-tip"> 删除后，该菜单信息将全部删除，且不可恢复， 请谨慎操作。 </div>
+      <div class="delete-btn-content">
+        <a-button type="primary" @click="okDelete" :loading="state.modalBtnLoading"
+          >确定删除</a-button
+        >
+        <a-button @click="closeDeleteModal">取消</a-button>
+      </div>
+    </div>
+  </a-modal>
+
+  <!--  详情modal  -->
+  <a-modal
+    v-model:visible="state.isShowDetails"
+    wrapClassName="details-modal"
+    title="详情"
+    :bodyStyle="{
+      width: '100%',
+      height: '192px',
+      margin: '0',
+      padding: '0',
+      overflow: 'auto'
+    }"
+    :footer="null"
+  >
+    <div class="details-edit" @click="edit(state.currentRecord, true)"
+      ><img :src="editImg" alt="" class="edit-Img" />修改</div
+    >
+    <div class="details-content">
+      <div class="text-style" v-for="(item, index) in state.detailsInfo" :key="`info${index}`">
+        <span>{{ item.textSpan }}</span>
+        <Icon v-if="item?.icon" :icon="item.icon" class="mr-5px" :size="14" />
+        <a-tooltip v-else>
+          <template #title>
+            {{ item.text }}
+          </template>
+          {{ item.text }}
+        </a-tooltip>
+      </div>
+    </div>
+  </a-modal>
+
+  <!--  定制列  -->
+  <CustomColumn
+    v-if="state.isShowCustomColumnModal"
+    @change-column="changeColumn"
+    :allColumns="allColumns"
+    :defaultKeys="state.defaultKeys"
+  />
 </template>
 
 <script lang="tsx" setup>
@@ -328,6 +466,16 @@ import { message } from 'ant-design-vue'
 import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
+import warningImg from '@/assets/imgs/system/warning.png'
+import editImg from '@/assets/imgs/system/editImg.png'
+import {
+  getMajorIndividualDetails,
+  getSimpleTenantList,
+  updateEditMajorIndividualStatus
+} from '@/api/system/business'
+import { updateMenuStatus } from '@/api/system/TenantMenu'
+import { VueDraggableNext } from 'vue-draggable-next'
+import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 
 const queryParams = reactive({
   name: undefined,
@@ -356,24 +504,69 @@ const routeValidator = (rule, value) => {
   })
 }
 
+//ALL columns 用于定制列过滤 排序
+const allColumns = [
+  {
+    title: '名称',
+    width: 200,
+    dataIndex: 'name',
+    key: 'name',
+    ellipsis: true,
+    disabled: true,
+    sort: 1
+  },
+  {
+    title: '类型',
+    width: 100,
+    dataIndex: 'type',
+    key: 'type',
+    ellipsis: true,
+    sort: 2
+  },
+  {
+    title: '员工数',
+    width: 100,
+    dataIndex: 'employeesNumber',
+    key: 'employeesNumber',
+    ellipsis: true,
+    sort: 3
+  },
+  {
+    title: '排序',
+    width: 100,
+    dataIndex: 'sort',
+    key: 'sort',
+    ellipsis: true,
+    sort: 4
+  },
+  {
+    title: '状态',
+    width: 100,
+    dataIndex: 'status',
+    key: 'status',
+    ellipsis: true,
+    sort: 5
+  },
+  {
+    title: '操作',
+    width: 200,
+    dataIndex: 'operation',
+    key: 'operation',
+    ellipsis: true,
+    sort: 6
+  }
+]
+
 const state = reactive({
+  menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false,
+  isShowDetails: false, //详情modal
   currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
-  // formState: reactive<FormState>({
-  //   username: '',
-  //   password: '',
-  //   type: 1,
-  //   fileList: [],
-  //   parentId: null,
-  //   sort: 0,
-  //   statusF: true,
-  //   visible: true,
-  //   alwaysShow: true
-  // }) //新增表单
+  isShowStatus: false, //table 状态开启关闭 modal
   modalType: 'add', //add新增edit编辑
   addEditTitle: '新增', //新增编辑 modal title
   typeArr: [
@@ -406,53 +599,19 @@ const state = reactive({
     componentName: '', //====菜单===组件名称
     permission: '', //====菜单===权限标识
     keepAlive: true //====菜单===缓存状态
-  } //新增表单
+  }, //新增表单
+  tableStatusChangeInfo: {}, //存当前表格item项以及switch值
+  currentRecord: {}, //当前的record
+  isShowDelete: false, //删除确认 modal
+  deleteModalWidth: '488px', //删除modal width
+  modalBtnLoading: false,
+  isShowCustomColumnModal: false, //是否打开定制列modal
+  checkAll: false, //是否全选
+  columns: [],
+  defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'operation'], //定制列默认的keys
+  checkedList: [], //定制列 选中的
+  columnsCheckList: [...allColumns] //定制列 复选框
 })
-
-const columns = [
-  {
-    title: '名称',
-    width: 200,
-    dataIndex: 'name',
-    key: 'name',
-    ellipsis: true
-  },
-  {
-    title: '类型',
-    width: 100,
-    dataIndex: 'type',
-    key: 'type',
-    ellipsis: true
-  },
-  {
-    title: '员工数',
-    width: 100,
-    dataIndex: 'employeesNumber',
-    key: 'employeesNumber',
-    ellipsis: true
-  },
-  {
-    title: '排序',
-    width: 100,
-    dataIndex: 'sort',
-    key: 'sort',
-    ellipsis: true
-  },
-  {
-    title: '状态',
-    width: 100,
-    dataIndex: 'status',
-    key: 'status',
-    ellipsis: true
-  },
-  {
-    title: '操作',
-    width: 200,
-    dataIndex: 'operation',
-    key: 'operation',
-    ellipsis: true
-  }
-]
 
 const layout = {
   labelCol: { span: 4 },
@@ -462,15 +621,14 @@ const layout = {
 /** 查询列表 */
 const getList = async () => {
   loading.value = true
-  console.log('queryParams', queryParams)
   try {
     const res = await MenuApi.getMenuList(queryParams)
-    console.log('res', res)
+    // const res = await TenantMenuApi.getMenuList(queryParams)
     res.map((item) => {
       item.statusSwitch = item.status === 0
     })
+    state.menuArr = res
     list.value = handleTree(res)
-    console.log('list====>', list.value)
   } finally {
     loading.value = false
   }
@@ -516,7 +674,6 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = (record = {}) => {
-  console.log('record', record)
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     state.formState.parentId = record.id
@@ -545,8 +702,6 @@ const closeModal = () => {
     keepAlive: true //====菜单===缓存状态
   }
 
-  console.log('formRef.value', formRef.value)
-  console.log('state.formState', state.formState)
   state.modalType = 'add'
   state.addEditTitle = '新增'
 }
@@ -593,41 +748,36 @@ interface FormState {
 }
 //保存
 const saveForm = async () => {
-  console.log('save')
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
-  console.log('valid', valid)
   const params = state.formState as unknown as MenuApi.MenuVO
-  console.log('params', params)
   //菜单状态 0开启 1关闭 ...
   if (params?.statusSwitch) {
     params.status = 0
   } else {
     params.status = 1
   }
-
+  state.modalBtnLoading = true
   //
   try {
     let res = []
     if (state.modalType === 'add') {
-      console.log('paramsAdd', params)
       res = await MenuApi.createMenu(params)
+      // res = await TenantMenuApi.createMenu(params)
       message.success('新增成功')
     } else {
-      console.log('paramsEdit', params)
       res = await MenuApi.updateMenu(params)
       message.success('编辑成功')
     }
-    console.log('res', res)
 
     closeModal()
     await getList()
     await getTree()
   } finally {
+    state.modalBtnLoading = false
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
-    console.log('delete路由')
   }
 }
 /** 获取下拉框[上级菜单]的数据  */
@@ -638,7 +788,6 @@ const getTree = async () => {
   let menu: Tree = { id: 0, name: '主类目', children: [] }
   menu.children = handleTree(res)
   menuTree.value.push(menu)
-  console.log('menuTree', menuTree)
 }
 getTree()
 
@@ -650,15 +799,17 @@ const typeChange = (type) => {
       break
     case 2:
       state.currentMenu = '菜单'
-      console.log('', 1111)
       break
     default:
       state.currentMenu = '按钮'
   }
 }
 
-const edit = (record) => {
-  console.log('reEEEE', record)
+const edit = (record, isCloseDetails = false) => {
+  if (isCloseDetails) {
+    //关闭详情moal
+    state.isShowDetails = false
+  }
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   // record.status = record.status === 0
@@ -668,12 +819,33 @@ const edit = (record) => {
   //赋值
   state.formState = { ...record }
   openModal()
-  // console.log('record)', record)
 }
 
-/** 删除按钮操作 */
+//关闭删除modal
+const closeDeleteModal = () => {
+  state.isShowDelete = false
+  //延迟一下 - - view闪烁
+  setTimeout(() => {
+    state.currentRecord = {}
+    state.deleteModalWidth = '488px'
+  }, 200)
+}
+
+//删除
+const setDeleteInfo = (record: object) => {
+  state.currentRecord = { ...record }
+  if (record.children) {
+    state.deleteModalWidth = '488px'
+  } else {
+    state.deleteModalWidth = '424px'
+  }
+
+  state.isShowDelete = true
+}
+
+/** 删除 */
 const deleteFN = async (id: number) => {
-  console.log('删除', id)
+  state.modalBtnLoading = true
   try {
     // 发起删除
     await MenuApi.deleteMenu(id)
@@ -681,9 +853,319 @@ const deleteFN = async (id: number) => {
     // 刷新列表
     await getList()
     await getTree()
+    closeDeleteModal()
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
-  } catch {}
+  } finally {
+    state.modalBtnLoading = true
+  }
+}
+
+const okDelete = () => {
+  deleteFN(state.currentRecord.id)
+}
+
+//table 状态开启关闭
+//表格状态开关
+const tableStatusChange = (value, record) => {
+  state.tableStatusChangeInfo = {
+    value,
+    record
+  }
+
+  if (value) {
+    state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
+    state.tableStatusChangeInfo['statusTopText'] = `开启后`
+    state.tableStatusChangeInfo['statusText'] = `开启`
+  } else {
+    state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
+    state.tableStatusChangeInfo['statusTopText'] = `关闭后`
+    state.tableStatusChangeInfo['statusText'] = `关闭`
+  }
+  state.isShowStatus = true
+}
+
+//关闭 状态开始关闭 确认modal
+const closeStatusModal = async () => {
+  state.isShowStatus = false
+  state.tableStatusChangeInfo = {}
+  //直接这里补一次请求吧 - -
+  await getList()
+}
+
+//表格状态开关 modal确认
+const tableStatusConfirm = async () => {
+  const params = {
+    id: state.tableStatusChangeInfo.record.id,
+    name: state.tableStatusChangeInfo.record.name,
+    parentId: state.tableStatusChangeInfo.record.parentId,
+    sort: state.tableStatusChangeInfo.record.sort,
+    status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1,
+    type: state.tableStatusChangeInfo.record.type
+  }
+
+  try {
+    await MenuApi.updateMenuStatus(params)
+    message.success('修改状态成功')
+    await closeStatusModal()
+    // 清空，从而触发刷新
+    wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+  } finally {
+  }
+}
+
+//详情(打开)
+const detailsInfo = async (record) => {
+  state.currentRecord = { ...record }
+  state.isShowDetails = true
+  let typeText = '目录'
+  switch (record?.type) {
+    case 1:
+      typeText = '目录'
+      state.detailsInfo = [
+        {
+          textSpan: '目录名称：',
+          text: record?.name
+        },
+        {
+          textSpan: '目录类型：',
+          text: typeText
+        },
+        {
+          textSpan: '图标：',
+          text: '暂无图标',
+          icon: record?.icon
+        },
+        {
+          textSpan: '路由地址：',
+          text: record?.path
+        },
+        {
+          textSpan: '排序：',
+          text: record?.sort
+        },
+        {
+          textSpan: '菜单状态：',
+          text: record?.status === 0 ? '开启' : '关闭'
+        },
+        {
+          textSpan: '显示状态：',
+          text: record?.visible ? '开启' : '关闭'
+        },
+        {
+          textSpan: '总是显示：',
+          text: record?.alwaysShow ? '开启' : '关闭'
+        }
+      ]
+      break
+    case 2:
+      typeText = '菜单'
+      const tempItem = state.menuArr.filter((item) => item.id === record.parentId)
+      state.detailsInfo = [
+        {
+          textSpan: '菜单名称：',
+          text: record?.name
+        },
+        {
+          textSpan: '目录类型：',
+          text: typeText
+        },
+        {
+          textSpan: '上级目录：',
+          text: tempItem[0]?.name
+        },
+        {
+          textSpan: '图标：',
+          text: '暂无图标',
+          icon: record?.icon
+        },
+        {
+          textSpan: '路由地址：',
+          text: record?.path
+        },
+        {
+          textSpan: '组件地址：',
+          text: record?.component
+        },
+        {
+          textSpan: '组件名字：',
+          text: record?.componentName
+        },
+        {
+          textSpan: '权限标识：',
+          text: record?.permission
+        },
+        {
+          textSpan: '排序：',
+          text: record?.sort
+        },
+        {
+          textSpan: '菜单状态：',
+          text: record?.status === 0 ? '开启' : '关闭'
+        },
+        {
+          textSpan: '显示状态：',
+          text: record?.visible ? '开启' : '关闭'
+        },
+        {
+          textSpan: '总是显示：',
+          text: record?.alwaysShow ? '开启' : '关闭'
+        },
+        {
+          textSpan: '缓存状态：',
+          text: record?.keepAlive ? '缓存' : '不缓存'
+        }
+      ]
+      break
+    case 3:
+      typeText = '按钮'
+      const tempItemBtn = state.menuArr.filter((item) => item.id === record.parentId)
+      state.detailsInfo = [
+        {
+          textSpan: '按钮名称：',
+          text: record?.name
+        },
+        {
+          textSpan: '按钮类型：',
+          text: typeText
+        },
+        {
+          textSpan: '上级菜单：',
+          text: tempItemBtn[0]?.name
+        },
+        {
+          textSpan: '图标：',
+          text: '暂无图标',
+          icon: record?.icon
+        },
+        {
+          textSpan: '权限标识：',
+          text: record?.permission
+        },
+        {
+          textSpan: '排序：',
+          text: record?.sort
+        },
+        {
+          textSpan: '菜单状态：',
+          text: record?.status === 0 ? '开启' : '关闭'
+        }
+      ]
+      break
+  }
+}
+
+//定制列
+//全选checkbox onchange
+const onCheckAllChange = (e) => {
+  const tempArr = []
+  if (e.target.checked === true) {
+    state.columnsCheckList.map((item) => {
+      tempArr.push(item.key)
+    })
+  } else {
+    state.columnsCheckList.map((item) => {
+      if (item.disabled) {
+        tempArr.push(item.key)
+      }
+    })
+    // state.checkAll = false
+  }
+
+  Object.assign(state, {
+    // checkedList: e.target.checked ? tempArr : [],
+    checkedList: tempArr,
+    indeterminate: false
+  })
+}
+//拖拽
+const dragEnd = (list) => {
+  //重写 sort
+  list.map((item, index) => {
+    item.sort = index + 1
+  })
+  console.log('拖拽list', list)
+}
+//定制列 确定
+const columnsSave = () => {
+  console.log('state.columnsCheckList', state.columnsCheckList)
+  //过滤出 勾选的项
+  const checkList = state.columnsCheckList.filter((item) => state.checkedList.includes(item?.key))
+  console.log('checkList', checkList)
+  if (checkList.length) {
+    //过滤 从全部的表格列 中取到勾选的 列 并添加进当前 的sort
+    const filteredColumns = allColumns.filter((column) => {
+      return checkList.some((temp) => {
+        if (temp?.key === column.key) {
+          column['sort'] = temp?.sort
+          // return column
+        }
+        return temp?.key === column.key
+      })
+    })
+    console.log('filteredColumns ', filteredColumns)
+    // 升序
+    state.columns = filteredColumns.sort((a, b) => a.sort - b.sort)
+    state.refreshTable = false
+    state.refreshTable = true
+  } else {
+    message.warning('定制列不能为空')
+  }
+}
+//定制列还原
+const setDefaultColumns = () => {
+  //初始化 获取默认的 columns
+  state.columns = getColumns()
+
+  //复选框 选中keys 还原
+  state.checkedList = [...state.defaultKeys]
+
+  //复选框list位置还原
+  state.columnsCheckList = [...state.columns]
+
+  // // 全选
+  // state.checkAll = false
+}
+
+//获取默认的columns
+const getColumns = () => {
+  console.log('allColumns', allColumns)
+  console.log('state.defaultKeys', state.defaultKeys)
+  state.checkedList = [...state.defaultKeys]
+  const currentColumns = allColumns.filter((columnsItem) => {
+    return state.defaultKeys.some((item) => columnsItem.key === item)
+  })
+  return currentColumns
+  console.log('currentColumns', currentColumns)
+}
+//初始化 获取默认的 columns
+state.columns = getColumns()
+
+//复选框 全选中 全选checkbox 勾选
+watch(
+  () => state.checkedList,
+  (val) => {
+    console.log('val', val)
+    console.log(' state.columnsCheckList', state.columnsCheckList)
+    // state.indeterminate = !!val.length && val.length < state.columnsCheckList.length
+    state.checkAll = val.length === state.columnsCheckList.length
+    console.log('state.checkAll', state.checkAll)
+  },
+  {
+    immediate: true
+  }
+)
+
+//接收 定制列modal事件  - -关闭modal也一起吧 - -
+const changeColumn = (columns, isCloseModal = false) => {
+  if (isCloseModal) {
+    state.isShowCustomColumnModal = false
+    return
+  }
+  state.columns = columns
+  console.log('state.columns====>', state.columns)
+  state.refreshTable = false
+  state.refreshTable = true
 }
 </script>
 
@@ -759,5 +1241,179 @@ const deleteFN = async (id: number) => {
 .margin-right-5 {
   margin-right: 5px;
   cursor: pointer;
+}
+//表格状态改变 modal
+.status-content {
+  display: flex;
+  margin-right: 30px;
+}
+
+.status-text-content {
+  //margin-left: 15px;
+  color: rgba(102, 102, 102, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+}
+.status-text {
+  margin-left: 32px;
+  display: flex;
+  align-items: center;
+  color: rgba(51, 51, 51, 1);
+  font-size: 16px;
+  font-weight: bold;
+  font-family: PingFangSC-Medium;
+}
+.status-text-info {
+  margin-left: 68px;
+  margin-top: 12px;
+  height: 40px;
+  color: rgba(102, 102, 102, 1);
+  font-size: 14px;
+  text-align: left;
+  font-family: PingFangSC-Regular;
+}
+.status-span {
+  color: red;
+}
+//提示弹窗 img
+.tip-img {
+  width: 20px;
+  height: 20px;
+  margin-right: 16px;
+}
+
+//删除modal确认
+.delete-title {
+  margin: 20px 0 0 20px;
+  width: 36px;
+  height: 25px;
+  color: rgba(51, 51, 51, 1);
+  font-size: 18px;
+  font-weight: bold;
+  font-family: PingFangSC-Medium;
+}
+.delete-content {
+  display: flex;
+  margin: 21px 0 0 20px;
+}
+.delete-content-two {
+  display: flex;
+  margin: 33px 0 0 32px;
+}
+.delete-text {
+  width: 409px;
+  height: 44px;
+  color: rgba(51, 51, 51, 1);
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left;
+  font-family: PingFangSC-Medium;
+}
+.delete-text-two {
+  height: 22px;
+}
+.delete-img {
+  margin-top: 3px;
+}
+.delete-cancel-btn {
+  margin: 31px 0 0 209px;
+}
+.delete-text-tip {
+  margin: 12px 0 0 68px;
+  left: 1081px;
+  top: 490px;
+  width: 294px;
+  height: 40px;
+  color: rgba(102, 102, 102, 1);
+  font-size: 14px;
+  text-align: left;
+  font-family: PingFangSC-Regular;
+}
+.delete-btn-content {
+  margin: 34px 0 0 221px;
+}
+.delete-red-text {
+  color: red;
+}
+
+//详情修改文字
+.details-edit {
+  padding: 23px 29px 0 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  color: rgba(0, 129, 255, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+  cursor: pointer;
+  .edit-Img {
+    width: 8.65px;
+    height: 8.81px;
+    margin-right: 8px;
+  }
+}
+.details-content {
+  margin: 23px 0 0 48px;
+}
+.text-style {
+  span {
+    font-weight: bold;
+    font-family: PingFangSC-Medium;
+  }
+  margin-bottom: 15px;
+  padding-right: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  font-family: PingFangSC-Regular;
+}
+//拖拽动画
+.flip-list-move {
+  transition: transform 0.5s;
+}
+//定制列 checkbox
+.ant-checkbox-wrapper + .ant-checkbox-wrapper {
+  margin-left: 0;
+}
+</style>
+
+<style lang="scss">
+//修改 详细 modal位置
+.details-modal {
+  //display: flex;
+  //.ant-modal {
+  //  margin: 0;
+  //  position: absolute;
+  //  top: 0;
+  //  left: initial;
+  //  right: 0;
+  //  padding: 0;
+  //  //height: 1080px;
+  //  min-height: 100vh;
+  //}
+  //.ant-modal-body {
+  //  //height: calc(1080px - 55px - 53px);
+  //  min-height: 100vh;
+  //}
+
+  .ant-modal {
+    max-width: 100%;
+    position: absolute;
+    top: 0;
+    left: initial;
+    right: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh);
+  }
+  .ant-modal-body {
+    flex: 1;
+  }
 }
 </style>
