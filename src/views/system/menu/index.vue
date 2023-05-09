@@ -1,3 +1,4 @@
+<!--  菜单管理  -->
 <template>
   <!-- 搜索工作栏 -->
   <ContentWrap>
@@ -491,6 +492,7 @@ import {
 } from '@/api/system/business'
 import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
+import dayjs from 'dayjs'
 
 const queryParams = reactive({
   name: undefined,
@@ -667,6 +669,8 @@ const getList = async () => {
     // const res = await TenantMenuApi.getMenuList(queryParams)
     res.map((item) => {
       item.statusSwitch = item.status === 0
+      item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
+      item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
     })
     state.menuArr = res
     list.value = handleTree(res)
@@ -898,7 +902,7 @@ const deleteFN = async (id: number) => {
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
   } finally {
-    state.modalBtnLoading = true
+    state.modalBtnLoading = false
   }
 }
 
