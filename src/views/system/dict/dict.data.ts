@@ -52,7 +52,6 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       form: {
         component: 'InputNumber',
         componentProps: {
-          modelValue: 0,
           controlsPosition: "right"
         },
         colProps: {
@@ -133,7 +132,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
     // },
     {
       title: '底纹',
-      field: 'dw',
+      field: 'cssClass',
       isTable: false,
       form: {
         component: 'ColorPicker',
@@ -147,7 +146,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
     },
     {
       title: '颜色',
-      field: 'cssClass',
+      field: 'colorType',
       isTable: false,
       form: {
         component: 'ColorPicker',

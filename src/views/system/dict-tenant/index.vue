@@ -242,8 +242,8 @@ import type { FormExpose } from '@/components/Form'
 import * as DictTypeSchemas from './dict.type'
 import * as DictDataSchemas from './dict.data'
 import * as DictDataLevel3Schemas from './dict.dataLevel3'
-import * as DictTypeApi from '@/api/system/dict/dict.type'
-import * as DictDataApi from '@/api/system/dict/dict.data'
+import * as DictTypeApi from '@/api/system/dict-tenant/dict.type'
+import * as DictDataApi from '@/api/system/dict-tenant/dict.data'
 import { DictDataVO, DictTypeReqVO } from '@/api/system/dict/types'
 import {CommonStatusEnum} from "@/utils/constants";
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
@@ -395,10 +395,10 @@ const handleStatusChange = async (row, type) => {
         updateStatus = await DictTypeApi.updateDictTypeApi({ ...row });
         await typeGetList();
       } else if (type === 'data') {
-        updateStatus = await DictTypeApi.updateDictTypeApi({ ...row });
+        updateStatus = await DictDataApi.updateDictDataApi({ ...row });
         await dataGetList()
       } else if (type === 'dataLevel3') {
-        updateStatus = await DictTypeApi.updateDictTypeApi({ ...row });
+        updateStatus = await DictDataApi.updateDictDataApi({ ...row });
         await dataLevel3GetList()
       }
       if (updateStatus) {

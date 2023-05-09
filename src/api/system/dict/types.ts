@@ -33,10 +33,10 @@ export type DictDataVO = {
   value: string
   dictType: string
   status: number
-  colorType: string
-  cssClass: string
+  colorType: string // 颜色
+  cssClass: string // 底纹
   remark: string
-  createTime: Date
+  createTime: Date,
 }
 export type DictDataPageReqVO = {
   pageNo: number
