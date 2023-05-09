@@ -139,7 +139,7 @@ $prefix-cls: #{$namespace}-tool-header;
 
 .collapse {
   min-width: auto;
-  margin: 0 0 0 15px;
+  margin: 0 0 0 10px;
 }
 
 .vertical-line {

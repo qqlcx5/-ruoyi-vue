@@ -248,6 +248,11 @@ export const useAppStore = defineStore('app', {
       }
       this.layout = layout
       wsCache.set(CACHE_KEY.LAYOUT, this.layout)
+      if (layout === 'classic') {
+        setCssVar('--left-menu-max-width', '180px')
+      } else if (layout === 'cutMenu') {
+        setCssVar('--left-menu-max-width', '140px')
+      }
     },
     setTitle(title: string) {
       this.title = title

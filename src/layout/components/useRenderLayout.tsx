@@ -50,7 +50,7 @@ export const useRenderLayout = () => {
                 {
                   '!pl-0': mobile.value && collapse.value,
                   'w-[var(--left-menu-min-width)]': appStore.getCollapse,
-                  'w-[var(--left-menu-max-width)]': !appStore.getCollapse
+                  'w-[var(--left-menu-max-width)]': !appStore.getCollapse,
                 }
               ]}
               style="transition: all var(--transition-time-02);"
@@ -217,7 +217,7 @@ export const useRenderLayout = () => {
                         {
                             '!pl-0': mobile.value && collapse.value,
                             'w-[var(--left-menu-min-width)]': appStore.getCollapse,
-                            'w-[var(--left-menu-max-width)]': !appStore.getCollapse
+                            'w-[var(--tab-menu-max-width)]': !appStore.getCollapse,
                         }
                     ]}
                     style="transition: all var(--transition-time-02);"

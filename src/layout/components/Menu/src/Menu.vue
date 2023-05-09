@@ -179,7 +179,7 @@ $prefix-cls: #{$namespace}-menu;
   position: absolute;
   top: 0;
   left: 0;
-  width: 6px;
+  width: 3px;
   height: 100%;
   background-color: var(--left-menu-bg-active-color);
   content: '';
@@ -212,8 +212,9 @@ $prefix-cls: #{$namespace}-menu;
     // 设置子菜单悬停的高亮和背景色
     .#{$elNamespace}-sub-menu__title,
     .#{$elNamespace}-menu-item {
-      padding-left: 36px;
+      padding-left: 18px;
       .#{$elNamespace}-icon {
+        width: auto;
         margin-right: 10px;
       }
       &:hover {
@@ -339,8 +340,8 @@ $prefix-cls: #{$namespace}-menu;
               &:before {
                 position: absolute;
                 top: 0;
-                left: -36px;
-                width: 6px;
+                left: -18px;
+                width: 3px;
                 height: 100%;
                 background-color: var(--el-color-primary);
                 content: '';
@@ -350,7 +351,7 @@ $prefix-cls: #{$namespace}-menu;
               }
             }
           }
-          padding-left: 36px !important;
+          padding-left: 18px !important;
           >.el-menu {
             >.el-menu-item {
               //padding-left: 0 !important;
@@ -365,9 +366,10 @@ $prefix-cls: #{$namespace}-menu;
               }
             }
             .el-menu-item, .el-sub-menu__title {
-              padding-left: 28px !important;
+              padding-left: 26px !important;
               .v-icon {
-                margin-right: 4px !important;
+                width: 14px;
+                margin-right: 4px;
               }
             }
           }
@@ -414,7 +416,7 @@ $prefix-cls: #{$namespace}-menu;
       line-height: var(--el-menu-item-height);
       font-size: var(--el-menu-item-font-size);
       color: var(--el-menu-text-color);
-      padding: 0 var(--el-menu-base-level-padding) !important;
+      //padding: 0 var(--el-menu-base-level-padding) !important;
       list-style: none;
       cursor: pointer;
       position: relative;
@@ -453,7 +455,7 @@ $prefix-cls: #{$namespace}-menu-popper;
   right: var(--el-menu-base-level-padding);
   margin-top: -6px;
   transition: transform var(--el-transition-duration);
-  margin-right: 0;
+  margin-right: 0 !important;
   width: inherit;
 }
 /*close menu*/
