@@ -277,6 +277,7 @@ const typeSearchForm = ref({
   createTime: [],
 })
 const [registerType, { reload: typeGetList, deleteData: typeDeleteData, refreshColumn: typeRefreshColumn }] = useXTable({
+  tableKey: "dict-type-table",
   allSchemas: DictTypeSchemas.allSchemas,
   params: typeSearchForm,
   getListApi: DictTypeApi.getDictTypePageApi,
@@ -292,6 +293,7 @@ const queryParams = reactive({
   label: ''
 })
 const [registerData, { reload: dataGetList, deleteData: dataDeleteData }] = useXTable({
+  tableKey: "dict-data-table",
   allSchemas: DictDataSchemas.allSchemas,
   params: queryParams,
   getListApi: DictDataApi.getDictDataPageApi,
@@ -305,6 +307,7 @@ const dataLevel3queryParams = reactive({
   label: ''
 })
 const [registerDataLevel3, { reload: dataLevel3GetList, deleteData: dataLevel3DeleteData }] = useXTable({
+  tableKey: "dict-level3data-table",
   allSchemas: DictDataLevel3Schemas.allSchemas,
   params: dataLevel3queryParams,
   getListApi: DictDataApi.getDictDataPageApi,

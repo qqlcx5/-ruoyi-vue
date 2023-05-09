@@ -4,9 +4,10 @@
   /* left menu start */
   --left-menu-border-color: '#eee';
 
-  --left-menu-max-width: 240px;
+  /* classic:180px  cutMenu:140px  */
+  --left-menu-max-width: 180px;
 
-  --left-sub-menu-max-width: 200px;
+  --left-sub-menu-max-width: 120px;
 
   --left-menu-min-width: 64px;
 
@@ -21,10 +22,12 @@
   --left-menu-text-active-color: #fff;
 
   --left-menu-collapse-bg-active-color: var(--el-color-primary);
+
+  --left-menu-item-height: 50px;
   /* left menu end */
 
   /* logo start */
-  --logo-height: 60px;
+  --logo-height: 50px;
 
   --logo-title-text-color: #fff;
 
@@ -50,9 +53,9 @@
   /* header start */
 
   /* tab menu start */
-  --tab-menu-max-width: 240px;
+  --tab-menu-max-width: 140px;
 
-  --tab-sub-menu-max-width: 200px;
+  --tab-sub-menu-max-width: 120px;
 
   --tab-menu-min-width: 64px;
 

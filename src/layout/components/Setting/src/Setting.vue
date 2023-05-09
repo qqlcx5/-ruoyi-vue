@@ -8,7 +8,7 @@
     class="setting-drawer-content"
   >
     <template #header>
-      <span class="text-16px font-700 text-black">{{ t('setting.projectSetting') }}</span>
+      <span class="text-16px font-700 text-[var(--top-header-text-color)]">{{ t('setting.projectSetting') }}</span>
     </template>
 
 <!--    <ElDivider />-->

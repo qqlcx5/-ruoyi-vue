@@ -146,26 +146,18 @@ export default defineComponent({
         id={`${variables.namespace}-menu`}
         class={[
           prefixCls,
-          'relative bg-[var(--left-menu-bg-color)] z-3000 flex-shrink-0 flex',
-          {
-            // 'w-[var(--tab-menu-max-width)]': !unref(collapse),
-            // 'w-[var(--tab-menu-min-width)]': unref(collapse),
-            // 'w-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]': unref(collapse) && unref(showMenu),
-            // 'w-[calc(var(--tab-menu-max-width)+var(--tab-sub-menu-max-width))]': !unref(collapse) && unref(showMenu),
-          }
+          'relative bg-[var(--left-menu-bg-color)] flex-shrink-0 flex',
         ]}
         // onMouseleave={mouseleave}
       >
         <div
           class={[
             prefixCls,
-            'relative bg-[var(--left-menu-bg-color)] z-3000 flex-shrink-0',
+            'relative bg-[var(--left-menu-bg-color)] flex-shrink-0',
             {
               'collapse': !unref(collapse),
               'w-[var(--tab-menu-max-width)]': !unref(collapse),
               'w-[var(--tab-menu-min-width)]': unref(collapse),
-              // 'w-[calc(var(--tab-menu-min-width)+var(--tab-sub-menu-max-width))]': unref(collapse) && unref(showMenu),
-              // 'w-[calc(var(--tab-menu-max-width)+var(--tab-sub-menu-max-width))]': !unref(collapse) && unref(showMenu),
             }
           ]}
         >
@@ -185,11 +177,11 @@ export default defineComponent({
                     <div
                       class={[
                         `${prefixCls}__item`,
-                        'text-center text-14px relative h-60px cursor-pointer flex items-center',
+                        'text-center text-14px relative h-50px cursor-pointer flex items-center',
                         {
                           'no-children': v?.children?.length === 1,
                           'is-active': isActive(v.path),
-                          '!pl-38px': !unref(collapse),
+                          '!pl-16px': !unref(collapse),
                           'px-[var(--el-menu-base-level-padding)] justify-center': unref(collapse),
                         },
                       ]}
@@ -197,11 +189,11 @@ export default defineComponent({
                         tabClick(item)
                       }}
                     >
-                      <div class={[ `flex items-center justify-center`, { 'pr-16px': !unref(collapse) } ]}>
+                      <div class={[ `flex items-center justify-center`, { 'pr-8px': !unref(collapse) } ]}>
                         <Icon class="icon" icon={item?.meta?.icon}></Icon>
                       </div>
                       {unref(collapse) ? undefined : (
-                        <p class="break-words py-0 m-0">{t(item.meta?.title)}</p>
+                        <p class="break-words py-0 m-0 overflow-hidden overflow-ellipsis whitespace-nowrap">{t(item.meta?.title)}</p>
                       )}
                     </div>
                   )
@@ -214,7 +206,7 @@ export default defineComponent({
         <Menu
           v-show="unref(showMenu) && unref(fixedMenu)"
           class={[
-            'wg-cut-sub-menu top-0 border-solid border-[var(--el-border-color)] border-r-1 border-t-1 bg-white',
+            'wg-cut-sub-menu top-0 border-solid border-[var(--el-border-color)] border-r-1 border-t-1 bg-[var(--el-bg-color)]',
             {
               '!w-[calc(var(--left-sub-menu-max-width)+1px)]': unref(showMenu) || unref(fixedMenu),
               '!w-0': !unref(showMenu) && !unref(fixedMenu)
@@ -223,18 +215,6 @@ export default defineComponent({
           style="transition: width var(--transition-time-02), left var(--transition-time-02);"
         ></Menu>
       </div>
-    // <Menu
-    //   class={[
-    //     '!absolute top-0 border-solid border-[var(--left-menu-bg-light-color)]',
-    //     {
-    //       '!left-[var(--tab-menu-min-width)]': unref(collapse),
-    //       '!left-[var(--tab-menu-max-width)]': !unref(collapse),
-    //       '!w-[calc(var(--left-sub-menu-max-width)+1px)]': unref(showMenu) || unref(fixedMenu),
-    //       '!w-0': !unref(showMenu) && !unref(fixedMenu)
-    //     }
-    //   ]}
-    //   style="transition: width var(--transition-time-02), left var(--transition-time-02);"
-    // ></Menu>
     )
   }
 })
@@ -288,7 +268,7 @@ $prefix-cls: #{$namespace}-tab-menu;
     color: var(--left-menu-text-active-color);
 
     & .icon {
-      //color: var(--left-menu-bg-active-color);
+      color: var(--left-menu-bg-active-color);
     }
     background-color: var(--left-menu-bg-light-color);
 
@@ -308,50 +288,95 @@ $prefix-cls: #{$namespace}-tab-menu;
         left: 0;
         top: 0;
         bottom: 0;
-        width: 6px;
+        width: 3px;
         background-color: var(--left-menu-bg-active-color);
       }
     }
   }
 
   .wg-cut-sub-menu {
-    :deep(.el-menu) {
-      background-color: var(--el-bg-color);
-      .el-menu-item, .el-sub-menu.is-opened {
-        color: var(--el-text-color-regular) !important;
-        background-color: var(--el-bg-color) !important;
-      }
-      .el-sub-menu__title {
-        color: var(--el-text-color-regular) !important;
-        background-color: var(--el-bg-color) !important;
-      }
+    :deep(.wg-scroll-bar) {
+      .el-scrollbar__wrap {
+        .el-scrollbar__view {
+          .el-menu {
+            background-color: var(--el-bg-color);
+            .el-sub-menu, .el-menu-item, .el-sub-menu.is-opened {
+              color: var(--el-text-color-regular) !important;
+              background-color: var(--el-bg-color) !important;
+            }
+            .el-sub-menu,
+            .el-sub-menu .el-menu-item,
+            .el-menu-item,
+            .el-sub-menu.is-opened .el-sub-menu__title,
+            .el-sub-menu.is-active .el-sub-menu__title,
+            {
+              padding-left: 26px !important;
+            }
+            .el-sub-menu.is-opened, .el-sub-menu.is-active {
+              padding-left: 0 !important;
 
-      // 设置子菜单悬停的高亮和背景色
-      .el-sub-menu__title,
-      .el-menu-item {
-        height: 60px !important;
-        &:hover {
-          color: var(--el-color-primary) !important;
+              .el-sub-menu__title{
+                &::before {
+                  //left: 0 !important;
+                  display: none;
+                }
+                &::after {
+                  left: 8px !important;
+                }
+              }
+            }
+            .el-sub-menu__title {
+              color: var(--el-text-color-regular) !important;
+              background-color: var(--el-bg-color) !important;
+
+              &::after {
+                content: "\e688";
+                font-family: "iconfont";
+                font-style: normal;
+                font-size: 14px;
+                position: absolute;
+                left: -18px;
+                transition: transform var(--el-transition-duration);
+              }
+            }
+            /*close menu*/
+            .el-sub-menu > .el-sub-menu__title::after {
+              transition: transform .3s;//cancel move animation
+            }
+            /*open menu*/
+            .el-sub-menu.is-opened > .el-sub-menu__title::after {
+              -webkit-transform: rotateZ(180deg);
+              transform: rotateZ(180deg);
+              transition: transform .3s;
+            }
+
+            // 设置子菜单悬停的高亮和背景色
+            .el-sub-menu__title,
+            .el-menu-item {
+              height: calc(var(--left-menu-item-height) - 10px) !important;
+              &:hover{
+                color: var(--el-color-primary) !important;
+              }
+              &.is-active {
+                color: var(--el-color-primary) !important;
+                background-color: #EDF4FB !important;
+                &:before {
+                  content: "";
+                  position: absolute;
+                  left: 0;
+                  top: 0;
+                  bottom: 0;
+                  width: 3px;
+                  background-color: var(--left-menu-bg-active-color);
+                }
+              }
+              .el-icon {
+                display: none;
+              }
+            }
+          }
         }
       }
-      .is-active {
-        & > .el-sub-menu__title {
-          color: inherit !important;
-          &:before {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 6px;
-            height: 100%;
-            background-color: var(--el-color-primary);
-            content: '';
-          }
-          .v-icon {
-            color: var(--el-color-primary);
-          }
-        }
-      }
-
     }
   }
 }

@@ -84,7 +84,7 @@ const editUserInfo = () => {
       <div
         v-if="show"
         :class="[
-          'ml-8px text-16px font-700 text-[var(--left-menu-text-color)]',
+          'w-100px ml-8px text-16px font-700 text-[var(--left-menu-text-color)] overflow-hidden overflow-ellipsis whitespace-nowrap',
           // {
           //   'text-[var(--left-menu-text-color)]': layout === 'classic',
           //   'text-[var(--left-menu-text-color)]':

@@ -1,3 +1,7 @@
 :root {
-  --el-menu-item-height: 60px !important;
+  --el-menu-item-height: var(--left-menu-item-height) !important;
+
+  --el-menu-base-level-padding: 18px !important;
+
+  --el-menu-sub-item-height: var(--left-menu-item-height) !important;
 }
