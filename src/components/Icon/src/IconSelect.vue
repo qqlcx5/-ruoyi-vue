@@ -14,7 +14,17 @@ const props = defineProps({
 const emit = defineEmits<{ (e: 'update:modelValue', v: string) }>()
 
 const visible = ref(false)
-const inputValue = toRef(props, 'modelValue')
+// const inputValue = toRef(props, 'modelValue')
+//换成底下这个 - - 原本的 updata: 用法错了 - -
+const inputValue = computed({
+  get() {
+    return props.modelValue
+  },
+  set(value) {
+    emit('update:modelValue', value)
+  }
+})
+
 const iconList = ref(IconJson)
 const icon = ref('add-location')
 const currentActiveType = ref('ep:')
@@ -64,7 +74,7 @@ const iconCount = computed(() => {
 
 const iconItemStyle = computed((): ParameterCSSProperties => {
   return (item) => {
-    if (inputValue.value === currentActiveType.value + item) {
+    if (inputValue === currentActiveType.value + item) {
       return {
         borderColor: 'var(--el-color-primary)',
         color: 'var(--el-color-primary)'
@@ -104,6 +114,9 @@ watch(
       currentActiveType.value = props.modelValue.substring(0, props.modelValue.indexOf(':') + 1)
       icon.value = props.modelValue.substring(props.modelValue.indexOf(':') + 1)
     }
+  },
+  {
+    immediate: true
   }
 )
 watch(
@@ -231,5 +244,11 @@ watch(
 }
 .selector {
   min-width: 260px;
+}
+</style>
+
+<style lang="scss">
+.pure-popper {
+  transform: translate(-400px, 155px) !important;
 }
 </style>

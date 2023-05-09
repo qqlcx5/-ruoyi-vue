@@ -517,6 +517,8 @@ const routeValidator = (rule, value) => {
       } else {
         resolve()
       }
+    } else {
+      reject()
     }
   })
 }
@@ -1133,6 +1135,19 @@ state.columns = getColumns()
 const handleResizeColumn = (w, col) => {
   col.width = w
 }
+
+watch(
+  () => state.formState.type,
+  () => {
+    // 菜单 新增/修改 默认图标
+    if (state.formState.type === SystemMenuTypeEnum.MENU) {
+      state.formState.icon = 'fa:circle-o'
+    }
+  },
+  {
+    immediate: true
+  }
+)
 </script>
 
 <style lang="scss" scoped>
