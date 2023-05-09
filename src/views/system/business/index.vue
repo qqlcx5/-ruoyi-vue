@@ -172,7 +172,12 @@
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
-      <a-form :model="state.formState" ref="formRef" v-bind="layout">
+      <a-form
+        :model="state.formState"
+        ref="formRef"
+        v-bind="layout"
+        :label-col="{ style: { width: '130px' } }"
+      >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
         <a-form-item :label="`上级主体`" name="belongTenantId">
           <a-tree-select
@@ -232,7 +237,7 @@
               :maxlength="10"
               placeholder="请输入系统名称"
             />
-            <a-tooltip placement="topLeft">
+            <a-tooltip placement="topLeft" class="icon-tip">
               <template #title>
                 <span> 为左上角显示的系统整体名称</span>
               </template>
@@ -411,7 +416,7 @@
 
         <!--  级联选择器  - -   -->
         <a-form-item :label="`公司地址`" name="detailedAddress">
-          <div class="flex-content">
+          <div class="flex-content adress-content">
             <a-form-item-rest>
               <a-cascader
                 v-model:value="state.formState.companyAddress"
@@ -423,6 +428,7 @@
             <a-input
               v-model:value="state.formState.detailedAddress"
               placeholder="请输入详细的公司地址，具体门牌号"
+              class="adress-input"
             />
           </div>
         </a-form-item>
@@ -645,11 +651,12 @@
     title="详情"
     wrapClassName="details-modal"
     width="763px"
+    :bodyStyle="{ overflow: 'auto' }"
   >
     <div class="details-edit" @click="edit(state.record, true)"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
     >
-    <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`">
+    <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
       <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
       <div class="info-content" v-if="item.baseTitle !== '配置权限'">
         <div
@@ -681,20 +688,14 @@
           <div class="details-heard">前台</div>
           <!--          <a-tree-->
           <!--            defaultExpandAll-->
-          <!--            :height="280"-->
           <!--            :tree-data="item.treeArr"-->
           <!--            :fieldNames="state.fieldNames"-->
           <!--          >-->
           <!--          </a-tree>-->
         </div>
         <div class="details-modal-left">
-          <div class="details-heard">后台</div>
-          <a-tree
-            defaultExpandAll
-            :height="250"
-            :tree-data="item.treeArr"
-            :fieldNames="state.fieldNames"
-          />
+          <div class="details-heard">后台({{ item.treeArr?.length }})</div>
+          <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
         </div>
       </div>
     </div>
@@ -2385,6 +2386,14 @@ watch(
   font-weight: bold;
   font-family: PingFangSC-Medium;
 }
+.details-content {
+  display: flex;
+  flex-direction: column;
+}
+.info-content,
+.details-modal-content {
+  flex: 1;
+}
 //详情修改文字
 .details-edit {
   width: 100%;
@@ -2464,7 +2473,7 @@ watch(
 //详情 权限配置 左侧 前台
 .details-modal-left {
   width: 290px;
-  height: 300px;
+  min-height: 300px;
   border: 1px solid rgb(234, 235, 239);
   //background: slateblue;
 }
@@ -2551,25 +2560,40 @@ watch(
   margin-right: 4px;
   cursor: pointer;
 }
+//新增修改 modal 系统名称- - width
+.flex-content {
+  width: 374px;
+}
+.icon-tip {
+  margin-left: 8px;
+}
+.adress-content {
+  width: 470px;
+}
+.adress-input {
+  width: 530px;
+}
 </style>
 
 <style lang="scss">
 //修改 详细 modal位置
 .details-modal {
-  display: flex;
   .ant-modal {
-    margin: 0;
+    max-width: 100%;
     position: absolute;
     top: 0;
     left: initial;
     right: 0;
-    padding: 0;
-    //height: 1080px;
-    min-height: 100vh;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh);
   }
   .ant-modal-body {
-    //height: calc(1080px - 55px - 53px);
-    min-height: 100vh;
+    flex: 1;
   }
 }
 //重置密码 modal

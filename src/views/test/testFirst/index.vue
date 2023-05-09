@@ -71,6 +71,7 @@
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
       :defaultExpandAllRows="state.isExpandAll"
       v-if="state.refreshTable"
+      @resizeColumn="handleResizeColumn"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -247,7 +248,7 @@
         >
           <div class="flex-content">
             <a-input v-model:value="state.formState.permission" />
-            <a-tooltip placement="topLeft">
+            <a-tooltip placement="topLeft" class="icon-tip">
               <template #title>
                 <span>
                   Controller方法上的权限字符，如：@PreAuthorize(`@ss.hasPermission('system:user:list')`)</span
@@ -285,7 +286,7 @@
             checked-children="开启"
             un-checked-children="关闭"
           />
-          <a-tooltip placement="topLeft">
+          <a-tooltip placement="topLeft" class="icon-tip">
             <template #title>
               <span>选择隐藏时，路由将不会出现在侧边栏，但仍然可以访问</span>
             </template>
@@ -304,7 +305,7 @@
             checked-children="开启"
             un-checked-children="关闭"
           />
-          <a-tooltip placement="topLeft">
+          <a-tooltip placement="topLeft" class="icon-tip">
             <template #title>
               <span>选择不是时，当该菜单只有一个子菜单时，不展示自己，直接展示子菜单</span>
             </template>
@@ -323,7 +324,7 @@
             checked-children="开启"
             un-checked-children="关闭"
           />
-          <a-tooltip placement="topLeft">
+          <a-tooltip placement="topLeft" class="icon-tip">
             <template #title>
               <span>选择缓存时，则会被 `keep-alive` 缓存，必须填写「组件名称」字段</span>
             </template>
@@ -527,6 +528,7 @@ const allColumns = [
     width: 200,
     dataIndex: 'name',
     key: 'name',
+    resizable: true,
     ellipsis: true,
     disabled: true,
     sort: 1
@@ -536,7 +538,9 @@ const allColumns = [
     width: 100,
     dataIndex: 'type',
     key: 'type',
+    resizable: true,
     ellipsis: true,
+    disabled: true,
     sort: 2
   },
   {
@@ -552,6 +556,7 @@ const allColumns = [
     width: 100,
     dataIndex: 'sort',
     key: 'sort',
+    resizable: true,
     ellipsis: true,
     sort: 4
   },
@@ -560,16 +565,54 @@ const allColumns = [
     width: 100,
     dataIndex: 'status',
     key: 'status',
+    resizable: true,
     ellipsis: true,
     sort: 5
+  },
+  {
+    title: '创建人',
+    dataIndex: 'creator',
+    width: 100,
+    key: 'creator',
+    resizable: true,
+    ellipsis: true,
+    sort: 6
+  },
+  {
+    title: '创建时间',
+    width: 100,
+    dataIndex: 'createTime',
+    key: 'createTime',
+    resizable: true,
+    ellipsis: true,
+    sort: 7
+  },
+  {
+    title: '最近操作人',
+    width: 100,
+    dataIndex: 'updater',
+    key: 'updater',
+    resizable: true,
+    ellipsis: true,
+    sort: 8
+  },
+  {
+    title: '最近操作时间',
+    width: 100,
+    dataIndex: 'updateTime',
+    key: 'updateTime',
+    resizable: true,
+    ellipsis: true,
+    sort: 9
   },
   {
     title: '操作',
     width: 200,
     dataIndex: 'operation',
     key: 'operation',
+    resizable: true,
     ellipsis: true,
-    sort: 6
+    sort: 10
   }
 ]
 
@@ -1091,6 +1134,11 @@ const getColumns = () => {
 }
 //初始化 获取默认的 columns
 state.columns = getColumns()
+
+//table 列伸缩
+const handleResizeColumn = (w, col) => {
+  col.width = w
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1159,6 +1207,7 @@ state.columns = getColumns()
 .flex-content {
   display: flex;
   align-items: center;
+  width: 388.5px;
 }
 .text-color {
   color: rgba(0, 129, 255, 100);
@@ -1310,6 +1359,9 @@ state.columns = getColumns()
 .btn-icon {
   margin-right: 4px;
   cursor: pointer;
+}
+.icon-tip {
+  margin-left: 8px;
 }
 </style>
 
