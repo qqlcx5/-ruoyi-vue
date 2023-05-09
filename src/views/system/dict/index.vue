@@ -269,6 +269,7 @@ import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import {reactive} from "vue";
 import { pickBy } from 'lodash-es'
 import {updateDictTypeApi} from "@/api/system/dict/dict.type";
+import {updateDictDataApi} from "@/api/system/dict/dict.data";
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -414,10 +415,10 @@ const handleStatusChange = async (row, type) => {
         updateStatus = await DictTypeApi.updateDictTypeApi({ ...row });
         await typeGetList();
       } else if (type === 'data') {
-        updateStatus = await DictTypeApi.updateDictTypeApi({ ...row });
+        updateStatus = await DictDataApi.updateDictDataApi({ ...row });
         await dataGetList()
       } else if (type === 'dataLevel3') {
-        updateStatus = await DictTypeApi.updateDictTypeApi({ ...row });
+        updateStatus = await DictDataApi.updateDictDataApi({ ...row });
         await dataLevel3GetList()
       }
       if (updateStatus) {
