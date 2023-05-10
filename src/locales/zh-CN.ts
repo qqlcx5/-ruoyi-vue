@@ -301,7 +301,9 @@ export default {
     typeCreate: '字典类型新增',
     typeUpdate: '字典类型编辑',
     dataCreate: '字典数据新增',
-    dataUpdate: '字典数据编辑'
+    dataUpdate: '字典数据编辑',
+    toOperate: '去操作',
+    confirmDel: '确认删除',
   },
   dialog: {
     dialog: '弹窗',

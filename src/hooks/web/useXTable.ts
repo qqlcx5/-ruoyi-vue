@@ -4,7 +4,8 @@ export interface tableMethod {
   reload: () => void // 刷新表格
   refreshColumn: () => void // 刷新列
   setProps: (props: XTableProps) => void
-  deleteData: (id: string | number, msg?: string) => void // 删除数据
+  deleteData: (id: string | number, msg?: string | VNode | (() => VNode)) => void // 删除数据
+  deleteReq: (id: string | number) => void // 删除请求
   deleteBatch: () => void // 批量删除
   exportList: (fileName?: string) => void // 导出列表
   getCurrentColumn: () => void // 获取当前列
@@ -30,7 +31,8 @@ export const useXTable = (props: XTableProps): [Function, tableMethod] => {
     reload: () => getInstance().reload(),
     refreshColumn: () => getInstance().refreshColumn(),
     setProps: (props) => getInstance().setProps(props),
-    deleteData: (id: string | number, msg?: string) => getInstance().deleteData(id, msg),
+    deleteData: (id: string | number, msg?: string | VNode | (() => VNode)) => getInstance().deleteData(id, msg),
+    deleteReq: (id: string | number) => getInstance().deleteReq(id),
     deleteBatch: () => getInstance().deleteBatch(),
     exportList: (fileName?: string) => getInstance().exportList(fileName),
     getCurrentColumn: () => getInstance().getCheckboxRecords(),

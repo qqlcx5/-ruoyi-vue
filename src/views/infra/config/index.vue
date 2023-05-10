@@ -4,12 +4,12 @@
       <el-row :gutter="12">
         <el-col :span="4">
           <el-form-item label="参数名称">
-            <el-input v-model="searchParams.name" />
+            <el-input v-model="searchParams.name" placeholder="请输入参数名称" />
           </el-form-item>
         </el-col>
         <el-col :span="4">
           <el-form-item label="参数键名">
-            <el-input v-model="searchParams.key" />
+            <el-input v-model="searchParams.key" placeholder="请输入参数键名" />
           </el-form-item>
         </el-col>
         <el-col :span="4">
@@ -44,7 +44,7 @@
         <!-- 操作：新增 -->
         <XButton
           type="primary"
-          preIcon="ep:zoom-in"
+          iconFont="icon-xinzeng"
           :title="t('action.add')"
           v-hasPermi="['infra:config:create']"
           @click="handleCreate()"
@@ -198,13 +198,13 @@ const handleCreate = () => {
 }
 
 const handleStatusChange = (row) => {
-  const text = row.status === CommonStatusEnum.ENABLE ? '展示' : '隐藏'
+  const text = row.status === CommonStatusEnum.ENABLE ? '可见' : '不可见'
   message
-    .confirm(`是否确认${text}参数名称为"${row.name}"的数据项?`, t('common.reminder'))
+    .confirm(`是否确认设置参数名称"${row.name}"为${text}?`, t('common.reminder'))
     .then(async () => {
       let updateStatus = await ConfigApi.updateConfigApi({ ...row });
       if (updateStatus) {
-        message.success(text + '成功');
+        message.success('操作成功');
       } else {
         message.warning(t('sys.api.operationFailed'));
       }

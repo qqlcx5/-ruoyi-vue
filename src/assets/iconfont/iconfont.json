@@ -6,6 +6,41 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "35427071",
+      "name": "导出",
+      "font_class": "daochu",
+      "unicode": "e68a",
+      "unicode_decimal": 59018
+    },
+    {
+      "icon_id": "35427072",
+      "name": "新增",
+      "font_class": "xinzeng",
+      "unicode": "e68b",
+      "unicode_decimal": 59019
+    },
+    {
+      "icon_id": "35427073",
+      "name": "导入",
+      "font_class": "daoru",
+      "unicode": "e68c",
+      "unicode_decimal": 59020
+    },
+    {
+      "icon_id": "35427074",
+      "name": "清除",
+      "font_class": "qingchu",
+      "unicode": "e68d",
+      "unicode_decimal": 59021
+    },
+    {
+      "icon_id": "35407640",
+      "name": "拖拽",
+      "font_class": "tuozhuai",
+      "unicode": "e689",
+      "unicode_decimal": 59017
+    },
+    {
       "icon_id": "35396125",
       "name": "编组 3备份",
       "font_class": "a-bianzu3beifen",

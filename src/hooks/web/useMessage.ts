@@ -52,7 +52,7 @@ export const useMessage = () => {
       ElNotification.warning(content)
     },
     // 确认窗体
-    confirm(content: string, tip?: string) {
+    confirm(content: string | VNode | (() => VNode), tip?: string) {
       return ElMessageBox.confirm(content, tip ? tip : t('common.confirmTitle'), {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
@@ -61,7 +61,7 @@ export const useMessage = () => {
       })
     },
     // 删除窗体
-    delConfirm(content?: string, tip?: string) {
+    delConfirm(content?: string | VNode | (() => VNode), tip?: string) {
       return ElMessageBox.confirm(
         content ? content : t('common.delMessage'),
         tip ? tip : t('common.confirmTitle'),

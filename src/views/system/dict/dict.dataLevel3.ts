@@ -22,7 +22,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       isForm: false
     },
     {
-      title: '数据标签',
+      title: '子项标签',
       field: 'label',
       form: {
         colProps: {
@@ -31,7 +31,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       }
     },
     {
-      title: '数据键值',
+      title: '子项键值',
       field: 'value',
       form: {
         colProps: {
@@ -40,7 +40,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       }
     },
     {
-      title: '显示排序',
+      title: '子项排序',
       field: 'sort',
       isTable: false,
       form: {
