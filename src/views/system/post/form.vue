@@ -1,13 +1,71 @@
 <template>
   <!-- 弹窗 -->
-  <XModal :title="modelTitle" :loading="modelLoading" v-model="modelVisible">
+  <XModal :title="modelTitle" :loading="modelLoading" v-model="modelVisible" width="624px">
     <!-- 表单：添加/修改 -->
-    <Form
-      ref="formRef"
-      v-if="['create', 'update'].includes(actionType)"
-      :schema="allSchemas.formSchema"
-      :rules="rules"
-    />
+    <el-table v-if="postTableType === 'type'" class="form-table" :data="postTypeTableData" border>
+      <el-table-column label="岗位类型编码">
+        <template #default="{row}">
+          <el-input v-model="row.code" />
+        </template>
+      </el-table-column>
+      <el-table-column label="岗位类型">
+        <template #default="{row}">
+          <el-input v-model="row.name" />
+        </template>
+      </el-table-column>
+      <el-table-column v-if="actionType !== 'update'" label="操作" width="180">
+        <template #default="scope">
+          <XTextButton
+            :title="t('action.create')"
+            @click="addPostTypeLine" />
+          <XTextButton
+            :title="t('action.del')"
+            @click="delPostTypeLine(scope.$index)" />
+        </template>
+      </el-table-column>
+    </el-table>
+    <!-- 表单：添加/修改 -->
+    <el-table v-else-if="postTableType === 'info'" class="form-table" :data="postTypeTableData" border>
+      <el-table-column label="岗位名称">
+        <template #default="{row}">
+          <el-input v-model="row.name" />
+        </template>
+      </el-table-column>
+      <el-table-column label="岗位编码">
+        <template #default="{row}">
+          <el-input v-model="row.code" />
+        </template>
+      </el-table-column>
+      <el-table-column label="岗位类型">
+        <template #default="{row}">
+          <el-input v-model="row.postType" />
+        </template>
+      </el-table-column>
+      <el-table-column label="状态">
+        <template #default="{row}">
+          <el-switch
+            v-model="row.status"
+            :active-value="0"
+            :inactive-value="1" />
+        </template>
+      </el-table-column>
+      <el-table-column v-if="actionType !== 'update'" label="操作" width="180">
+        <template #default="scope">
+          <XTextButton
+            :title="t('action.create')"
+            @click="addPostTypeLine" />
+          <XTextButton
+            :title="t('action.del')"
+            @click="delPostTypeLine(scope.$index)" />
+        </template>
+      </el-table-column>
+    </el-table>
+<!--    <Form-->
+<!--      ref="formRef"-->
+<!--      v-if="['create', 'update'].includes(actionType)"-->
+<!--      :schema="allSchemas.formSchema"-->
+<!--      :rules="rules"-->
+<!--    />-->
     <!-- 表单：详情 -->
     <Descriptions
       v-if="actionType === 'detail'"
@@ -30,8 +88,11 @@
 </template>
 <script setup lang="ts">
 import type { FormExpose } from '@/components/Form'
-import * as PostApi from '@/api/system/post'
-import { rules, allSchemas } from './post.data'
+import * as PostApi from '@/api/system/post/type'
+import * as PostInfoApi from '@/api/system/post/info'
+import { rules, allSchemas } from './post-type.data'
+import {batchCreatePostApi, PostPageReqVO, PostVO} from "@/api/system/post/type";
+import {PostInfoVO} from "@/api/system/post/info";
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
@@ -42,45 +103,87 @@ const modelLoading = ref(false) // 弹出层loading
 const actionType = ref('') // 操作按钮的类型
 const actionLoading = ref(false) // 按钮 Loading
 const formRef = ref<FormExpose>() // 表单 Ref
-const detailData = ref() // 详情 Ref
+const postTableType = ref('') // 表格类型
 
 // 打开弹窗
-const openModal = async (type: string, id?: number) => {
+const openModal = async (type: string, tableType: string, id?: number) => {
   modelVisible.value = true
   modelLoading.value = true
   modelTitle.value = t('action.' + type)
   actionType.value = type
-  // 设置数据
-  if (id) {
-    const res = await PostApi.getPostApi(id)
-    if (type === 'update') {
-      unref(formRef)?.setValues(res)
-    } else if (type === 'detail') {
-      detailData.value = res
+  postTableType.value = tableType
+
+  if (postTableType.value === 'type') {
+    // 设置数据
+    if (id) {
+      const res = await PostApi.getPostApi(id)
+      if (!res) {
+        message.warning('信息查询异常！')
+        modelLoading.value = false
+        return
+      }
+      if (type === 'update') {
+        const { id, code, name, status } = res;
+        postTypeTableData.value = [{ id, code, name, status }]
+      }
+    } else {
+      postTypeTableData.value = [{ code: '', name: '', status: 0 }]
+    }
+  } else if (postTableType.value === 'info') {
+    if (id) {
+      const res = await PostApi.getPostApi(id)
+      if (!res) {
+        message.warning('信息查询异常！')
+        modelLoading.value = false
+        return
+      }
+      if (type === 'update') {
+        const { id, code, name, status, postType } = res;
+        postTypeTableData.value = [{ id, code, name, status, postType }]
+      }
+    } else {
+      postTypeTableData.value = [{ code: '', name: '', status: 0, postType: '' }]
     }
   }
   modelLoading.value = false
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 
+// 岗位类型table
+const postTypeTableData = ref<PostVO[] | PostInfoVO[]>([{ code: '', name: '', status: 0, postType: '' }])
+const addPostTypeLine = ():void => {
+  postTypeTableData.value.push({ code: '', name: '', status: 0, postType: '' })
+}
+const delPostTypeLine = (index: number):void => {
+  if (postTypeTableData.value.length === 1) return message.warning(`至少要有一行新增岗位${postTableType.value === 'type' ? '类型' : '信息'}！`)
+  postTypeTableData.value.splice(index, 1)
+}
+
+
 // 提交新增/修改的表单
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
   // 校验表单
-  const elForm = unref(formRef)?.getElFormRef()
-  if (!elForm) return
-  const valid = await elForm.validate()
-  if (!valid) return
+  if (!tableFormValidate()) return message.warning("内容填写不完整！")
   // 提交请求
   actionLoading.value = true
   try {
-    const data = unref(formRef)?.formModel as PostApi.PostVO
-    if (actionType.value === 'create') {
-      await PostApi.createPostApi(data)
-      message.success(t('common.createSuccess'))
-    } else {
-      await PostApi.updatePostApi(data)
-      message.success(t('common.updateSuccess'))
+    if (postTableType.value === 'type') {
+      if (actionType.value === 'create') {
+        await PostApi.batchCreatePostApi({ postTypelist: postTypeTableData.value })
+        message.success(t('common.createSuccess'))
+      } else if (actionType.value === 'update') {
+        await PostApi.updatePostApi(postTypeTableData.value[0])
+        message.success(t('common.updateSuccess'))
+      }
+    } else if (postTableType.value === 'info') {
+      if (actionType.value === 'create') {
+        await PostInfoApi.batchCreatePostApi({ postTypelist: postTypeTableData.value })
+        message.success(t('common.createSuccess'))
+      } else if (actionType.value === 'update') {
+        await PostInfoApi.updatePostApi(postTypeTableData.value[0])
+        message.success(t('common.updateSuccess'))
+      }
     }
     modelVisible.value = false
     emit('success')
@@ -88,4 +191,19 @@ const submitForm = async () => {
     actionLoading.value = false
   }
 }
+const tableFormValidate = ():boolean => {
+  if (postTableType.value === 'type') {
+    return !postTypeTableData.value.some(i => i.code === '' || i.name === '');
+  } else {
+    return !postTypeTableData.value.some(i => i.code === '' || i.name === '' || i.postType === '');
+  }
+}
+
 </script>
+<style lang="scss" scoped>
+.form-table {
+  &:deep(th.el-table__cell) {
+    background-color: var(--table-bg-color);
+  }
+}
+</style>

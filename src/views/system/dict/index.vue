@@ -12,12 +12,12 @@
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label="字典名称">
-                <el-input v-model="typeSearchForm.name" />
+                <el-input v-model="typeSearchForm.name" placeholder="请输入字典名称" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="字典类型">
-                <el-input v-model="typeSearchForm.type" />
+                <el-input v-model="typeSearchForm.type" placeholder="请输入字典类型" />
               </el-form-item>
             </el-col>
 
@@ -56,7 +56,7 @@
           <template #toolbar_buttons>
             <XButton
               type="primary"
-              preIcon="ep:zoom-in"
+              iconFont="icon-xinzeng"
               :title="t('action.add')"
               v-hasPermi="['system:dict:create']"
               @click="handleTypeCreate()"
@@ -105,7 +105,7 @@
             <el-row :gutter="12">
               <el-col :span="8">
                 <el-form-item label="数据标签">
-                  <el-input v-model="queryParams.label" />
+                  <el-input v-model="queryParams.label" placeholder="请输入数据标签" />
                 </el-form-item>
               </el-col>
               <el-col :span="8" class="!flex flex-column justify-between">
@@ -123,6 +123,7 @@
             <template #toolbar_buttons>
               <XButton
                 type="primary"
+                iconFont="icon-xinzeng"
                 :title="t('action.add')"
                 v-hasPermi="['system:dict:create']"
                 @click="handleDataCreate()"
@@ -203,8 +204,8 @@
       <el-form class="query-form w-full" ref="elFormRef" :model="dataLevel3queryParams" label-position="left" label-width="70px">
         <el-row :gutter="12">
           <el-col :span="8">
-            <el-form-item label="数据标签" class="!mb-0">
-              <el-input v-model="dataLevel3queryParams.label" />
+            <el-form-item label="子项标签" class="!mb-0">
+              <el-input v-model="dataLevel3queryParams.label" placeholder="请输入子项标签" />
             </el-form-item>
           </el-col>
           <el-col :span="8" class="!flex flex-column justify-between">
@@ -221,7 +222,7 @@
         <template #toolbar_buttons>
           <XButton
             type="primary"
-            preIcon="ep:zoom-in"
+            iconFont="icon-xinzeng"
             :title="t('action.add')"
             v-hasPermi="['system:dict:create']"
             @click="handleDataCreate('dataLevel3Create')"

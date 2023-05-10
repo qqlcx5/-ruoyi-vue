@@ -273,7 +273,7 @@ import { rules, allSchemas } from './user.data'
 import * as UserApi from '@/api/system/user'
 import { listSimpleDeptApi } from '@/api/system/dept'
 import { listSimpleRolesApi } from '@/api/system/role'
-import { listSimplePostsApi, PostVO } from '@/api/system/post'
+import { listSimplePostsApi, PostVO } from '@/api/system/post/type'
 import {
   aassignUserRoleApi,
   listUserRolesApi,

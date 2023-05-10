@@ -139,7 +139,7 @@ import { FormInstance } from 'element-plus'
 // 业务相关的 import
 import * as TaskAssignRuleApi from '@/api/bpm/taskAssignRule'
 import { listSimpleRolesApi } from '@/api/system/role'
-import { listSimplePostsApi } from '@/api/system/post'
+import { listSimplePostsApi } from '@/api/system/post/type'
 import { getListSimpleUsersApi } from '@/api/system/user'
 import { listSimpleUserGroupsApi } from '@/api/bpm/userGroup'
 import { listSimpleDeptApi } from '@/api/system/dept'

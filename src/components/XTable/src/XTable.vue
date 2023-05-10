@@ -375,7 +375,7 @@ const reload = () => {
 }
 
 // 删除
-const deleteData = async (id: string | number, msg?: string) => {
+const deleteData = async (id: string | number, msg?: string | VNode | (() => VNode)) => {
   const g = unref(xGrid)
   if (!g) {
     return
@@ -392,6 +392,25 @@ const deleteData = async (id: string | number, msg?: string) => {
       // 刷新列表
       reload()
     })
+  })
+}
+
+// 删除api
+const deleteReq = async (id: string | number) => {
+  const g = unref(xGrid)
+  if (!g) {
+    return
+  }
+  const options = innerProps.value || props.options
+  if (!options.deleteApi) {
+    console.error('未传入delListApi')
+    return
+  }
+  return new Promise(async () => {
+    await (options?.deleteApi && options?.deleteApi(id))
+    message.success(t('common.delSuccess'))
+    // 刷新列表
+    reload()
   })
 }
 
@@ -509,12 +528,13 @@ onMounted(() => {
   columnInit();
 })
 
-defineExpose({ reload, Ref: xGrid, getSearchData, deleteData, exportList })
+defineExpose({ reload, Ref: xGrid, getSearchData, deleteData, exportList, deleteReq })
 emit('register', {
   reload,
   getSearchData,
   setProps,
   deleteData,
+  deleteReq,
   deleteBatch,
   exportList,
   getCurrentColumn,

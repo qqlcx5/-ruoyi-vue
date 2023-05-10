@@ -10,24 +10,25 @@ export const rules = reactive({
 
 // 增删改查 CrudSchema 配置
 const crudSchemas = reactive<VxeCrudSchema>({
-  primaryKey: 'id',
-  primaryType: 'id',
-  primaryTitle: '岗位编号',
+  actionWidth: '100px',
   action: true,
   columns: [
     {
-      title: '岗位名称',
-      field: 'name',
-      isSearch: true
-    },
-    {
       title: '岗位编码',
       field: 'code',
-      isSearch: true
+    },
+    {
+      title: '岗位名称',
+      field: 'name',
+    },
+    {
+      title: '成员',
+      field: 'memberCount',
     },
     {
       title: '岗位顺序',
       field: 'sort',
+      isTable: false,
       form: {
         component: 'InputNumber'
       }
@@ -37,22 +38,13 @@ const crudSchemas = reactive<VxeCrudSchema>({
       field: 'status',
       dictType: DICT_TYPE.COMMON_STATUS,
       dictClass: 'number',
-      isSearch: true
-    },
-    {
-      title: '备注',
-      field: 'remark',
-      isTable: false
-    },
-    {
-      title: t('common.createTime'),
-      field: 'createTime',
-      formatter: 'formatDate',
-      isForm: false,
       table: {
-        width: 180
-      }
-    }
+        width: 80,
+        slots: {
+          default: 'status_default'
+        }
+      },
+    },
   ]
 })
 export const { allSchemas } = useVxeCrudSchemas(crudSchemas)

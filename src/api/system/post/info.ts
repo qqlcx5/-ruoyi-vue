@@ -1,13 +1,18 @@
 import request from '@/config/axios'
 
-export interface PostVO {
+export interface PostInfoVO {
   id?: number
   name: string
   code: string
-  sort: number
-  status: number
-  remark: string
+  postType?: string
+  status?: number
+  remark?: string
+  sort?: number
   createTime?: Date
+}
+
+export interface batchPostInfoVO {
+  postTypelist: PostInfoVO[]
 }
 
 export interface PostPageReqVO extends PageParam {
@@ -38,12 +43,17 @@ export const getPostApi = async (id: number) => {
 }
 
 // 新增岗位
-export const createPostApi = async (data: PostVO) => {
+export const createPostApi = async (data: PostInfoVO) => {
   return await request.post({ url: '/system/post/create', data })
 }
 
+// 批量新增岗位
+export const batchCreatePostApi = async (data: batchPostInfoVO) => {
+  return await request.post({ url: '/system/post/create/batch', data })
+}
+
 // 修改岗位
-export const updatePostApi = async (data: PostVO) => {
+export const updatePostApi = async (data: PostInfoVO) => {
   return await request.put({ url: '/system/post/update', data })
 }
 

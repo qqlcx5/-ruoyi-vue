@@ -4,16 +4,23 @@ import { Icon } from '@/components/Icon'
 export const useRenderMenuTitle = () => {
   const renderMenuTitle = (meta: RouteMeta) => {
     const { t } = useI18n()
-    const { title = 'Please set title', icon } = meta
+    const { title = 'Please set title' } = meta
 
-    return icon ? (
-      <>
-        <Icon icon={meta.icon} size={10}></Icon>
-        <span class="v-menu__title">{t(title as string)}</span>
-      </>
-    ) : (
-      <span class="v-menu__title">{t(title as string)}</span>
+    return (
+        <>
+          <Icon icon={meta.icon} size={10}></Icon>
+          <span class="v-menu__title">{t(title as string)}</span>
+        </>
     )
+
+    // return icon ? (
+    //   <>
+    //     <Icon icon={meta.icon} size={10}></Icon>
+    //     <span class="v-menu__title">{t(title as string)}</span>
+    //   </>
+    // ) : (
+    //   <span class="v-menu__title">{t(title as string)}</span>
+    // )
   }
 
   return {

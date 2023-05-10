@@ -6,6 +6,7 @@ const props = defineProps({
   modelValue: propTypes.bool.def(false),
   loading: propTypes.bool.def(false),
   preIcon: propTypes.string.def(''),
+  iconFont: propTypes.string.def(''),
   postIcon: propTypes.string.def(''),
   title: propTypes.string.def(''),
   type: propTypes.oneOf(['', 'primary', 'success', 'warning', 'danger', 'info']).def(''),
@@ -30,6 +31,7 @@ const getBindValue = computed(() => {
 
 <template>
   <el-button v-bind="getBindValue" @click="onClick">
+    <iconfont :name="iconFont" v-if="iconFont" class="mr-4px" />
     <Icon :icon="preIcon" v-if="preIcon" class="mr-1px" />
     {{ title ? title : '' }}
     <Icon :icon="postIcon" v-if="postIcon" class="mr-1px" />
