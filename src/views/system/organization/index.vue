@@ -423,7 +423,7 @@
       overflow: 'auto'
     }"
   >
-    <div class="status-content">
+    <div class="status-content" v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0">
       <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="status-text-content">
         <div class="status-text">
@@ -447,10 +447,29 @@
       </div>
     </div>
 
+    <div class="message-content" v-else>
+      <div class="message-text-content">
+        <div class="message-text">
+          <img :src="warningImg" alt="" class="tip-img message-img" />
+          <div>
+            系统校验到该机构底下还存在<span class="status-span">{{
+              state.tableStatusChangeInfo?.ctiveEmployeesNumber
+            }}</span
+            >个账户状态开启的员工，请先关闭或转移所有员工再操作关闭哦~
+          </div>
+        </div>
+      </div>
+    </div>
+
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="tableStatusConfirm">{{
-        state.tableStatusChangeInfo.statusBtnText
-      }}</a-button>
+      <a-button
+        type="primary"
+        html-type="submit"
+        @click="tableStatusConfirm"
+        v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"
+        >{{ state.tableStatusChangeInfo.statusBtnText }}</a-button
+      >
+      <a-button v-else type="primary" html-type="submit">去操作</a-button>
       <a-button @click="closeStatusModal">取消</a-button>
     </template>
   </a-modal>
@@ -587,6 +606,42 @@
   >
     <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
   </a-modal>
+
+  <!--  状态开启关闭 Modal  -->
+  <!--  <a-modal-->
+  <!--    v-model:visible="state.isShowStatus"-->
+  <!--    :title="state.messageTitle"-->
+  <!--    @ok="statusOk"-->
+  <!--    @cancel="statusCancel"-->
+  <!--    width="560px"-->
+  <!--    :bodyStyle="{-->
+  <!--      width: '100%',-->
+  <!--      height: '100px',-->
+  <!--      margin: '0',-->
+  <!--      padding: '30px 0 0 0',-->
+  <!--      overflow: 'auto'-->
+  <!--    }"-->
+  <!--  >-->
+  <!--    <div class="message-content">-->
+  <!--      <div class="message-text-content">-->
+  <!--        <div class="message-text">-->
+  <!--          <img :src="warningImg" alt="" class="tip-img message-img" />-->
+  <!--          <div>-->
+  <!--            系统校验到该机构底下还存在<span class="status-span"-->
+  <!--              >{{state.tableStatusChangeInfo?.ctiveEmployeesNumber}}</span-->
+  <!--            >个账户状态开启的员工，请先关闭或转移所有员工再操作关闭哦~-->
+  <!--          </div>-->
+  <!--        </div>-->
+  <!--      </div>-->
+  <!--    </div>-->
+
+  <!--    <template #footer>-->
+  <!--      <a-button type="primary" html-type="submit" @click="statusOk">{{-->
+  <!--        state.messageBtnText-->
+  <!--      }}</a-button>-->
+  <!--      <a-button @click="statusCancel">取消</a-button>-->
+  <!--    </template>-->
+  <!--  </a-modal>-->
 </template>
 
 <script lang="tsx" setup>
@@ -620,11 +675,13 @@ import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import {
   addOrganization,
+  getActiveEmployeesNumber,
   getOrganizationDetails,
   getOrganizationList,
   getOrganizationTypeList,
   getSimpleOrganizationList,
-  updateOrganization
+  updateOrganization,
+  updateOrganizationStatus
 } from '@/api/system/organization'
 
 const { wsCache } = useCache()
@@ -1336,7 +1393,26 @@ const closeStatusModal = () => {
 }
 
 //表格状态开关
-const setTableStatusChangeInfo = (value, record) => {
+const setTableStatusChangeInfo = async (value, record) => {
+  const res = await getActiveEmployeesNumber({ id: record.id })
+  // const res = 25
+  console.log('开启员工数res', res)
+
+  if (res === 0) {
+    nextTick(() => {
+      state.tableStatusChangeInfo['ctiveEmployeesNumber'] = 0
+    })
+  } else {
+    nextTick(() => {
+      state.tableStatusChangeInfo['ctiveEmployeesNumber'] = res
+    })
+  }
+
+  console.log(
+    "  console.log('', state.tableStatusChangeInfo?.ctiveEmployeesNumber)\n",
+    state.tableStatusChangeInfo?.ctiveEmployeesNumber
+  )
+
   state.tableStatusChangeInfo = {
     value,
     record
@@ -1352,12 +1428,12 @@ const setTableStatusChangeInfo = (value, record) => {
     state.tableStatusChangeInfo['statusText'] = `关闭`
   }
 
-  //过滤得到父级项
-  const parentItem = state.rawData.filter((item) => item.id === record.belongTenantId)
-  if (parentItem.length > 0 && parentItem[0]?.status === 1) {
-    record.statusSwitch = !record.statusSwitch
-    return message.warning('请先开启父级状态')
-  }
+  // //过滤得到父级项
+  // const parentItem = state.rawData.filter((item) => item.id === record.belongTenantId)
+  // if (parentItem.length > 0 && parentItem[0]?.status === 1) {
+  //   record.statusSwitch = !record.statusSwitch
+  //   return message.warning('请先开启父级状态')
+  // }
 
   openStatusModal()
 }
@@ -1377,8 +1453,15 @@ const tableStatusChange = (value, record) => {
 }
 
 //表格状态开关modal 确认
-const tableStatusConfirm = () => {
-  tableStatusChange(state.tableStatusChangeInfo?.value, state.tableStatusChangeInfo?.record)
+const tableStatusConfirm = async () => {
+  const res = await updateOrganizationStatus({
+    id: state.tableStatusChangeInfo.record.id,
+    status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1
+  })
+  console.log('res', res)
+  message.success('修改状态成功')
+
+  // tableStatusChange(state.tableStatusChangeInfo?.value, state.tableStatusChangeInfo?.record)
   closeStatusModal()
 }
 

@@ -74,8 +74,9 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       // brotliSize: false,
       terserOptions: {
         compress: {
-          drop_debugger: env.VITE_DROP_DEBUGGER === 'true',
-          drop_console: env.VITE_DROP_CONSOLE === 'true'
+          //暂时允许 断点跟console TODO:后续再去除
+          drop_debugger: env.VITE_DROP_DEBUGGER === 'false',
+          drop_console: env.VITE_DROP_CONSOLE === 'false'
         }
       }
     },

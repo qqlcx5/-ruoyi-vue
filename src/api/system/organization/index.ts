@@ -36,6 +36,20 @@ export const updateOrganization = (data) => {
   return request.put({ url: '/system/organization/update', data })
 }
 
+// 获取机构在职状态开启的员工
+export const getActiveEmployeesNumber = (params) => {
+  return request.get({ url: '/system/organization/active_users', params })
+}
+
+// 更改机构状态
+export const updateOrganizationStatus = (data) => {
+  return request.put({ url: '/system/organization/update-status', data })
+}
+
+
+
+
+
 // 查询机构详情
 export const getOrganizationDetails = (params) => {
   return request.get({ url: '/system/organization/get', params })
