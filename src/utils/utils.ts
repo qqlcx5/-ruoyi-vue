@@ -1,3 +1,6 @@
+import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
+const { wsCache } = useCache()
+
 /**
  * 过滤树形结构 更改对应的属性值
  * @param    treeData array              树结构数组对象 其中对象 children属性可有可无
@@ -93,4 +96,25 @@ export function filterTree(tree = [], map = [], arr = []) {
     if (item.children && item.children.length) filterTree(item.children, map, node.children)
   }
   return arr
+}
+
+//获取默认的columns
+/**
+ * @param state[changedColumnsObj]   Array[Object]   定制列组件接收到的当前列信息
+ * @param pageKey                    String          页面pageKey
+ * @param allColumns                 Array[Object]   table columns
+ * @param defaultKeys                Array[String]   定制列默认的keys
+ * */
+export const getColumns = (state, pageKey, allColumns, defaultKeys) => {
+  //pageKey 为当前存储的页面
+  const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
+  //有缓存 取缓存
+  if (columnsObj[pageKey]) {
+    state.changedColumnsObj = columnsObj[pageKey]
+    return columnsObj[pageKey].currentColumns
+  }
+  const currentColumns = allColumns.filter((columnsItem) => {
+    return defaultKeys.some((item) => columnsItem.key === item)
+  })
+  return currentColumns
 }

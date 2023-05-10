@@ -1,19 +1,19 @@
+<!--  机构管理  -->
 <template>
   <!-- 搜索工作栏 -->
 
   <ContentWrap>
     <a-form :model="queryParams" ref="queryFormRef" layout="inline">
-      <a-form-item :label="`主体名称`" name="keyword">
-        <a-input v-model:value="queryParams.keyword" placeholder="请输入主体名称或者编码" />
+      <a-form-item :label="`机构名称`" name="keyword">
+        <a-input v-model:value="queryParams.keyword" placeholder="请输入机构名称或者编码" />
       </a-form-item>
-      <a-form-item :label="`系统名称`" name="systemName">
-        <a-input v-model:value="queryParams.systemName" placeholder="请输入系统名称" />
-      </a-form-item>
-      <a-form-item :label="`有效期`" name="startEndTime">
-        <a-range-picker
-          v-model:value="queryParams.startEndTime"
-          format="YYYY/MM/DD"
-          :placeholder="['开始时间', '结束时间']"
+
+      <a-form-item :label="`机构类型`" name="organizationType">
+        <a-select
+          v-model:value="queryParams.organizationType"
+          placeholder="请选择状态"
+          style="width: 200px"
+          :options="state.organizationTypeOptions"
         />
       </a-form-item>
 
@@ -168,8 +168,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'665px'"
-    :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
+    :bodyStyle="{ maxHeight: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
       <a-form
@@ -178,103 +177,68 @@
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
       >
-        <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
-        <a-form-item :label="`上级主体`" name="belongTenantId">
+        <a-form-item :label="`上级机构`" name="parentId">
           <a-tree-select
-            v-model:value="state.formState.belongTenantId"
+            v-model:value="state.formState.parentId"
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级目录"
+            placeholder="请选择上级机构"
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="label"
           />
         </a-form-item>
+
         <a-form-item
-          :label="`主体编码`"
-          name="code"
-          :rules="[{ required: true, message: `主体编码不能为空` }]"
+          :label="`机构类型`"
+          name="organizationType"
+          :rules="[{ required: true, message: `机构类型不能为空` }]"
         >
-          <a-input
-            v-model:value="state.formState.code"
-            show-count
-            :maxlength="20"
-            placeholder="请输入主体编码"
+          <a-tree-select
+            v-model:value="state.formState.organizationType"
+            show-search
+            style="width: 100%"
+            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+            placeholder="请选择机构类型"
+            :tree-data="state.organizationTypeOptions"
+            treeNodeFilterProp="label"
           />
         </a-form-item>
 
         <a-form-item
-          :label="`主体名称`"
+          :label="`机构名称`"
           name="name"
-          :rules="[{ required: true, message: `主体名称不能为空` }]"
+          :rules="[{ required: true, message: `机构名称不能为空` }]"
         >
           <a-input
             v-model:value="state.formState.name"
             show-count
             :maxlength="20"
-            placeholder="请输入主体名称"
-          />
-        </a-form-item>
-
-        <a-form-item :label="`主体简称`" name="abbreviate">
-          <a-input
-            v-model:value="state.formState.abbreviate"
-            show-count
-            :maxlength="10"
-            placeholder="请输入主体简称"
+            placeholder="请输入机构编码"
           />
         </a-form-item>
 
         <a-form-item
-          :label="`系统名称`"
-          name="systemName"
-          :rules="[{ required: true, message: `系统名称不能为空` }]"
+          :label="`机构编码`"
+          name="code"
+          :rules="[{ required: true, message: `机构编码不能为空` }]"
         >
-          <div class="flex-content">
-            <a-input
-              v-model:value="state.formState.systemName"
-              show-count
-              :maxlength="10"
-              placeholder="请输入系统名称"
-            />
-            <a-tooltip placement="topLeft" class="icon-tip">
-              <template #title>
-                <span> 为左上角显示的系统整体名称</span>
-              </template>
-              <Icon icon="ep:question-filled" color="rgb(176, 176, 176)" />
-            </a-tooltip>
-          </div>
+          <a-input
+            v-model:value="state.formState.code"
+            show-count
+            :maxlength="20"
+            placeholder="请输入机构编码"
+          />
         </a-form-item>
 
-        <a-form-item label="系统logo" name="logoUrl">
-          <a-upload
-            v-model:file-list="state.logoListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'logo')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'logo')
-              }
-            "
-          >
-            <div v-if="state.logoListUrl.length < 1">
-              <plus-outlined />
-              <div style="margin-top: 8px">上传logo</div>
-            </div>
-          </a-upload>
-          <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
+        <a-form-item :label="`机构简称`" name="abbreviate">
+          <a-input
+            v-model:value="state.formState.abbreviate"
+            show-count
+            :maxlength="10"
+            placeholder="请输入机构简称"
+          />
         </a-form-item>
 
         <a-form-item
@@ -286,53 +250,15 @@
         </a-form-item>
 
         <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
-          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入主体编码" />
-          <div class="phone-text"> 主要用于重要功能的安全验证，请确保填写正确 </div>
+          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入机构编码" />
         </a-form-item>
 
-        <a-form-item
-          :label="`有效期`"
-          name="effectiveStartEndTime"
-          :rules="[{ required: true, message: `有效期不能为空` }]"
-        >
-          <div class="flex-content">
-            <a-range-picker
-              v-model:value="state.formState.effectiveStartEndTime"
-              format="YYYY/MM/DD"
-              :placeholder="['开始时间', '结束时间']"
-            />
-            <!--            <div>-->
-            <!--              <a-form-item-rest>-->
-            <!--                <a-checkbox v-model:checked="state.formState.forever" @change="foreverChange">-->
-            <!--                  永久有效</a-checkbox-->
-            <!--                ></a-form-item-rest-->
-            <!--              >-->
-            <!--            </div>-->
-          </div>
+        <a-form-item label="负责人邮箱" name="contactMail" :rules="state.contactMailRules">
+          <a-input v-model:value="state.formState.contactMail" placeholder="请输入邮箱" />
         </a-form-item>
 
-        <a-form-item
-          :label="`可用名额`"
-          name="accountCount"
-          :rules="[{ required: true, message: `可用名额不能为空` }]"
-        >
-          <a-input-number
-            id="inputNumber"
-            v-model:value="state.formState.accountCount"
-            :controls="false"
-            placeholder="请输入整数"
-          />
-        </a-form-item>
-
-        <a-form-item
-          :label="`绑定域名`"
-          name="bindingDomainName"
-          :rules="[{ required: true, message: `绑定域名不能为空` }]"
-        >
-          <a-input
-            v-model:value="state.formState.bindingDomainName"
-            placeholder="请输入绑定的域名"
-          />
+        <a-form-item label="排序" name="sort" :rules="[{ required: true, message: '排序!' }]">
+          <a-input-number v-model:value="state.formState.sort" :min="0" :max="100" />
         </a-form-item>
 
         <a-form-item
@@ -346,123 +272,6 @@
             checked-children="开启"
             un-checked-children="关闭"
           />
-        </a-form-item>
-
-        <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
-        <a-form-item :label="`统一社会信用代码`" name="creditCode">
-          <a-input
-            v-model:value="state.formState.creditCode"
-            placeholder="请输入统一社会信用代码"
-          />
-        </a-form-item>
-
-        <a-form-item :label="`组织机构代码`" name="organizationCode">
-          <a-input
-            v-model:value="state.formState.organizationCode"
-            placeholder="请输入组织机构代码"
-          />
-        </a-form-item>
-
-        <a-form-item :label="`法定代表人`" name="legalRepresentative">
-          <a-input
-            v-model:value="state.formState.legalRepresentative"
-            placeholder="请输入法定代表人姓名"
-          />
-        </a-form-item>
-
-        <a-form-item label="法人电话" name="legalMobile" :rules="state.legalMobileRules">
-          <a-input v-model:value="state.formState.legalMobile" placeholder="请输入法人联系电话" />
-        </a-form-item>
-
-        <a-form-item label="法人身份证" name="legalIdentityUrl">
-          <a-upload
-            v-model:file-list="state.legalPersonListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'legalPerson')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'legalPerson')
-              }
-            "
-          >
-            <div v-if="state.legalPersonListUrl.length < 1">
-              <plus-outlined />
-              <div style="margin-top: 8px">上传法人证件</div>
-            </div>
-          </a-upload>
-
-          <div class="upload-text">
-            请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
-          </div>
-        </a-form-item>
-
-        <a-form-item :label="`成立日期`" name="establishDate">
-          <a-date-picker
-            v-model:value="state.formState.establishDate"
-            format="YYYY/MM/DD"
-            placeholder="请选择时间"
-          />
-        </a-form-item>
-
-        <!--  级联选择器  - -   -->
-        <a-form-item :label="`公司地址`" name="detailedAddress">
-          <div class="flex-content adress-content">
-            <a-form-item-rest>
-              <a-cascader
-                v-model:value="state.formState.companyAddress"
-                :options="state.proMunAreaList"
-                @change="cascadeChange"
-                placeholder="请选择省市区"
-              />
-            </a-form-item-rest>
-            <a-input
-              v-model:value="state.formState.detailedAddress"
-              placeholder="请输入详细的公司地址，具体门牌号"
-              class="adress-input"
-            />
-          </div>
-        </a-form-item>
-
-        <a-form-item label="营业执照" name="businessLicenseUrl">
-          <a-upload
-            v-model:file-list="state.businessLicenseListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'businessLicense')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'businessLicense')
-              }
-            "
-          >
-            <div v-if="state.businessLicenseListUrl.length < 1">
-              <plus-outlined />
-              <div style="margin-top: 8px">上传营业执照</div>
-            </div>
-          </a-upload>
-
-          <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
         </a-form-item>
       </a-form>
     </div>
@@ -489,7 +298,7 @@
     :bodyStyle="{ height: '700px', margin: '0', padding: '0', overflow: 'auto' }"
   >
     <div class="per-content">
-      <div class="text-content">请选择该主体的功能配置权限：</div>
+      <div class="text-content">请选择该机构的功能配置权限：</div>
       <!--  左右两侧  -->
       <div class="select-content">
         <div class="left-content">
@@ -576,7 +385,7 @@
           {{ state.messageText }}
         </div>
         <div class="message-phone">
-          主体负责人绑定的手机号：{{
+          机构负责人绑定的手机号：{{
             state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
           }}
         </div>
@@ -633,7 +442,7 @@
           <span class="status-span">{{
             state.tableStatusChangeInfo.record?.children?.length
           }}</span>
-          个子项主体将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          个子项机构将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
     </div>
@@ -759,7 +568,7 @@
     :allColumns="allColumns"
     :defaultKeys="state.defaultKeys"
     :changedColumnsObj="state.changedColumnsObj"
-    :pageKey="PageKeyObj.business"
+    :pageKey="PageKeyObj.organization"
   />
 
   <!--  上传图片预览  -->
@@ -786,7 +595,7 @@ import { handleTree } from '@/utils/tree'
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
+import { SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
@@ -801,7 +610,7 @@ import {
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from './pr'
-import { filterTree, getAllIds, getColumns, reconstructedTreeData } from '@/utils/utils'
+import { filterTree, getAllIds, reconstructedTreeData, getColumns } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
@@ -809,6 +618,14 @@ import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
+import {
+  addOrganization,
+  getOrganizationDetails,
+  getOrganizationList,
+  getOrganizationTypeList,
+  getSimpleOrganizationList,
+  updateOrganization
+} from '@/api/system/organization'
 
 const { wsCache } = useCache()
 
@@ -834,10 +651,9 @@ interface FormState {
 const queryParams = reactive({
   current: 1, //当前页码
   pageSize: 10, //显示条数
-  keyword: undefined,
-  systemName: undefined,
-  startEndTime: [],
-  status: undefined
+  keyword: undefined, //机构名称
+  organizationType: undefined, //机构类型
+  status: undefined //状态
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -865,6 +681,12 @@ const isValidPhoneNumber = (phoneNumber) => {
   return regExp.test(phoneNumber)
 }
 
+//邮箱正则校验
+const isValidMail = (email) => {
+  const regExp = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
+  return regExp.test(email)
+}
+
 //负责人电话校验
 const contactMobileValidator = (rule, value) => {
   return new Promise<void>((resolve, reject) => {
@@ -878,6 +700,22 @@ const contactMobileValidator = (rule, value) => {
     // else {
     //   reject('负责人电话不能为空')
     // }
+  })
+}
+
+//负责人邮箱校验
+const contactMailRulesValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      if (!isValidMail(value)) {
+        reject('请输入正确的邮箱')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+      // reject('负责人电话不能为空')
+    }
   })
 }
 
@@ -916,7 +754,7 @@ const imageUrl = ref<string>('')
 const state = reactive({
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
-  messageText: '为了保护您的主体公司业务数据安全，请通过安全验证：',
+  messageText: '为了保护您的机构公司业务数据安全，请通过安全验证：',
   canSendCode: true, //能否发送验证码
   codeCountdown: 60, //短信发送倒计时 s
   messageCode: '', //短信验证码
@@ -926,6 +764,7 @@ const state = reactive({
     { value: 0, label: '正常' },
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
+  organizationTypeOptions: [], //机构类型列表
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
@@ -940,40 +779,24 @@ const state = reactive({
   modalTitle: '新增', //modal title
   currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
-  contactMobileRules: [
-    { required: true, message: `负责人电话不能为空` },
-    { validator: contactMobileValidator }
-  ],
+  contactMobileRules: [{ validator: contactMobileValidator }],
+  contactMailRules: [{ validator: contactMailRulesValidator }],
   legalMobileRules: [{ validator: legalMobileValidator }],
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
   formState: {
-    belongTenantId: 0, //上级主体编号
-    code: '', //主体编码
-    name: '', //主体名称
-    abbreviate: '', //主体简称
-    systemName: '', //系统名称
-    logoUrl: '', //系统logo
+    parentId: 0, //上级机构ID
+    organizationType: undefined, //机构类型
+    name: '', //机构名称
+    code: '', //机构编码
+    abbreviate: '', //机构简称
     contactName: '', //负责人
     contactMobile: '', //负责人电话
-    effectiveStartEndTime: [], //有效期
-    // forever: false, //永久有效
-    accountCount: undefined, //可用名额
-    bindingDomainName: '', //绑定域名
-    status: true, //状态
-    creditCode: '', //统一社会信用代码
-    organizationCode: '', //组织机构代码
-    legalRepresentative: '', //法定代表人
-    legalMobile: '', //法人联系电话
-    legalIdentityUrl: '', //法人身份证
-    establishDate: '', //成立日期
-    companyAddress: [], //公司地址
-    cascadeInfo: [], //选中的省市区全部信息
-    detailedAddress: '', //公司地址 详细地址
-
-    businessLicenseUrl: '' //营业执照
+    contactMail: '', //负责人邮箱
+    sort: 0, //排序
+    status: true //状态
   }, //新增表单
-  addSuccessId: undefined, //创建主体成功ID 主要是用于创建主体后配置权限
+  addSuccessId: undefined, //创建机构成功ID 主要是用于创建机构后配置权限
   activeKey: 'backstage', // tabsKey frontDesk前台 backstage后台
   selectAll: false, //权限配置 全选
   isExpandAllTab: false, //权限配置 展开折叠
@@ -1003,7 +826,7 @@ const state = reactive({
   }, //重置密码 modal样式
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [], //表格 columns
-  optionalMenuTree: [], //上级主体 treeList
+  optionalMenuTree: [], //上级机构 treeList
   logoListUrl: [], //系统logo 上传 回显 - -
   logoUrlSuccess: '', //系统logo 新增编辑入参
   legalPersonListUrl: [], //法人身份证 上传回显
@@ -1016,17 +839,24 @@ const state = reactive({
   defaultKeys: [
     'name',
     'code',
-    'systemName',
-    'usableAmount',
-    'validityPeriod',
-    'bindingDomainName',
     'contactName',
-    'contactMobile',
+    'employeesNumber',
+    'organizationType',
+    'sort',
     'statusSwitch',
     'operation'
   ], //定制列默认的keys
   changedColumnsObj: {} //定制列组件接收到的当前列信息
 })
+
+const getOrganizationTypeListFN = async () => {
+  const res = await getOrganizationTypeList()
+  state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
+  // console.log('全部字典', res)
+  console.log('机构类型', state.organizationTypeOptions)
+}
+//获取机构类型
+getOrganizationTypeListFN()
 
 //存放功能配置 选中的所有keys(包括父节点id)
 const checkedKeysBack = ref([])
@@ -1040,7 +870,7 @@ const testCheck = (checkedKeys, e) => {
 //ALL columns 用于定制列过滤 排序
 const allColumns = [
   {
-    title: '主体名称',
+    title: '机构名称',
     width: 200,
     dataIndex: 'name',
     key: 'name',
@@ -1050,7 +880,7 @@ const allColumns = [
     sort: 1
   },
   {
-    title: '主体编码',
+    title: '机构编码',
     width: 100,
     dataIndex: 'code',
     key: 'code',
@@ -1060,60 +890,40 @@ const allColumns = [
     sort: 2
   },
   {
-    title: '系统名称',
-    width: 100,
-    dataIndex: 'systemName',
-    key: 'systemName',
-    resizable: true,
-    ellipsis: true,
-    disabled: true,
-    sort: 3
-  },
-  {
-    title: '已用/可用名额',
-    width: 100,
-    dataIndex: 'usableAmount',
-    key: 'usableAmount',
-    resizable: true,
-    ellipsis: true,
-    sort: 4
-  },
-  {
-    title: '有效期',
-    width: 200,
-    dataIndex: 'validityPeriod',
-    key: 'validityPeriod',
-    resizable: true,
-    ellipsis: true,
-    sort: 5
-  },
-
-  {
-    title: '绑定域名',
-    width: 100,
-    dataIndex: 'bindingDomainName',
-    key: 'bindingDomainName',
-    resizable: true,
-    ellipsis: true,
-    sort: 6
-  },
-  {
     title: '负责人',
     width: 100,
     dataIndex: 'contactName',
     key: 'contactName',
     resizable: true,
     ellipsis: true,
-    sort: 7
+    disabled: true,
+    sort: 3
   },
   {
-    title: '负责人电话',
+    title: '员工数',
     width: 100,
-    dataIndex: 'contactMobile',
-    key: 'contactMobile',
+    dataIndex: 'employeesNumber',
+    key: 'employeesNumber',
+    ellipsis: true,
+    sort: 4
+  },
+  {
+    title: '机构类型',
+    width: 100,
+    dataIndex: 'organizationType',
+    key: 'organizationType',
     resizable: true,
     ellipsis: true,
-    sort: 8
+    sort: 5
+  },
+  {
+    title: '排序',
+    width: 100,
+    dataIndex: 'sort',
+    key: 'sort',
+    resizable: true,
+    ellipsis: true,
+    sort: 6
   },
   {
     title: '状态',
@@ -1122,8 +932,28 @@ const allColumns = [
     key: 'statusSwitch',
     resizable: true,
     ellipsis: true,
-    sort: 9
+    sort: 7
   },
+
+  //
+  // {
+  //   title: '负责人',
+  //   width: 100,
+  //   dataIndex: 'contactName',
+  //   key: 'contactName',
+  //   resizable: true,
+  //   ellipsis: true,
+  //   sort: 7
+  // },
+  // {
+  //   title: '负责人电话',
+  //   width: 100,
+  //   dataIndex: 'contactMobile',
+  //   key: 'contactMobile',
+  //   resizable: true,
+  //   ellipsis: true,
+  //   sort: 8
+  // },
 
   {
     title: '创建人',
@@ -1132,7 +962,7 @@ const allColumns = [
     key: 'creator',
     resizable: true,
     ellipsis: true,
-    sort: 10
+    sort: 8
   },
   {
     title: '创建时间',
@@ -1141,7 +971,7 @@ const allColumns = [
     key: 'createTime',
     resizable: true,
     ellipsis: true,
-    sort: 11
+    sort: 9
   },
   {
     title: '最近操作人',
@@ -1150,7 +980,7 @@ const allColumns = [
     key: 'updater',
     resizable: true,
     ellipsis: true,
-    sort: 12
+    sort: 10
   },
   {
     title: '最近操作时间',
@@ -1159,7 +989,7 @@ const allColumns = [
     key: 'updateTime',
     resizable: true,
     ellipsis: true,
-    sort: 12
+    sort: 11
   },
 
   {
@@ -1169,7 +999,7 @@ const allColumns = [
     key: 'operation',
     resizable: true,
     ellipsis: true,
-    sort: 13
+    sort: 12
   }
 ]
 
@@ -1180,31 +1010,33 @@ const getList = async () => {
     // pageNo: queryParams.current,
     // pageSize: queryParams.pageSize,
     keyword: queryParams.keyword,
-    systemName: queryParams.systemName,
+    organizationType: queryParams.organizationType,
     status: queryParams.status
   }
 
-  if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
-    params['localDates'] = [
-      queryParams.startEndTime[0]?.format('YYYY-MM-DD'),
-      queryParams.startEndTime[1]?.format('YYYY-MM-DD')
-      // queryParams.startEndTime[0]?.format('YYYY/MM/DD'),
-      // queryParams.startEndTime[1]?.format('YYYY/MM/DD')
-    ]
-  }
+  // if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
+  //   params['localDates'] = [
+  //     queryParams.startEndTime[0]?.format('YYYY-MM-DD'),
+  //     queryParams.startEndTime[1]?.format('YYYY-MM-DD')
+  //     // queryParams.startEndTime[0]?.format('YYYY/MM/DD'),
+  //     // queryParams.startEndTime[1]?.format('YYYY/MM/DD')
+  //   ]
+  // }
 
   try {
-    const res = await getMajorIndividualList(params)
+    // const res = await getMajorIndividualList(params)
+    const res = await getOrganizationList(params)
+    console.log('机构列表res', res)
     state.rawData = res
     state.tableDataList = res
     state.tableDataList.map((item) => {
       item.statusSwitch = item.status === 0
-      item.bindingDomainName = item.domain
+      item.employeesNumber = item.staffCount
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
     })
 
-    state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
+    state.tableDataList = handleTree(state.tableDataList, 'id', 'parentId', 'children')
 
     state.total = res.total
   } finally {
@@ -1268,17 +1100,21 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
+  console.log('record', record)
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
-    state.formState.belongTenantId = record.id
+    state.formState.parentId = record.id
   }
-  const res = await getSimpleTenantList()
+  const res = await getSimpleOrganizationList()
+  console.log('上级机构', res)
 
   let menuTree = []
   // let menu = {}
-  let menu: Tree = { id: 0, name: '顶层主体', children: [] }
-  menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
+  let menu: Tree = { id: 0, name: '顶层机构', children: [] }
+  menu.children = handleTree(res, 'id', 'parentId', 'children')
   menuTree.push(menu)
+  // const menuTree = handleTree(res, 'id', 'parentId', 'children')
+  console.log('menuTree', menuTree)
 
   state.optionalMenuTree = menuTree
 
@@ -1291,37 +1127,17 @@ const closeModal = () => {
   //级联选择器 需要单独清空
   state.formState.companyAddress = []
   state.formState = {
-    belongTenantId: 0, //上级主体
-    code: '', //主体编码
-    name: '', //主体名称
-    abbreviate: '', //主体简称
-    systemName: '', //系统名称
-    logoUrl: '', //系统logo
+    parentId: 0, //上级机构ID
+    organizationType: undefined, //机构类型
+    name: '', //机构名称
+    code: '', //机构编码
+    abbreviate: '', //机构简称
     contactName: '', //负责人
     contactMobile: '', //负责人电话
-    effectiveStartEndTime: [], //有效期
-    // forever: false, //永久有效
-    accountCount: undefined, //可用名额
-    bindingDomainName: '', //绑定域名
-    status: true, //状态
-    creditCode: '', //统一社会信用代码
-    organizationCode: '', //组织机构代码
-    legalRepresentative: '', //法定代表人
-    legalMobile: '', //法人联系电话
-    legalIdentityUrl: '', //法人身份证
-    establishDate: '', //成立日期
-    companyAddress: [], //公司地址
-    cascadeInfo: [], //选中的省市区全部信息
-    detailedAddress: '', //公司地址 详细地址
-    businessLicenseUrl: '' //营业执照
+    contactMail: '', //负责人邮箱
+    sort: 0, //排序
+    status: true //状态
   }
-
-  state.logoListUrl = [] //系统logo 上传 回显 - -
-  state.logoUrlSuccess = '' //系统logo 新增编辑入参
-  state.legalPersonListUrl = [] //法人身份证 上传回显
-  state.legalPersonUrlSuccess = '' //法人身份证 新增编辑入参
-  state.businessLicenseListUrl = [] //营业执照 上传回显
-  state.businessLicenseSuccess = '' //营业执照 新增编辑入参
   delete state.formState?.id
   state.modalTitle = '新增'
   state.modalType = 'add'
@@ -1343,13 +1159,14 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
+  console.log('编辑record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
   }
-  //获取主体详情
-  const res = await getMajorIndividualDetails({ id: record.id })
-
+  //获取机构详情
+  const res = await getOrganizationDetails({ id: record.id })
+  console.log('机构详情', res)
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
@@ -1358,89 +1175,21 @@ const edit = async (record, isCloseDetails = false) => {
   state.modalTitle = '编辑'
   //赋值 回显
   state.formState = {
-    belongTenantId: res.belongTenantId, //上级主体
     id: record.id,
-    code: res.code, //主体编码
-    name: res.name, //主体名称
-    abbreviate: res.abbreviate, //主体简称
-    systemName: res.systemName, //系统名称
-    // logoUrl: res.logoUrl, //系统logo
+    parentId: res.parentId, //上级机构ID
+    organizationType: res.organizationType, //机构类型
+    name: res.name, //机构名称
+    code: res.code, //机构编码
+    abbreviate: res.abbreviate, //机构简称
     contactName: res.contactName, //负责人
     contactMobile: res.contactMobile, //负责人电话
-    effectiveStartEndTime: [dayjs(res.effectiveStartDate), dayjs(res.expireTime)], //有效期 开始时间
-    // expireTime: , //有效期 结束时间
-    accountCount: res.accountCount, //可用名额
-    bindingDomainName: res.domain, //绑定域名
-    creditCode: res.creditCode, //统一社会信用代码
-    organizationCode: res.organizationCode, //组织机构代码
-    legalRepresentative: res.legalRepresentative, //法定代表人
-    legalMobile: res.legalMobile, //法人联系电话
-    // legalIdentityUrl: res.legalIdentityUrl, //法人身份证
-    detailedAddress: res.address //公司地址 详细地址
-    // businessLicenseUrl: res.businessLicenseUrl //营业执照
+    contactMail: res.contactMail, //负责人邮箱
+    sort: res.sort, //排序
+    status: res.status //状态
   }
-
-  if (res.logoUrl) {
-    state.logoListUrl = [
-      {
-        url: res.logoUrl //系统logo
-      }
-    ]
-    state.logoUrlSuccess = res.logoUrl
-  }
-
-  if (res.legalIdentityUrl) {
-    state.legalPersonListUrl = [
-      {
-        url: res.legalIdentityUrl //法人身份证
-      }
-    ]
-    state.legalPersonUrlSuccess = res.legalIdentityUrl
-  }
-
-  if (res.businessLicenseUrl) {
-    state.businessLicenseListUrl = [
-      {
-        url: res.businessLicenseUrl //营业执照
-      }
-    ]
-    state.businessLicenseSuccess = res.businessLicenseUrl
-  }
-
-  if (res.establishDate) {
-    state.formState['establishDate'] = dayjs(res.establishDate) //成立日期
-  }
-
-  //永久有效 起始时间为当前时间 结束时间为2099-12-31
-  // state.formState.forever = res.expireTime === '2099-12-31'
 
   //状态0 开启 1关闭
-  state.formState.status = res.status === 0
-
-  //省市区
-  state.formState.companyAddress = []
-  state.formState.cascadeInfo = []
-  if (res?.provinceCode) {
-    state.formState.companyAddress.push(res?.provinceCode)
-    state.formState.cascadeInfo.push({
-      label: res?.province,
-      value: res?.provinceCode
-    })
-  }
-  if (res?.cityCode) {
-    state.formState.companyAddress.push(res?.cityCode)
-    state.formState.cascadeInfo.push({
-      label: res?.city,
-      value: res?.cityCode
-    })
-  }
-  if (res?.countyCode) {
-    state.formState.companyAddress.push(res?.countyCode)
-    state.formState.cascadeInfo.push({
-      label: res?.county,
-      value: res?.countyCode
-    })
-  }
+  state.formState.status = record.status === 0
 
   openModal()
 }
@@ -1460,48 +1209,25 @@ let needReplaceKey = [
 ]
 state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
 
-//新增主体
+//新增机构
 const addMajorIndividualFN = async () => {
-  // console.log('dayjs', dayjs().format('YYYY/MM/DD'))
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
   state.addEditLoading = true
   let params = {
-    belongTenantId: state.formState.belongTenantId, //上级主体
-    code: state.formState.code, //主体编码
-    name: state.formState.name, //主体名称
-    abbreviate: state.formState.abbreviate, //主体简称
-    systemName: state.formState.systemName, //系统名称
-    logoUrl: state.logoUrlSuccess, //系统logo
+    parentId: state.formState.parentId, //上级机构
+    organizationType: state.formState.organizationType, //机构类型
+    name: state.formState.name, //机构名称
+    code: state.formState.code, //机构编码
+    abbreviate: state.formState.abbreviate, //机构简称
     contactName: state.formState.contactName, //负责人
     contactMobile: state.formState.contactMobile, //负责人电话
-    effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
-    expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD'), //有效期 结束时间
-    // effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY/MM/DD'), //有效期 开始时间
-    // expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY/MM/DD'), //有效期 结束时间
-    accountCount: state.formState.accountCount, //可用名额
-    domain: state.formState.bindingDomainName, //绑定域名
-    creditCode: state.formState.creditCode, //统一社会信用代码
-    organizationCode: state.formState.organizationCode, //组织机构代码
-    legalRepresentative: state.formState.legalRepresentative, //法定代表人
-    legalMobile: state.formState.legalMobile, //法人联系电话
-    legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
-    address: state.formState.detailedAddress, //公司地址 详细地址
-    //
-    businessLicenseUrl: state.businessLicenseSuccess //营业执照
+    contactMail: state.formState.contactMail, //负责人邮箱
+    sort: state.formState.sort, //排序
+    status: state.formState.status //状态
   }
 
-  // //永久有效 起始时间为当前时间 结束时间为2099-12-31
-  // if (state.formState.forever) {
-  //   params.effectiveStartDate = dayjs().format('YYYY-MM-DD')
-  //   // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
-  //   params.expireTime = '2099-12-31'
-  // } else {
-  //   params.effectiveStartDate = state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD') //有效期 开始时间
-  //   // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
-  //   params.expireTime = state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD') //有效期 结束时间
-  // }
   //状态0 开启 1关闭
   if (state.formState.status) {
     params['status'] = 0
@@ -1509,36 +1235,17 @@ const addMajorIndividualFN = async () => {
     params['status'] = 1
   }
 
-  //省市区
-  if (state.formState?.cascadeInfo[0]) {
-    params['province'] = state.formState.cascadeInfo[0].label
-    params['provinceCode'] = state.formState.cascadeInfo[0].value
-  }
-  if (state.formState?.cascadeInfo[1]) {
-    params['city'] = state.formState.cascadeInfo[1].label
-    params['cityCode'] = state.formState.cascadeInfo[1].value
-  }
-  if (state.formState?.cascadeInfo[2]) {
-    params['county'] = state.formState.cascadeInfo[2].label
-    params['countyCode'] = state.formState.cascadeInfo[2].value
-  }
-
-  if (state.formState.establishDate) {
-    params['establishDate'] = state.formState.establishDate?.format('YYYY-MM-DD') //成立日期
-    // establishDate: state.formState.establishDate.format('YYYY/MM/DD'), //成立日期
-  }
-
   try {
     let res = []
     if (state.modalType === 'add') {
-      res = await addMajorIndividual(params)
+      res = await addOrganization(params)
       state.addSuccessId = res
       message.success('新增成功')
-      //配置权限
-      openPermissionModal()
+      // 配置权限
+      // openPermissionModal()
     } else {
       params['id'] = state.formState.id
-      res = await updateEditMajorIndividual(params)
+      res = await updateOrganization(params)
       message.success('编辑成功')
     }
 
@@ -1579,7 +1286,7 @@ const openPermissionModal = async () => {
 const PermissionOk = async () => {
   const params = {
     menuIds: state.idArr,
-    tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
+    tenantId: state.addSuccessId || state.permissionRecord.id, //机构id,新增权限模板从新增机构的res里取，修改时取当前列
     status: 0
   }
   if (state.PermissionType === 'add') {
@@ -1658,11 +1365,11 @@ const setTableStatusChangeInfo = (value, record) => {
 const tableStatusChange = (value, record) => {
   if (value) {
     state.messageBtnText = '确认开启'
-    state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
+    state.messageText = '为了保护您的机构公司业务数据安全，请通过安全验证：'
   } else {
     state.messageBtnText = '确认关闭'
     state.messageText =
-      '因您的主体公司还存在业务数据，如关闭则严重影响到业务，为了保护您的主体公司业务数据安全，请通过安全验证：'
+      '因您的机构公司还存在业务数据，如关闭则严重影响到业务，为了保护您的机构公司业务数据安全，请通过安全验证：'
   }
   state.isShowMessage = true
   state.messageContactMobile = record.contactMobile
@@ -1699,7 +1406,7 @@ const statusCancel = () => {
   state.isShowMessage = false
   state.record = {}
   state.messageContactMobile = '18888888888' //短信验证手机号
-  state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
+  state.messageText = '为了保护您的机构公司业务数据安全，请通过安全验证：'
   state.canSendCode = true //能否发送验证码
   state.codeCountdown = 60 //短信发送倒计时 s
   state.messageCode = '' //短信验证码
@@ -1773,7 +1480,7 @@ function getChildArr(data) {
 //详情(打开)
 const detailsInfo = async (record) => {
   // state.record = record
-  //获取主体详情
+  //获取机构详情
   const res = await getMajorIndividualDetails({ id: record.id })
   //不要展示按钮 默认按钮全选 后端处理
   const tempArr = res.menus?.filter((item) => item.type !== 3)
@@ -1793,19 +1500,19 @@ const detailsInfo = async (record) => {
       baseTitle: '基本信息',
       infoArr: [
         {
-          textSpan: '上级主体：',
+          textSpan: '上级机构：',
           text: tempItem[0]?.name
         },
         {
-          textSpan: '主体名称：',
+          textSpan: '机构名称：',
           text: res.name
         },
         {
-          textSpan: '主体编码：',
+          textSpan: '机构编码：',
           text: res.code
         },
         {
-          textSpan: '主体简称：',
+          textSpan: '机构简称：',
           text: res.abbreviate
         },
         {
@@ -2136,27 +1843,27 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.refreshTable = false
   state.refreshTable = true
 }
-
+//
 // //TODO:这个方法有空再抽出去
 // //获取默认的columns
 // const getColumns = () => {
-//   //business 为当前存储的页面
+//   //organization 为当前存储的页面
 //   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
 //   //有缓存 取缓存
-//   if (columnsObj[PageKeyObj.business]) {
-//     state.changedColumnsObj = columnsObj[PageKeyObj.business]
-//     return columnsObj[PageKeyObj.business].currentColumns
+//   if (columnsObj[PageKeyObj.organization]) {
+//     state.changedColumnsObj = columnsObj[PageKeyObj.organization]
+//     return columnsObj[PageKeyObj.organization].currentColumns
 //   }
 //   const currentColumns = allColumns.filter((columnsItem) => {
 //     return state.defaultKeys.some((item) => columnsItem.key === item)
 //   })
 //   return currentColumns
 // }
-// //初始化 获取默认的 columns
-// state.columns = getColumns()
+// // //初始化 获取默认的 columns
+// // state.columns = getColumns()
 
 //初始化 获取默认的 columns
-state.columns = getColumns(state, PageKeyObj.business, allColumns, state.defaultKeys)
+state.columns = getColumns(state, PageKeyObj.organization, allColumns, state.defaultKeys)
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(

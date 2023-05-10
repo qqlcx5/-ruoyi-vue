@@ -216,3 +216,11 @@ export const PayRefundStatusEnum = {
     name: '退款关闭'
   }
 }
+
+//定制列缓存 页面pageKey
+export const PageKeyObj = {
+  organization: 'organization', //机构管理
+  menu: 'menu', //菜单管理
+  tenant: 'tenant', //租户菜单
+  business: 'business' //主体管理
+}

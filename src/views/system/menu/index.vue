@@ -29,7 +29,7 @@
   </ContentWrap>
 
   <!--  表格  -->
-  <a-card :bordered="false" style="width: 1650px" id="card-content">
+  <a-card :bordered="false" style="min-width: 1650px" id="card-content">
     <!--  <ContentWrap>-->
     <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
     <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -68,6 +68,7 @@
     <a-table
       :columns="state.columns"
       :data-source="list"
+      :scroll="{ x: '100%' }"
       :row-key="(record) => record.id"
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
       :defaultExpandAllRows="state.isExpandAll"
@@ -204,6 +205,7 @@
             placeholder="请选择上级目录"
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
+            treeNodeFilterProp="label"
           />
         </a-form-item>
 
@@ -469,7 +471,7 @@
     :allColumns="allColumns"
     :defaultKeys="state.defaultKeys"
     :changedColumnsObj="state.changedColumnsObj"
-    pageKey="menu"
+    :pageKey="PageKeyObj.menu"
   />
 </template>
 
@@ -480,7 +482,7 @@ import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 // import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
-import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
+import { CommonStatusEnum, SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -493,6 +495,7 @@ import {
 import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
+import { getColumns } from '@/utils/utils'
 
 const queryParams = reactive({
   name: undefined,
@@ -1114,22 +1117,26 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.refreshTable = true
 }
 
-//获取默认的columns
-const getColumns = () => {
-  //menu 为当前存储的页面
-  const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ)?.menu
-  //有缓存 取缓存
-  if (columnsObj) {
-    state.changedColumnsObj = columnsObj
-    return columnsObj.currentColumns
-  }
-  const currentColumns = allColumns.filter((columnsItem) => {
-    return state.defaultKeys.some((item) => columnsItem.key === item)
-  })
-  return currentColumns
-}
+// //TODO:这个方法有空再抽出去
+// //获取默认的columns
+// const getColumns = () => {
+//   //menu 为当前存储的页面
+//   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
+//   //有缓存 取缓存
+//   if (columnsObj[PageKeyObj.menu]) {
+//     state.changedColumnsObj = columnsObj[PageKeyObj.menu]
+//     return columnsObj[PageKeyObj.menu].currentColumns
+//   }
+//   const currentColumns = allColumns.filter((columnsItem) => {
+//     return state.defaultKeys.some((item) => columnsItem.key === item)
+//   })
+//   return currentColumns
+// }
+// //初始化 获取默认的 columns
+// state.columns = getColumns()
+
 //初始化 获取默认的 columns
-state.columns = getColumns()
+state.columns = getColumns(state, PageKeyObj.menu, allColumns, state.defaultKeys)
 
 //table 列伸缩
 const handleResizeColumn = (w, col) => {

@@ -1,3 +1,4 @@
+<!--  租户菜单  -->
 <template>
   <!-- 搜索工作栏 -->
   <ContentWrap>
@@ -205,6 +206,7 @@
             placeholder="请选择上级目录"
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
+            treeNodeFilterProp="label"
           />
         </a-form-item>
 
@@ -470,7 +472,7 @@
     :allColumns="allColumns"
     :defaultKeys="state.defaultKeys"
     :changedColumnsObj="state.changedColumnsObj"
-    pageKey="tenant"
+    :pageKey="PageKeyObj.tenant"
   />
 </template>
 
@@ -481,7 +483,7 @@ import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 // import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
-import { CommonStatusEnum, SystemMenuTypeEnum } from '@/utils/constants'
+import { CommonStatusEnum, PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -493,6 +495,8 @@ import {
 } from '@/api/system/business'
 import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
+import dayjs from 'dayjs'
+import { getColumns } from '@/utils/utils'
 
 const queryParams = reactive({
   name: undefined,
@@ -669,6 +673,8 @@ const getList = async () => {
     const res = await TenantMenuApi.getMenuList(queryParams)
     res.map((item) => {
       item.statusSwitch = item.status === 0
+      item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
+      item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
     })
     state.menuArr = res
     list.value = handleTree(res)
@@ -1118,22 +1124,26 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.refreshTable = true
 }
 
-//获取默认的columns
-const getColumns = () => {
-  //menu 为当前存储的页面
-  const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ)?.tenant
-  //有缓存 取缓存
-  if (columnsObj) {
-    state.changedColumnsObj = columnsObj
-    return columnsObj.currentColumns
-  }
-  const currentColumns = allColumns.filter((columnsItem) => {
-    return state.defaultKeys.some((item) => columnsItem.key === item)
-  })
-  return currentColumns
-}
+// //TODO:这个方法有空再抽出去
+// //获取默认的columns
+// const getColumns = () => {
+//   //tenant 为当前存储的页面
+//   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
+//   //有缓存 取缓存
+//   if (columnsObj[PageKeyObj.tenant]) {
+//     state.changedColumnsObj = columnsObj[PageKeyObj.tenant]
+//     return columnsObj[PageKeyObj.tenant].currentColumns
+//   }
+//   const currentColumns = allColumns.filter((columnsItem) => {
+//     return state.defaultKeys.some((item) => columnsItem.key === item)
+//   })
+//   return currentColumns
+// }
+// //初始化 获取默认的 columns
+// state.columns = getColumns()
+
 //初始化 获取默认的 columns
-state.columns = getColumns()
+state.columns = getColumns(state, PageKeyObj.tenant, allColumns, state.defaultKeys)
 
 //table 列伸缩
 const handleResizeColumn = (w, col) => {

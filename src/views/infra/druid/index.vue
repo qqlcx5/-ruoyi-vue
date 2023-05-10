@@ -6,4 +6,5 @@
 <script setup lang="ts" name="Druid">
 const BASE_URL = import.meta.env.VITE_BASE_URL
 const src = ref(BASE_URL + '/druid/index.html')
+console.log('MySQL 监控src ', src)
 </script>
