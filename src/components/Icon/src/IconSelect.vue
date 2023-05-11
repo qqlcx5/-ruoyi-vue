@@ -131,7 +131,13 @@ watch(
 
 <template>
   <div class="selector">
-    <ElInput v-model="inputValue" @click="visible = !visible" @clear="deleteIcon" clearable>
+    <ElInput
+      v-model="inputValue"
+      @click="visible = !visible"
+      @clear="deleteIcon"
+      clearable
+      :placeholder="`请选择图标`"
+    >
       <template #append>
         <ElPopover
           :popper-options="{

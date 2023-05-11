@@ -166,7 +166,10 @@
           name="name"
           :rules="[{ required: true, message: `${state.currentMenu}名称不能为空` }]"
         >
-          <a-input v-model:value="state.formState.name" />
+          <a-input
+            v-model:value="state.formState.name"
+            :placeholder="`请输入${state.currentMenu}名称`"
+          />
         </a-form-item>
 
         <a-form-item
@@ -223,7 +226,7 @@
           :rules="state.routerRules"
           v-if="state.formState.type !== SystemMenuTypeEnum.BUTTON"
         >
-          <a-input v-model:value="state.formState.path" />
+          <a-input v-model:value="state.formState.path" :placeholder="`请输入路由地址名称`" />
         </a-form-item>
 
         <a-form-item
@@ -231,7 +234,7 @@
           label="组件地址"
           name="component"
         >
-          <a-input v-model:value="state.formState.component" />
+          <a-input v-model:value="state.formState.component" :placeholder="`请输入组件地址`" />
         </a-form-item>
 
         <a-form-item
@@ -239,7 +242,7 @@
           label="组件名字"
           name="componentName"
         >
-          <a-input v-model:value="state.formState.componentName" />
+          <a-input v-model:value="state.formState.componentName" :placeholder="`请输入组件名字`" />
         </a-form-item>
 
         <a-form-item
@@ -248,7 +251,7 @@
           name="permission"
         >
           <div class="flex-content">
-            <a-input v-model:value="state.formState.permission" />
+            <a-input v-model:value="state.formState.permission" :placeholder="`请输入权限标识`" />
             <a-tooltip placement="topLeft" class="icon-tip">
               <template #title>
                 <span>
@@ -754,6 +757,7 @@ const closeModal = () => {
 
   state.modalType = 'add'
   state.addEditTitle = '新增'
+  state.currentMenu = '目录'
 }
 
 const options = [
