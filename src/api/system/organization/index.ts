@@ -46,71 +46,22 @@ export const updateOrganizationStatus = (data) => {
   return request.put({ url: '/system/organization/update-status', data })
 }
 
+// 设置(新增)属性
+export const addAttribute = (data) => {
+  return request.post({ url: '/system/organization/create_rel', data })
+}
 
-
-
+// 修改属性
+export const updateAttribute = (data) => {
+  return request.put({ url: '/system/organization/update_rel', data })
+}
 
 // 查询机构详情
 export const getOrganizationDetails = (params) => {
   return request.get({ url: '/system/organization/get', params })
 }
 
-// 更改主体状态
-export const updateEditMajorIndividualStatus = (data) => {
-  return request.put({ url: '/system/tenant/update-status', data })
+// 删除机构
+export const deleteOrganization = (id: number) => {
+  return request.delete({ url: '/system/organization/delete?id=' + id })
 }
-
-// 查询菜单（精简）列表(功能配置模板)
-export const getSimpleTenantMenusList = () => {
-  return request.get({ url: '/system/tenant/get-package' })
-}
-
-// 新增功能配置模板
-export const addTenantPackage = (data) => {
-  return request.post({ url: '/system/tenant/create-package', data })
-}
-
-// 获取功能配置模板详情
-export const getTenantPackage = (params) => {
-  return request.get({ url: '/system/tenant/get-package', params })
-}
-
-// 修改功能配置模板
-export const editTenantPackage = (data) => {
-  return request.put({ url: '/system/tenant/update-package', data })
-}
-
-// 重置密码
-export const putResetPassWord = (data) => {
-  return request.put({ url: '/system/tenant/update-password', data })
-}
-
-// // 查询主体列表
-// export const getMajorIndividualList = (params: MajorIndividual) => {
-//   return request.get({ url: '/system/tenant/page', params })
-// }
-
-// // 查询菜单列表
-// export const getMenuList = (params) => {
-//   return request.get({ url: '/system/menu/list', params })
-// }
-//
-// // 获取菜单详情
-// export const getMenu = (id: number) => {
-//   return request.get({ url: '/system/menu/get?id=' + id })
-// }
-//
-// // 新增菜单
-// export const createMenu = (data: MenuVO) => {
-//   return request.post({ url: '/system/menu/create', data })
-// }
-//
-// // 修改菜单
-// export const updateMenu = (data: MenuVO) => {
-//   return request.put({ url: '/system/menu/update', data })
-// }
-//
-// // 删除菜单
-// export const deleteMenu = (id: number) => {
-//   return request.delete({ url: '/system/menu/delete?id=' + id })
-// }

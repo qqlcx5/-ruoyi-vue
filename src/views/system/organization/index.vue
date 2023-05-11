@@ -148,10 +148,20 @@
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
             <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
-            <div class="text-color margin-right-5" @click="assignPermission(record)">功能配置</div>
+            <div
+              class="text-color margin-right-5"
+              @click="assignPermission(record)"
+              v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
+              >设置属性</div
+            >
             <a-popover placement="bottom">
               <template #content>
                 <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+                <div
+                  class="text-color margin-right-5"
+                  @click="setTableStatusChangeInfo(false, record, 'delete')"
+                  >删除</div
+                >
               </template>
               <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="10" />
             </a-popover>
@@ -250,7 +260,7 @@
         </a-form-item>
 
         <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
-          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入机构编码" />
+          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />
         </a-form-item>
 
         <a-form-item label="负责人邮箱" name="contactMail" :rules="state.contactMailRules">
@@ -288,76 +298,300 @@
     </template>
   </a-modal>
 
-  <!-- 配置权限 Modal -->
+  <!-- 设置属性 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
-    title="配置权限"
+    title="设置属性"
     @ok="closePermissionModal"
     @cancel="closePermissionModal"
-    :width="'665px'"
-    :bodyStyle="{ height: '700px', margin: '0', padding: '0', overflow: 'auto' }"
+    :width="'710px'"
+    :bodyStyle="{ height: '700px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
-    <div class="per-content">
-      <div class="text-content">请选择该机构的功能配置权限：</div>
-      <!--  左右两侧  -->
-      <div class="select-content">
-        <div class="left-content">
-          <a-tabs
-            v-model:activeKey="state.activeKey"
-            tabBarGutter="40px"
-            :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
-          >
-            <a-tab-pane key="frontDesk" tab="前台" force-render>前台</a-tab-pane>
-            <a-tab-pane key="backstage" tab="后台">
-              <div class="tab-search-content">
-                <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
-                <a-checkbox v-model:checked="state.isExpandAllTab" @change="expandAllFN"
-                  >展开/折叠</a-checkbox
-                >
-              </div>
-              <div>
-                <a-tree
-                  v-if="state.isShowTree"
-                  v-model:selectedKeys="state.selectedKeys"
-                  v-model:checkedKeys="state.checkedKeys"
-                  :defaultExpandAll="state.defaultExpandAll"
-                  checkable
-                  :height="533"
-                  :tree-data="state.menuTreeList"
-                  :fieldNames="state.fieldNames"
-                  @check="testCheck"
-                  multiple
-                >
-                  <!--                  <template #title="{ title, key }">-->
-                  <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
-                  <!--                    <template v-else>{{ title }}</template>-->
-                  <!--                  </template>-->
-                </a-tree>
-              </div>
-            </a-tab-pane>
-          </a-tabs>
-        </div>
-        <div class="right-content">
-          <div>
-            <a-tree
-              v-if="state.isShowRightTree"
-              defaultExpandAll
-              :height="533"
-              :tree-data="state.selectTree"
-              :fieldNames="state.fieldNames"
+    <div class="base_info_content">
+      <a-form
+        :model="state.formAttributeState"
+        ref="formAttributeRef"
+        v-bind="layout1"
+        :label-col="{ style: { width: '130px' } }"
+      >
+        <div class="title-content"><div class="blue-line"></div> 基本属性 </div>
+
+        <!--        <a-form-item-->
+        <!--          :label="`分公司类型`"-->
+        <!--          name="type"-->
+        <!--          :rules="[{ required: true, message: '分公司类型不能为空!' }]"-->
+        <!--        >-->
+        <!--          <a-radio-group v-model:value="state.formAttributeState.type" name="radioGroup">-->
+        <!--            <a-radio-->
+        <!--              v-for="(item, index) in state.branchCompanyTypeOptions"-->
+        <!--              :value="item.value"-->
+        <!--              :key="`type${index}`"-->
+        <!--              >{{ item.label }}</a-radio-->
+        <!--            >-->
+        <!--          </a-radio-group>-->
+        <!--        </a-form-item>-->
+
+        <a-form-item
+          label="分公司类型"
+          v-if="
+            state.currentType === '2' ||
+            state.currentType === '分公司' ||
+            state.detailsRecord?.type === '2'
+          "
+        >
+          <a-checkbox-group v-model:value="state.formAttributeState.type">
+            <a-checkbox
+              v-for="(item, index) in state.branchCompanyTypeOptions"
+              :value="item.value"
+              :key="`type${index}`"
+              name="type"
+              :rules="[{ required: true, message: '分公司类型不能为空!' }]"
+              >{{ item.label }}</a-checkbox
             >
-              <!--                  <template #title="{ title, key }">-->
-              <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
-              <!--                    <template v-else>{{ title }}</template>-->
-              <!--                  </template>-->
-            </a-tree>
+          </a-checkbox-group>
+        </a-form-item>
+        <a-form-item label="门店类型" v-else>
+          <a-checkbox-group v-model:value="state.formAttributeState.type">
+            <a-checkbox
+              v-for="(item, index) in state.storeTypeOptions"
+              :value="item.value"
+              :key="`type${index}`"
+              name="type"
+              :rules="[{ required: true, message: '门店类型不能为空!' }]"
+              >{{ item.label }}</a-checkbox
+            >
+          </a-checkbox-group>
+        </a-form-item>
+
+        <a-form-item :label="`星级`" name="startRating">
+          <a-rate v-model:value="state.formAttributeState.startRating" allow-half />
+        </a-form-item>
+
+        <a-form-item label="系统logo" name="logoUrl">
+          <a-upload
+            v-model:file-list="state.logoListUrl"
+            :action="updateUrl + '?updateSupport=' + updateSupport"
+            list-type="picture-card"
+            @preview="handlePreview"
+            accept=".jpg, .png, .gif"
+            class="avatar-uploader"
+            :show-upload-list="true"
+            :headers="uploadHeaders"
+            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
+            @change="
+              (file, fileList) => {
+                handleChange(file, fileList, 'logo')
+              }
+            "
+            @remove="
+              (file) => {
+                removeImg(file, 'logo')
+              }
+            "
+          >
+            <div v-if="state.logoListUrl.length < 1">
+              <plus-outlined />
+              <div style="margin-top: 8px">上传logo</div>
+            </div>
+          </a-upload>
+          <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
+        </a-form-item>
+
+        <a-form-item label="环境图片" name="environmentUrl">
+          <a-upload
+            v-model:file-list="state.environmentUrl"
+            :action="updateUrl + '?updateSupport=' + updateSupport"
+            list-type="picture-card"
+            @preview="handlePreview"
+            accept=".jpg, .png, .gif , .jpeg"
+            class="avatar-uploader"
+            :show-upload-list="true"
+            :headers="uploadHeaders"
+            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'environment')"
+            @change="
+              (file, fileList) => {
+                handleChange(file, fileList, 'environment')
+              }
+            "
+            @remove="
+              (file) => {
+                removeImg(file, 'legalPerson')
+              }
+            "
+          >
+            <div v-if="state.environmentUrl.length < 1">
+              <plus-outlined />
+              <div style="margin-top: 8px">上传环境图片</div>
+            </div>
+          </a-upload>
+
+          <div class="upload-text"> 尺寸1125*633px，支持jpg/jpeg/png/gif格式，不超过5M </div>
+        </a-form-item>
+
+        <!--  级联选择器  - -   -->
+        <a-form-item :label="`地址`" name="detailedAddress">
+          <div class="flex-content adress-content">
+            <a-form-item-rest>
+              <a-cascader
+                v-model:value="state.formAttributeState.companyAddress"
+                :options="state.proMunAreaList"
+                @change="cascadeChange"
+                placeholder="请选择省市区"
+              />
+            </a-form-item-rest>
+            <a-input
+              v-model:value="state.formAttributeState.detailedAddress"
+              placeholder="请输入详细的公司地址，具体门牌号"
+              class="adress-input"
+            />
           </div>
-        </div>
-      </div>
+        </a-form-item>
+
+        <a-space
+          v-for="(item, index) in state.formAttributeState.contactInformationArr"
+          :key="item.id"
+          style="display: flex; margin-bottom: 0px"
+          align="baseline"
+        >
+          <a-form-item :name="['contactInformationArr', index, 'mobile']" label="联系方式">
+            <a-select
+              v-model:value="item.contactType"
+              placeholder="请选择联系方式"
+              style="width: 200px"
+              :options="state.contactInformationOptions"
+            />
+          </a-form-item>
+          <a-form-item :name="['contactInformationArr', index, 'mobile']">
+            <a-input v-model:value="item.mobile" placeholder="请输入联系电话" />
+          </a-form-item>
+          <Icon icon="svg-icon:add-circle" :size="20" @click="addContactInformation()" />
+          <!--  <MinusCircleOutlined @click="addContactInformation()" />-->
+          <!--  <MinusCircleOutlined @click="removeContactInformation(item)" />  -->
+        </a-space>
+
+        <a-form-item
+          label="状态"
+          name="status"
+          :rules="[{ required: true, message: '状态不能为空!' }]"
+        >
+          <a-switch
+            v-model:checked="state.formAttributeState.status"
+            checked-children="开启"
+            un-checked-children="关闭"
+          />
+        </a-form-item>
+
+        <div class="title-content"><div class="blue-line"></div> 详细属性 </div>
+        <a-form-item :label="`统一社会信用代码`" name="creditCode">
+          <a-input
+            v-model:value="state.formAttributeState.creditCode"
+            placeholder="请输入统一社会信用代码"
+          />
+        </a-form-item>
+
+        <a-form-item :label="`组织机构代码`" name="organizationCode">
+          <a-input
+            v-model:value="state.formAttributeState.organizationCode"
+            placeholder="请输入组织机构代码"
+          />
+        </a-form-item>
+
+        <a-form-item :label="`法定代表人`" name="legalRepresentative">
+          <a-input
+            v-model:value="state.formAttributeState.legalRepresentative"
+            placeholder="请输入法定代表人姓名"
+          />
+        </a-form-item>
+
+        <a-form-item label="法人电话" name="legalMobile" :rules="state.legalMobileRules">
+          <a-input
+            v-model:value="state.formAttributeState.legalMobile"
+            placeholder="请输入法人联系电话"
+          />
+        </a-form-item>
+
+        <a-form-item label="法人身份证" name="legalIdentityUrl">
+          <a-upload
+            v-model:file-list="state.legalPersonListUrl"
+            :action="updateUrl + '?updateSupport=' + updateSupport"
+            list-type="picture-card"
+            @preview="handlePreview"
+            accept=".jpg, .png, .gif"
+            class="avatar-uploader"
+            :show-upload-list="true"
+            :headers="uploadHeaders"
+            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+            @change="
+              (file, fileList) => {
+                handleChange(file, fileList, 'legalPerson')
+              }
+            "
+            @remove="
+              (file) => {
+                removeImg(file, 'legalPerson')
+              }
+            "
+          >
+            <div v-if="state.legalPersonListUrl.length < 1">
+              <plus-outlined />
+              <div style="margin-top: 8px">上传法人证件</div>
+            </div>
+          </a-upload>
+
+          <div class="upload-text">
+            请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
+          </div>
+        </a-form-item>
+
+        <a-form-item :label="`成立日期`" name="establishDate">
+          <a-date-picker
+            v-model:value="state.formAttributeState.establishDate"
+            format="YYYY/MM/DD"
+            placeholder="请选择时间"
+          />
+        </a-form-item>
+
+        <a-form-item label="营业执照" name="businessLicenseUrl">
+          <a-upload
+            v-model:file-list="state.businessLicenseListUrl"
+            :action="updateUrl + '?updateSupport=' + updateSupport"
+            list-type="picture-card"
+            @preview="handlePreview"
+            accept=".jpg, .png, .gif"
+            class="avatar-uploader"
+            :show-upload-list="true"
+            :headers="uploadHeaders"
+            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
+            @change="
+              (file, fileList) => {
+                handleChange(file, fileList, 'businessLicense')
+              }
+            "
+            @remove="
+              (file) => {
+                removeImg(file, 'businessLicense')
+              }
+            "
+          >
+            <div v-if="state.businessLicenseListUrl.length < 1">
+              <plus-outlined />
+              <div style="margin-top: 8px">上传营业执照</div>
+            </div>
+          </a-upload>
+
+          <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
+        </a-form-item>
+      </a-form>
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="PermissionOk">确定选择</a-button>
+      <a-button
+        type="primary"
+        html-type="submit"
+        @click="PermissionOk"
+        :loading="state.addEditLoading"
+        >确定</a-button
+      >
       <a-button @click="closePermissionModal">取消</a-button>
     </template>
   </a-modal>
@@ -410,7 +644,7 @@
     </template>
   </a-modal>
 
-  <!--  状态开始关闭 确认Modal  -->
+  <!--  状态开始关闭 删除 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
     :closable="false"
@@ -442,7 +676,9 @@
           <span class="status-span">{{
             state.tableStatusChangeInfo.record?.children?.length
           }}</span>
-          个子项机构将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          个子项机构将同步 {{ state.tableStatusChangeInfo.statusText }}，{{
+            state.tableStatusChangeInfo.statusTextF
+          }}请谨慎操作。
         </div>
       </div>
     </div>
@@ -455,7 +691,9 @@
             系统校验到该机构底下还存在<span class="status-span">{{
               state.tableStatusChangeInfo?.ctiveEmployeesNumber
             }}</span
-            >个账户状态开启的员工，请先关闭或转移所有员工再操作关闭哦~
+            >个账户状态开启的员工，请先关闭或转移所有员工再操作{{
+              state.tableStatusChangeInfo?.operation
+            }}哦~
           </div>
         </div>
       </div>
@@ -482,7 +720,7 @@
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
   >
-    <div class="details-edit" @click="edit(state.record, true)"
+    <div class="details-edit" @click="edit(state.detailsRecord, true)"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
     >
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
@@ -528,6 +766,119 @@
         </div>
       </div>
     </div>
+
+    <div class="details-edit" @click="assignPermission(state.detailsRecord, true)"
+      ><img :src="editImg" alt="" class="edit-Img" />修改</div
+    >
+    <a-tabs v-model:activeKey="state.activeKey">
+      <a-tab-pane key="baseKey" tab="基本属性">
+        <div
+          v-for="(item, index) in state.detailsInfoSecond"
+          :key="`info${index}`"
+          class="details-content"
+        >
+          <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
+          <div class="info-content" v-if="item.baseTitle !== '配置权限'">
+            <div
+              :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
+              v-for="(childItem, childIndex) in item.infoArr"
+              :key="`childItem${childIndex}`"
+              ><span>{{ childItem.textSpan }}</span>
+              <img
+                v-if="childItem?.imgUrl"
+                :src="childItem?.imgUrl"
+                alt=""
+                class="details-img"
+                @click="setPreviewImage(childItem?.imgUrl)"
+              />
+              <template v-else>
+                <a-tooltip>
+                  <template #title> {{ childItem.text }}</template>
+                  {{ childItem.text }}
+                </a-tooltip>
+
+                <a-rate
+                  v-if="childItem?.startRating"
+                  v-model:value="childItem.startRating"
+                  allow-half
+                />
+
+                <div v-if="childItem?.contactInformationOptions">
+                  <div v-for="itemTag in childItem?.contactInformationOptions" class="tag-content">
+                    <a-tag color="pink">{{ itemTag?.label }}</a-tag>
+                    <div>{{ itemTag?.value }}</div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+          <div class="details-modal-content select-content" v-else>
+            <div class="details-modal-left">
+              <div class="details-heard">前台</div>
+              <!--          <a-tree-->
+              <!--            defaultExpandAll-->
+              <!--            :tree-data="item.treeArr"-->
+              <!--            :fieldNames="state.fieldNames"-->
+              <!--          >-->
+              <!--          </a-tree>-->
+            </div>
+            <div class="details-modal-left">
+              <div class="details-heard">后台({{ item.treeArr?.length }})</div>
+              <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
+            </div>
+          </div>
+        </div>
+      </a-tab-pane>
+      <a-tab-pane key="detailsKey" tab="详细属性" force-render>
+        <div
+          v-for="(item, index) in state.detailsInfoThree"
+          :key="`info${index}`"
+          class="details-content"
+        >
+          <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
+          <div class="info-content" v-if="item.baseTitle !== '配置权限'">
+            <div
+              :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
+              v-for="(childItem, childIndex) in item.infoArr"
+              :key="`childItem${childIndex}`"
+              ><span>{{ childItem.textSpan }}</span>
+              <img
+                v-if="childItem?.imgUrl"
+                :src="childItem?.imgUrl"
+                alt=""
+                class="details-img"
+                @click="setPreviewImage(childItem?.imgUrl)"
+              />
+              <template v-else>
+                <a-tooltip>
+                  <template #title> {{ childItem.text }}</template>
+                  {{ childItem.text }}
+                </a-tooltip>
+              </template>
+
+              <div v-if="childItem?.isSuperAdmin" class="send-code-btn" @click="resetPassword">
+                重置密码
+              </div>
+            </div>
+          </div>
+          <div class="details-modal-content select-content" v-else>
+            <div class="details-modal-left">
+              <div class="details-heard">前台</div>
+              <!--          <a-tree-->
+              <!--            defaultExpandAll-->
+              <!--            :tree-data="item.treeArr"-->
+              <!--            :fieldNames="state.fieldNames"-->
+              <!--          >-->
+              <!--          </a-tree>-->
+            </div>
+            <div class="details-modal-left">
+              <div class="details-heard">后台({{ item.treeArr?.length }})</div>
+              <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
+            </div>
+          </div>
+        </div>
+      </a-tab-pane>
+    </a-tabs>
   </a-modal>
 
   <!--  重置密码 Modal  -->
@@ -606,48 +957,12 @@
   >
     <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
   </a-modal>
-
-  <!--  状态开启关闭 Modal  -->
-  <!--  <a-modal-->
-  <!--    v-model:visible="state.isShowStatus"-->
-  <!--    :title="state.messageTitle"-->
-  <!--    @ok="statusOk"-->
-  <!--    @cancel="statusCancel"-->
-  <!--    width="560px"-->
-  <!--    :bodyStyle="{-->
-  <!--      width: '100%',-->
-  <!--      height: '100px',-->
-  <!--      margin: '0',-->
-  <!--      padding: '30px 0 0 0',-->
-  <!--      overflow: 'auto'-->
-  <!--    }"-->
-  <!--  >-->
-  <!--    <div class="message-content">-->
-  <!--      <div class="message-text-content">-->
-  <!--        <div class="message-text">-->
-  <!--          <img :src="warningImg" alt="" class="tip-img message-img" />-->
-  <!--          <div>-->
-  <!--            系统校验到该机构底下还存在<span class="status-span"-->
-  <!--              >{{state.tableStatusChangeInfo?.ctiveEmployeesNumber}}</span-->
-  <!--            >个账户状态开启的员工，请先关闭或转移所有员工再操作关闭哦~-->
-  <!--          </div>-->
-  <!--        </div>-->
-  <!--      </div>-->
-  <!--    </div>-->
-
-  <!--    <template #footer>-->
-  <!--      <a-button type="primary" html-type="submit" @click="statusOk">{{-->
-  <!--        state.messageBtnText-->
-  <!--      }}</a-button>-->
-  <!--      <a-button @click="statusCancel">取消</a-button>-->
-  <!--    </template>-->
-  <!--  </a-modal>-->
 </template>
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, LoadingOutlined, MinusCircleOutlined } from '@ant-design/icons-vue'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
@@ -674,12 +989,15 @@ import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import {
+  addAttribute,
   addOrganization,
+  deleteOrganization,
   getActiveEmployeesNumber,
   getOrganizationDetails,
   getOrganizationList,
   getOrganizationTypeList,
   getSimpleOrganizationList,
+  updateAttribute,
   updateOrganization,
   updateOrganizationStatus
 } from '@/api/system/organization'
@@ -796,6 +1114,11 @@ const layout = {
   wrapperCol: { span: 14 }
 }
 
+const layout1 = {
+  labelCol: { span: 6 },
+  wrapperCol: { span: 18 }
+}
+
 let updateUrl = import.meta.env.VITE_UPLOAD_URL
 let regVersion = import.meta.env.VITE_REG_VERSION
 const updateSupport = ref(0)
@@ -822,6 +1145,9 @@ const state = reactive({
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
   organizationTypeOptions: [], //机构类型列表
+  branchCompanyTypeOptions: [], //分公司类型列表
+  contactInformationOptions: [], //联系方式类型列表
+  storeTypeOptions: [], //门店类型
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
@@ -832,6 +1158,7 @@ const state = reactive({
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
+  isShowDelete: false, //删除确认 modal
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
   currentMenu: '目录',
@@ -853,6 +1180,30 @@ const state = reactive({
     sort: 0, //排序
     status: true //状态
   }, //新增表单
+  formAttributeState: {
+    type: [], //分公司类型 门店类型
+    startRating: 0, //星级
+    logoUrl: '', //系统logo
+    environmentUrl: '', //环境图片
+    companyAddress: [], //公司地址
+    cascadeInfo: [], //选中的省市区全部信息
+    detailedAddress: '', //公司地址 详细地址
+    contactInformationArr: [
+      {
+        contactType: null,
+        mobile: '',
+        id: Date.now()
+      }
+    ], //联系方式 设置属性
+    status: true, //状态
+    creditCode: '', //统一社会信用代码
+    organizationCode: '', //组织机构代码
+    legalRepresentative: '', //法定代表人
+    legalMobile: '', //法人联系电话
+    legalIdentityUrl: '', //法人身份证
+    establishDate: '', //成立日期
+    businessLicenseUrl: '' //营业执照
+  }, //新增(设置)属性表单
   addSuccessId: undefined, //创建机构成功ID 主要是用于创建机构后配置权限
   activeKey: 'backstage', // tabsKey frontDesk前台 backstage后台
   selectAll: false, //权限配置 全选
@@ -872,6 +1223,8 @@ const state = reactive({
   editPermissionID: undefined, //编辑功能配置时的id
   isShowDetails: false, //详细modal
   detailsInfo: [], //详情内容
+  detailsInfoSecond: [], //详情内容 tabs
+  detailsInfoThree: [], //详情内容 tabs
   isShowResetPassWord: false, //重置密码提示modal
   resetPasswordTitle: '', //重置密码 modal title
   resetPasswordSuccessInfo: {}, //重置密码成功后
@@ -890,6 +1243,8 @@ const state = reactive({
   legalPersonUrlSuccess: '', //法人身份证 新增编辑入参
   businessLicenseListUrl: [], //营业执照 上传回显
   businessLicenseSuccess: '', //营业执照 新增编辑入参
+  environmentUrl: [], //环境图片 上传回显
+  environmentSuccess: '', //环境图片 新增编辑入参
   addEditLoading: false, //新增编辑 modal button 异步loading
   tableStatusChangeInfo: {}, //存当前表格item项以及switch值
   tableStatusModalInfo: {}, //存当前表格item项 modal
@@ -903,14 +1258,29 @@ const state = reactive({
     'statusSwitch',
     'operation'
   ], //定制列默认的keys
-  changedColumnsObj: {} //定制列组件接收到的当前列信息
+  changedColumnsObj: {}, //定制列组件接收到的当前列信息
+  detailsRecord: {}, //当前点击的表格record后获取到的机构详情(包括属性)
+  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '4'门店
+  activeKey: 'baseKey' //详情modal tab
 })
 
+//获取数据字典
 const getOrganizationTypeListFN = async () => {
   const res = await getOrganizationTypeList()
+  //机构类型
   state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
+  //分公司类型
+  state.branchCompanyTypeOptions = res.filter((item) => item.dictType === 'branch_company_type')
+  //门店类型
+  state.storeTypeOptions = res.filter((item) => item.dictType === 'store_type')
+  //联系方式类型
+  state.contactInformationOptions = res.filter((item) => item.dictType === 'contact_type')
+  console.log('数据字典', res)
+  console.log('分公司类型', state.branchCompanyTypeOptions)
+  console.log('门店类型', state.storeTypeOptions)
   // console.log('全部字典', res)
   console.log('机构类型', state.organizationTypeOptions)
+  console.log('联系方式类型', state.contactInformationOptions)
 }
 //获取机构类型
 getOrganizationTypeListFN()
@@ -1198,10 +1568,13 @@ const closeModal = () => {
   delete state.formState?.id
   state.modalTitle = '新增'
   state.modalType = 'add'
+  state.currentType = '-1' //新增/修改/设置属性 机构类型(门店/分公司)
 }
 
 /** 添加/修改操作 */
 const formRef = ref()
+//设置属性
+const formAttributeRef = ref()
 
 /** 获取下拉框[上级菜单]的数据  */
 const menuTree = ref<Tree[]>([]) // 树形结构
@@ -1297,9 +1670,19 @@ const addMajorIndividualFN = async () => {
     if (state.modalType === 'add') {
       res = await addOrganization(params)
       state.addSuccessId = res
+
+      nextTick(() => {
+        state.currentType = state.formState.organizationType
+        console.log('state.currentType', state.currentType)
+      })
+
       message.success('新增成功')
-      // 配置权限
-      // openPermissionModal()
+
+      // '2'分公司 '4'门店
+      if (state.currentType === '2' || state.currentType === '4') {
+        // 配置权限
+        openPermissionModal()
+      }
     } else {
       params['id'] = state.formState.id
       res = await updateOrganization(params)
@@ -1315,7 +1698,7 @@ const addMajorIndividualFN = async () => {
 
 //级联选择器选中的内容 改变
 const cascadeChange = (value, selectedOptions) => {
-  state.formState.cascadeInfo = selectedOptions
+  state.formAttributeState.cascadeInfo = selectedOptions
 }
 
 //关闭功能配置 modal
@@ -1323,35 +1706,116 @@ const closePermissionModal = () => {
   state.isShowPermission = false
   state.PermissionType = 'add'
   state.addSuccessId = undefined
-  state.selectTree = []
-  state.checkedKeys = []
+
+  formAttributeRef.value.resetFields()
+  //级联选择器 需要单独清空
+  state.formAttributeState.companyAddress = []
+  state.formAttributeState = {
+    type: '', //分公司类型
+    startRating: 0, //星级
+    logoUrl: '', //系统logo
+    environmentUrl: '', //环境图片
+    companyAddress: [], //公司地址
+    cascadeInfo: [], //选中的省市区全部信息
+    detailedAddress: '', //公司地址 详细地址
+    contactInformationArr: [
+      {
+        contactType: null,
+        mobile: '',
+        id: Date.now()
+      }
+    ], //联系方式 设置属性
+    status: true, //状态
+    creditCode: '', //统一社会信用代码
+    organizationCode: '', //组织机构代码
+    legalRepresentative: '', //法定代表人
+    legalMobile: '', //法人联系电话
+    legalIdentityUrl: '', //法人身份证
+    establishDate: '', //成立日期
+    businessLicenseUrl: '' //营业执照
+  }
+
+  state.logoListUrl = [] //系统logo 上传 回显 - -
+  state.logoUrlSuccess = '' //系统logo 新增编辑入参
+  state.legalPersonListUrl = [] //法人身份证 上传回显
+  state.legalPersonUrlSuccess = '' //法人身份证 新增编辑入参
+  state.businessLicenseListUrl = [] //营业执照 上传回显
+  state.businessLicenseSuccess = '' //营业执照 新增编辑入参
+  state.environmentUrl = [] //环境图片 上传回显
+  state.environmentSuccess = '' //环境图片 新增编辑入参
+  delete state.formAttributeState?.id
+  state.currentType = '-1' //新增/修改/设置属性 机构类型(门店/分公司)
+  state.detailsRecord = {}
+
+  state.addEditLoading = false
 }
 
 //开启功能配置 modal
 const openPermissionModal = async () => {
   state.isShowPermission = true
-  // //获取菜单列表
-  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  //获取菜单列表
-  const menuList = await MenuApi.getSimpleMenusList()
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = menuList.filter((item) => item.type !== 3)
-  state.menuTreeList = handleTree(tempArr)
 }
 
-//功能配置 Modal 确认
+//设置属性(新增修改属性) Modal 确认
 const PermissionOk = async () => {
+  console.log('state.formAttributeState', state.formAttributeState)
+  console.log('await formAttributeRef.value.validate()', await formAttributeRef.value.validate())
+  // 校验表单
+  if (!formAttributeRef) return
+  const valid = await formAttributeRef.value.validate()
+  state.addEditLoading = true
+
+  console.log('表单valid', valid)
+  console.log('state.formAttributeState', state.formAttributeState)
+
   const params = {
-    menuIds: state.idArr,
-    tenantId: state.addSuccessId || state.permissionRecord.id, //机构id,新增权限模板从新增机构的res里取，修改时取当前列
-    status: 0
+    organizationId: state.detailsRecord.id,
+    type: state.formAttributeState.type, //分公司类型
+    startRating: state.formAttributeState.startRating, //星级
+    logoUrl: state.logoUrlSuccess, //系统logo
+    environmentUrl: state.environmentSuccess, //环境图片
+    address: state.formAttributeState.detailedAddress, //公司地址 详细地址
+    contact: state.formAttributeState.contactInformationArr, //联系方式 设置属性
+    creditCode: state.formAttributeState.creditCode, //统一社会信用代码
+    organizationCode: state.formAttributeState.organizationCode, //组织机构代码
+    legalRepresentative: state.formAttributeState.legalRepresentative, //法定代表人
+    legalMobile: state.formAttributeState.legalMobile, //法人联系电话
+    legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
+    businessLicenseUrl: state.businessLicenseSuccess //营业执照
   }
-  if (state.PermissionType === 'add') {
-    await addTenantPackage(params)
+
+  //状态0 开启 1关闭
+  if (state.formState.status) {
+    params['status'] = 0
+  } else {
+    params['status'] = 1
+  }
+
+  //省市区
+  if (state.formAttributeState?.cascadeInfo[0]) {
+    params['province'] = state.formAttributeState.cascadeInfo[0].label
+    params['provinceCode'] = state.formAttributeState.cascadeInfo[0].value
+  }
+  if (state.formAttributeState?.cascadeInfo[1]) {
+    params['city'] = state.formAttributeState.cascadeInfo[1].label
+    params['cityCode'] = state.formAttributeState.cascadeInfo[1].value
+  }
+  if (state.formAttributeState?.cascadeInfo[2]) {
+    params['county'] = state.formAttributeState.cascadeInfo[2].label
+    params['countyCode'] = state.formAttributeState.cascadeInfo[2].value
+  }
+
+  if (state.formAttributeState.establishDate) {
+    params['establishDate'] = state.formAttributeState.establishDate?.format('YYYY-MM-DD') //成立日期
+  }
+
+  // if (state.PermissionType === 'add') {
+  //relVO null则没有属性
+  if (state.detailsRecord?.relVO === null) {
+    await addAttribute(params)
     message.success('新增成功')
   } else {
-    params['id'] = state.editPermissionID
-    await editTenantPackage(params)
+    params['id'] = state.detailsRecord.relVO?.id
+    await updateAttribute(params)
     message.success('编辑成功')
   }
   await getList()
@@ -1359,21 +1823,111 @@ const PermissionOk = async () => {
 }
 
 const assignPermission = async (record) => {
+  console.log('record', record)
+  nextTick(() => {
+    state.currentType = record?.organizationType
+    console.log('设置属性state.organizationType', state.organizationType)
+  })
   state.permissionRecord = record
   state.PermissionType = 'edit'
-  if (record.packageId) {
-    const res = await getTenantPackage({ id: record.packageId })
+  if (record.id) {
+    const res = await getOrganizationDetails({ id: record.id })
     //... res 可能为null
-    const { menuIds = [], id } = res || []
-    state.editPermissionID = id
-    state.checkedKeys = menuIds
-    state.selectTree = filterTree(state.menuTreeList, menuIds)
+    console.log('机构详情', res)
+    state.detailsRecord = res
+
+    //赋值 回显
+    state.formAttributeState = {
+      organizationId: record.id, //机构id
+      type: res.relVO?.type, //分公司类型
+      startRating: res.relVO?.startRating, //星级
+      detailedAddress: res.relVO?.address, //地址 详细地址
+      contactInformationArr: res.relVO?.contact, //联系方式 设置属性
+      creditCode: res.relVO?.creditCode, //统一社会信用代码
+      organizationCode: res.relVO?.organizationCode, //组织机构代码
+      legalRepresentative: res.relVO?.legalRepresentative, //法定代表人
+      legalMobile: res.relVO?.legalMobile //法人联系电话
+    }
+
+    if (res.relVO?.contact === null) {
+      state.formAttributeState.contactInformationArr = [
+        {
+          contactType: null,
+          mobile: '',
+          id: Date.now()
+        }
+      ] //联系方式 设置属性
+    }
+
+    if (res.relVO?.logoUrl) {
+      state.logoListUrl = [
+        {
+          url: res.relVO?.logoUrl //系统logo
+        }
+      ]
+      state.logoUrlSuccess = res.relVO?.logoUrl
+    }
+
+    if (res.relVO?.legalIdentityUrl) {
+      state.legalPersonListUrl = [
+        {
+          url: res.relVO?.legalIdentityUrl //法人身份证
+        }
+      ]
+      state.legalPersonUrlSuccess = res.relVO?.legalIdentityUrl
+    }
+
+    if (res.relVO?.businessLicenseUrl) {
+      state.businessLicenseListUrl = [
+        {
+          url: res.relVO?.businessLicenseUrl //营业执照
+        }
+      ]
+      state.businessLicenseSuccess = res.relVO?.businessLicenseUrl
+    }
+
+    if (res.relVO?.environmentUrl) {
+      state.environmentUrl = [
+        {
+          url: res.relVO?.environmentUrl //环境图片
+        }
+      ]
+      state.environmentSuccess = res.relVO?.environmentUrl
+    }
+
+    if (res.relVO?.establishDate) {
+      state.formAttributeState['establishDate'] = dayjs(res.relVO?.establishDate) //成立日期
+    }
+
+    //状态0 开启 1关闭
+    state.formAttributeState.status = res.status === 0
+
+    //省市区
+    state.formAttributeState.companyAddress = []
+    state.formAttributeState.cascadeInfo = []
+    if (res?.relVO?.provinceCode) {
+      state.formAttributeState.companyAddress.push(res?.relVO?.provinceCode)
+      state.formAttributeState.cascadeInfo.push({
+        label: res?.relVO?.province,
+        value: res?.relVO?.provinceCode
+      })
+    }
+    if (res?.relVO?.cityCode) {
+      state.formAttributeState.companyAddress.push(res?.relVO?.cityCode)
+      state.formAttributeState.cascadeInfo.push({
+        label: res?.relVO?.city,
+        value: res?.relVO?.cityCode
+      })
+    }
+    if (res?.relVO?.countyCode) {
+      state.formAttributeState.companyAddress.push(res?.relVO?.countyCode)
+      state.formAttributeState.cascadeInfo.push({
+        label: res?.relVO?.county,
+        value: res?.relVO?.countyCode
+      })
+    }
   }
-  //右侧展开显示 左侧选中的数据
-  state.isShowRightTree = false
-  nextTick(() => {
-    state.isShowRightTree = true
-  })
+
   await openPermissionModal()
 }
 
@@ -1393,7 +1947,7 @@ const closeStatusModal = () => {
 }
 
 //表格状态开关
-const setTableStatusChangeInfo = async (value, record) => {
+const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
   const res = await getActiveEmployeesNumber({ id: record.id })
   // const res = 25
   console.log('开启员工数res', res)
@@ -1413,27 +1967,39 @@ const setTableStatusChangeInfo = async (value, record) => {
     state.tableStatusChangeInfo?.ctiveEmployeesNumber
   )
 
-  state.tableStatusChangeInfo = {
-    value,
-    record
-  }
+  if (type === 'delete') {
+    //删除
+    state.tableStatusChangeInfo = {
+      value,
+      record,
+      operation: '删除',
+      type: 'delete'
+    }
 
-  if (value) {
-    state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
-    state.tableStatusChangeInfo['statusTopText'] = `开启后`
-    state.tableStatusChangeInfo['statusText'] = `开启`
+    state.tableStatusChangeInfo['statusBtnText'] = '确认删除'
+    state.tableStatusChangeInfo['statusTopText'] = `删除后`
+    state.tableStatusChangeInfo['statusText'] = `删除`
+    state.tableStatusChangeInfo['statusTextF'] = '将会导致业务数据的丢失，且不可恢复，'
   } else {
-    state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
-    state.tableStatusChangeInfo['statusTopText'] = `关闭后`
-    state.tableStatusChangeInfo['statusText'] = `关闭`
-  }
+    //表格按钮状态
+    state.tableStatusChangeInfo = {
+      value,
+      record,
+      operation: '关闭'
+    }
 
-  // //过滤得到父级项
-  // const parentItem = state.rawData.filter((item) => item.id === record.belongTenantId)
-  // if (parentItem.length > 0 && parentItem[0]?.status === 1) {
-  //   record.statusSwitch = !record.statusSwitch
-  //   return message.warning('请先开启父级状态')
-  // }
+    if (value) {
+      state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
+      state.tableStatusChangeInfo['statusTopText'] = `开启后`
+      state.tableStatusChangeInfo['statusText'] = `开启`
+    } else {
+      state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
+      state.tableStatusChangeInfo['statusTopText'] = `关闭后`
+      state.tableStatusChangeInfo['statusText'] = `关闭`
+    }
+
+    state.tableStatusChangeInfo['statusTextF'] = ''
+  }
 
   openStatusModal()
 }
@@ -1454,14 +2020,24 @@ const tableStatusChange = (value, record) => {
 
 //表格状态开关modal 确认
 const tableStatusConfirm = async () => {
-  const res = await updateOrganizationStatus({
-    id: state.tableStatusChangeInfo.record.id,
-    status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1
-  })
-  console.log('res', res)
-  message.success('修改状态成功')
+  switch (state.tableStatusChangeInfo?.type) {
+    case 'delete':
+      //删除
+      await deleteOrganization(state.tableStatusChangeInfo.record.id)
+      message.success('删除成功')
+      break
+    default:
+      //状态开关
+      const res = await updateOrganizationStatus({
+        id: state.tableStatusChangeInfo.record.id,
+        status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1
+      })
+      console.log('res', res)
+      message.success('修改状态成功')
 
-  // tableStatusChange(state.tableStatusChangeInfo?.value, state.tableStatusChangeInfo?.record)
+    // tableStatusChange(state.tableStatusChangeInfo?.value, state.tableStatusChangeInfo?.record)
+  }
+
   closeStatusModal()
 }
 
@@ -1562,29 +2138,69 @@ function getChildArr(data) {
 
 //详情(打开)
 const detailsInfo = async (record) => {
+  state.detailsRecord = record
   // state.record = record
   //获取机构详情
-  const res = await getMajorIndividualDetails({ id: record.id })
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = res.menus?.filter((item) => item.type !== 3)
+  const res = await getOrganizationDetails({ id: record.id })
+  const { relVO = {} } = res
+  console.log('机构详情', res)
 
-  state.record = res
+  const tempArrType = state.organizationTypeOptions.filter(
+    (item) => item.value === res.organizationType
+  )
 
-  let companyAddress = ''
-  if (res?.province) {
-    companyAddress = res?.province + res?.city + res?.county + res?.address
+  //类型
+  let tempArrTypeString = ''
+  if (res.organizationType === '2') {
+    const tempArrTypeF = state.organizationTypeOptions.filter(
+      (item) => item.value === res.organizationType
+    )
+    tempArrTypeF.map((item) => {
+      tempArrTypeString += item.label
+    })
+  } else if (res.organizationType === '4') {
+    const tempArrTypeF = state.storeTypeOptions.filter(
+      (item) => item.value === res.organizationType
+    )
+    tempArrTypeF.map((item) => {
+      tempArrTypeString += item
+    })
   }
 
-  const tempRes = await getSimpleTenantList()
-  const tempItem = tempRes.filter((item) => item.id === record.belongTenantId)
+  //地址
+  let companyAddress = ''
+  if (res.relVO?.province) {
+    companyAddress = res.relVO?.province + res.relVO?.city + res.relVO?.county
+  }
+  if (res.relVO?.address) {
+    companyAddress += res.relVO?.address
+  }
+
+  const tempArrContactInformationArr = []
+  //联系方式
+  res.relVO?.contact.map((item) => {
+    //联系方式类型
+    const tempArrTypeFirst = state.contactInformationOptions.filter(
+      (item) => item.dictType === 'contact_type'
+    )
+    tempArrContactInformationArr.push({
+      label: tempArrTypeFirst[0]?.label,
+      value: item.mobile
+    })
+  })
+  console.log('tempArrContactInformationArr', tempArrContactInformationArr)
 
   state.detailsInfo = [
     {
-      baseTitle: '基本信息',
+      baseTitle: '机构信息',
       infoArr: [
         {
           textSpan: '上级机构：',
-          text: tempItem[0]?.name
+          text: '上级机构1'
+        },
+        {
+          textSpan: '机构类型：',
+          text: tempArrType[0]?.label
         },
         {
           textSpan: '机构名称：',
@@ -1599,95 +2215,134 @@ const detailsInfo = async (record) => {
           text: res.abbreviate
         },
         {
-          textSpan: '系统名称：',
-          text: res.systemName
-        },
-        {
-          textSpan: '系统logo：',
-          text: '暂无上传图片',
-          imgUrl: res.logoUrl
-        },
-        {
           textSpan: '负责人：',
           text: res.contactName
+        },
+        {
+          textSpan: '岗位：',
+          text: res?.contactPost || ''
         },
         {
           textSpan: '负责人电话：',
           text: res.contactMobile
         },
         {
-          textSpan: '有效期：',
-          text:
-            res.expireTime === '2099-12-31'
-              ? '永久有效'
-              : `${res.effectiveStartDate}-${res.expireTime}`
+          textSpan: '负责人邮箱：',
+          text: res.contactMail
         },
         {
-          textSpan: '绑定域名：',
-          text: res.domain
+          textSpan: '排序：',
+          text: res.sort
         },
         {
           textSpan: '状态：',
           text: res.status === 0 ? '开启' : '关闭'
         }
       ]
-    },
+    }
+  ]
+
+  state.detailsInfoSecond = [
     {
-      baseTitle: '账户信息',
+      baseTitle: '基本属性',
       infoArr: [
         {
-          textSpan: '超级管理员：',
-          text: res.username,
-          isSuperAdmin: true
+          textSpan: '类型：',
+          text: tempArrTypeString
+        },
+        {
+          textSpan: '是否有销售：',
+          text: ''
+        },
+        {
+          textSpan: '销售品牌：',
+          text: ''
+        },
+        {
+          textSpan: '是否提供救援：',
+          text: ''
+        },
+        {
+          textSpan: '救援品牌：',
+          text: ''
+        },
+        {
+          textSpan: '是否提供维保：',
+          text: ''
+        },
+        {
+          textSpan: '维保品牌：',
+          text: ''
+        },
+        {
+          textSpan: '门店等级：',
+          text: '',
+          startRating: res.relVO?.startRating
+        },
+        {
+          textSpan: 'logo：',
+          text: '暂无上传图片',
+          imgUrl: res.relVO?.logoUrl
+        },
+        {
+          textSpan: '门店图片：',
+          text: '暂无上传图片',
+          imgUrl: res.relVO?.environmentUrl
+        },
+        {
+          textSpan: '门店地址：',
+          text: companyAddress
+        },
+
+        {
+          textSpan: '门店联系方式：',
+          contactInformationOptions: tempArrContactInformationArr
         }
       ]
-    },
+    }
+  ]
+  console.log('state.detailsInfoSecond', state.detailsInfoSecond)
+
+  state.detailsInfoThree = [
     {
-      baseTitle: '详细信息',
+      baseTitle: '详细属性',
       infoArr: [
         {
           textSpan: '统一社会信用代码：',
-          text: res.creditCode
+          text: res.relVO?.creditCode
         },
         {
           textSpan: '组织机构代码：',
-          text: res.organizationCode
+          text: res.relVO?.organizationCode
         },
         {
           textSpan: '法定代表人：',
-          text: res.legalRepresentative
+          text: res.relVO?.legalRepresentative
         },
         {
           textSpan: '法人联系电话：',
-          text: res.legalMobile
+          text: res.relVO?.legalMobile
         },
         {
           textSpan: '法人身份证：',
           text: '暂无上传图片',
-          imgUrl: res.legalIdentityUrl
+          imgUrl: res.relVO?.legalIdentityUrl
         },
         {
           textSpan: '成立日期：',
-          text: res.establishDate
-        },
-        {
-          textSpan: '公司地址：',
-          text: companyAddress
+          text: res.relVO?.establishDate
         },
         {
           textSpan: '营业执照：',
           text: '暂无上传图片',
-          imgUrl: res.businessLicenseUrl
+          imgUrl: res.relVO?.businessLicenseUrl
         }
       ]
-    },
-    {
-      baseTitle: '配置权限',
-      treeArr: handleTree(tempArr)
     }
   ]
 
   state.isShowDetails = true
+  return
 }
 
 //关闭 重置密码modal
@@ -1859,6 +2514,14 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
         }
         state.businessLicenseSuccess = info?.file.response?.data?.store || ''
         break
+      case 'environment':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          state.environmentUrl = []
+          return
+        }
+        state.environmentSuccess = info?.file.response?.data?.store || ''
+        break
     }
 
     // Get this url from response in real world.
@@ -1891,6 +2554,11 @@ const removeImg = (file, type) => {
       //营业执照
       state.businessLicenseListUrl = [] //营业执照 上传回显
       state.businessLicenseSuccess = '' //营业执照 新增编辑入参
+      break
+    case 'environment':
+      //环境图片
+      state.environmentUrl = [] //环境图片 上传回显
+      state.environmentSuccess = '' //环境图片 新增编辑入参
       break
   }
 }
@@ -1947,6 +2615,22 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 
 //初始化 获取默认的 columns
 state.columns = getColumns(state, PageKeyObj.organization, allColumns, state.defaultKeys)
+
+//设置属性 动态添加联系方式
+const addContactInformation = () => {
+  state.formAttributeState.contactInformationArr.push({
+    contactType: null,
+    mobile: '',
+    id: Date.now()
+  })
+}
+//设置属性 动态删除联系方式
+const removeContactInformation = (item) => {
+  let index = state.formAttributeState.contactInformationArr.indexOf(item)
+  if (index !== -1) {
+    state.formAttributeState.contactInformationArr.splice(index, 1)
+  }
+}
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
@@ -2228,7 +2912,7 @@ watch(
   display: block;
   display: flex;
   margin-top: 15px;
-  overflow: hidden;
+  //overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
@@ -2368,6 +3052,9 @@ watch(
 }
 .adress-input {
   width: 530px;
+}
+.tag-content {
+  display: flex;
 }
 </style>
 
