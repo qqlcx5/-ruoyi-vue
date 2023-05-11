@@ -30,3 +30,38 @@
   padding: var(--el-drawer-padding-primary);
   border-bottom: 1px solid var(--el-border-color);
 }
+
+.wg-message-confirm {
+  &.el-message-box {
+    padding: 32px 20px 20px;
+  }
+  .el-message-box__header, .el-message-box__content, .el-message-box__btns {
+    padding: 0;
+  }
+  .el-message-box__btns {
+    margin-top: 32px;
+  }
+}
+
+$messageMap: (
+  (type: 'success', color: #ffffff, bgColor: #52C41A),
+  (status: 'warning', color: #ffffff, bgColor: #FAAD14),
+  (status: 'info', color: #ffffff, bgColor: #D2D2D2),
+  (status: 'error', color: #ffffff, bgColor: #FF4141),
+);
+
+@for $i from 1 through length($messageMap) {
+  $item: nth($messageMap, $i);
+  $type: map-get($map: $item, $key: type);
+  $bgColor: map-get($map: $item, $key: bgColor);
+  $color: map-get($map: $item, $key: color);
+  .wg-message {
+    &.el-message--#{$type} {
+      border-color: $color;
+      background-color: $bgColor;
+      .el-message-icon--#{$type}, .el-message__content {
+        color: $color;
+      }
+    }
+  }
+}

@@ -83,6 +83,9 @@ const getProps = computed(() => {
 
   options.size = currentSize as any
   options.height = innerProps.value?.height || 700
+  options.checkboxConfig = {
+    reserve: true
+  }
   getOptionInitConfig(options)
   getColumnsConfig(options)
   getProxyConfig(options)
@@ -162,6 +165,7 @@ let proxyForm = false
 const getOptionInitConfig = (options: XTableProps) => {
   options.size = currentSize as any
   options.rowConfig = {
+    keyField: 'id',
     isCurrent: true, // 当鼠标点击行时，是否要高亮当前行
     isHover: true // 当鼠标移到行时，是否要高亮当前行
   }
@@ -345,6 +349,7 @@ const getToolBarConfig = (options: XTableProps) => {
 }
 
 const handleToolClick = (key):void => {
+  console.log(getProps.value);
   const g = unref(xGrid)
   if (!g) {
     return
@@ -507,7 +512,7 @@ const getRadioRecord = () => {
 const getCheckboxRecords = () => {
   const g = unref(xGrid)
   if (!g) {
-    return
+    return []
   }
   return g.getCheckboxRecords(false)
 }

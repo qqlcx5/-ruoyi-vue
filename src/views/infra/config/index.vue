@@ -78,7 +78,7 @@
         <XTextButton
           :title="t('action.detail')"
           v-hasPermi="['infra:config:query']"
-          @click="handleDetail(row.id)"
+          @click="handleDetail(row)"
         />
         <!-- 操作：删除 -->
         <XTextButton
@@ -226,10 +226,10 @@ const handleUpdate = async (rowId: number) => {
 
 const detailVisible = ref(false);
 // 详情操作
-const handleDetail = async (rowId: number) => {
+const handleDetail = async (row) => {
   // setDialogTile('detail')
-  const res = await ConfigApi.getConfigApi(rowId)
-  detailData.value = res
+  // const res = await ConfigApi.getConfigApi(rowId)
+  detailData.value = row
   detailVisible.value = true;
 }
 

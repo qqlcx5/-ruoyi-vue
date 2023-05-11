@@ -10,7 +10,9 @@ export const rules = reactive({
 
 // 增删改查 CrudSchema 配置
 const crudSchemas = reactive<VxeCrudSchema>({
-  actionWidth: '100px',
+  primaryKey: 'id',
+  primaryType: 'checkbox',
+  actionWidth: '180px',
   action: true,
   columns: [
     {
@@ -20,6 +22,15 @@ const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: '岗位名称',
       field: 'name',
+    },
+    {
+      title: '默认角色',
+      field: 'roleList',
+      table: {
+        slots: {
+          default: 'role_list'
+        }
+      },
     },
     {
       title: '成员',

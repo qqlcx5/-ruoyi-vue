@@ -330,7 +330,7 @@ $prefix-cls: #{$namespace}-tab-menu;
               background-color: var(--el-bg-color) !important;
 
               &::after {
-                content: "\e688";
+                content: "\e68f";
                 font-family: "iconfont";
                 font-style: normal;
                 font-size: 14px;
