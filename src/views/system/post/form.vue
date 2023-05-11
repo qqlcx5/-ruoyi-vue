@@ -38,10 +38,12 @@
       </el-table-column>
       <el-table-column label="岗位类型">
         <template #default="{row}">
-          <el-input v-model="row.postType" />
+          <el-select v-model="row.typeCode">
+            <el-option v-for="item in postTypeOptions" :key="item.code" :label="item.name" :value="item.code" />
+          </el-select>
         </template>
       </el-table-column>
-      <el-table-column label="状态">
+      <el-table-column label="状态" width="80">
         <template #default="{row}">
           <el-switch
             v-model="row.status"
@@ -49,7 +51,7 @@
             :inactive-value="1" />
         </template>
       </el-table-column>
-      <el-table-column v-if="actionType !== 'update'" label="操作" width="180">
+      <el-table-column v-if="actionType !== 'update'" label="操作">
         <template #default="scope">
           <XTextButton
             :title="t('action.create')"
@@ -60,18 +62,6 @@
         </template>
       </el-table-column>
     </el-table>
-<!--    <Form-->
-<!--      ref="formRef"-->
-<!--      v-if="['create', 'update'].includes(actionType)"-->
-<!--      :schema="allSchemas.formSchema"-->
-<!--      :rules="rules"-->
-<!--    />-->
-    <!-- 表单：详情 -->
-    <Descriptions
-      v-if="actionType === 'detail'"
-      :schema="allSchemas.detailSchema"
-      :data="detailData"
-    />
     <template #footer>
       <!-- 按钮：保存 -->
       <XButton
@@ -90,8 +80,6 @@
 import type { FormExpose } from '@/components/Form'
 import * as PostApi from '@/api/system/post/type'
 import * as PostInfoApi from '@/api/system/post/info'
-import { rules, allSchemas } from './post-type.data'
-import {batchCreatePostApi, PostPageReqVO, PostVO} from "@/api/system/post/type";
 import {PostInfoVO} from "@/api/system/post/info";
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -104,6 +92,7 @@ const actionType = ref('') // 操作按钮的类型
 const actionLoading = ref(false) // 按钮 Loading
 const formRef = ref<FormExpose>() // 表单 Ref
 const postTableType = ref('') // 表格类型
+const postTypeOptions = ref([]) // 岗位类型列表
 
 // 打开弹窗
 const openModal = async (type: string, tableType: string, id?: number) => {
@@ -130,29 +119,36 @@ const openModal = async (type: string, tableType: string, id?: number) => {
       postTypeTableData.value = [{ code: '', name: '', status: 0 }]
     }
   } else if (postTableType.value === 'info') {
+    getPostTypeOptions()
     if (id) {
-      const res = await PostApi.getPostApi(id)
+      const res = await PostInfoApi.getPostApi(id)
       if (!res) {
         message.warning('信息查询异常！')
         modelLoading.value = false
         return
       }
       if (type === 'update') {
-        const { id, code, name, status, postType } = res;
-        postTypeTableData.value = [{ id, code, name, status, postType }]
+        const { id, code, name, status, typeCode } = res;
+        postTypeTableData.value = [{ id, code, name, status, typeCode }]
       }
     } else {
-      postTypeTableData.value = [{ code: '', name: '', status: 0, postType: '' }]
+      postTypeTableData.value = [{ code: '', name: '', status: 0, typeCode: '' }]
     }
   }
   modelLoading.value = false
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 
+// 获取岗位类型列表
+const getPostTypeOptions = async () => {
+  const res = await PostApi.listSimplePostsApi()
+  postTypeOptions.value = res
+}
+
 // 岗位类型table
-const postTypeTableData = ref<PostVO[] | PostInfoVO[]>([{ code: '', name: '', status: 0, postType: '' }])
+const postTypeTableData = ref<PostApi.PostVO[] | PostInfoVO[]>([{ code: '', name: '', status: 0, typeCode: '' }])
 const addPostTypeLine = ():void => {
-  postTypeTableData.value.push({ code: '', name: '', status: 0, postType: '' })
+  postTypeTableData.value.push({ code: '', name: '', status: 0, typeCode: '' })
 }
 const delPostTypeLine = (index: number):void => {
   if (postTypeTableData.value.length === 1) return message.warning(`至少要有一行新增岗位${postTableType.value === 'type' ? '类型' : '信息'}！`)
@@ -178,7 +174,7 @@ const submitForm = async () => {
       }
     } else if (postTableType.value === 'info') {
       if (actionType.value === 'create') {
-        await PostInfoApi.batchCreatePostApi({ postTypelist: postTypeTableData.value })
+        await PostInfoApi.batchCreatePostApi({ postCreateList: postTypeTableData.value })
         message.success(t('common.createSuccess'))
       } else if (actionType.value === 'update') {
         await PostInfoApi.updatePostApi(postTypeTableData.value[0])
@@ -186,7 +182,7 @@ const submitForm = async () => {
       }
     }
     modelVisible.value = false
-    emit('success')
+    emit('success', postTableType.value)
   } finally {
     actionLoading.value = false
   }
@@ -195,7 +191,7 @@ const tableFormValidate = ():boolean => {
   if (postTableType.value === 'type') {
     return !postTypeTableData.value.some(i => i.code === '' || i.name === '');
   } else {
-    return !postTypeTableData.value.some(i => i.code === '' || i.name === '' || i.postType === '');
+    return !postTypeTableData.value.some(i => i.code === '' || i.name === '' || i.typeCode === '');
   }
 }
 

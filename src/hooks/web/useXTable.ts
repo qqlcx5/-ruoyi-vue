@@ -10,7 +10,7 @@ export interface tableMethod {
   exportList: (fileName?: string) => void // 导出列表
   getCurrentColumn: () => void // 获取当前列
   getRadioRecord: () => void // 获取当前选中列，radio
-  getCheckboxRecords: () => void //获取当前选中列， checkbox
+  getCheckboxRecords: () => any //获取当前选中列， checkbox
 }
 
 export const useXTable = (props: XTableProps): [Function, tableMethod] => {

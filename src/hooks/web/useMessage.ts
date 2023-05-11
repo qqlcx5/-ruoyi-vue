@@ -1,23 +1,41 @@
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { useI18n } from './useI18n'
+import {h} from "vue";
+import {ElMessageBoxOptions} from "element-plus/es/components/message-box/src/message-box.type";
 export const useMessage = () => {
   const { t } = useI18n()
   return {
     // 消息提示
     info(content: string) {
-      ElMessage.info(content)
+      ElMessage({
+        type: 'info',
+        message: content,
+        customClass: 'wg-message'
+      })
     },
     // 错误消息
     error(content: string) {
-      ElMessage.error(content)
+      ElMessage({
+        type: 'error',
+        message: content,
+        customClass: 'wg-message'
+      })
     },
     // 成功消息
     success(content: string) {
-      ElMessage.success(content)
+      ElMessage({
+        type: 'success',
+        message: content,
+        customClass: 'wg-message'
+      })
     },
     // 警告消息
     warning(content: string) {
-      ElMessage.warning(content)
+      ElMessage({
+        type: 'warning',
+        message: content,
+        customClass: 'wg-message'
+      })
     },
     // 弹出提示
     alert(content: string) {
@@ -60,6 +78,25 @@ export const useMessage = () => {
         lockScroll: false
       })
     },
+    // 自定义确认窗体
+    wgConfirm(content: string | VNode | (() => VNode), tip?: string, options?: ElMessageBoxOptions) {
+      return ElMessageBox.confirm(
+        h('div', { class: 'flex' }, [
+          tip ? h('i', { class: 'iconfont icon-xinzeng', style: {'marginRight': '16px'} }) : '',
+          h('div', [
+            tip ? h('div', { class: 'font-medium', style: {'marginBottom': '14px'}}, tip) : '',
+            h('div', { class: 'text-confirm-gray'}, h('span', content)),
+          ])
+        ]), {
+          confirmButtonText: t('common.ok'),
+          cancelButtonText: t('common.cancel'),
+          lockScroll: false,
+          showClose: false,
+          customClass: 'wg-message-confirm',
+          ...options
+        }
+      )
+    },
     // 删除窗体
     delConfirm(content?: string | VNode | (() => VNode), tip?: string) {
       return ElMessageBox.confirm(
@@ -94,6 +131,6 @@ export const useMessage = () => {
         type: 'warning',
         lockScroll: false
       })
-    }
+    },
   }
 }

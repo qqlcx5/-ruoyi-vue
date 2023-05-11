@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4036267 */
-  src: url('iconfont.woff2?t=1683682201493') format('woff2'),
-       url('iconfont.woff?t=1683682201493') format('woff'),
-       url('iconfont.ttf?t=1683682201493') format('truetype');
+  src: url('iconfont.woff2?t=1683798692574') format('woff2'),
+       url('iconfont.woff?t=1683798692574') format('woff'),
+       url('iconfont.ttf?t=1683798692574') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,42 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-chenggong:before {
+  content: "\e693";
+}
+
+.icon-xiaoxi:before {
+  content: "\e694";
+}
+
+.icon-guanbi:before {
+  content: "\e695";
+}
+
+.icon-cuowu:before {
+  content: "\e696";
+}
+
+.icon-zhankai:before {
+  content: "\e68f";
+}
+
+.icon-shouqi:before {
+  content: "\e690";
+}
+
+.icon-shouqicaidan:before {
+  content: "\e691";
+}
+
+.icon-zhankaicaidan:before {
+  content: "\e692";
+}
+
+.icon-Warning:before {
+  content: "\e68e";
 }
 
 .icon-daochu:before {
@@ -31,14 +67,6 @@
 
 .icon-tuozhuai:before {
   content: "\e689";
-}
-
-.icon-a-bianzu3beifen:before {
-  content: "\e688";
-}
-
-.icon-a-bianzu3:before {
-  content: "\e684";
 }
 
 .icon-dayin:before {

@@ -199,8 +199,8 @@ const filterTableSchema = (crudSchema: VxeCrudSchema): VxeGridPropTypes.Columns 
   }
   // 主键ID
   if (crudSchema.primaryKey && crudSchema.primaryType) {
-    const primaryTitle = crudSchema.primaryTitle ? crudSchema.primaryTitle : t('common.index')
-    const primaryWidth = primaryTitle.length * 30 + 'px'
+    const primaryTitle = crudSchema.primaryTitle ? crudSchema.primaryTitle : ''
+    const primaryWidth = primaryTitle.length ? primaryTitle.length * 30 + 'px' : '40px'
 
     let tableSchemaItem: { [x: string]: any } = {
       title: primaryTitle,

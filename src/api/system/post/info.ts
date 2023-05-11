@@ -4,15 +4,22 @@ export interface PostInfoVO {
   id?: number
   name: string
   code: string
-  postType?: string
+  typeCode?: string
   status?: number
   remark?: string
   sort?: number
   createTime?: Date
+  roleList?: object
 }
 
 export interface batchPostInfoVO {
-  postTypelist: PostInfoVO[]
+  postCreateList: PostInfoVO[]
+}
+
+export interface batchPostRoleVO {
+  postIds: object
+  roleIds: object
+  status: number
 }
 
 export interface PostPageReqVO extends PageParam {
@@ -65,4 +72,9 @@ export const deletePostApi = async (id: number) => {
 // 导出岗位
 export const exportPostApi = async (params: PostExportReqVO) => {
   return await request.download({ url: '/system/post/export', params })
+}
+
+// 批量创建岗位角色关联
+export const batchPostRoleApi = async (data: batchPostRoleVO) => {
+  return await request.put({ url: '/system/post-role/update', data })
 }

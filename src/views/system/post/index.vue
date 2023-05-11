@@ -12,7 +12,7 @@
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label-width="70px" label="岗位类型">
-                <el-input v-model="postTypeSearchForm.name" />
+                <el-input v-model="postTypeSearchForm.name" placeholder="请输入岗位类型" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -80,7 +80,7 @@
             <el-row :gutter="12">
               <el-col :span="8">
                 <el-form-item label="岗位名称">
-                  <el-input v-model="postInfoSearchForm.name" />
+                  <el-input v-model="postInfoSearchForm.nameOrCode" placeholder="请输入岗位名称或编码"  />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
@@ -123,6 +123,17 @@
                 :title="t('action.export')"
                 v-hasPermi="['system:post:export']"
                 @click="postInfoExport('岗位信息.xls')"/>
+              <XButton
+                color="#666666"
+                plain
+                title="批量分配角色"
+                v-hasPermi="['system:post:create']"
+                @click="openDistributeModal(false, 'multi')"/>
+            </template>
+            <template #role_list="{ row }">
+              <div>
+                <el-tag v-for="item in row.roleList" :key="item.roleId">{{ item.roleName }}</el-tag>
+              </div>
             </template>
             <template #status_default="{ row }">
               <el-switch
@@ -139,6 +150,11 @@
                 :title="t('action.edit')"
                 v-hasPermi="['system:post:update']"
                 @click="openModal('update', 'info', row?.id)"/>
+              <!-- 操作：分配角色 -->
+              <XTextButton
+                title="分配角色"
+                v-hasPermi="['system:post:delete']"
+                @click="openDistributeModal(row, 'single')"/>
               <!-- 操作：删除 -->
               <XTextButton
                 :title="t('action.delete')"
@@ -151,7 +167,9 @@
     </div>
   </el-card>
   <!-- 表单弹窗：添加/修改/详情 -->
-  <PostForm ref="modalRef" @success="postTypeGet()" />
+  <PostForm ref="modalRef" @success="postFormSuccess" />
+  <!--  分配岗位-->
+  <DistributeModal ref="distributeModalRef" @success="postInfoGet" />
 </template>
 <script setup lang="ts" name="Post">
 import { VxeTableEvents } from 'vxe-table'
@@ -161,6 +179,7 @@ import {allSchemas as infoAllSchemas} from "@/views/system/post/post-info.data";
 import * as PostTypeApi from "@/api/system/post/type";
 import * as PostInfoApi from "@/api/system/post/info";
 import PostForm from './form.vue'
+import DistributeModal from './component/DistributeModal.vue';
 import {h} from "vue";
 import {CommonStatusEnum} from "@/utils/constants";
 import {ElMessageBox} from "element-plus";
@@ -189,9 +208,10 @@ const postParent = ref()
 const postTypeSelect = ref(false)
 const cellClickEvent: VxeTableEvents.CellClick = async ({ row }) => {
   postTypeSelect.value = true
+  postParent.value = row;
+  postInfoSearchForm.value.typeCode = row.code;
   await nextTick()
   await postInfoGet()
-  postParent.value = row;
 }
 // 查询重置
 const onPostTypeSearchReset = () => {
@@ -204,26 +224,25 @@ const onPostTypeSearchReset = () => {
 
 /* 岗位信息 */
 const postInfoSearchForm = ref({
-  name: '',
+  nameOrCode: '',
   status: '',
+  typeCode: ''
 })
 // 列表相关的变量
-const [registerPostInfo, { reload: postInfoGet, deleteData: postInfoDel, exportList: postInfoExport }] = useXTable({
+const [registerPostInfo, { reload: postInfoGet, deleteData: postInfoDel, exportList: postInfoExport, getCheckboxRecords: getInfoCheckboxRecords }] = useXTable({
   tableKey: "post-Info-table",
   allSchemas: infoAllSchemas, // 列表配置
-  params: postTypeSearchForm,
+  params: postInfoSearchForm,
   getListApi: PostInfoApi.getPostPageApi, // 加载列表的 API
   deleteApi: PostInfoApi.deletePostApi, // 删除数据的 API
   exportListApi: PostInfoApi.exportPostApi, // 导出数据的 API
   border: true,
-  height: 660,
+  height: 606,
 })
 // 查询重置
 const onPostInfoSearchReset = () => {
-  postInfoSearchForm.value = {
-    name: '',
-    status: '',
-  };
+  postInfoSearchForm.value.nameOrCode = ''
+  postInfoSearchForm.value.status = ''
   postInfoGet();
 }
 // 删除
@@ -231,7 +250,7 @@ const onPostDel = async (row, type: string) => {
   if (type === 'type') {
     // 校验
     // const delFlag = await PostTypeApi.postTypePostCount(row.id);
-    if (false) {
+    if (row.postCount) {
       ElMessageBox.confirm(
         h('span', [
           h('span', '系统校验到该岗位类型底下还存在 '),
@@ -245,27 +264,17 @@ const onPostDel = async (row, type: string) => {
         }
       ).then(async () => {
 
-      })
+      }).catch(() => {})
     } else {
-      console.log(1111);
-      ElMessageBox.confirm(
-        h('div', { class: 'flex' }, [
-          h('div', 'la'),
-          h('span', '系统校验到该岗位类型底下还存在 ')
-        ]),
-        // h('span', [
-        //   h('span', '系统校验到该岗位类型底下还存在 '),
-        //   h('span', { style: { color: 'red' } }, row.postCount),
-        //   h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
-        // ]), `提示`, {
-        //   confirmButtonText: t('action.confirmDel'),
-        //   cancelButtonText: t('common.cancel'),
-        //   type: 'warning',
-        //   lockScroll: false
-        // }
+      message.wgConfirm(
+        h('span', [
+          h('span', `删除后， ${row.name} 底下的 `),
+          h('span', { style: { color: 'red' } }, row.postCount),
+          h('span', ' 个岗位将同步删除，且不可恢复，请谨慎操作。')
+        ]), `确定删除 ${row.name} 改岗位类型吗？`
       ).then(async () => {
         deleteReq(row.id);
-      })
+      }).catch(() => {})
     }
   } else if (type === 'info') {
     postInfoDel(row.id, h(
@@ -311,11 +320,33 @@ const postInfoStatusChange = async (row) => {
   })
 }
 
+const postFormSuccess = (type):void => {
+  if (type === 'type') {
+    postTypeGet()
+  } else if (type === 'info') {
+    postInfoGet()
+  }
+}
 
 // 表单相关的变量
 const modalRef = ref()
 const openModal = (type: string, tableType: string, id?: number) => {
   modalRef.value.openModal(type, tableType, id)
+}
+
+// 分配角色弹窗
+const distributeModalRef = ref()
+const openDistributeModal = (row, mode: string) => {
+  if (mode === 'single') {
+    distributeModalRef.value.openModal(row, mode, postParent.value.code)
+  } else if (mode === 'multi') {
+    const checkedRow = getInfoCheckboxRecords()
+    if (checkedRow && checkedRow.length === 0) {
+      return message.warning('请勾选要分配的岗位')
+    } else {
+      distributeModalRef.value.openModal(checkedRow, mode, postParent.value.code)
+    }
+  }
 }
 
 </script>
