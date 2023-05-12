@@ -47,6 +47,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: '参数键名',
       field: 'key',
+      isForm: false,
       form: {
         colProps: {
           span: 24

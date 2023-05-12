@@ -67,6 +67,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       field: 'type',
       dictType: DICT_TYPE.INFRA_CONFIG_TYPE,
       dictClass: 'number',
+      isForm: false,
       form: {
         colProps: {
           span: 24
