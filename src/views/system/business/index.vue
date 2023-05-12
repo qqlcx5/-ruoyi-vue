@@ -631,7 +631,7 @@
             state.tableStatusChangeInfo.record.name
           }}底下
           <span class="status-span">{{
-            state.tableStatusChangeInfo.record?.children?.length
+              state.tableStatusChangeInfo?.tempTreeNum
           }}</span>
           个子项主体将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
@@ -801,7 +801,7 @@ import {
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from './pr'
-import { filterTree, getAllIds, getColumns, reconstructedTreeData } from '@/utils/utils'
+import {filterTree, getAllIds, getColumns, reconstructedTreeData, toTreeCount} from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
@@ -1639,10 +1639,12 @@ const setTableStatusChangeInfo = (value, record) => {
     state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   }
 
   //过滤得到父级项

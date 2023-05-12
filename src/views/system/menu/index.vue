@@ -205,7 +205,11 @@
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级菜单"
+            :placeholder="
+              state.formState.type === SystemMenuTypeEnum.BUTTON
+                ? `请选择上级菜单`
+                : `请选择上级${state.currentMenu}`
+            "
             treeDefaultExpandAll
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
@@ -375,10 +379,8 @@
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
-          <span class="status-span">{{
-            state.tableStatusChangeInfo.record?.children?.length
-          }}</span>
-          个菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
+          个子菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
     </div>
@@ -499,7 +501,7 @@ import {
 import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns } from '@/utils/utils'
+import { getColumns, toTreeCount } from '@/utils/utils'
 
 const queryParams = reactive({
   name: undefined,
@@ -932,10 +934,12 @@ const tableStatusChange = (value, record) => {
     state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   }
   state.isShowStatus = true
 }

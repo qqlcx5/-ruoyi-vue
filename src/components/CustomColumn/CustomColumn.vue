@@ -49,6 +49,7 @@ import { VueDraggableNext } from 'vue-draggable-next'
 import { cloneDeep } from 'lodash-es'
 import dragImg from '@/assets/imgs/system/drag.png'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
+import { message } from 'ant-design-vue'
 
 /**
  * allColumns table所有的 columns 属性跟随antd，但须加入sort 排序 ，若是复选框禁选 需要额外加入属性 disabled: true,
@@ -144,6 +145,7 @@ const columnsSave = () => {
   tempObjCache[props.pageKey] = tempObj
   wsCache.set(CACHE_KEY.TABLE_COLUMNS_OBJ, tempObjCache)
 
+  message.success('定制列修改成功')
   // emit('changeColumn', state.columns)
   emit('changeColumn', tempObj)
 }
@@ -163,6 +165,7 @@ const setDefaultColumns = () => {
     currentCheckedList: [], //当前选中的复选框
     currentColumns: state.columns //当前的表格列
   }
+  message.success('定制列还原成功')
   emit('changeColumn', tempObj)
 
   // emit('changeColumn', state.columns)

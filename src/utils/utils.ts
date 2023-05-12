@@ -118,3 +118,12 @@ export const getColumns = (state, pageKey, allColumns, defaultKeys) => {
   })
   return currentColumns
 }
+
+// @ts-ignore
+/**
+ * 用于统计所有树节点和 并向树节点添加子节点的数量
+ * @param  data 树
+ * @param  countField  计数名 默认为count
+ * */
+// 设置每个节点的统计字段,并返回所有节点总数。
+export const toTreeCount = (data=[], countField='count')=>data.reduce((total,cur)=>(total+(cur[countField] = toTreeCount(cur.children||[], countField))),data.length);
