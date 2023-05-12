@@ -205,7 +205,8 @@
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级目录"
+            placeholder="请选择上级菜单"
+            treeDefaultExpandAll
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="label"
