@@ -25,7 +25,7 @@ VXETable.renderer.add('XPreview', {
       )
     } else {
       return (
-        <ElLink href={row[column.field]} target="_blank">
+        <ElLink href={row[column.field]}>
           {row[column.field]}
         </ElLink>
       )
