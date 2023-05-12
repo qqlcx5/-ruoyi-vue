@@ -8,20 +8,20 @@ const crudSchemas = reactive<VxeCrudSchema>({
   columns: [
     {
       title: '岗位编码',
-      field: 'code',
+      field: 'code'
     },
     {
       title: '岗位名称',
-      field: 'name',
+      field: 'name'
     },
     {
       title: '岗位类型编码',
-      field: 'typeCode',
+      field: 'typeCode'
     },
     {
       title: '岗位类型',
-      field: 'typeName',
-    },
+      field: 'typeName'
+    }
   ]
 })
 export const { allSchemas } = useVxeCrudSchemas(crudSchemas)

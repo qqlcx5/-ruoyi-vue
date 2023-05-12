@@ -8,7 +8,12 @@
     <div class="flex">
       <!-- ====== 岗位类型 ====== -->
       <div class="w-1/2 overflow-hidden">
-        <el-form class="query-form w-full" ref="elFormRef" :model="postTypeSearchForm" label-position="left">
+        <el-form
+          class="query-form w-full"
+          ref="elFormRef"
+          :model="postTypeSearchForm"
+          label-position="left"
+        >
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label-width="70px" label="岗位类型">
@@ -18,7 +23,11 @@
             <el-col :span="8">
               <el-form-item label="状态">
                 <el-select class="w-full" v-model="postTypeSearchForm.status" placeholder="请选择">
-                  <el-option v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)" :label="item.label" :value="item.value" />
+                  <el-option
+                    v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+                    :label="item.label"
+                    :value="item.value"
+                  />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -40,53 +49,80 @@
               iconFont="icon-xinzeng"
               :title="t('action.add')"
               v-hasPermi="['system:post:create']"
-              @click="openModal('create', 'type')"/>
+              @click="openModal('create', 'type')"
+            />
             <XButton
               type="primary"
               plain
               iconFont="icon-daoru"
               :title="t('action.import')"
               v-hasPermi="['system:post:create']"
-              @click="openModal('create', 'type')"/>
+              @click="openModal('create', 'type')"
+            />
             <XButton
               type="primary"
               plain
               iconFont="icon-daochu"
               :title="t('action.export')"
               v-hasPermi="['system:post:export']"
-              @click="postTypeExport('岗位类型.xls')"/>
+              @click="postTypeExport('岗位类型.xls')"
+            />
           </template>
           <template #actionbtns_default="{ row }">
             <!-- 操作：修改数据 -->
             <XTextButton
               :title="t('action.edit')"
               v-hasPermi="['system:post:update']"
-              @click="openModal('update', 'type', row?.id)"/>
+              @click="openModal('update', 'type', row?.id)"
+            />
             <!-- 操作：删除 -->
             <XTextButton
               :title="t('action.delete')"
               v-hasPermi="['system:post:delete']"
-              @click="onPostDel(row, 'type')"/>
+              @click="onPostDel(row, 'type')"
+            />
           </template>
         </XTable>
       </div>
 
       <!-- ====== 岗位信息 ====== -->
       <div class="w-1/2 px-12px py-18px ml-50px shadow-card rounded-2px overflow-hidden">
-        <p class="text-18px font-500"><span v-show="postParent?.name">{{ `${postParent?.name}-` }}</span>岗位信息</p>
-        <div v-if="!postTypeSelect" class="text-20px text-tip text-center mt-248px">请从左侧选择</div>
+        <p class="text-18px font-500">
+          <span v-show="postParent?.name">{{ `${postParent?.name}-` }}</span>
+          岗位信息
+        </p>
+        <div v-if="!postTypeSelect" class="text-20px text-tip text-center mt-248px">
+          请从左侧选择
+        </div>
         <div v-else>
-          <el-form class="query-form w-full" ref="elFormRef" :model="postInfoSearchForm" label-position="left">
+          <el-form
+            class="query-form w-full"
+            ref="elFormRef"
+            :model="postInfoSearchForm"
+            label-position="left"
+          >
             <el-row :gutter="12">
               <el-col :span="8">
                 <el-form-item label="岗位名称">
-                  <el-input v-model="postInfoSearchForm.nameOrCode" placeholder="请输入岗位名称或编码"  />
+                  <el-input
+                    v-model="postInfoSearchForm.nameOrCode"
+                    placeholder="请输入岗位名称或编码"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label="状态">
-                  <el-select class="w-full" v-model="postInfoSearchForm.status" placeholder="请选择">
-                    <el-option v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)" :label="item.label" :value="item.value" />
+                  <el-select
+                    class="w-full"
+                    v-model="postInfoSearchForm.status"
+                    placeholder="请选择"
+                  >
+                    <el-option
+                      v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    />
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -108,27 +144,31 @@
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
                 v-hasPermi="['system:post:create']"
-                @click="openModal('create', 'info')"/>
+                @click="openModal('create', 'info')"
+              />
               <XButton
                 type="primary"
                 plain
                 iconFont="icon-daoru"
                 :title="t('action.import')"
                 v-hasPermi="['system:post:create']"
-                @click="openModal('create', 'info')"/>
+                @click="openModal('create', 'info')"
+              />
               <XButton
                 type="primary"
                 plain
                 iconFont="icon-daochu"
                 :title="t('action.export')"
                 v-hasPermi="['system:post:export']"
-                @click="postInfoExport('岗位信息.xls')"/>
+                @click="postInfoExport('岗位信息.xls')"
+              />
               <XButton
                 color="#666666"
                 plain
                 title="批量分配角色"
                 v-hasPermi="['system:post:create']"
-                @click="openDistributeModal(false, 'multi')"/>
+                @click="openDistributeModal(false, 'multi')"
+              />
             </template>
             <template #role_list="{ row }">
               <div>
@@ -149,17 +189,20 @@
               <XTextButton
                 :title="t('action.edit')"
                 v-hasPermi="['system:post:update']"
-                @click="openModal('update', 'info', row?.id)"/>
+                @click="openModal('update', 'info', row?.id)"
+              />
               <!-- 操作：分配角色 -->
               <XTextButton
                 title="分配角色"
                 v-hasPermi="['system:post:delete']"
-                @click="openDistributeModal(row, 'single')"/>
+                @click="openDistributeModal(row, 'single')"
+              />
               <!-- 操作：删除 -->
               <XTextButton
                 :title="t('action.delete')"
                 v-hasPermi="['system:post:delete']"
-                @click="onPostDel(row, 'info')"/>
+                @click="onPostDel(row, 'info')"
+              />
             </template>
           </XTable>
         </div>
@@ -174,15 +217,15 @@
 <script setup lang="ts" name="Post">
 import { VxeTableEvents } from 'vxe-table'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
-import {allSchemas as typeAllSchemas} from "@/views/system/post/post-type.data";
-import {allSchemas as infoAllSchemas} from "@/views/system/post/post-info.data";
-import * as PostTypeApi from "@/api/system/post/type";
-import * as PostInfoApi from "@/api/system/post/info";
+import { allSchemas as typeAllSchemas } from '@/views/system/post/post-type.data'
+import { allSchemas as infoAllSchemas } from '@/views/system/post/post-info.data'
+import * as PostTypeApi from '@/api/system/post/type'
+import * as PostInfoApi from '@/api/system/post/info'
 import PostForm from './form.vue'
-import DistributeModal from './component/DistributeModal.vue';
-import {h} from "vue";
-import {CommonStatusEnum} from "@/utils/constants";
-import {ElMessageBox} from "element-plus";
+import DistributeModal from './component/DistributeModal.vue'
+import { h } from 'vue'
+import { CommonStatusEnum } from '@/utils/constants'
+import { ElMessageBox } from 'element-plus'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -190,26 +233,27 @@ const message = useMessage() // 消息弹窗
 /* 岗位类型 */
 const postTypeSearchForm = ref({
   name: '',
-  status: '',
+  status: ''
 })
 // 列表相关的变量
-const [registerPostType, { reload: postTypeGet, deleteData: postTypeDel, deleteReq, exportList: postTypeExport }] = useXTable({
-  tableKey: "post-type-table",
-  allSchemas: typeAllSchemas, // 列表配置
-  params: postTypeSearchForm,
-  getListApi: PostTypeApi.getPostPageApi, // 加载列表的 API
-  deleteApi: PostTypeApi.deletePostApi, // 删除数据的 API
-  exportListApi: PostTypeApi.exportPostApi, // 导出数据的 API
-  border: true,
-  height: 660,
-})
+const [registerPostType, { reload: postTypeGet, deleteReq, exportList: postTypeExport }] =
+  useXTable({
+    tableKey: 'post-type-table',
+    allSchemas: typeAllSchemas, // 列表配置
+    params: postTypeSearchForm,
+    getListApi: PostTypeApi.getPostPageApi, // 加载列表的 API
+    deleteApi: PostTypeApi.deletePostApi, // 删除数据的 API
+    exportListApi: PostTypeApi.exportPostApi, // 导出数据的 API
+    border: true,
+    height: 660
+  })
 // 字典分类点击行事件
 const postParent = ref()
 const postTypeSelect = ref(false)
 const cellClickEvent: VxeTableEvents.CellClick = async ({ row }) => {
   postTypeSelect.value = true
-  postParent.value = row;
-  postInfoSearchForm.value.typeCode = row.code;
+  postParent.value = row
+  postInfoSearchForm.value.typeCode = row.code
   await nextTick()
   await postInfoGet()
 }
@@ -217,9 +261,9 @@ const cellClickEvent: VxeTableEvents.CellClick = async ({ row }) => {
 const onPostTypeSearchReset = () => {
   postTypeSearchForm.value = {
     name: '',
-    status: '',
-  };
-  postTypeGet();
+    status: ''
+  }
+  postTypeGet()
 }
 
 /* 岗位信息 */
@@ -229,21 +273,29 @@ const postInfoSearchForm = ref({
   typeCode: ''
 })
 // 列表相关的变量
-const [registerPostInfo, { reload: postInfoGet, deleteData: postInfoDel, exportList: postInfoExport, getCheckboxRecords: getInfoCheckboxRecords }] = useXTable({
-  tableKey: "post-Info-table",
+const [
+  registerPostInfo,
+  {
+    reload: postInfoGet,
+    deleteData: postInfoDel,
+    exportList: postInfoExport,
+    getCheckboxRecords: getInfoCheckboxRecords
+  }
+] = useXTable({
+  tableKey: 'post-Info-table',
   allSchemas: infoAllSchemas, // 列表配置
   params: postInfoSearchForm,
   getListApi: PostInfoApi.getPostPageApi, // 加载列表的 API
   deleteApi: PostInfoApi.deletePostApi, // 删除数据的 API
   exportListApi: PostInfoApi.exportPostApi, // 导出数据的 API
   border: true,
-  height: 606,
+  height: 606
 })
 // 查询重置
 const onPostInfoSearchReset = () => {
   postInfoSearchForm.value.nameOrCode = ''
   postInfoSearchForm.value.status = ''
-  postInfoGet();
+  postInfoGet()
 }
 // 删除
 const onPostDel = async (row, type: string) => {
@@ -256,52 +308,58 @@ const onPostDel = async (row, type: string) => {
           h('span', '系统校验到该岗位类型底下还存在 '),
           h('span', { style: { color: 'red' } }, row.postCount),
           h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
-        ]), `提示`, {
+        ]),
+        `提示`,
+        {
           confirmButtonText: t('action.toOperate'),
           cancelButtonText: t('common.cancel'),
           type: 'warning',
           lockScroll: false
         }
-      ).then(async () => {
-
-      }).catch(() => {})
+      )
+        .then(async () => {})
+        .catch(() => {})
     } else {
-      message.wgConfirm(
-        h('span', [
-          h('span', `删除后， ${row.name} 底下的 `),
-          h('span', { style: { color: 'red' } }, row.postCount),
-          h('span', ' 个岗位将同步删除，且不可恢复，请谨慎操作。')
-        ]), `确定删除 ${row.name} 改岗位类型吗？`
-      ).then(async () => {
-        deleteReq(row.id);
-      }).catch(() => {})
+      message
+        .wgConfirm(
+          h('span', [
+            h('span', `删除后， ${row.name} 底下的 `),
+            h('span', { style: { color: 'red' } }, row.postCount),
+            h('span', ' 个岗位将同步删除，且不可恢复，请谨慎操作。')
+          ]),
+          `确定删除 ${row.name} 改岗位类型吗？`
+        )
+        .then(async () => {
+          deleteReq(row.id)
+        })
+        .catch(() => {})
     }
   } else if (type === 'info') {
-    postInfoDel(row.id, h(
-      'span',
-      [
+    postInfoDel(
+      row.id,
+      h('span', [
         h('span', '系统校验到该岗位类型底下还存在 '),
         h('span', { style: { color: 'red' } }, row.postCount),
         h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
-      ]
-    ))
+      ])
+    )
   }
-};
+}
 // 更新岗位状态
 const postInfoStatusChange = async (row) => {
   const text = row.status === CommonStatusEnum.ENABLE ? '启用' : '停用'
   ElMessageBox.confirm(
     row.status === CommonStatusEnum.ENABLE
       ? h('span', [
-        h('span', `${text}后，${row.name}底下的 `),
-        h('span', { style: { color: 'red' } }, '0'),
-        h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
-      ])
+          h('span', `${text}后，${row.name}底下的 `),
+          h('span', { style: { color: 'red' } }, '0'),
+          h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
+        ])
       : h('span', [
-        h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
-        h('span', { style: { color: 'red' } }, '0'),
-        h('span', '个员工也将同步关闭该岗位，请谨慎操作。')
-      ]),
+          h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
+          h('span', { style: { color: 'red' } }, '0'),
+          h('span', '个员工也将同步关闭该岗位，请谨慎操作。')
+        ]),
     `确定${text} ${row.name} 吗？`,
     {
       confirmButtonText: t('common.ok'),
@@ -310,17 +368,17 @@ const postInfoStatusChange = async (row) => {
       lockScroll: false
     }
   ).then(async () => {
-      const updateStatus = await PostInfoApi.updatePostApi({ ...row });
-      await postTypeGet();
-      if (updateStatus) {
-        message.success(text + '成功');
-      } else {
-        message.warning(t('sys.api.operationFailed'));
-      }
+    const updateStatus = await PostInfoApi.updatePostApi({ ...row })
+    await postTypeGet()
+    if (updateStatus) {
+      message.success(text + '成功')
+    } else {
+      message.warning(t('sys.api.operationFailed'))
+    }
   })
 }
 
-const postFormSuccess = (type):void => {
+const postFormSuccess = (type): void => {
   if (type === 'type') {
     postTypeGet()
   } else if (type === 'info') {
@@ -348,7 +406,6 @@ const openDistributeModal = (row, mode: string) => {
     }
   }
 }
-
 </script>
 
 <style lang="scss" scoped>

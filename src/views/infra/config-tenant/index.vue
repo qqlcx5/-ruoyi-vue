@@ -23,6 +23,7 @@
             <el-select v-model="searchParams.type" placeholder="请选择">
               <el-option
                 v-for="dict in getIntDictOptions(DICT_TYPE.INFRA_CONFIG_TYPE)"
+                :key="dict.value"
                 :label="dict.label"
                 :value="dict.value"
               />
@@ -52,13 +53,13 @@
     <XTable @register="registerTable">
       <template #toolbar_buttons>
         <!-- 操作：新增 -->
-        <XButton
-          type="primary"
-          iconFont="icon-xinzeng"
-          :title="t('action.add')"
-          v-hasPermi="['infra:config:create']"
-          @click="handleCreate()"
-        />
+        <!--        <XButton-->
+        <!--          type="primary"-->
+        <!--          iconFont="icon-xinzeng"-->
+        <!--          :title="t('action.add')"-->
+        <!--          v-hasPermi="['infra:config:create']"-->
+        <!--          @click="handleCreate()"-->
+        <!--        />-->
         <!--        &lt;!&ndash; 操作：导出 &ndash;&gt;-->
         <!--        <XButton-->
         <!--          type="warning"-->
@@ -89,12 +90,6 @@
           :title="t('action.detail')"
           v-hasPermi="['infra:config:query']"
           @click="handleDetail(row)"
-        />
-        <!-- 操作：删除 -->
-        <XTextButton
-          :title="t('action.del')"
-          v-hasPermi="['infra:config:delete']"
-          @click="deleteData(row.id, `是否确认删除参数名称为''${row.name}''的数据项?`)"
         />
       </template>
     </XTable>
@@ -159,7 +154,7 @@ const searchParams = ref({
   createTime: []
 })
 // 列表相关的变量
-const [registerTable, { reload, deleteData }] = useXTable({
+const [registerTable, { reload }] = useXTable({
   tableKey: 'wg-infra-config',
   allSchemas: allSchemas,
   params: searchParams,
@@ -195,11 +190,6 @@ const setDialogTile = (type: string) => {
   dialogTitle.value = t('action.' + type)
   actionType.value = type
   dialogVisible.value = true
-}
-
-// 新增操作
-const handleCreate = () => {
-  setDialogTile('create')
 }
 
 const handleStatusChange = (row) => {
