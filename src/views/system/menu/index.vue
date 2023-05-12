@@ -582,9 +582,9 @@ const allColumns = [
   },
   {
     title: '创建人',
-    dataIndex: 'creator',
+    dataIndex: 'creatorName',
     width: 100,
-    key: 'creator',
+    key: 'creatorName',
     resizable: true,
     ellipsis: true,
     sort: 6
@@ -601,8 +601,8 @@ const allColumns = [
   {
     title: '最近操作人',
     width: 100,
-    dataIndex: 'updater',
-    key: 'updater',
+    dataIndex: 'updaterName',
+    key: 'updaterName',
     resizable: true,
     ellipsis: true,
     sort: 8
