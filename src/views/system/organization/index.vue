@@ -1836,7 +1836,7 @@ const detailsInfo = async (record) => {
   if (res.organizationType === '2') {
     //分公司
     const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
-      return relVO.type.some((item) => topItem.value === item)
+      return relVO?.type.some((item) => topItem.value === item)
     })
 
     tempArrTypeF.map((item) => {
@@ -1850,7 +1850,7 @@ const detailsInfo = async (record) => {
   } else if (res.organizationType === '4') {
     //门店
     const tempArrTypeF = state.storeTypeOptions.filter((topItem) => {
-      return relVO.type.some((item) => topItem.value === item)
+      return relVO?.type.some((item) => topItem.value === item)
     })
 
     tempArrTypeF.map((item) => {
@@ -1874,8 +1874,8 @@ const detailsInfo = async (record) => {
 
   //联系方式
   const tempArrContactInformationArr = []
-  const tempContactArr = state.contactInformationOptions.filter((topItem) => {
-    return relVO.contact.some((item) => {
+  state.contactInformationOptions.filter((topItem) => {
+    return relVO?.contact.some((item) => {
       if (topItem.value === item.contactType) {
         tempArrContactInformationArr.push({
           label: topItem?.label,
