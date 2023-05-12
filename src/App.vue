@@ -54,6 +54,8 @@ body {
   margin: 0;
   overflow: hidden;
   @extend .size;
+  //打开modal后body出现100%-17px(滚动条) 产生原因未知 没空找 直接这里改
+  width: 100%!important;
 
   #app {
     @extend .size;
