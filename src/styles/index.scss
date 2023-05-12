@@ -45,12 +45,12 @@
 
 $messageMap: (
   (type: 'success', color: #ffffff, bgColor: #52C41A),
-  (status: 'warning', color: #ffffff, bgColor: #FAAD14),
-  (status: 'info', color: #ffffff, bgColor: #D2D2D2),
-  (status: 'error', color: #ffffff, bgColor: #FF4141),
+  (type: 'warning', color: #ffffff, bgColor: #FAAD14),
+  (type: 'info', color: #ffffff, bgColor: #D2D2D2),
+  (type: 'error', color: #ffffff, bgColor: #FF4141),
 );
 
-@for $i from 1 through length($messageMap) {
+@for $i from 1 through 4 {
   $item: nth($messageMap, $i);
   $type: map-get($map: $item, $key: type);
   $bgColor: map-get($map: $item, $key: bgColor);

@@ -23,12 +23,13 @@ const toggleCollapse = () => {
 
 <template>
   <div :class="prefixCls" class="items-center flex items-center">
-    <Icon
-      :size="18"
-      icon="svg-icon:fold"
-      :color="appStore.isDark ? color : '#8291A9'"
-      class="cursor-pointer"
+    <i
+      class="iconfont cursor-pointer !text-18px"
+      :class="[collapse ? 'icon-shouqicaidan' : 'icon-zhankaicaidan']"
+      :style="{
+        color: appStore.isDark ? color : '#8291A9'
+      }"
       @click="toggleCollapse"
-    />
+    ></i>
   </div>
 </template>
