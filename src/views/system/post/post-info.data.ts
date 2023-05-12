@@ -1,4 +1,5 @@
 import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
+
 const { t } = useI18n() // 国际化
 
 // 表单校验
@@ -17,11 +18,11 @@ const crudSchemas = reactive<VxeCrudSchema>({
   columns: [
     {
       title: '岗位编码',
-      field: 'code',
+      field: 'code'
     },
     {
       title: '岗位名称',
-      field: 'name',
+      field: 'name'
     },
     {
       title: '默认角色',
@@ -30,11 +31,11 @@ const crudSchemas = reactive<VxeCrudSchema>({
         slots: {
           default: 'role_list'
         }
-      },
+      }
     },
     {
       title: '成员',
-      field: 'memberCount',
+      field: 'memberCount'
     },
     {
       title: '岗位顺序',
@@ -54,8 +55,8 @@ const crudSchemas = reactive<VxeCrudSchema>({
         slots: {
           default: 'status_default'
         }
-      },
-    },
+      }
+    }
   ]
 })
 export const { allSchemas } = useVxeCrudSchemas(crudSchemas)
