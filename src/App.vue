@@ -23,6 +23,10 @@ const setDefaultTheme = () => {
 }
 setDefaultTheme()
 
+const getPopupContainer = () => {
+  return document.getElementById('card-content');
+}
+
 watchEffect(() => {
   //antdV黑暗模式
   DarkMode(appStore.isDark)
@@ -35,7 +39,7 @@ import 'dayjs/locale/zh-cn'
   <!--  element plus 全局配置-->
   <ConfigGlobal :size="currentSize">
     <!--  antdV 全局配置  -->
-    <a-config-provider :componentSize="currentSize" :locale="zhCN">
+    <a-config-provider :componentSize="currentSize" :locale="zhCN" :get-popup-container="getPopupContainer">
       <RouterView :class="greyMode ? `${prefixCls}-grey-mode` : ''" />
     </a-config-provider>
   </ConfigGlobal>

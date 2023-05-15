@@ -55,7 +55,7 @@
         <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
         <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
+        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
         <Icon
           icon="svg-icon:custom-column"
           :size="50"
@@ -142,7 +142,7 @@
               <template #content>
                 <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
               </template>
-              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="10" />
+              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
             </a-popover>
           </div>
         </template>
@@ -665,8 +665,10 @@ const layout = {
   wrapperCol: { span: 18 }
 }
 
-/** 查询列表 */
-const getList = async () => {
+/** 查询列表
+ * @param isRefresh 右侧刷新图标进
+ * */
+const getList = async (isRefresh = false) => {
   loading.value = true
   try {
     // const res = await MenuApi.getMenuList(queryParams)
@@ -678,6 +680,9 @@ const getList = async () => {
     })
     state.menuArr = res
     list.value = handleTree(res)
+    if (isRefresh) {
+      message.success('刷新成功')
+    }
   } finally {
     loading.value = false
   }
@@ -1180,7 +1185,8 @@ const handleResizeColumn = (w, col) => {
 //antd card
 :deep(.ant-card-body) {
   padding: 0;
-  max-height: 870px;
+  //max-height: 870px;
+  min-height: 870px;
 }
 
 .operation-content {

@@ -57,7 +57,7 @@
         <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
         <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
+        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
         <Icon
           icon="svg-icon:custom-column"
           :size="50"
@@ -153,7 +153,7 @@
               <template #content>
                 <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
               </template>
-              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="10" />
+              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
             </a-popover>
           </div>
         </template>
@@ -630,9 +630,7 @@
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
-          <span class="status-span">{{
-              state.tableStatusChangeInfo?.tempTreeNum
-          }}</span>
+          <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
           个子项主体将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
@@ -801,7 +799,13 @@ import {
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from './pr'
-import {filterTree, getAllIds, getColumns, reconstructedTreeData, toTreeCount} from '@/utils/utils'
+import {
+  filterTree,
+  getAllIds,
+  getColumns,
+  reconstructedTreeData,
+  toTreeCount
+} from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
@@ -1173,8 +1177,10 @@ const allColumns = [
   }
 ]
 
-/** 查询列表 */
-const getList = async () => {
+/** 查询列表
+ * @param isRefresh 右侧刷新图标进
+ * */
+const getList = async (isRefresh = false) => {
   state.loading = true
   const params = {
     // pageNo: queryParams.current,
@@ -1207,6 +1213,10 @@ const getList = async () => {
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
 
     state.total = res.total
+
+    if (isRefresh) {
+      message.success('刷新成功')
+    }
   } finally {
     state.loading = false
   }
@@ -2204,7 +2214,8 @@ watch(
 //antd card
 :deep(.ant-card-body) {
   padding: 0;
-  max-height: 870px;
+  //max-height: 870px;
+  min-height: 870px;
 }
 
 .operation-content {

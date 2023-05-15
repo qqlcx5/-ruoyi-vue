@@ -44,7 +44,7 @@ export const updateMenu = (data: MenuVO) => {
 }
 
 // 修改菜单状态
-export const updateMenuStatus = (data: MenuVO) => {
+export const updateMenuStatus = (data) => {
   return request.put({ url: '/system/menu/update/status', data })
 }
 
