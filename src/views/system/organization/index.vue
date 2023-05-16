@@ -1345,7 +1345,7 @@ const openModal = async (record = {}) => {
     //非空对象判断 新增子项时回显
     state.formState.parentId = record.id
   }
-  const res = await getSimpleOrganizationList()
+  const res = await getSimpleOrganizationList({ status: 0 })
 
   let menuTree = []
   // let menu = {}
@@ -1829,7 +1829,7 @@ const detailsInfo = async (record) => {
   const { relVO = {} } = res
 
   //上级机构
-  const tempRes = await getSimpleOrganizationList()
+  const tempRes = await getSimpleOrganizationList({ status: 0 })
   const tempItem = tempRes.filter((item) => item.id === record.parentId)
 
   const tempArrType = state.organizationTypeOptions.filter(

@@ -16,6 +16,18 @@ export const getMemberList = (params: MajorIndividual) => {
   return request.get({ url: '/system/user/extra/page', params })
 }
 
+// 获取岗位类型
+export const getPostTypeList = () => {
+  return request.get({ url: '/system/post-type/list-all-simple'})
+}
+
+// 获取角色信息
+export const getRolesList = () => {
+  return request.get({ url: '/system/role/list-all-simple'})
+}
+
+
+
 // 获取上级主体列表
 export const getSimpleTenantList = () => {
   return request.get({ url: '/system/tenant/list-all-simple' })

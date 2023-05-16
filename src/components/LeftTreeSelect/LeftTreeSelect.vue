@@ -256,11 +256,21 @@ watch(searchValue, (value) => {
 watch(
   () => state.selectedKeys,
   (val) => {
-    //选中的值向上发送
-    emit('sendCurrentSelect', val[0])
+    if (val[0]) {
+      //选中的值向上发送
+      emit('sendCurrentSelect', val[0])
+    }
   },
   {
     immediate: true
+  }
+)
+
+watch(
+  () => props.treeData,
+  () => {
+    state.treeData = cloneDeep(props.treeData)
+    state.selectedKeys = [cloneDeep(props.treeData[0]?.key)]
   }
 )
 </script>

@@ -3,7 +3,10 @@
   <div class="total-content">
     <div class="left-card-content">
       <!--  tree  -->
-      <LeftTreeSelect @sendCurrentSelect="sendCurrentSelect"></LeftTreeSelect>
+      <LeftTreeSelect
+        :tree-data="state.organizationOptions"
+        @sendCurrentSelect="sendCurrentSelect"
+      ></LeftTreeSelect>
     </div>
     <div class="right-card-content">
       <!--  搜索  -->
@@ -13,53 +16,67 @@
             <div class="search-item">
               <div class="item-label">成员姓名：</div>
               <div class="item-condition">
-                <a-input class="width-100" v-model:value="value" placeholder="Basic usage" />
+                <a-input
+                  class="width-100"
+                  v-model:value="queryParams.memberName"
+                  placeholder="请输入成员姓名或工号"
+                />
               </div>
             </div>
             <div class="search-item">
               <div class="item-label">联系电话：</div>
 
               <div class="item-condition">
-                <a-input class="width-100" v-model:value="value" placeholder="Basic usage" />
+                <a-input
+                  class="width-100"
+                  v-model:value="queryParams.memberPhone"
+                  placeholder="请输入联系电话"
+                />
               </div>
             </div>
             <div class="search-item">
               <div class="item-label">岗位类型：</div>
               <div class="item-condition">
                 <a-select
-                  v-model:value="state.value1"
-                  :options="state.options"
+                  v-model:value="queryParams.postType"
+                  :options="state.postTypeOptions"
                   class="width-100"
+                  placeholder="请选择"
                 ></a-select>
               </div>
             </div>
             <div class="search-item">
               <div class="item-label">岗位：</div>
-              <div class="item-condition flex-style select-input">
-                <a-select v-model:value="state.value2" class="width-70">
-                  <a-select-option value="jack">主岗</a-select-option>
-                  <a-select-option value="lucy">兼岗</a-select-option>
-                </a-select>
-                <a-input class="width-180" v-model:value="state.value3" placeholder="Basic usage" />
+              <div class="item-condition flex-style">
+                <a-input
+                  class="width-100"
+                  v-model:value="queryParams.post"
+                  placeholder="输入岗位名称搜索"
+                />
               </div>
             </div>
+
             <div class="search-item">
-              <div class="item-label">部门：</div>
+              <div class="item-label">是否兼岗：</div>
               <div class="item-condition">
                 <a-select
-                  v-model:value="state.value1"
+                  v-model:value="queryParams.memberType"
                   class="width-100"
-                  :options="state.options"
+                  :options="state.partPostOptions"
+                  placeholder="请选择"
                 ></a-select>
               </div>
             </div>
+
             <div class="search-item">
               <div class="item-label">配置角色：</div>
               <div class="item-condition">
                 <a-select
-                  v-model:value="state.value1"
+                  v-model:value="queryParams.configureRoles"
                   class="width-100"
-                  :options="state.options"
+                  :options="state.configureRolesOptions"
+                  mode="multiple"
+                  placeholder="请选择"
                 ></a-select>
               </div>
             </div>
@@ -67,19 +84,32 @@
               <div class="item-label">人员类型：</div>
               <div class="item-condition">
                 <a-select
-                  v-model:value="state.value1"
+                  v-model:value="queryParams.memberType"
                   class="width-100"
-                  :options="state.options"
+                  :options="state.memberTypeOptions"
+                  placeholder="请选择"
                 ></a-select>
               </div>
             </div>
             <div class="search-item">
-              <div class="item-label">帐号类型：</div>
-              <div class="item-condition select-input">
+              <div class="item-label">在职状态：</div>
+              <div class="item-condition">
                 <a-select
-                  v-model:value="state.value1"
+                  v-model:value="queryParams.isOnJob"
                   class="width-100"
-                  :options="state.options"
+                  :options="state.onJobOptions"
+                  placeholder="请选择"
+                ></a-select>
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">帐号状态：</div>
+              <div class="item-condition">
+                <a-select
+                  v-model:value="queryParams.userType"
+                  class="width-100"
+                  :options="state.userTypeOptions"
+                  placeholder="请选择"
                 ></a-select>
               </div>
             </div>
@@ -106,7 +136,7 @@
               <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
               新增
             </a-button>
-            <a-button @click="toggleExpandAll">
+            <a-button @click="toggleExpandAll" v-if="false">
               <template #icon>
                 <Icon
                   icon="svg-icon:expansion"
@@ -139,7 +169,6 @@
           </div>
         </div>
 
-
         <a-table
           v-if="state.refreshTable"
           :columns="state.columns"
@@ -160,7 +189,7 @@
             current: queryParams.current,
             total: state.total,
             showTotal: (total) => `总共 ${total} 条`
-            }"
+          }"
         >
           <!--  自定义展开折叠图标  -->
           <template #expandIcon="props">
@@ -192,14 +221,35 @@
           </template>
           <!--  单元格插槽  -->
           <template #bodyCell="{ column, record }">
-            <!--  可用名额   -->
-            <template v-if="column?.key === 'usableAmount'">
-              <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
+            <!--  联系电话   -->
+            <template v-if="column?.key === 'memberPhone'">
+              <div v-for="item in record?.memberPhoneList" class="phone-div-content">
+                <div class="phone-div">{{ item.phoneNum }}</div>
+                <a-tag :color="item.type === '1' ? '#35C6D9' : '#B05EFF'">{{
+                  item.phoneType
+                }}</a-tag>
+              </div>
             </template>
-            <!--  有效期   -->
-            <template v-if="column?.key === 'validityPeriod'">
-              <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
+
+            <!--  部门/岗位   -->
+            <template v-if="column?.key === 'departmentPost'">
+              <div v-for="item in record?.departmentPostList" class="phone-div-content">
+                <div class="phone-div">{{ item.department }}/{{ item.post }}</div>
+                <a-tag :color="item.type === '1' ? '#E7A23C' : '#52C41A'">{{
+                  item.typeText
+                }}</a-tag>
+              </div>
             </template>
+
+            <!--  配置角色   -->
+            <template v-if="column?.key === 'configureRoles'">
+              <a-tag
+                v-for="item in record?.roleVOList"
+                :color="item.type === '1' ? '#0081FF' : '#0081FF'"
+                >{{ item.roleName }}</a-tag
+              >
+            </template>
+
             <!--  状态   -->
             <template v-if="column?.key === 'statusSwitch'">
               <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
@@ -219,15 +269,15 @@
               <div class="operation-content">
                 <div class="text-color margin-right-5" @click="edit(record)">修改</div>
                 <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
-                <div class="text-color margin-right-5" @click="assignPermission(record)"
-                  >功能配置</div
-                >
-                <a-popover placement="bottom">
-                  <template #content>
-                    <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
-                  </template>
-                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-                </a-popover>
+                <!--                <div class="text-color margin-right-5" @click="assignPermission(record)"-->
+                <!--                  >功能配置</div-->
+                <!--                >-->
+                <!--                <a-popover placement="bottom">-->
+                <!--                  <template #content>-->
+                <!--                    <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>-->
+                <!--                  </template>-->
+                <!--                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />-->
+                <!--                </a-popover>-->
               </div>
             </template>
           </template>
@@ -243,213 +293,269 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'665px'"
+    :width="'900px'"
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
       <a-form
-        :model="state.formState"
+        :model="formState"
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
-        <a-form-item :label="`上级主体`" name="belongTenantId">
-          <a-tree-select
-            v-model:value="state.formState.belongTenantId"
-            show-search
-            style="width: 100%"
-            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级目录"
-            :tree-data="state.optionalMenuTree"
-            :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
-          />
-        </a-form-item>
-        <a-form-item
-          :label="`主体编码`"
-          name="code"
-          :rules="[{ required: true, message: `主体编码不能为空` }]"
-        >
-          <a-input
-            v-model:value="state.formState.code"
-            show-count
-            :maxlength="20"
-            placeholder="请输入主体编码"
-          />
-        </a-form-item>
-
-        <a-form-item
-          :label="`主体名称`"
-          name="name"
-          :rules="[{ required: true, message: `主体名称不能为空` }]"
-        >
-          <a-input
-            v-model:value="state.formState.name"
-            show-count
-            :maxlength="20"
-            placeholder="请输入主体名称"
-          />
-        </a-form-item>
-
-        <a-form-item :label="`主体简称`" name="abbreviate">
-          <a-input
-            v-model:value="state.formState.abbreviate"
-            show-count
-            :maxlength="10"
-            placeholder="请输入主体简称"
-          />
-        </a-form-item>
-
-        <a-form-item
-          :label="`系统名称`"
-          name="systemName"
-          :rules="[{ required: true, message: `系统名称不能为空` }]"
-        >
-          <div class="flex-content">
-            <a-input
-              v-model:value="state.formState.systemName"
-              show-count
-              :maxlength="10"
-              placeholder="请输入系统名称"
-            />
-            <a-tooltip placement="topLeft" class="icon-tip">
-              <template #title>
-                <span> 为左上角显示的系统整体名称</span>
-              </template>
-              <Icon icon="ep:question-filled" color="rgb(176, 176, 176)" />
-            </a-tooltip>
-          </div>
-        </a-form-item>
-
-        <a-form-item label="系统logo" name="logoUrl">
-          <a-upload
-            v-model:file-list="state.logoListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'logo')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'logo')
-              }
-            "
+        <div class="form-content">
+          <a-form-item
+            :label="`成员工号`"
+            name="memberNum"
+            :rules="[{ required: true, message: `主体编码不能为空` }]"
+            calss="width-50"
           >
-            <div v-if="state.logoListUrl.length < 1">
-              <plus-outlined />
-              <div style="margin-top: 8px">上传logo</div>
-            </div>
-          </a-upload>
-          <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
-        </a-form-item>
+            <a-input v-model:value="formState.memberNum" placeholder="请输入成员工号" />
+          </a-form-item>
 
-        <a-form-item
-          :label="`负责人`"
-          name="contactName"
-          :rules="[{ required: true, message: `负责人不能为空` }]"
-        >
-          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />
-        </a-form-item>
+          <a-form-item
+            :label="`成员姓名`"
+            name="memberName"
+            :rules="[{ required: true, message: `成员姓名不能为空` }]"
+            calss="width-50"
+          >
+            <a-input v-model:value="formState.memberName" placeholder="请输入成员真实姓名" />
+          </a-form-item>
 
-        <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
-          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入主体编码" />
-          <div class="phone-text"> 主要用于重要功能的安全验证，请确保填写正确 </div>
-        </a-form-item>
+          <a-form-item
+            :label="`性别`"
+            name="sex"
+            :rules="[{ required: true, message: `性别不能为空` }]"
+            calss="width-50"
+          >
+            <a-radio-group v-model:value="formState.sex" name="radioSexGroup">
+              <a-radio value="1">男</a-radio>
+              <a-radio value="2">女</a-radio>
+            </a-radio-group>
+          </a-form-item>
 
-        <a-form-item
-          :label="`有效期`"
-          name="effectiveStartEndTime"
-          :rules="[{ required: true, message: `有效期不能为空` }]"
-        >
-          <div class="flex-content">
-            <a-range-picker
-              v-model:value="state.formState.effectiveStartEndTime"
-              format="YYYY/MM/DD"
-              :placeholder="['开始时间', '结束时间']"
-            />
-            <!--            <div>-->
-            <!--              <a-form-item-rest>-->
-            <!--                <a-checkbox v-model:checked="state.formState.forever" @change="foreverChange">-->
-            <!--                  永久有效</a-checkbox-->
-            <!--                ></a-form-item-rest-->
-            <!--              >-->
-            <!--            </div>-->
-          </div>
-        </a-form-item>
+          <a-form-item
+            :label="`入职时间`"
+            name="entryTime"
+            :rules="[{ required: true, message: `入职时间不能为空` }]"
+            calss="width-50"
+          >
+            <a-date-picker show-time placeholder="请选择时间" v-model:value="formState.entryTime" />
+          </a-form-item>
 
-        <a-form-item
-          :label="`可用名额`"
-          name="accountCount"
-          :rules="[{ required: true, message: `可用名额不能为空` }]"
-        >
-          <a-input-number
-            id="inputNumber"
-            v-model:value="state.formState.accountCount"
-            :controls="false"
-            placeholder="请输入整数"
-          />
-        </a-form-item>
+          <a-form-item
+            :label="`人员类型`"
+            name="memberType"
+            :rules="[{ required: true, message: `人员类型不能为空` }]"
+            calss="width-50"
+          >
+            <a-radio-group v-model:value="formState.memberType" name="radioMemberTypeGroup">
+              <a-radio v-for="item in state.memberTypeOptions" :value="item.value">{{
+                item.label
+              }}</a-radio>
+            </a-radio-group>
+          </a-form-item>
 
-        <a-form-item
-          :label="`绑定域名`"
-          name="bindingDomainName"
-          :rules="[{ required: true, message: `绑定域名不能为空` }]"
-        >
-          <a-input
-            v-model:value="state.formState.bindingDomainName"
-            placeholder="请输入绑定的域名"
-          />
-        </a-form-item>
+          <a-form-item
+            :label="`人员状态`"
+            name="isOnJob"
+            :rules="[{ required: true, message: `人员状态不能为空` }]"
+            calss="width-50"
+          >
+            <a-radio-group v-model:value="formState.isOnJob" name="radioIsOnJobGroup">
+              <a-radio v-for="item in state.onJobOptions" :value="item.value">{{
+                item.label
+              }}</a-radio>
+            </a-radio-group>
+          </a-form-item>
 
-        <a-form-item
-          v-if="state.modalType === 'add'"
-          label="状态"
-          name="status"
-          :rules="[{ required: true, message: '菜单状态!' }]"
-        >
-          <a-switch
-            v-model:checked="state.formState.status"
-            checked-children="开启"
-            un-checked-children="关闭"
-          />
+          <a-form-item
+            :label="`联系电话`"
+            :rules="[{ required: true, message: `联系电话不能为空` }]"
+            calss="width-100"
+          >
+            <a-table
+              :data-source="addDataSource.addEditTableData"
+              :columns="addEditColumns"
+              :pagination="false"
+            >
+              <template #bodyCell="{ column, text, record, index }">
+                <template v-if="column.key === 'phoneType'">
+                  <div>
+                    <a-radio-group v-model:value="record.phoneType" name="radioPhoneTypeGroup">
+                      <a-radio value="1">手机</a-radio>
+                      <a-radio value="2">座机</a-radio>
+                    </a-radio-group>
+                  </div>
+                </template>
+
+                <template v-if="column.key === 'phoneNum'">
+                  <div>
+                    <a-input v-model:value="record.phoneNum" placeholder="请输入号码" />
+                  </div>
+                </template>
+
+                <template v-if="column.key === 'useType'">
+                  <div>
+                    <a-radio-group v-model:value="record.useType" name="radioUseTypeGroup">
+                      <a-radio value="1">私人</a-radio>
+                      <a-radio value="2">公司</a-radio>
+                    </a-radio-group>
+                  </div>
+                </template>
+
+                <template v-if="column.key === 'isService'">
+                  <div>
+                    <a-radio-group v-model:value="record.isService" name="radioIsServiceGroup">
+                      <a-radio value="1">是</a-radio>
+                      <a-radio value="2">否</a-radio>
+                    </a-radio-group>
+                  </div>
+                </template>
+
+                <!--  操作   -->
+                <template v-if="column?.key === 'operation'">
+                  <div class="operation-content">
+                    <div
+                      class="text-color margin-right-5"
+                      @click="deleteColumns(index)"
+                      v-if="index !== 0"
+                      >删除</div
+                    >
+                    <div class="text-color margin-right-5" @click="addColumns(record)">新增</div>
+                  </div>
+                </template>
+              </template>
+            </a-table>
+          </a-form-item>
+        </div>
+
+        <div class="title-content"><div class="blue-line"></div> 岗位信息 </div>
+        <a-form-item :label="``" calss="width-100">
+          <a-table
+            :data-source="addPostDataSource.addEditTableData"
+            :columns="addEditPostColumns"
+            :pagination="false"
+          >
+            <template #bodyCell="{ column, text, record, index }">
+              <template v-if="column.key === 'department'">
+                <div>
+                  <a-tree-select
+                    v-model:value="record.department"
+                    style="width: 100%"
+                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                    placeholder="请选择"
+                    :tree-data="state.organizationOptions"
+                    :field-names="{
+                      children: 'children',
+                      label: 'title',
+                      value: 'key'
+                    }"
+                  >
+                  </a-tree-select>
+                </div>
+              </template>
+
+              <template v-if="column.key === 'post'">
+                <div>
+                  <a-tree-select
+                    v-model:value="record.post"
+                    style="width: 100%"
+                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                    placeholder="请选择"
+                    :tree-data="state.postTypeOptions"
+                  >
+                  </a-tree-select>
+                </div>
+              </template>
+
+              <template v-if="column.key === 'brand'">
+                <div>
+                  <a-tree-select
+                    v-model:value="record.brand"
+                    style="width: 100%"
+                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                    placeholder="请选择"
+                    :tree-data="state.postTypeOptions"
+                  >
+                  </a-tree-select>
+                </div>
+              </template>
+
+              <template v-if="column.key === 'isMainPost'">
+                <div>
+                  <a-select
+                    v-model:value="record.isMainPost"
+                    class="width-100"
+                    :options="state.partPostOptionsText"
+                    placeholder="请选择"
+                  ></a-select>
+                </div>
+              </template>
+
+              <template v-if="column.key === 'isShow'">
+                <div>
+                  <a-switch :disabled="index === 0" v-model:checked="record.isShow" />
+                </div>
+              </template>
+
+              <!--  操作   -->
+              <template v-if="column?.key === 'operation'">
+                <div class="operation-content">
+                  <div
+                    class="text-color margin-right-5"
+                    @click="deletePostColumns(index)"
+                    v-if="index !== 0"
+                    >删除</div
+                  >
+                  <div class="text-color margin-right-5" @click="addPostColumns(record)">新增</div>
+                </div>
+              </template>
+            </template>
+          </a-table>
         </a-form-item>
 
         <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
-        <a-form-item :label="`统一社会信用代码`" name="creditCode">
-          <a-input
-            v-model:value="state.formState.creditCode"
-            placeholder="请输入统一社会信用代码"
-          />
+
+        <div class="form-content">
+          <a-form-item :label="`出生日期`" calss="width-50">
+            <a-date-picker show-time placeholder="请选择时间" v-model:value="formState.entryTime" />
+          </a-form-item>
+
+          <a-form-item :label="`QQ`" calss="width-50">
+            <a-input v-model:value="formState.memberName" placeholder="请输入QQ" />
+          </a-form-item>
+
+          <a-form-item :label="`电子邮箱`" calss="width-50">
+            <a-input v-model:value="formState.memberName" placeholder="请输入电子邮箱" />
+          </a-form-item>
+
+          <a-form-item :label="`微信号`" calss="width-50">
+            <a-input v-model:value="formState.memberName" placeholder="请输入微信号" />
+          </a-form-item>
+        </div>
+
+        <!--  级联选择器  - -   -->
+        <a-form-item :label="`公司地址`" name="detailedAddress">
+          <div class="flex-content adress-content">
+            <a-form-item-rest>
+              <a-cascader
+                v-model:value="state.formState.companyAddress"
+                :options="state.proMunAreaList"
+                @change="cascadeChange"
+                placeholder="请选择省市区"
+              />
+            </a-form-item-rest>
+            <a-input
+              v-model:value="state.formState.detailedAddress"
+              placeholder="请输入详细的公司地址，具体门牌号"
+              class="adress-input"
+            />
+          </div>
         </a-form-item>
 
-        <a-form-item :label="`组织机构代码`" name="organizationCode">
-          <a-input
-            v-model:value="state.formState.organizationCode"
-            placeholder="请输入组织机构代码"
-          />
-        </a-form-item>
-
-        <a-form-item :label="`法定代表人`" name="legalRepresentative">
-          <a-input
-            v-model:value="state.formState.legalRepresentative"
-            placeholder="请输入法定代表人姓名"
-          />
-        </a-form-item>
-
-        <a-form-item label="法人电话" name="legalMobile" :rules="state.legalMobileRules">
-          <a-input v-model:value="state.formState.legalMobile" placeholder="请输入法人联系电话" />
-        </a-form-item>
-
-        <a-form-item label="法人身份证" name="legalIdentityUrl">
+        <a-form-item label="照片" name="legalIdentityUrl">
           <a-upload
             v-model:file-list="state.legalPersonListUrl"
             :action="updateUrl + '?updateSupport=' + updateSupport"
@@ -473,71 +579,11 @@
           >
             <div v-if="state.legalPersonListUrl.length < 1">
               <plus-outlined />
-              <div style="margin-top: 8px">上传法人证件</div>
+              <div style="margin-top: 8px">上传照片</div>
             </div>
           </a-upload>
 
-          <div class="upload-text">
-            请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
-          </div>
-        </a-form-item>
-
-        <a-form-item :label="`成立日期`" name="establishDate">
-          <a-date-picker
-            v-model:value="state.formState.establishDate"
-            format="YYYY/MM/DD"
-            placeholder="请选择时间"
-          />
-        </a-form-item>
-
-        <!--  级联选择器  - -   -->
-        <a-form-item :label="`公司地址`" name="detailedAddress">
-          <div class="flex-content adress-content">
-            <a-form-item-rest>
-              <a-cascader
-                v-model:value="state.formState.companyAddress"
-                :options="state.proMunAreaList"
-                @change="cascadeChange"
-                placeholder="请选择省市区"
-              />
-            </a-form-item-rest>
-            <a-input
-              v-model:value="state.formState.detailedAddress"
-              placeholder="请输入详细的公司地址，具体门牌号"
-              class="adress-input"
-            />
-          </div>
-        </a-form-item>
-
-        <a-form-item label="营业执照" name="businessLicenseUrl">
-          <a-upload
-            v-model:file-list="state.businessLicenseListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'businessLicense')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'businessLicense')
-              }
-            "
-          >
-            <div v-if="state.businessLicenseListUrl.length < 1">
-              <plus-outlined />
-              <div style="margin-top: 8px">上传营业执照</div>
-            </div>
-          </a-upload>
-
-          <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
+          <div class="upload-text"> 请上传成员的员工照片，支持png/jpg格式的照片 </div>
         </a-form-item>
       </a-form>
     </div>
@@ -876,7 +922,13 @@ import {
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from './pr'
-import { filterTree, getAllIds, getColumns, reconstructedTreeData } from '@/utils/utils'
+import {
+  filterTree,
+  getAllIds,
+  getColumns,
+  reconstructedTreeData,
+  reconstructionArrayObject
+} from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
@@ -885,36 +937,39 @@ import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import LeftTreeSelect from '@/components/LeftTreeSelect/LeftTreeSelect.vue'
-import { getMemberList } from '@/api/system/member'
+import { getMemberList, getPostTypeList, getRolesList } from '@/api/system/member'
+import { getOrganizationTypeList, getSimpleOrganizationList } from '@/api/system/organization'
+import { accessSync } from 'fs'
 
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
 
-interface FormState {
-  id?: number
-  name: string
-  type: number
-  parentId: number
-  icon: string
-  path: string
-  sort: number
-  status: number
-  visible: boolean
-  alwaysShow?: boolean
-  component: string
-  componentName: string
-  permission: string
-  keepAlive: boolean
-}
-
+//查询
 const queryParams = reactive({
   current: 1, //当前页码
   pageSize: 10, //显示条数
-  keyword: undefined,
-  systemName: undefined,
-  startEndTime: [],
-  status: undefined
+  organization: null, //机构 左侧tree
+  memberName: null, //成员姓名
+  memberPhone: null, //联系电话
+  postType: null, //岗位类型
+  partPost: null, //是否有兼岗 主岗 兼岗
+  post: null, //岗位
+  department: null, //部门
+  configureRoles: [], //配置角色
+  memberType: null, //人员类型
+  postStatus: '', //岗位状态
+  isOnJob: null, //在职状态
+  userType: null //账号类型
+})
+//新增编辑
+const formState = reactive({
+  memberNum: null, //成员工号
+  memberName: null, //成员姓名
+  sex: '1', //性别
+  entryTime: null, //入职时间
+  memberType: null, //人员类型
+  isOnJob: null //在职(人员)状态
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -974,16 +1029,85 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
-  memberName:'',//成员姓名
-  memberPhone:'',//联系电话
-  postType:'',//岗位类型
-  post:'',//岗位
-  department:'',//部门
-  configureRoles:'',//配置角色
-  memberType:'',//人员类型
-  postStatus:'',//岗位状态
+  postTypeOptions: [
+    {
+      value: 'G1',
+      label: '岗位1'
+    },
+    {
+      value: 'G2',
+      label: '岗位2'
+    }
+  ], //岗位类型Options
+  partPostOptions: [
+    {
+      value: '0',
+      label: '是'
+    },
+    {
+      value: '1',
+      label: '否'
+    }
+  ], //配置角色 Options tree
+  configureRolesOptions: [
+    {
+      value: 'R1',
+      label: '角色1'
+    },
+    {
+      value: 'R2',
+      label: '角色2'
+    },
+    {
+      value: 'R3',
+      label: '角色3'
+    },
+    {
+      value: 'R4',
+      label: '角色4'
+    }
+  ], //是否兼岗 Options tree
+  memberTypeOptions: [
+    {
+      value: '0',
+      label: '正式'
+    },
+    {
+      value: '1',
+      label: '试用'
+    }
+  ], //人员类型 Options tree
+  onJobOptions: [
+    {
+      value: '0',
+      label: '在职'
+    },
+    {
+      value: '1',
+      label: '离职'
+    }
+  ], //在职状态 Options tree
+  userTypeOptions: [
+    {
+      value: '0',
+      label: '正常'
+    },
+    {
+      value: '1',
+      label: '禁用'
+    }
+  ], //帐号状态 Options tree
 
-  postTypeOptions: [], //岗位类型Options
+  partPostOptionsText: [
+    {
+      value: '0',
+      label: '主岗'
+    },
+    {
+      value: '1',
+      label: '兼岗'
+    }
+  ], //新增修改 岗位信息 主岗/兼岗 Options
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1084,14 +1208,12 @@ const state = reactive({
   tableStatusChangeInfo: {}, //存当前表格item项以及switch值
   tableStatusModalInfo: {}, //存当前表格item项 modal
   defaultKeys: [
-    'name',
-    'code',
-    'systemName',
-    'usableAmount',
-    'validityPeriod',
-    'bindingDomainName',
-    'contactName',
-    'contactMobile',
+    'memberNum',
+    'memberName',
+    'memberPhone',
+    'departmentPost',
+    'configureRoles',
+    'memberType',
     'statusSwitch',
     'operation'
   ], //定制列默认的keys
@@ -1110,83 +1232,74 @@ const testCheck = (checkedKeys, e) => {
 //ALL columns 用于定制列过滤 排序
 const allColumns = [
   {
-    title: '主体名称',
-    width: 200,
-    dataIndex: 'name',
-    key: 'name',
+    title: '成员工号',
+    width: 100,
+    dataIndex: 'memberNum',
+    key: 'memberNum',
     resizable: true,
     ellipsis: true,
     disabled: true,
     sort: 1
   },
   {
-    title: '主体编码',
+    title: '成员姓名',
     width: 100,
-    dataIndex: 'code',
-    key: 'code',
+    dataIndex: 'memberName',
+    key: 'memberName',
     resizable: true,
     ellipsis: true,
     disabled: true,
     sort: 2
   },
   {
-    title: '系统名称',
+    title: '联系电话',
     width: 100,
-    dataIndex: 'systemName',
-    key: 'systemName',
+    dataIndex: 'memberPhone',
+    key: 'memberPhone',
     resizable: true,
     ellipsis: true,
     disabled: true,
     sort: 3
   },
   {
-    title: '已用/可用名额',
-    width: 100,
-    dataIndex: 'usableAmount',
-    key: 'usableAmount',
+    title: '部门/岗位',
+    width: 200,
+    dataIndex: 'departmentPost',
+    key: 'departmentPost',
     resizable: true,
     ellipsis: true,
     sort: 4
   },
   {
-    title: '有效期',
+    title: '配置角色',
     width: 200,
-    dataIndex: 'validityPeriod',
-    key: 'validityPeriod',
+    dataIndex: 'configureRoles',
+    key: 'configureRoles',
     resizable: true,
     ellipsis: true,
     sort: 5
   },
 
   {
-    title: '绑定域名',
+    title: '人员类型',
     width: 100,
-    dataIndex: 'bindingDomainName',
-    key: 'bindingDomainName',
+    dataIndex: 'memberType',
+    key: 'memberType',
     resizable: true,
     ellipsis: true,
     sort: 6
   },
   {
-    title: '负责人',
+    title: '在职状态',
     width: 100,
-    dataIndex: 'contactName',
-    key: 'contactName',
+    dataIndex: 'isOnJob',
+    key: 'isOnJob',
     resizable: true,
     ellipsis: true,
     sort: 7
   },
   {
-    title: '负责人电话',
-    width: 100,
-    dataIndex: 'contactMobile',
-    key: 'contactMobile',
-    resizable: true,
-    ellipsis: true,
-    sort: 8
-  },
-  {
-    title: '状态',
+    title: '账号状态',
     width: 100,
     dataIndex: 'statusSwitch',
     key: 'statusSwitch',
@@ -1249,34 +1362,67 @@ const getList = async () => {
   const params = {
     pageNo: queryParams.current,
     pageSize: queryParams.pageSize,
-    nameOrNumber: '', //姓名or工号
-    phone: '', //联系电话
-    postName: '', //岗位名称
-    postTypeCode: '' //岗位类型
-  }
-
-  if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
-    params['localDates'] = [
-      queryParams.startEndTime[0]?.format('YYYY-MM-DD'),
-      queryParams.startEndTime[1]?.format('YYYY-MM-DD')
-      // queryParams.startEndTime[0]?.format('YYYY/MM/DD'),
-      // queryParams.startEndTime[1]?.format('YYYY/MM/DD')
-    ]
+    component: queryParams.organization, //机构 左侧tree
+    nameOrNumber: queryParams.memberName, //姓名or工号
+    phone: queryParams.memberPhone, //联系电话
+    postTypeCode: queryParams.postType, //岗位类型
+    postName: queryParams.post, //岗位名称
+    postType: queryParams.memberType, //是否兼岗
+    roleId: queryParams.configureRoles, //配置角色
+    userType: queryParams.memberType, //人员类型
+    status: queryParams.userType, //账号状态
+    userStatus: queryParams.isOnJob //在职状态
   }
 
   try {
     const res = await getMemberList(params)
     console.log('成员管理res', res)
-    state.rawData = res
-    state.tableDataList = res
+    state.rawData = res.list
+    state.tableDataList = res.list
     state.tableDataList.map((item) => {
-      item.statusSwitch = item.status === 0
-      item.bindingDomainName = item.domain
-      item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
-      item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
+      const tempPhoneList = []
+      const tempDepartmentPost = []
+      //联系电话
+      item?.phoneVOList?.map((phoneItem) => {
+        // '0'公司 '1'私人
+        let tempText = '公司'
+        if (phoneItem.usageType === '1') {
+          tempText = '私人'
+        }
+        tempPhoneList.push({
+          phoneNum: phoneItem.phone,
+          type: phoneItem.usageType,
+          phoneType: tempText
+        })
+      })
+
+      //部门、岗位
+      item?.postVOList?.map((postItem) => {
+        let tempText = '主岗'
+        if (postItem.type === '1') {
+          tempText = '兼岗'
+        }
+        tempDepartmentPost.push({
+          department: postItem.componentName, //部门
+          post: postItem.postName, //岗位
+          type: postItem.type, //主岗0 兼岗1
+          typeText: tempText
+        })
+      })
+
+      //人员类型
+      const tempMemberType = state.memberTypeOptions.filter(
+        (memberTypeItem) => memberTypeItem.value === item.userType
+      )
+      item.memberNum = item.username
+      item.memberName = item.nickname
+      item.memberPhoneList = tempPhoneList
+      item.departmentPostList = tempDepartmentPost
+      item.statusSwitch = item?.status === 0 //账号状态
+      item.memberType = tempMemberType[0]?.label //人员类型
     })
 
-    state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
+    console.log('state.tableDataList', state.tableDataList)
 
     state.total = res.total
   } finally {
@@ -1307,11 +1453,24 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  queryFormRef.value.resetFields()
+  state.queryParams = {
+    current: 1, //当前页码
+    pageSize: 10, //显示条数
+    organization: null, //机构 左侧tree
+    memberName: null, //成员姓名
+    memberPhone: null, //联系电话
+    postType: null, //岗位类型
+    partPost: null, //是否有兼岗 主岗 兼岗
+    post: null, //岗位
+    department: null, //部门
+    configureRoles: [], //配置角色
+    memberType: null, //人员类型
+    postStatus: '', //岗位状态
+    isOnJob: null, //在职状态
+    userType: null //账号类型
+  }
   handleQuery()
 }
-
-getList()
 
 //一键 展开 折叠 全部
 const toggleExpandAll = () => {
@@ -1397,6 +1556,27 @@ const closeModal = () => {
   delete state.formState?.id
   state.modalTitle = '新增'
   state.modalType = 'add'
+
+  addDataSource.addEditTableData = [
+    {
+      index: 0,
+      phoneType: '',
+      phoneNum: '',
+      useType: '',
+      isService: ''
+    }
+  ]
+
+  addPostDataSource.addEditTableData = [
+    {
+      index: 0,
+      department: null,
+      post: null,
+      brand: null,
+      isMainPost: null,
+      isShow: true
+    }
+  ]
 }
 
 /** 添加/修改操作 */
@@ -2213,29 +2393,289 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 state.columns = getColumns(state, PageKeyObj.member, allColumns, state.defaultKeys)
 
 const sendCurrentSelect = (currentKey) => {
-  // console.log('currentKey', currentKey)
+  console.log('currentKey', currentKey)
+  queryParams.organization = currentKey
+  getList()
 }
 
 interface DataItem {
-  key: number;
-  name: string;
-  age: number;
-  address: string;
-  children?: DataItem[];
+  key: number
+  name: string
+  age: number
+  address: string
+  children?: DataItem[]
 }
 
 const rowSelection = ref({
   checkStrictly: false,
   onChange: (selectedRowKeys: (string | number)[], selectedRows: DataItem[]) => {
-    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
   },
   onSelect: (record: DataItem, selected: boolean, selectedRows: DataItem[]) => {
-    console.log(record, selected, selectedRows);
+    console.log(record, selected, selectedRows)
   },
   onSelectAll: (selected: boolean, selectedRows: DataItem[], changeRows: DataItem[]) => {
-    console.log(selected, selectedRows, changeRows);
+    console.log(selected, selectedRows, changeRows)
+  }
+})
+
+//获取部门列表
+const getOrganizationListFN = async () => {
+  const res = await getSimpleOrganizationList()
+  const organizationList = handleTree(res, 'id', 'parentId', 'children')
+  // console.log('res', res)
+  // console.log('organization', organizationList)
+
+  // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
+  let needReplaceKey = [
+    ['title', 'name'],
+    ['key', 'component']
+  ]
+  state.organizationOptions = reconstructedTreeData(organizationList, needReplaceKey)
+  console.log('组织机构List', res)
+  console.log('组织机构tempArr', state.organizationOptions)
+}
+
+getOrganizationListFN()
+
+//获取岗位类型 配置角色 人员类型
+const getAllType = async () => {
+  //岗位类型
+  const res = await getPostTypeList()
+  //角色信息
+  const rolesRes = await getRolesList()
+  //获取数据字典
+  const dictRes = await getOrganizationTypeList()
+  console.log('dictRes', dictRes)
+
+  //人员类型
+  const tempMemberType = dictRes.filter((item) => item.dictType === 'person_type')
+
+  //处理一下吧 当然换成 在标签上通过fieldNames更改也可以
+  const needReplaceKey = [
+    ['label', 'name'],
+    ['value', 'code']
+  ]
+
+  const needReplacePartPostKey = [
+    ['label', 'name'],
+    ['value', 'id']
+  ]
+  await nextTick(() => {
+    state.postTypeOptions = reconstructionArrayObject(res, needReplaceKey)
+    state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
+    state.memberTypeOptions = tempMemberType
+  })
+
+  console.log('岗位类型', res)
+  console.log('岗位类型D', state.postTypeOptions)
+  console.log('角色信息', rolesRes)
+  console.log('角色信息D', state.partPostOptions)
+  console.log('人员类型', tempMemberType)
+  console.log('人员类型D', state.memberTypeOptions)
+}
+
+getAllType()
+
+//新增编辑 联系电话
+const addEditColumns = [
+  {
+    title: '序号',
+    dataIndex: 'index',
+    key: 'index',
+    align: 'center'
   },
-});
+  {
+    title: '号码类别',
+    width: 130,
+    dataIndex: 'phoneType',
+    key: 'phoneType',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 1
+  },
+  {
+    title: '号码',
+    width: 110,
+    dataIndex: 'phoneNum',
+    key: 'phoneNum',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 2
+  },
+  {
+    title: '使用类型',
+    width: 130,
+    dataIndex: 'useType',
+    key: 'useType',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 3
+  },
+  {
+    title: '是否开通云服务',
+    width: 120,
+    dataIndex: 'isService',
+    key: 'isService',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 4
+  },
+  {
+    title: '操作',
+    width: 100,
+    dataIndex: 'operation',
+    key: 'operation',
+    resizable: true,
+    ellipsis: true,
+    sort: 13
+  }
+]
+
+const addDataSource = reactive({
+  addEditTableData: [
+    {
+      index: 0,
+      phoneType: '',
+      phoneNum: '',
+      useType: '',
+      isService: ''
+    }
+  ]
+})
+
+//新增编辑 联系电话 add
+const addColumns = () => {
+  addDataSource.addEditTableData.push({
+    phoneType: '',
+    phoneNum: '',
+    useType: '',
+    isService: ''
+  })
+
+  addDataSource.addEditTableData.map((item, index) => {
+    item.index = index
+  })
+}
+
+//新增编辑 联系电话 delete
+const deleteColumns = (index) => {
+  addDataSource.addEditTableData = addDataSource.addEditTableData.filter(
+    (item) => item.index !== index
+  )
+
+  console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
+  addDataSource.addEditTableData.map((item, index) => {
+    item.index = index + 1
+  })
+}
+
+//新增编辑 岗位信息
+const addEditPostColumns = [
+  {
+    title: '所属部门',
+    width: 130,
+    dataIndex: 'department',
+    key: 'department',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 1
+  },
+  {
+    title: '岗位',
+    width: 110,
+    dataIndex: 'post',
+    key: 'post',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 2
+  },
+  {
+    title: '所属品牌',
+    width: 130,
+    dataIndex: 'brand',
+    key: 'brand',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 3
+  },
+  {
+    title: '主岗/兼岗',
+    width: 120,
+    dataIndex: 'isMainPost',
+    key: 'isMainPost',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 4
+  },
+  {
+    title: '是否显示',
+    width: 120,
+    dataIndex: 'isShow',
+    key: 'isShow',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 4
+  },
+  {
+    title: '操作',
+    width: 100,
+    dataIndex: 'operation',
+    key: 'operation',
+    resizable: true,
+    ellipsis: true,
+    sort: 13
+  }
+]
+
+const addPostDataSource = reactive({
+  addEditTableData: [
+    {
+      index: 0,
+      department: null,
+      post: null,
+      brand: null,
+      isMainPost: null,
+      isShow: true
+    }
+  ]
+})
+
+//新增编辑 岗位信息 add
+const addPostColumns = () => {
+  addPostDataSource.addEditTableData.push({
+    department: null,
+    post: null,
+    brand: null,
+    isMainPost: null,
+    isShow: false
+  })
+
+  addPostDataSource.addEditTableData.map((item, index) => {
+    item.index = index
+  })
+}
+
+//新增编辑 岗位信息 delete
+const deletePostColumns = (index) => {
+  addPostDataSource.addEditTableData = addPostDataSource.addEditTableData.filter(
+    (item) => item.index !== index
+  )
+
+  console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
+  addPostDataSource.addEditTableData.map((item, index) => {
+    item.index = index + 1
+  })
+}
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
@@ -2749,6 +3189,27 @@ watch(
 .adress-input {
   width: 530px;
 }
+
+//table 联系电话
+.phone-div-content {
+  display: flex;
+  margin-bottom: 10px;
+}
+.phone-div {
+  margin-right: 14px;
+}
+//新增修改
+.form-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.width-50 {
+  width: 40%;
+}
+.width-100 {
+  width: 100%;
+}
 </style>
 
 <style lang="scss">
@@ -2797,6 +3258,29 @@ watch(
   //可用名额
   .ant-input-number {
     width: 200px;
+  }
+
+  //联系电话表格
+  .ant-table thead > tr > th {
+    background: rgb(246, 246, 246);
+  }
+  .ant-table-tbody {
+    background: white;
+  }
+  .ant-table-cell {
+    background: white !important;
+  }
+  .ant-table-cell-row-hover {
+    background: white !important;
+  }
+
+  .ant-table-tbody .ant-table-row-hover > td {
+    background: white !important;
+  }
+
+  .ant-table-cell {
+    padding: 0;
+    margin: 0;
   }
 }
 </style>
