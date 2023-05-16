@@ -86,6 +86,7 @@ declare module '@vue/runtime-core' {
     ImageViewer: typeof import('./../components/ImageViewer/src/ImageViewer.vue')['default']
     Infotip: typeof import('./../components/Infotip/src/Infotip.vue')['default']
     InputPassword: typeof import('./../components/InputPassword/src/InputPassword.vue')['default']
+    LeftTreeSelect: typeof import('./../components/LeftTreeSelect/LeftTreeSelect.vue')['default']
     Pagination: typeof import('./../components/Pagination/index.vue')['default']
     ProcessDesigner: typeof import('./../components/bpmnProcessDesigner/package/designer/ProcessDesigner.vue')['default']
     ProcessPalette: typeof import('./../components/bpmnProcessDesigner/package/palette/ProcessPalette.vue')['default']

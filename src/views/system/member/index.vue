@@ -1,166 +1,241 @@
+<!-- 成员管理  -->
 <template>
-  <!-- 搜索工作栏 -->
-
-  <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
-      <a-form-item :label="`主体名称`" name="keyword">
-        <a-input v-model:value="queryParams.keyword" placeholder="请输入主体名称或者编码" />
-      </a-form-item>
-      <a-form-item :label="`系统名称`" name="systemName">
-        <a-input v-model:value="queryParams.systemName" placeholder="请输入系统名称" />
-      </a-form-item>
-      <a-form-item :label="`有效期`" name="startEndTime">
-        <a-range-picker
-          v-model:value="queryParams.startEndTime"
-          format="YYYY/MM/DD"
-          :placeholder="['开始时间', '结束时间']"
-        />
-      </a-form-item>
-
-      <a-form-item :label="`状态`" name="status">
-        <a-select
-          v-model:value="queryParams.status"
-          placeholder="请选择状态"
-          style="width: 200px"
-          :options="state.statusOptions"
-        />
-      </a-form-item>
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
-      <a-button @click="resetQuery">重置</a-button>
-    </a-form>
-  </ContentWrap>
-
-  <!--  表格  -->
-  <a-card :bordered="false" style="min-width: 1650px; padding-bottom: 30px" id="card-content">
-    <!--  <ContentWrap>-->
-    <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
-    <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
-    <!--    >-->
-
-    <div class="card-content">
-      <!--  左侧按钮  -->
-      <div class="button-content">
-        <a-button type="primary" @click="openModal()">
-          <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
-          新增
-        </a-button>
-        <a-button @click="toggleExpandAll">
-          <template #icon>
-            <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
-            <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
-          </template>
-          展开收起
-        </a-button>
-      </div>
-      <!--  右侧操作  -->
-      <div class="operation-content">
-        <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
-        <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
-        <Icon
-          icon="svg-icon:custom-column"
-          :size="50"
-          class="cursor-pointer"
-          @click="state.isShowCustomColumnModal = true"
-        />
-      </div>
+  <div class="total-content">
+    <div class="left-card-content">
+      <!--  tree  -->
+      <LeftTreeSelect @sendCurrentSelect="sendCurrentSelect"></LeftTreeSelect>
     </div>
+    <div class="right-card-content">
+      <!--  搜索  -->
+      <a-card>
+        <div class="total-search-content">
+          <div class="search-content">
+            <div class="search-item">
+              <div class="item-label">成员姓名：</div>
+              <div class="item-condition">
+                <a-input class="width-100" v-model:value="value" placeholder="Basic usage" />
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">联系电话：</div>
 
-    <!--  分页 - - 之前有 后面去掉了  -->
-    <!--    :pagination="{-->
-    <!--    pageSizeOptions: ['20', '30', '60', '100'],-->
-    <!--    showSizeChanger: true,-->
-    <!--    showQuickJumper: true,-->
-    <!--    pageSize: queryParams.pageSize,-->
-    <!--    current: queryParams.current,-->
-    <!--    total: state.total,-->
-    <!--    showTotal: (total) => `总共 ${total} 条`-->
-    <!--    }"-->
+              <div class="item-condition">
+                <a-input class="width-100" v-model:value="value" placeholder="Basic usage" />
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">岗位类型：</div>
+              <div class="item-condition">
+                <a-select
+                  v-model:value="state.value1"
+                  :options="state.options"
+                  class="width-100"
+                ></a-select>
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">岗位：</div>
+              <div class="item-condition flex-style select-input">
+                <a-select v-model:value="state.value2" class="width-70">
+                  <a-select-option value="jack">主岗</a-select-option>
+                  <a-select-option value="lucy">兼岗</a-select-option>
+                </a-select>
+                <a-input class="width-180" v-model:value="state.value3" placeholder="Basic usage" />
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">部门：</div>
+              <div class="item-condition">
+                <a-select
+                  v-model:value="state.value1"
+                  class="width-100"
+                  :options="state.options"
+                ></a-select>
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">配置角色：</div>
+              <div class="item-condition">
+                <a-select
+                  v-model:value="state.value1"
+                  class="width-100"
+                  :options="state.options"
+                ></a-select>
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">人员类型：</div>
+              <div class="item-condition">
+                <a-select
+                  v-model:value="state.value1"
+                  class="width-100"
+                  :options="state.options"
+                ></a-select>
+              </div>
+            </div>
+            <div class="search-item">
+              <div class="item-label">帐号类型：</div>
+              <div class="item-condition select-input">
+                <a-select
+                  v-model:value="state.value1"
+                  class="width-100"
+                  :options="state.options"
+                ></a-select>
+              </div>
+            </div>
+          </div>
 
-    <a-table
-      v-if="state.refreshTable"
-      :columns="state.columns"
-      :data-source="state.tableDataList"
-      :scroll="{ x: '100%' }"
-      :pagination="false"
-      @change="onChange"
-      :row-key="(record) => record.id"
-      :loading="state.loading"
-      :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
-      :defaultExpandAllRows="state.isExpandAll"
-      @resizeColumn="handleResizeColumn"
-    >
-      <!--  自定义展开折叠图标  -->
-      <template #expandIcon="props">
-        <span v-if="props.record.children && props.record.children.length > 0">
-          <div
-            v-if="props.expanded"
-            style="display: inline-block; margin-right: 10px"
-            @click="
-              (e) => {
-                props.onExpand(props.record, e)
-              }
-            "
-          >
-            <Icon icon="ep:caret-bottom" :size="12" />
+          <div class="search-btn-content">
+            <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+            <a-button @click="resetQuery">重置</a-button>
           </div>
-          <div
-            v-else
-            style="display: inline-block; margin-right: 10px"
-            @click="
-              (e) => {
-                props.onExpand(props.record, e)
-              }
-            "
-          >
-            <Icon icon="ep:caret-right" :size="12" />
-          </div>
-        </span>
-        <span v-else style="margin-right: 22px"></span>
-      </template>
-      <!--  单元格插槽  -->
-      <template #bodyCell="{ column, record }">
-        <!--  可用名额   -->
-        <template v-if="column?.key === 'usableAmount'">
-          <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
-        </template>
-        <!--  有效期   -->
-        <template v-if="column?.key === 'validityPeriod'">
-          <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
-        </template>
-        <!--  状态   -->
-        <template v-if="column?.key === 'statusSwitch'">
-          <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
-          <!-- <div class="employees-Number">{{ record.status }}</div>-->
-          <!--          <a-switch-->
-          <!--            v-model:checked="record.statusSwitch"-->
-          <!--            @change="(value) => tableStatusChange(value, record)"-->
-          <!--          />-->
-          <a-switch
-            :disabled="record.level === 1"
-            v-model:checked="record.statusSwitch"
-            @change="(value) => setTableStatusChangeInfo(value, record)"
-          />
-        </template>
-        <!--  操作   -->
-        <template v-if="column?.key === 'operation'">
-          <div class="operation-content">
-            <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-            <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
-            <div class="text-color margin-right-5" @click="assignPermission(record)">功能配置</div>
-            <a-popover placement="bottom">
-              <template #content>
-                <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+        </div>
+      </a-card>
+
+      <!--  表格  -->
+      <a-card :bordered="false" style="padding-bottom: 30px" id="card-content">
+        <!--  <ContentWrap>-->
+        <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
+        <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
+        <!--    >-->
+
+        <div class="card-content">
+          <!--  左侧按钮  -->
+          <div class="button-content">
+            <a-button type="primary" @click="openModal()">
+              <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
+              新增
+            </a-button>
+            <a-button @click="toggleExpandAll">
+              <template #icon>
+                <Icon
+                  icon="svg-icon:expansion"
+                  class="btn-icon"
+                  :size="10"
+                  v-if="state.isExpandAll"
+                />
+                <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
               </template>
-              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-            </a-popover>
+              展开收起
+            </a-button>
           </div>
-        </template>
-      </template>
-    </a-table>
-    <!--  </ContentWrap>-->
-  </a-card>
+          <!--  右侧操作  -->
+          <div class="operation-content">
+            <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
+            <Icon
+              icon="svg-icon:full-screen"
+              :size="50"
+              class="cursor-pointer"
+              @click="fullScreen"
+            />
+            <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
+            <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
+            <Icon
+              icon="svg-icon:custom-column"
+              :size="50"
+              class="cursor-pointer"
+              @click="state.isShowCustomColumnModal = true"
+            />
+          </div>
+        </div>
+
+
+        <a-table
+          v-if="state.refreshTable"
+          :columns="state.columns"
+          :data-source="state.tableDataList"
+          :scroll="{ x: '100%' }"
+          @change="onChange"
+          :row-key="(record) => record.id"
+          :row-selection="rowSelection"
+          :loading="state.loading"
+          :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
+          :defaultExpandAllRows="state.isExpandAll"
+          @resizeColumn="handleResizeColumn"
+          :pagination="{
+            pageSizeOptions: ['20', '30', '60', '100'],
+            showSizeChanger: true,
+            showQuickJumper: true,
+            pageSize: queryParams.pageSize,
+            current: queryParams.current,
+            total: state.total,
+            showTotal: (total) => `总共 ${total} 条`
+            }"
+        >
+          <!--  自定义展开折叠图标  -->
+          <template #expandIcon="props">
+            <span v-if="props.record.children && props.record.children.length > 0">
+              <div
+                v-if="props.expanded"
+                style="display: inline-block; margin-right: 10px"
+                @click="
+                  (e) => {
+                    props.onExpand(props.record, e)
+                  }
+                "
+              >
+                <Icon icon="ep:caret-bottom" :size="12" />
+              </div>
+              <div
+                v-else
+                style="display: inline-block; margin-right: 10px"
+                @click="
+                  (e) => {
+                    props.onExpand(props.record, e)
+                  }
+                "
+              >
+                <Icon icon="ep:caret-right" :size="12" />
+              </div>
+            </span>
+            <span v-else style="margin-right: 22px"></span>
+          </template>
+          <!--  单元格插槽  -->
+          <template #bodyCell="{ column, record }">
+            <!--  可用名额   -->
+            <template v-if="column?.key === 'usableAmount'">
+              <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
+            </template>
+            <!--  有效期   -->
+            <template v-if="column?.key === 'validityPeriod'">
+              <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
+            </template>
+            <!--  状态   -->
+            <template v-if="column?.key === 'statusSwitch'">
+              <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
+              <!-- <div class="employees-Number">{{ record.status }}</div>-->
+              <!--          <a-switch-->
+              <!--            v-model:checked="record.statusSwitch"-->
+              <!--            @change="(value) => tableStatusChange(value, record)"-->
+              <!--          />-->
+              <a-switch
+                :disabled="record.level === 1"
+                v-model:checked="record.statusSwitch"
+                @change="(value) => setTableStatusChangeInfo(value, record)"
+              />
+            </template>
+            <!--  操作   -->
+            <template v-if="column?.key === 'operation'">
+              <div class="operation-content">
+                <div class="text-color margin-right-5" @click="edit(record)">修改</div>
+                <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
+                <div class="text-color margin-right-5" @click="assignPermission(record)"
+                  >功能配置</div
+                >
+                <a-popover placement="bottom">
+                  <template #content>
+                    <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+                  </template>
+                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+                </a-popover>
+              </div>
+            </template>
+          </template>
+        </a-table>
+        <!--  </ContentWrap>-->
+      </a-card>
+    </div>
+  </div>
 
   <!-- 新增 编辑 Modal -->
   <a-modal
@@ -630,7 +705,9 @@
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
-          <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
+          <span class="status-span">{{
+            state.tableStatusChangeInfo.record?.children?.length
+          }}</span>
           个子项主体将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
@@ -757,7 +834,7 @@
     :allColumns="allColumns"
     :defaultKeys="state.defaultKeys"
     :changedColumnsObj="state.changedColumnsObj"
-    :pageKey="PageKeyObj.business"
+    :pageKey="PageKeyObj.member"
   />
 
   <!--  上传图片预览  -->
@@ -799,13 +876,7 @@ import {
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from './pr'
-import {
-  filterTree,
-  getAllIds,
-  getColumns,
-  reconstructedTreeData,
-  toTreeCount
-} from '@/utils/utils'
+import { filterTree, getAllIds, getColumns, reconstructedTreeData } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
@@ -813,6 +884,8 @@ import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
+import LeftTreeSelect from '@/components/LeftTreeSelect/LeftTreeSelect.vue'
+import { getMemberList } from '@/api/system/member'
 
 const { wsCache } = useCache()
 
@@ -845,23 +918,6 @@ const queryParams = reactive({
 })
 
 const queryFormRef = ref() // 搜索的表单
-
-//路由地址校验规则
-const routeValidator = (rule, value) => {
-  return new Promise<void>((resolve, reject) => {
-    if (value) {
-      //目录必须以/开头
-      if (state.formState.type === SystemMenuTypeEnum.DIR && !value.startsWith('/')) {
-        reject('路由地址必须以/开头')
-      } else if (state.formState.type === SystemMenuTypeEnum.MENU && value.startsWith('/')) {
-        //菜单不能以/开头
-        reject('路由地址不能以/开头')
-      } else {
-        resolve()
-      }
-    }
-  })
-}
 
 //手机号码正则校验 -  简单校验没有全按国内的号码段来  -
 const isValidPhoneNumber = (phoneNumber) => {
@@ -918,6 +974,17 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
+  memberName:'',//成员姓名
+  memberPhone:'',//联系电话
+  postType:'',//岗位类型
+  post:'',//岗位
+  department:'',//部门
+  configureRoles:'',//配置角色
+  memberType:'',//人员类型
+  postStatus:'',//岗位状态
+
+  postTypeOptions: [], //岗位类型Options
+
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
   messageText: '为了保护您的主体公司业务数据安全，请通过安全验证：',
@@ -943,7 +1010,6 @@ const state = reactive({
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
   currentMenu: '目录',
-  routerRules: [{ required: true }, { validator: routeValidator }],
   contactMobileRules: [
     { required: true, message: `负责人电话不能为空` },
     { validator: contactMobileValidator }
@@ -1177,17 +1243,16 @@ const allColumns = [
   }
 ]
 
-/** 查询列表
- * @param isRefresh 右侧刷新图标进
- * */
-const getList = async (isRefresh = false) => {
+/** 查询列表 */
+const getList = async () => {
   state.loading = true
   const params = {
-    // pageNo: queryParams.current,
-    // pageSize: queryParams.pageSize,
-    keyword: queryParams.keyword,
-    systemName: queryParams.systemName,
-    status: queryParams.status
+    pageNo: queryParams.current,
+    pageSize: queryParams.pageSize,
+    nameOrNumber: '', //姓名or工号
+    phone: '', //联系电话
+    postName: '', //岗位名称
+    postTypeCode: '' //岗位类型
   }
 
   if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
@@ -1200,7 +1265,8 @@ const getList = async (isRefresh = false) => {
   }
 
   try {
-    const res = await getMajorIndividualList(params)
+    const res = await getMemberList(params)
+    console.log('成员管理res', res)
     state.rawData = res
     state.tableDataList = res
     state.tableDataList.map((item) => {
@@ -1213,10 +1279,6 @@ const getList = async (isRefresh = false) => {
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
 
     state.total = res.total
-
-    if (isRefresh) {
-      message.success('刷新成功')
-    }
   } finally {
     state.loading = false
   }
@@ -1649,12 +1711,10 @@ const setTableStatusChangeInfo = (value, record) => {
     state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
-    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
-    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   }
 
   //过滤得到父级项
@@ -2149,26 +2209,33 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.refreshTable = true
 }
 
-// //TODO:这个方法有空再抽出去
-// //获取默认的columns
-// const getColumns = () => {
-//   //business 为当前存储的页面
-//   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
-//   //有缓存 取缓存
-//   if (columnsObj[PageKeyObj.business]) {
-//     state.changedColumnsObj = columnsObj[PageKeyObj.business]
-//     return columnsObj[PageKeyObj.business].currentColumns
-//   }
-//   const currentColumns = allColumns.filter((columnsItem) => {
-//     return state.defaultKeys.some((item) => columnsItem.key === item)
-//   })
-//   return currentColumns
-// }
-// //初始化 获取默认的 columns
-// state.columns = getColumns()
-
 //初始化 获取默认的 columns
-state.columns = getColumns(state, PageKeyObj.business, allColumns, state.defaultKeys)
+state.columns = getColumns(state, PageKeyObj.member, allColumns, state.defaultKeys)
+
+const sendCurrentSelect = (currentKey) => {
+  // console.log('currentKey', currentKey)
+}
+
+interface DataItem {
+  key: number;
+  name: string;
+  age: number;
+  address: string;
+  children?: DataItem[];
+}
+
+const rowSelection = ref({
+  checkStrictly: false,
+  onChange: (selectedRowKeys: (string | number)[], selectedRows: DataItem[]) => {
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+  },
+  onSelect: (record: DataItem, selected: boolean, selectedRows: DataItem[]) => {
+    console.log(record, selected, selectedRows);
+  },
+  onSelectAll: (selected: boolean, selectedRows: DataItem[], changeRows: DataItem[]) => {
+    console.log(selected, selectedRows, changeRows);
+  },
+});
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
@@ -2186,10 +2253,99 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-.content {
-  width: 100px;
-  height: 100px;
-  background: skyblue;
+//========================== search start ==================================
+.total-search-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.search-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  //flex: 1 3 auto;
+}
+
+.search-btn-content {
+  width: 300px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  //background: skyblue;
+  //flex: 1 1 auto;
+}
+
+.search-item {
+  display: flex;
+  //flex: 1;
+  margin-top: 10px;
+}
+
+.item-label {
+  width: 80px;
+  //margin-left: 10px;
+  display: flex;
+  //justify-content: flex-start;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.item-condition {
+  width: 180px;
+}
+
+.flex-style {
+  display: flex;
+}
+
+.select-input {
+  width: 270px;
+}
+
+.width-70 {
+  width: 70px;
+}
+
+.width-180 {
+  width: 180px;
+  flex: 1;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+//========================== search end ==================================
+.total-content {
+  width: 100%;
+  height: 100%;
+  //background: skyblue;
+  //overflow: auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.left-card-content {
+  width: 100%;
+  //background: skyblue;
+  flex: 1 4 auto;
+  //flex-shrink: 1;
+}
+.right-card-content {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  //background: slateblue;
+  flex: 4 1 auto;
+  //margin-right: 10px;
+  //flex-shrink: 3;
+}
+
+//搜索重置 btn
+.search-btn-content {
+  min-width: 160px;
+  display: flex;
+  justify-content: space-between;
 }
 
 //新增  导出 button

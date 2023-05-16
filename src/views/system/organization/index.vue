@@ -1345,7 +1345,8 @@ const openModal = async (record = {}) => {
     //非空对象判断 新增子项时回显
     state.formState.parentId = record.id
   }
-  const res = await getSimpleOrganizationList()
+
+
 
   let menuTree = []
   // let menu = {}
@@ -2302,7 +2303,8 @@ const removeContactInformation = (item) => {
 
 //新增  导出 button
 .card-content {
-  min-width: 1650px;
+  width: 100%;
+  //min-width: 1650px;
   height: 62px;
   //background: skyblue;
   padding: 0 15px;
@@ -2323,7 +2325,7 @@ const removeContactInformation = (item) => {
 :deep(.ant-card-body) {
   padding: 0;
   //max-height: 870px;
-  min-height: 870px;
+  //min-height: 870px;
 }
 
 .operation-content {

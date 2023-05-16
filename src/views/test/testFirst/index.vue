@@ -1165,7 +1165,8 @@ const handleResizeColumn = (w, col) => {
 
 //新增  导出 button
 .card-content {
-  min-width: 1650px;
+  width: 100%;
+  //min-width: 1650px;
   height: 62px;
   //background: skyblue;
   padding: 0 15px;
@@ -1186,7 +1187,7 @@ const handleResizeColumn = (w, col) => {
 :deep(.ant-card-body) {
   padding: 0;
   //max-height: 870px;
-  min-height: 870px;
+  //min-height: 870px;
 }
 
 .operation-content {
