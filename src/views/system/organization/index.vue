@@ -1345,8 +1345,7 @@ const openModal = async (record = {}) => {
     //非空对象判断 新增子项时回显
     state.formState.parentId = record.id
   }
-
-
+  const res = await getSimpleOrganizationList()
 
   let menuTree = []
   // let menu = {}
