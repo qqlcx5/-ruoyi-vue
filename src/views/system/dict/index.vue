@@ -8,7 +8,13 @@
     <div class="flex">
       <!-- ====== 字典分类 ====== -->
       <div class="w-1/2 overflow-hidden">
-        <el-form class="query-form w-full" ref="elFormRef" :model="typeSearchForm" label-position="left" label-width="70px">
+        <el-form
+          class="query-form w-full"
+          ref="elFormRef"
+          :model="typeSearchForm"
+          label-position="left"
+          label-width="70px"
+        >
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label="字典名称">
@@ -27,7 +33,11 @@
                 <el-button @click="onTypeSearchReset">重置</el-button>
               </div>
               <el-button class="!px-0" text @click="onTypeSearchToggle">
-                {{ searchFormToggle ? "收起" : "展开" }}<i class="iconfont icon-a-bianzu3 !text-12px transform transition-transform ml-2px" :class="{'rotate-180': !searchFormToggle}" />
+                {{ searchFormToggle ? '收起' : '展开'
+                }}<i
+                  class="iconfont icon-a-bianzu3 !text-12px transform transition-transform ml-2px"
+                  :class="{ 'rotate-180': !searchFormToggle }"
+                ></i>
               </el-button>
             </el-col>
             <el-col v-show="searchFormToggle" :span="8">
@@ -44,7 +54,12 @@
             <el-col v-show="searchFormToggle" :span="8">
               <el-form-item label="状态">
                 <el-select class="w-full" v-model="typeSearchForm.status" placeholder="请选择">
-                  <el-option v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)" :label="dict.label" :value="dict.value" />
+                  <el-option
+                    v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+                    :key="dict.value"
+                    :label="dict.label"
+                    :value="dict.value"
+                  />
                 </el-select>
               </el-form-item>
             </el-col>
@@ -99,9 +114,17 @@
       <!-- ====== 字典数据 ====== -->
       <div class="w-1/2 dict px-12px py-18px ml-50px shadow-card rounded-2px overflow-hidden">
         <p class="text-18px font-medium">字典数据</p>
-        <div v-if="!tableTypeSelect" class="text-20px text-tip text-center mt-248px">请从左侧选择</div>
+        <div v-if="!tableTypeSelect" class="text-20px text-tip text-center mt-248px"
+          >请从左侧选择</div
+        >
         <div v-else>
-          <el-form class="query-form w-full" ref="elFormRef" :model="queryParams" label-position="left" label-width="70px">
+          <el-form
+            class="query-form w-full"
+            ref="elFormRef"
+            :model="queryParams"
+            label-position="left"
+            label-width="70px"
+          >
             <el-row :gutter="12">
               <el-col :span="8">
                 <el-form-item label="数据标签">
@@ -176,7 +199,9 @@
         </template>
       </Form>
       <Form
-        v-if="['dataCreate', 'dataUpdate', 'dataLevel3Create', 'dataLevel3Update'].includes(actionType)"
+        v-if="
+          ['dataCreate', 'dataUpdate', 'dataLevel3Create', 'dataLevel3Update'].includes(actionType)
+        "
         :schema="DictDataSchemas.allSchemas.formSchema"
         :rules="DictDataSchemas.dictDataRules"
         ref="dataFormRef"
@@ -191,7 +216,11 @@
           @click="submitTypeForm"
         />
         <XButton
-          v-if="['dataCreate', 'dataUpdate', 'dataLevel3Create', 'dataLevel3Update'].includes(actionType)"
+          v-if="
+            ['dataCreate', 'dataUpdate', 'dataLevel3Create', 'dataLevel3Update'].includes(
+              actionType
+            )
+          "
           type="primary"
           :title="t('action.save')"
           :loading="actionLoading"
@@ -201,7 +230,13 @@
       </template>
     </XModal>
     <XModal v-model="dictDataVisible" :title="`${dictDataSelected?.label}数据详情`" width="1045px">
-      <el-form class="query-form w-full" ref="elFormRef" :model="dataLevel3queryParams" label-position="left" label-width="70px">
+      <el-form
+        class="query-form w-full"
+        ref="elFormRef"
+        :model="dataLevel3queryParams"
+        label-position="left"
+        label-width="70px"
+      >
         <el-row :gutter="12">
           <el-col :span="8">
             <el-form-item label="子项标签" class="!mb-0">
@@ -265,28 +300,25 @@ import * as DictDataLevel3Schemas from './dict.dataLevel3'
 import * as DictTypeApi from '@/api/system/dict/dict.type'
 import * as DictDataApi from '@/api/system/dict/dict.data'
 import { DictDataVO, DictTypeReqVO } from '@/api/system/dict/types'
-import {CommonStatusEnum} from "@/utils/constants";
+import { CommonStatusEnum } from '@/utils/constants'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
-import {reactive} from "vue";
-import { pickBy } from 'lodash-es'
-import {updateDictTypeApi} from "@/api/system/dict/dict.type";
-import {updateDictDataApi} from "@/api/system/dict/dict.data";
+import { reactive } from 'vue'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
 const typeSearchForm = ref({
-  createTime: [],
+  createTime: []
 })
-const [registerType, { reload: typeGetList, deleteData: typeDeleteData, refreshColumn: typeRefreshColumn }] = useXTable({
-  tableKey: "dict-type-table",
+const [registerType, { reload: typeGetList, deleteData: typeDeleteData }] = useXTable({
+  tableKey: 'dict-type-table',
   allSchemas: DictTypeSchemas.allSchemas,
   params: typeSearchForm,
   getListApi: DictTypeApi.getDictTypePageApi,
   deleteApi: DictTypeApi.deleteDictTypeApi,
   border: true,
-  pagerConfig: {border: false, background: false, perfect: false, pagerCount: 4},
-  height: 660,
+  pagerConfig: { border: false, background: false, perfect: false, pagerCount: 4 },
+  height: 660
 })
 
 const queryParams = reactive({
@@ -295,31 +327,31 @@ const queryParams = reactive({
   label: ''
 })
 const [registerData, { reload: dataGetList, deleteData: dataDeleteData }] = useXTable({
-  tableKey: "dict-data-table",
+  tableKey: 'dict-data-table',
   allSchemas: DictDataSchemas.allSchemas,
   params: queryParams,
   getListApi: DictDataApi.getDictDataPageApi,
   deleteApi: DictDataApi.deleteDictDataApi,
   border: true,
-  height: 606,
+  height: 606
 })
 
 const dataLevel3queryParams = reactive({
   parentId: null,
   label: ''
 })
-const [registerDataLevel3, { reload: dataLevel3GetList, deleteData: dataLevel3DeleteData }] = useXTable({
-  tableKey: "dict-level3data-table",
-  allSchemas: DictDataLevel3Schemas.allSchemas,
-  params: dataLevel3queryParams,
-  getListApi: DictDataApi.getDictDataPageApi,
-  deleteApi: DictDataApi.deleteDictDataApi,
-  border: true,
-})
+const [registerDataLevel3, { reload: dataLevel3GetList, deleteData: dataLevel3DeleteData }] =
+  useXTable({
+    tableKey: 'dict-level3data-table',
+    allSchemas: DictDataLevel3Schemas.allSchemas,
+    params: dataLevel3queryParams,
+    getListApi: DictDataApi.getDictDataPageApi,
+    deleteApi: DictDataApi.deleteDictDataApi,
+    border: true
+  })
 
 // ========== 字典分类列表相关 ==========
 const dictTypeValue = ref('')
-let dictTypeData = reactive({});
 // 字典分类修改操作
 const handleTypeCreate = () => {
   dictTypeValue.value = ''
@@ -329,50 +361,48 @@ const handleTypeUpdate = async (rowId: number) => {
   setDialogTile('typeUpdate')
   // 设置数据
   const res = await DictTypeApi.getDictTypeApi(rowId)
-  dictTypeData = res;
   dictTypeValue.value = res.type
   unref(typeFormRef)?.setValues(res)
 }
 // 分类搜索
-const searchFormToggle = ref(false);
-const onTypeSearchToggle =  () => {
-  searchFormToggle.value = !searchFormToggle.value;
+const searchFormToggle = ref(false)
+const onTypeSearchToggle = () => {
+  searchFormToggle.value = !searchFormToggle.value
 }
 const onTypeSearchSubmit = async () => {
-
-  await typeGetList();
+  await typeGetList()
 }
 const onTypeSearchReset = async () => {
   typeSearchForm.value = {
     createTime: []
   }
-  await typeGetList();
+  await typeGetList()
 }
 
 // data搜索
 const onDataSearchSubmit = async (type) => {
-  if (type === "dataLevel3") {
-    await dataLevel3GetList();
+  if (type === 'dataLevel3') {
+    await dataLevel3GetList()
   } else {
-    await dataGetList();
+    await dataGetList()
   }
 }
 const onDataSearchReset = async (type) => {
-  if (type === "dataLevel3") {
-    dataLevel3queryParams.label = "";
-    await dataLevel3GetList();
+  if (type === 'dataLevel3') {
+    dataLevel3queryParams.label = ''
+    await dataLevel3GetList()
   } else {
-    queryParams.label = "";
-    await dataGetList();
+    queryParams.label = ''
+    await dataGetList()
   }
 }
 const dictDataVisible = ref(false) // 字典数据详情是否显示弹出层
 const dictDataSelected = ref() // 操作字典数据
 //字典数据详情
 const handleDataDetail = async (row) => {
-  dictDataSelected.value = row;
-  dictDataVisible.value = true;
-  dataLevel3queryParams.parentId = row.id;
+  dictDataSelected.value = row
+  dictDataVisible.value = true
+  dataLevel3queryParams.parentId = row.id
 }
 // 字典数据修改操作
 const handleDataCreate = (type = 'dataCreate') => {
@@ -391,41 +421,41 @@ const tableTypeSelect = ref(false)
 const cellClickEvent: VxeTableEvents.CellClick = async ({ row }) => {
   tableTypeSelect.value = true
   queryParams.dictType = row['type']
-  queryParams.label = "";
+  queryParams.label = ''
   await nextTick()
   await dataGetList()
-  parent.value = row;
+  parent.value = row
 }
 
 // 改变用户状态操作
 const handleStatusChange = async (row, type) => {
   const text = row.status === CommonStatusEnum.ENABLE ? '启用' : '停用'
-  let confirmText = '';
+  let confirmText = ''
   if (type === 'type') {
-    confirmText = `是否确认${text}字典名称为"${row.name}"的数据项?`;
+    confirmText = `是否确认${text}字典名称为"${row.name}"的数据项?`
   } else if (type === 'data') {
-    confirmText = `是否确认${text}数据标签为"${row.label}"的数据项?`;
+    confirmText = `是否确认${text}数据标签为"${row.label}"的数据项?`
   } else if (type === 'dataLevel3') {
-    confirmText = `是否确认${text}子项标签为"${row.label}"的数据项?`;
+    confirmText = `是否确认${text}子项标签为"${row.label}"的数据项?`
   }
   message
     .confirm(confirmText, t('common.reminder'))
     .then(async () => {
-      let updateStatus = false;
+      let updateStatus = false
       if (type === 'type') {
-        updateStatus = await DictTypeApi.updateDictTypeApi({ ...row });
-        await typeGetList();
+        updateStatus = await DictTypeApi.updateDictTypeApi({ ...row })
+        await typeGetList()
       } else if (type === 'data') {
-        updateStatus = await DictDataApi.updateDictDataApi({ ...row });
+        updateStatus = await DictDataApi.updateDictDataApi({ ...row })
         await dataGetList()
       } else if (type === 'dataLevel3') {
-        updateStatus = await DictDataApi.updateDictDataApi({ ...row });
+        updateStatus = await DictDataApi.updateDictDataApi({ ...row })
         await dataLevel3GetList()
       }
       if (updateStatus) {
-        message.success(text + '成功');
+        message.success(text + '成功')
       } else {
-        message.warning(t('sys.api.operationFailed'));
+        message.warning(t('sys.api.operationFailed'))
       }
     })
     .catch(() => {
@@ -445,9 +475,9 @@ const actionType = ref('') // 操作按钮的类型
 // 设置标题
 const setDialogTile = (type: string) => {
   if (type === 'dataLevel3Create') {
-    dialogTitle.value = "子项数据新增"
+    dialogTitle.value = '子项数据新增'
   } else if (type === 'dataLevel3Update') {
-    dialogTitle.value = "子项数据编辑"
+    dialogTitle.value = '子项数据编辑'
   } else {
     dialogTitle.value = t('action.' + type)
   }
@@ -496,9 +526,9 @@ const submitDataForm = async () => {
       try {
         const data = unref(dataFormRef)?.formModel as DictDataVO
         if (['dataLevel3Create', 'dataLevel3Update'].includes(actionType.value)) {
-          data.dictType = dictDataSelected.value.dictType;
-          data.parentId = dictDataSelected.value.id;
-          data.defaultLevel = 3;
+          data.dictType = dictDataSelected.value.dictType
+          data.parentId = dictDataSelected.value.id
+          data.defaultLevel = 3
         }
         if (actionType.value === 'dataCreate') {
           data.dictType = parent.value.type
@@ -528,7 +558,7 @@ const submitDataForm = async () => {
 
 <style lang="scss" scoped>
 .container {
-  >>>&.el-card {
+  >>> &.el-card {
     border: none;
   }
 }

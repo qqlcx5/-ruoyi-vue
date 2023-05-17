@@ -71,6 +71,12 @@ export const getDictObj = (dictType: string, value: any) => {
   })
 }
 
+export const getDictLabel = (dictType: string, value: any): any => {
+  const dictOptions: DictDataType[] = getDictOptions(dictType)
+  const idx = dictOptions.findIndex((dict: DictDataType) => dict.value === value.toString())
+  return idx === -1 ? '' : dictOptions[idx].label
+}
+
 export enum DICT_TYPE {
   USER_TYPE = 'user_type',
   COMMON_STATUS = 'common_status',

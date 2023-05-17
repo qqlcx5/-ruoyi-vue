@@ -299,3 +299,13 @@ export const handleTree2 = (data, id, parentId, children, rootId) => {
   })
   return treeData !== '' ? treeData : data
 }
+
+export const expandNodes = (node, expandAll) => {
+  node.expanded = expandAll
+  for (let i = 0; i < node.childNode.length; i++) {
+    node.childNode[i].expanded = expandAll
+    if (node.childNode[i].childNode.length > 0) {
+      expandNodes(node.childNode[i], expandAll)
+    }
+  }
+}

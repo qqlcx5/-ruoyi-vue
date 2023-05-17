@@ -155,7 +155,7 @@ const searchParams = ref({
 })
 // 列表相关的变量
 const [registerTable, { reload }] = useXTable({
-  tableKey: 'wg-infra-config',
+  tableKey: 'wg-infra-config-tenant',
   allSchemas: allSchemas,
   params: searchParams,
   getListApi: ConfigApi.getConfigPageApi,

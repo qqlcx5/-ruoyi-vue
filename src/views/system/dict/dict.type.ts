@@ -21,10 +21,10 @@ const crudSchemas = reactive<VxeCrudSchema>({
       form: {
         colProps: {
           span: 24
-        },
+        }
       },
       table: {
-        width: 140,
+        width: 140
       }
     },
     {
@@ -37,7 +37,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
         }
       },
       table: {
-        width: 140,
+        width: 140
       }
     },
     {
@@ -50,7 +50,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
         component: 'Switch',
         componentProps: {
           activeValue: 0,
-          inactiveValue: 1,
+          inactiveValue: 1
         },
         colProps: {
           span: 24
@@ -61,7 +61,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
         slots: {
           default: 'status_default'
         }
-      },
+      }
     },
     {
       title: '子项数量',
@@ -77,7 +77,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       title: t('common.createTime'),
       field: 'createTime',
       formatter: 'formatDate',
-      isForm: false,
+      isForm: false
     },
     {
       title: t('form.remark'),
@@ -103,7 +103,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       field: 'updateTime',
       formatter: 'formatDate',
       isForm: false
-    },
+    }
   ]
 })
 export const { allSchemas } = useVxeCrudSchemas(crudSchemas)

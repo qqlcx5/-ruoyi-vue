@@ -1,0 +1,104 @@
+<template>
+  <el-drawer
+    v-model="drawerVisible"
+    class="columns-drawer"
+    direction="rtl"
+    :lockScroll="false"
+    size="764px"
+  >
+    <template #header>
+      <h4 class="text-18px font-black m-0">详情</h4>
+    </template>
+    <template #default>
+      <el-descriptions :column="2">
+        <el-descriptions-item label="角色名称：">{{ roleInfo.name }}</el-descriptions-item>
+        <el-descriptions-item label="角色编码：">{{ roleInfo.code }}</el-descriptions-item>
+        <el-descriptions-item label="状态：">{{
+          getDictLabel(DICT_TYPE.COMMON_STATUS, roleInfo.status)
+        }}</el-descriptions-item>
+      </el-descriptions>
+      <el-tabs v-model="tabsActive" @tab-change="onTabChange">
+        <el-tab-pane label="配置权限" name="permission">
+          <ConfigDetail />
+        </el-tab-pane>
+        <el-tab-pane label="配置人员" name="staff">
+          <el-form class="wg-query-form w-full" ref="elFormRef" label-position="left">
+            <el-row :gutter="12">
+              <el-col :span="8">
+                <el-form-item label-width="70px" label="岗位">
+                  <el-input v-model="searchForm.postName" placeholder="请输入岗位名称" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label-width="70px" label="员工">
+                  <el-input v-model="searchForm.nickname" placeholder="请输入员工姓名" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="8" class="!flex flex-column justify-between">
+                <div>
+                  <el-button type="primary" @click="getPersons">查询</el-button>
+                  <el-button @click="searchReset">重置</el-button>
+                </div>
+              </el-col>
+            </el-row>
+          </el-form>
+          <div class="card-gary-bg mt-16px p-16px">
+            <div class="flex flex-row-reverse">共{{ 10 }}人</div>
+            <div>
+              销售顾问<span>({{ staff.length }})</span>
+            </div>
+            <div class="flex items-center">
+              <div
+                v-for="item in staff"
+                :key="item"
+                class="px-8px py-4px mt-8px mr-10px border-1px"
+              >
+                {{ `ssdf${item}` }}
+              </div>
+            </div>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </template>
+  </el-drawer>
+</template>
+<script setup lang="ts">
+import { getDictLabel, DICT_TYPE } from '@/utils/dict'
+import ConfigDetail from './ConfigDetail.vue'
+import { getPersonsByRole } from '@/api/system/role'
+
+// 弹窗相关的变量
+const roleInfo = ref()
+const drawerVisible = ref(false) // 是否显示弹出层
+const onTabChange = async (tab) => {
+  if (tab === 'staff') {
+    await getPersons()
+  }
+}
+
+// ========== 配置权限 ==========
+const tabsActive = ref('permission')
+
+// ========== 配置人员 ==========
+const staff = ref([])
+const searchForm = ref({ postName: '', nickname: '' })
+const getPersons = async () => {
+  let params = {
+    roleId: roleInfo.value.id,
+    ...searchForm.value
+  }
+  staff.value = await getPersonsByRole(params)
+}
+const searchReset = () => {
+  searchForm.value = { postName: '', nickname: '' }
+  getPersons()
+}
+
+// 打开弹窗
+const openDrawer = async (row) => {
+  roleInfo.value = row
+  drawerVisible.value = true
+}
+defineExpose({ openDrawer }) // 提供 openModal 方法，用于打开弹窗
+</script>
+<style lang="scss" scoped></style>

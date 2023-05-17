@@ -28,3 +28,17 @@
 .vxe-button.size--medium.type--button.is--circle {
   border: 0;
 }
+.wg-xtable-pagination .vxe-select-option--wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-column-gap: 20px;
+  grid-row-gap: 15px;
+  width: 240px;
+  max-height: unset;
+  padding: 20px;
+}
+.wg-xtable-pagination .vxe-select-option--wrapper .vxe-select-option {
+  font-size: 14px;
+  height: 20px !important;
+  line-height: 20px !important;
+}

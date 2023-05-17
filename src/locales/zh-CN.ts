@@ -59,6 +59,10 @@ export default {
     copyError: '复制失败',
     operator: '最近操作人',
     operationTime: '最近操作时间',
+    confirmOpen: '确认开启',
+    confirmClose: '确认关闭',
+    toOperate: '去操作',
+    confirmDel: '确认删除'
   },
   error: {
     noPermission: `抱歉，您无权访问此页面。`,
@@ -301,9 +305,7 @@ export default {
     typeCreate: '字典类型新增',
     typeUpdate: '字典类型编辑',
     dataCreate: '字典数据新增',
-    dataUpdate: '字典数据编辑',
-    toOperate: '去操作',
-    confirmDel: '确认删除',
+    dataUpdate: '字典数据编辑'
   },
   dialog: {
     dialog: '弹窗',

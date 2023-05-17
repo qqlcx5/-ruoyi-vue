@@ -23,6 +23,7 @@
             <el-select v-model="searchParams.type" placeholder="请选择">
               <el-option
                 v-for="dict in getIntDictOptions(DICT_TYPE.INFRA_CONFIG_TYPE)"
+                :key="dict.value"
                 :label="dict.label"
                 :value="dict.value"
               />
@@ -92,6 +93,7 @@
         />
         <!-- 操作：删除 -->
         <XTextButton
+          v-if="row.type !== 1"
           :title="t('action.del')"
           v-hasPermi="['infra:config:delete']"
           @click="deleteData(row.id, `是否确认删除参数名称为''${row.name}''的数据项?`)"

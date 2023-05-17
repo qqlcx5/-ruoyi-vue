@@ -25,6 +25,7 @@
                 <el-select class="w-full" v-model="postTypeSearchForm.status" placeholder="请选择">
                   <el-option
                     v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+                    :key="item.value"
                     :label="item.label"
                     :value="item.value"
                   />
@@ -311,7 +312,7 @@ const onPostDel = async (row, type: string) => {
         ]),
         `提示`,
         {
-          confirmButtonText: t('action.toOperate'),
+          confirmButtonText: t('common.toOperate'),
           cancelButtonText: t('common.cancel'),
           type: 'warning',
           lockScroll: false
@@ -327,7 +328,7 @@ const onPostDel = async (row, type: string) => {
             h('span', { style: { color: 'red' } }, row.postCount),
             h('span', ' 个岗位将同步删除，且不可恢复，请谨慎操作。')
           ]),
-          `确定删除 ${row.name} 改岗位类型吗？`
+          `确定删除 ${row.name} 该岗位类型吗？`
         )
         .then(async () => {
           deleteReq(row.id)

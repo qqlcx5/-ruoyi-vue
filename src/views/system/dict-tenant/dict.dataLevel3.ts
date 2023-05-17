@@ -47,7 +47,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         component: 'InputNumber',
         componentProps: {
           modelValue: 0,
-          controlsPosition: "right"
+          controlsPosition: 'right'
         },
         colProps: {
           span: 24
@@ -64,7 +64,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         component: 'Switch',
         componentProps: {
           activeValue: 0,
-          inactiveValue: 1,
+          inactiveValue: 1
         },
         colProps: {
           span: 24
@@ -75,7 +75,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         slots: {
           default: 'status_default'
         }
-      },
+      }
     },
     {
       title: t('common.creater'),
@@ -86,7 +86,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       title: t('common.createTime'),
       field: 'createTime',
       formatter: 'formatDate',
-      isForm: false,
+      isForm: false
     },
     // {
     //   title: '标签类型',
@@ -166,14 +166,14 @@ export const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: t('common.operator'),
       field: 'updaterName',
-      isForm: false,
+      isForm: false
     },
     {
       title: t('common.operationTime'),
       field: 'updateTime',
       formatter: 'formatDate',
-      isForm: false,
-    },
+      isForm: false
+    }
   ]
 })
 export const { allSchemas } = useVxeCrudSchemas(crudSchemas)
