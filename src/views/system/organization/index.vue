@@ -57,7 +57,7 @@
         <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
         <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
+        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
         <Icon
           icon="svg-icon:custom-column"
           :size="50"
@@ -131,12 +131,6 @@
         </template>
         <!--  状态   -->
         <template v-if="column?.key === 'statusSwitch'">
-          <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
-          <!-- <div class="employees-Number">{{ record.status }}</div>-->
-          <!--          <a-switch-->
-          <!--            v-model:checked="record.statusSwitch"-->
-          <!--            @change="(value) => tableStatusChange(value, record)"-->
-          <!--          />-->
           <a-switch
             :disabled="record.level === 1"
             v-model:checked="record.statusSwitch"
@@ -154,16 +148,22 @@
               v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
               >设置属性</div
             >
+            <div class="text-color margin-right-5" @click="detailsInfo(record)" v-else>详情</div>
             <a-popover placement="bottom">
               <template #content>
-                <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+                <div
+                  class="text-color margin-right-5"
+                  @click="detailsInfo(record)"
+                  v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
+                  >详情</div
+                >
                 <div
                   class="text-color margin-right-5"
                   @click="setTableStatusChangeInfo(false, record, 'delete')"
                   >删除</div
                 >
               </template>
-              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="10" />
+              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
             </a-popover>
           </div>
         </template>
@@ -304,6 +304,7 @@
     title="设置属性"
     @ok="closePermissionModal"
     @cancel="closePermissionModal"
+    wrapClassName="set-attribute-modal"
     :width="'710px'"
     :bodyStyle="{ height: '700px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
@@ -462,9 +463,20 @@
             />
           </a-form-item>
           <a-form-item :name="['contactInformationArr', index, 'mobile']">
-            <a-input v-model:value="item.mobile" placeholder="请输入联系电话" />
+            <a-input
+              v-model:value="item.mobile"
+              placeholder="请输入联系电话"
+              style="width: 130px"
+            />
           </a-form-item>
-          <Icon icon="svg-icon:add-circle" :size="20" @click="addContactInformation()" />
+
+          <Icon
+            icon="svg-icon:add-circle"
+            class="add-circle"
+            :size="20"
+            @click="addContactInformation()"
+          />
+
           <!--  <MinusCircleOutlined @click="addContactInformation()" />-->
           <!--  <MinusCircleOutlined @click="removeContactInformation(item)" />  -->
         </a-space>
@@ -596,54 +608,6 @@
     </template>
   </a-modal>
 
-  <!--  状态开始关闭 短信提示Modal  -->
-  <a-modal
-    v-model:visible="state.isShowMessage"
-    :title="state.messageTitle"
-    @ok="statusOk"
-    @cancel="statusCancel"
-    width="560px"
-    :bodyStyle="{
-      width: '100%',
-      height: '200px',
-      margin: '0',
-      padding: '30px 0 0 0',
-      overflow: 'auto'
-    }"
-  >
-    <div class="message-content">
-      <!--      <img :src="warningImg" alt="" class="tip-img" />-->
-      <div class="message-text-content">
-        <div class="message-text">
-          <img :src="warningImg" alt="" class="tip-img message-img" />
-          {{ state.messageText }}
-        </div>
-        <div class="message-phone">
-          机构负责人绑定的手机号：{{
-            state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
-          }}
-        </div>
-        <div class="message-input-content"
-          >短信验证码:
-          <a-input
-            v-model:value="state.messageCode"
-            placeholder="请输入验证码"
-            style="width: 180px; margin-left: 8px"
-          />
-          <div v-if="state.canSendCode" class="send-code-btn" @click="senCodeFN"> 发送验证码 </div>
-          <div v-else class="countdown-code-btn">{{ state.codeCountdown }}s重新获取</div>
-        </div>
-      </div>
-    </div>
-
-    <template #footer>
-      <a-button type="primary" html-type="submit" @click="statusOk">{{
-        state.messageBtnText
-      }}</a-button>
-      <a-button @click="statusCancel">取消</a-button>
-    </template>
-  </a-modal>
-
   <!--  状态开始关闭 删除 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
@@ -716,16 +680,19 @@
   <a-modal
     v-model:visible="state.isShowDetails"
     title="详情"
-    wrapClassName="details-modal"
+    wrapClassName="details-modal set-attribute-modal"
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
   >
-    <div class="details-edit" @click="edit(state.detailsRecord, true)"
-      ><img :src="editImg" alt="" class="edit-Img" />修改</div
-    >
+    <!--  机构信息  -->
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
-      <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
-      <div class="info-content" v-if="item.baseTitle !== '配置权限'">
+      <div class="flex-space">
+        <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
+        <div class="details-edit" @click="edit(state.detailsRecord, true)"
+          ><img :src="editImg" alt="" class="edit-Img" />修改</div
+        >
+      </div>
+      <div class="info-content">
         <div
           :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
           v-for="(childItem, childIndex) in item.infoArr"
@@ -750,26 +717,17 @@
           </div>
         </div>
       </div>
-      <div class="details-modal-content select-content" v-else>
-        <div class="details-modal-left">
-          <div class="details-heard">前台</div>
-          <!--          <a-tree-->
-          <!--            defaultExpandAll-->
-          <!--            :tree-data="item.treeArr"-->
-          <!--            :fieldNames="state.fieldNames"-->
-          <!--          >-->
-          <!--          </a-tree>-->
-        </div>
-        <div class="details-modal-left">
-          <div class="details-heard">后台({{ item.treeArr?.length }})</div>
-          <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
-        </div>
+    </div>
+    <!--  机构属性  -->
+    <div class="details-content">
+      <div class="flex-space">
+        <div class="title-content"><div class="blue-line"></div>机构属性</div>
+        <div class="details-edit" @click="assignPermission(state.detailsRecord, true)"
+          ><img :src="editImg" alt="" class="edit-Img" />修改</div
+        >
       </div>
     </div>
 
-    <div class="details-edit" @click="assignPermission(state.detailsRecord, true)"
-      ><img :src="editImg" alt="" class="edit-Img" />修改</div
-    >
     <a-tabs v-model:activeKey="state.activeKey">
       <a-tab-pane key="baseKey" tab="基本属性">
         <div
@@ -777,10 +735,13 @@
           :key="`info${index}`"
           class="details-content"
         >
-          <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
-          <div class="info-content" v-if="item.baseTitle !== '配置权限'">
+          <div class="info-content">
             <div
-              :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
+              :class="[
+                'text-style',
+                { 'super-admin-style': childItem?.isSuperAdmin },
+                { 'width-full': childItem?.isFull }
+              ]"
               v-for="(childItem, childIndex) in item.infoArr"
               :key="`childItem${childIndex}`"
               ><span>{{ childItem.textSpan }}</span>
@@ -803,28 +764,13 @@
                   allow-half
                 />
 
-                <div v-if="childItem?.contactInformationOptions">
+                <div v-if="childItem?.contactInformationOptions" class="tags-content">
                   <div v-for="itemTag in childItem?.contactInformationOptions" class="tag-content">
-                    <a-tag color="pink">{{ itemTag?.label }}</a-tag>
+                    <a-tag :color="rgbFN()">{{ itemTag?.label }}</a-tag>
                     <div>{{ itemTag?.value }}</div>
                   </div>
                 </div>
               </template>
-            </div>
-          </div>
-          <div class="details-modal-content select-content" v-else>
-            <div class="details-modal-left">
-              <div class="details-heard">前台</div>
-              <!--          <a-tree-->
-              <!--            defaultExpandAll-->
-              <!--            :tree-data="item.treeArr"-->
-              <!--            :fieldNames="state.fieldNames"-->
-              <!--          >-->
-              <!--          </a-tree>-->
-            </div>
-            <div class="details-modal-left">
-              <div class="details-heard">后台({{ item.treeArr?.length }})</div>
-              <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
             </div>
           </div>
         </div>
@@ -836,7 +782,7 @@
           class="details-content"
         >
           <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
-          <div class="info-content" v-if="item.baseTitle !== '配置权限'">
+          <div class="info-content">
             <div
               :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
               v-for="(childItem, childIndex) in item.infoArr"
@@ -855,80 +801,11 @@
                   {{ childItem.text }}
                 </a-tooltip>
               </template>
-
-              <div v-if="childItem?.isSuperAdmin" class="send-code-btn" @click="resetPassword">
-                重置密码
-              </div>
-            </div>
-          </div>
-          <div class="details-modal-content select-content" v-else>
-            <div class="details-modal-left">
-              <div class="details-heard">前台</div>
-              <!--          <a-tree-->
-              <!--            defaultExpandAll-->
-              <!--            :tree-data="item.treeArr"-->
-              <!--            :fieldNames="state.fieldNames"-->
-              <!--          >-->
-              <!--          </a-tree>-->
-            </div>
-            <div class="details-modal-left">
-              <div class="details-heard">后台({{ item.treeArr?.length }})</div>
-              <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
             </div>
           </div>
         </div>
       </a-tab-pane>
     </a-tabs>
-  </a-modal>
-
-  <!--  重置密码 Modal  -->
-  <a-modal
-    v-model:visible="state.isShowResetPassWord"
-    :title="state.resetPasswordTitle"
-    :closable="state.closable"
-    :footer="null"
-    wrapClassName="reset-PassWord"
-    :width="`${state.resetModalStyle.width}px`"
-    :bodyStyle="{
-      width: `${state.resetModalStyle.width}px`,
-      height: `${state.resetModalStyle.height}px`,
-      margin: '0',
-      padding: '0',
-      overflow: 'auto'
-    }"
-  >
-    <div v-if="!state.isResetPasswordSuccessMark" class="reset-PassWord-tip">
-      重置密码后不可恢复，请谨慎操作。
-    </div>
-    <div v-else>
-      <div class="reset-Password-success">
-        <img :src="successImg" alt="" class="success-img" />
-        重置密码成功！
-      </div>
-      <div class="user-info1">
-        <span>超管用户名：</span>
-        <span>{{ state.resetPasswordSuccessInfo?.username }}</span>
-      </div>
-      <div class="user-info2">
-        <span>新密码：</span>
-        <span>{{ state.resetPasswordSuccessInfo?.password }}</span>
-        <div class="copy-button" @click="copyText">复制</div>
-      </div>
-      <div class="user-info3">
-        重置密码的信息已成功发送到负责人手机号{{
-          state.resetPasswordSuccessInfo.mobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
-        }}中，请注意查收!
-      </div>
-    </div>
-
-    <!--  footer  -->
-    <div v-if="!state.isResetPasswordSuccessMark" class="reset-PassWord-btn-content">
-      <a-button type="primary" html-type="submit" @click="resetPasswordFN">确认</a-button>
-      <a-button @click="closePasswordModal">取消</a-button>
-    </div>
-    <div class="close-btn-content" v-else>
-      <a-button @click="closePasswordModal">关闭</a-button>
-    </div>
   </a-modal>
 
   <!--  定制列  -->
@@ -966,25 +843,13 @@ import { PlusOutlined, LoadingOutlined, MinusCircleOutlined } from '@ant-design/
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
-import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
-import {
-  addMajorIndividual,
-  addTenantPackage,
-  editTenantPackage,
-  getMajorIndividualDetails,
-  getMajorIndividualList,
-  getSimpleTenantList,
-  getTenantPackage,
-  putResetPassWord,
-  updateEditMajorIndividual,
-  updateEditMajorIndividualStatus
-} from '@/api/system/business'
+import { useCache } from '@/hooks/web/useCache'
+import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from './pr'
 import { filterTree, getAllIds, reconstructedTreeData, getColumns } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
-import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
@@ -1001,6 +866,7 @@ import {
   updateOrganization,
   updateOrganizationStatus
 } from '@/api/system/organization'
+import { cloneDeep } from 'lodash-es'
 
 const { wsCache } = useCache()
 
@@ -1135,10 +1001,6 @@ const state = reactive({
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
   messageText: '为了保护您的机构公司业务数据安全，请通过安全验证：',
-  canSendCode: true, //能否发送验证码
-  codeCountdown: 60, //短信发送倒计时 s
-  messageCode: '', //短信验证码
-  messageBtnText: '确认开启', //消息modal 确认button 文字内容
   total: 0, //总条数
   statusOptions: [
     { value: 0, label: '正常' },
@@ -1155,13 +1017,10 @@ const state = reactive({
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false, //新增编辑modal
-  isShowPermission: false, //功能配置modal
-  isShowMessage: false, //短信modal
+  isShowPermission: false, //设置属性modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
   isShowDelete: false, //删除确认 modal
-  messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
-  currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
   contactMobileRules: [{ validator: contactMobileValidator }],
   contactMailRules: [{ validator: contactMailRulesValidator }],
@@ -1205,19 +1064,7 @@ const state = reactive({
     businessLicenseUrl: '' //营业执照
   }, //新增(设置)属性表单
   addSuccessId: undefined, //创建机构成功ID 主要是用于创建机构后配置权限
-  activeKey: 'backstage', // tabsKey frontDesk前台 backstage后台
-  selectAll: false, //权限配置 全选
-  isExpandAllTab: false, //权限配置 展开折叠
-  menuTreeList: [], //权限配置 前台列表
-  fieldNames: { children: 'children', title: 'name', key: 'id' }, //权限配置 前台列表 tree的对应字段替换
-  selectedKeys: [], //权限配置 前台列表 设置选中的树节点
-  checkedKeys: [], //权限配置 前台列表 选中复选框的树节点
-  parentCheckedKeys: [], //权限配置 前台列表 所有一级菜单ID 用于 全选全不选
-  defaultExpandAll: false, //权限配置 前台列表 默认展开折叠
-  isShowTree: false, //权限配置 前台列表 v-if 主要是配合用来 展开折叠的
-  idArr: [], //权限配置 创建所需的 id
-  selectTree: [], //权限配置 选中的树 数据 右侧
-  isShowRightTree: false, //权限配置 选中的树 是否显示
+  activeKey: 'baseKey', //详情modal tab
   permissionRecord: {}, //权限配置 操作 时 存的整条数据
   PermissionType: 'add', //权限配置 新增 修改
   editPermissionID: undefined, //编辑功能配置时的id
@@ -1230,10 +1077,6 @@ const state = reactive({
   resetPasswordSuccessInfo: {}, //重置密码成功后
   closable: false, //重置密码 modal 右上角×
   isResetPasswordSuccessMark: false,
-  resetModalStyle: {
-    width: 488,
-    height: 270
-  }, //重置密码 modal样式
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [], //表格 columns
   optionalMenuTree: [], //上级机构 treeList
@@ -1260,8 +1103,7 @@ const state = reactive({
   ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   detailsRecord: {}, //当前点击的表格record后获取到的机构详情(包括属性)
-  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '4'门店
-  activeKey: 'baseKey' //详情modal tab
+  currentType: '-1' //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '4'门店
 })
 
 //获取数据字典
@@ -1275,12 +1117,6 @@ const getOrganizationTypeListFN = async () => {
   state.storeTypeOptions = res.filter((item) => item.dictType === 'store_type')
   //联系方式类型
   state.contactInformationOptions = res.filter((item) => item.dictType === 'contact_type')
-  console.log('数据字典', res)
-  console.log('分公司类型', state.branchCompanyTypeOptions)
-  console.log('门店类型', state.storeTypeOptions)
-  // console.log('全部字典', res)
-  console.log('机构类型', state.organizationTypeOptions)
-  console.log('联系方式类型', state.contactInformationOptions)
 }
 //获取机构类型
 getOrganizationTypeListFN()
@@ -1430,8 +1266,10 @@ const allColumns = [
   }
 ]
 
-/** 查询列表 */
-const getList = async () => {
+/** 查询列表
+ * @param isRefresh 右侧刷新图标进
+ * */
+const getList = async (isRefresh = false) => {
   state.loading = true
   const params = {
     // pageNo: queryParams.current,
@@ -1441,19 +1279,8 @@ const getList = async () => {
     status: queryParams.status
   }
 
-  // if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
-  //   params['localDates'] = [
-  //     queryParams.startEndTime[0]?.format('YYYY-MM-DD'),
-  //     queryParams.startEndTime[1]?.format('YYYY-MM-DD')
-  //     // queryParams.startEndTime[0]?.format('YYYY/MM/DD'),
-  //     // queryParams.startEndTime[1]?.format('YYYY/MM/DD')
-  //   ]
-  // }
-
   try {
-    // const res = await getMajorIndividualList(params)
     const res = await getOrganizationList(params)
-    console.log('机构列表res', res)
     state.rawData = res
     state.tableDataList = res
     state.tableDataList.map((item) => {
@@ -1466,25 +1293,12 @@ const getList = async () => {
     state.tableDataList = handleTree(state.tableDataList, 'id', 'parentId', 'children')
 
     state.total = res.total
+    if (isRefresh) {
+      message.success('刷新成功')
+    }
   } finally {
     state.loading = false
   }
-
-  //获取菜单列表
-  const menuList = await MenuApi.getSimpleMenusList()
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = menuList.filter((item) => item.type !== 3)
-  state.menuTreeList = handleTree(tempArr)
-
-  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  state.parentCheckedKeys = []
-  state.menuTreeList.map((item) => {
-    state.parentCheckedKeys.push(item.id)
-  })
-  // state.defaultExpandAll = true
-  await nextTick(() => {
-    state.isShowTree = true
-  })
 }
 
 /** 搜索按钮操作 */
@@ -1527,13 +1341,11 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
-  console.log('record', record)
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     state.formState.parentId = record.id
   }
-  const res = await getSimpleOrganizationList()
-  console.log('上级机构', res)
+  const res = await getSimpleOrganizationList({ status: 0 })
 
   let menuTree = []
   // let menu = {}
@@ -1541,7 +1353,6 @@ const openModal = async (record = {}) => {
   menu.children = handleTree(res, 'id', 'parentId', 'children')
   menuTree.push(menu)
   // const menuTree = handleTree(res, 'id', 'parentId', 'children')
-  console.log('menuTree', menuTree)
 
   state.optionalMenuTree = menuTree
 
@@ -1589,14 +1400,12 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
-  console.log('编辑record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
   }
   //获取机构详情
   const res = await getOrganizationDetails({ id: record.id })
-  console.log('机构详情', res)
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
@@ -1617,9 +1426,8 @@ const edit = async (record, isCloseDetails = false) => {
     sort: res.sort, //排序
     status: res.status //状态
   }
-
   //状态0 开启 1关闭
-  state.formState.status = record.status === 0
+  state.formState.status = record.status === true
 
   openModal()
 }
@@ -1670,19 +1478,18 @@ const addMajorIndividualFN = async () => {
     if (state.modalType === 'add') {
       res = await addOrganization(params)
       state.addSuccessId = res
+      const tempCurrentType = cloneDeep(state.formState.organizationType)
 
       nextTick(() => {
-        state.currentType = state.formState.organizationType
-        console.log('state.currentType', state.currentType)
+        state.currentType = tempCurrentType
+        // '2'分公司 '4'门店
+        if (state.currentType === '2' || state.currentType === '4') {
+          // 配置权限
+          openPermissionModal()
+        }
       })
 
       message.success('新增成功')
-
-      // '2'分公司 '4'门店
-      if (state.currentType === '2' || state.currentType === '4') {
-        // 配置权限
-        openPermissionModal()
-      }
     } else {
       params['id'] = state.formState.id
       res = await updateOrganization(params)
@@ -1757,18 +1564,13 @@ const openPermissionModal = async () => {
 
 //设置属性(新增修改属性) Modal 确认
 const PermissionOk = async () => {
-  console.log('state.formAttributeState', state.formAttributeState)
-  console.log('await formAttributeRef.value.validate()', await formAttributeRef.value.validate())
   // 校验表单
   if (!formAttributeRef) return
   const valid = await formAttributeRef.value.validate()
   state.addEditLoading = true
 
-  console.log('表单valid', valid)
-  console.log('state.formAttributeState', state.formAttributeState)
-
   const params = {
-    organizationId: state.detailsRecord.id,
+    organizationId: state.detailsRecord.id || state.addSuccessId,
     type: state.formAttributeState.type, //分公司类型
     startRating: state.formAttributeState.startRating, //星级
     logoUrl: state.logoUrlSuccess, //系统logo
@@ -1810,7 +1612,8 @@ const PermissionOk = async () => {
 
   // if (state.PermissionType === 'add') {
   //relVO null则没有属性
-  if (state.detailsRecord?.relVO === null) {
+  // if (state.detailsRecord?.relVO === null) {
+  if (!state.detailsRecord?.relVO) {
     await addAttribute(params)
     message.success('新增成功')
   } else {
@@ -1822,18 +1625,19 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
-const assignPermission = async (record) => {
-  console.log('record', record)
+const assignPermission = async (record, isCloseDetails = false) => {
+  if (isCloseDetails) {
+    //关闭详情moal
+    state.isShowDetails = false
+  }
   nextTick(() => {
     state.currentType = record?.organizationType
-    console.log('设置属性state.organizationType', state.organizationType)
   })
   state.permissionRecord = record
   state.PermissionType = 'edit'
   if (record.id) {
     const res = await getOrganizationDetails({ id: record.id })
     //... res 可能为null
-    console.log('机构详情', res)
     state.detailsRecord = res
 
     //赋值 回显
@@ -1940,17 +1744,13 @@ const openStatusModal = () => {
 const closeStatusModal = () => {
   state.isShowStatus = false
   //直接这里补一次请求吧 - -
-  if (state.isShowMessage === false) {
-    //关闭 表格状态开启关闭 确认 modal时
-    getList()
-  }
+  getList()
 }
 
 //表格状态开关
 const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
   const res = await getActiveEmployeesNumber({ id: record.id })
   // const res = 25
-  console.log('开启员工数res', res)
 
   if (res === 0) {
     nextTick(() => {
@@ -1961,11 +1761,6 @@ const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
       state.tableStatusChangeInfo['ctiveEmployeesNumber'] = res
     })
   }
-
-  console.log(
-    "  console.log('', state.tableStatusChangeInfo?.ctiveEmployeesNumber)\n",
-    state.tableStatusChangeInfo?.ctiveEmployeesNumber
-  )
 
   if (type === 'delete') {
     //删除
@@ -2003,20 +1798,6 @@ const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
 
   openStatusModal()
 }
-//表格状态开关
-const tableStatusChange = (value, record) => {
-  if (value) {
-    state.messageBtnText = '确认开启'
-    state.messageText = '为了保护您的机构公司业务数据安全，请通过安全验证：'
-  } else {
-    state.messageBtnText = '确认关闭'
-    state.messageText =
-      '因您的机构公司还存在业务数据，如关闭则严重影响到业务，为了保护您的机构公司业务数据安全，请通过安全验证：'
-  }
-  state.isShowMessage = true
-  state.messageContactMobile = record.contactMobile
-  state.record = record
-}
 
 //表格状态开关modal 确认
 const tableStatusConfirm = async () => {
@@ -2032,108 +1813,11 @@ const tableStatusConfirm = async () => {
         id: state.tableStatusChangeInfo.record.id,
         status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1
       })
-      console.log('res', res)
-      message.success('修改状态成功')
 
-    // tableStatusChange(state.tableStatusChangeInfo?.value, state.tableStatusChangeInfo?.record)
+      message.success('修改状态成功')
   }
 
   closeStatusModal()
-}
-
-//发送短信验证码
-const senCodeFN = () => {
-  //TODO:发送短信请求
-  if (true) {
-    message.success(
-      `验证码已发送至${state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')}`
-    )
-  }
-  state.canSendCode = false
-  let codeIn = setInterval(() => {
-    state.codeCountdown -= 1
-    if (state.codeCountdown === 0) {
-      state.canSendCode = true
-      state.codeCountdown = 60
-      clearInterval(codeIn)
-    }
-  }, 1000)
-}
-
-//短信 modal 取消
-const statusCancel = () => {
-  state.isShowMessage = false
-  state.record = {}
-  state.messageContactMobile = '18888888888' //短信验证手机号
-  state.messageText = '为了保护您的机构公司业务数据安全，请通过安全验证：'
-  state.canSendCode = true //能否发送验证码
-  state.codeCountdown = 60 //短信发送倒计时 s
-  state.messageCode = '' //短信验证码
-  //直接这里补一次请求吧 - -
-  getList()
-}
-//短信 modal 确认
-const statusOk = async () => {
-  if (!state.messageCode) {
-    message.warning('请输入短信验证码')
-    return
-  }
-
-  const params = {
-    id: state.record.id,
-    code: state.messageCode,
-    status: state.record.statusSwitch === true ? 0 : 1
-  }
-
-  try {
-    await updateEditMajorIndividualStatus(params)
-    message.success('修改状态成功')
-    statusCancel()
-  } finally {
-  }
-}
-
-//功能配置 前台 全选全不选
-const selectAll = ({ target }) => {
-  if (target.checked) {
-    //全选
-    // state.checkedKeys = state.parentCheckedKeys
-    state.checkedKeys = getAllIds(state.menuTreeList)
-  } else {
-    //全不选
-    state.checkedKeys = []
-    checkedKeysBack.value = []
-  }
-}
-//功能配置 前台 展开折叠
-const expandAllFN = ({ target }) => {
-  if (target.checked) {
-    state.isShowTree = false
-    state.defaultExpandAll = true
-    nextTick(() => {
-      state.isShowTree = true
-    })
-  } else {
-    state.isShowTree = false
-    state.defaultExpandAll = false
-    nextTick(() => {
-      state.isShowTree = true
-    })
-  }
-}
-
-// 定义childArr存放所有子节点
-const childArr = ref([])
-// 遍历获取所有子节点
-function getChildArr(data) {
-  data.forEach((res) => {
-    if (res.children && res.children.length > 0) {
-      getChildArr(res.children)
-    } else {
-      childArr.value.push(res.id)
-    }
-  })
-  return childArr.value
 }
 
 //详情(打开)
@@ -2143,7 +1827,10 @@ const detailsInfo = async (record) => {
   //获取机构详情
   const res = await getOrganizationDetails({ id: record.id })
   const { relVO = {} } = res
-  console.log('机构详情', res)
+
+  //上级机构
+  const tempRes = await getSimpleOrganizationList({ status: 0 })
+  const tempItem = tempRes.filter((item) => item.id === record.parentId)
 
   const tempArrType = state.organizationTypeOptions.filter(
     (item) => item.value === res.organizationType
@@ -2152,18 +1839,32 @@ const detailsInfo = async (record) => {
   //类型
   let tempArrTypeString = ''
   if (res.organizationType === '2') {
-    const tempArrTypeF = state.organizationTypeOptions.filter(
-      (item) => item.value === res.organizationType
-    )
+    //分公司
+    const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
+      return relVO?.type.some((item) => topItem.value === item)
+    })
+
     tempArrTypeF.map((item) => {
-      tempArrTypeString += item.label
+      if (tempArrTypeString === '') {
+        //避免开头多拼一个 、
+        tempArrTypeString = item.label
+      } else {
+        tempArrTypeString = tempArrTypeString + '、' + item.label
+      }
     })
   } else if (res.organizationType === '4') {
-    const tempArrTypeF = state.storeTypeOptions.filter(
-      (item) => item.value === res.organizationType
-    )
+    //门店
+    const tempArrTypeF = state.storeTypeOptions.filter((topItem) => {
+      return relVO?.type.some((item) => topItem.value === item)
+    })
+
     tempArrTypeF.map((item) => {
-      tempArrTypeString += item
+      if (tempArrTypeString === '') {
+        //避免开头多拼一个 、
+        tempArrTypeString = item.label
+      } else {
+        tempArrTypeString = tempArrTypeString + '、' + item.label
+      }
     })
   }
 
@@ -2176,19 +1877,18 @@ const detailsInfo = async (record) => {
     companyAddress += res.relVO?.address
   }
 
-  const tempArrContactInformationArr = []
   //联系方式
-  res.relVO?.contact.map((item) => {
-    //联系方式类型
-    const tempArrTypeFirst = state.contactInformationOptions.filter(
-      (item) => item.dictType === 'contact_type'
-    )
-    tempArrContactInformationArr.push({
-      label: tempArrTypeFirst[0]?.label,
-      value: item.mobile
+  const tempArrContactInformationArr = []
+  state.contactInformationOptions.filter((topItem) => {
+    return relVO?.contact.some((item) => {
+      if (topItem.value === item.contactType) {
+        tempArrContactInformationArr.push({
+          label: topItem?.label,
+          value: item?.mobile
+        })
+      }
     })
   })
-  console.log('tempArrContactInformationArr', tempArrContactInformationArr)
 
   state.detailsInfo = [
     {
@@ -2196,7 +1896,7 @@ const detailsInfo = async (record) => {
       infoArr: [
         {
           textSpan: '上级机构：',
-          text: '上级机构1'
+          text: tempItem[0]?.name
         },
         {
           textSpan: '机构类型：',
@@ -2248,7 +1948,8 @@ const detailsInfo = async (record) => {
       infoArr: [
         {
           textSpan: '类型：',
-          text: tempArrTypeString
+          text: tempArrTypeString,
+          isFull: true
         },
         {
           textSpan: '是否有销售：',
@@ -2291,17 +1992,18 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '门店地址：',
-          text: companyAddress
+          text: companyAddress,
+          isFull: true
         },
 
         {
           textSpan: '门店联系方式：',
-          contactInformationOptions: tempArrContactInformationArr
+          contactInformationOptions: tempArrContactInformationArr,
+          isFull: true
         }
       ]
     }
   ]
-  console.log('state.detailsInfoSecond', state.detailsInfoSecond)
 
   state.detailsInfoThree = [
     {
@@ -2345,50 +2047,12 @@ const detailsInfo = async (record) => {
   return
 }
 
-//关闭 重置密码modal
-const closePasswordModal = () => {
-  state.isShowResetPassWord = false
-  state.isResetPasswordSuccessMark = false
-  state.resetPasswordTitle = '提示'
-  setTimeout(() => {
-    //延迟一下 - - 不然会导致 关闭的瞬间样式改变了 闪一下
-    state.resetModalStyle = {
-      width: 488,
-      height: 270
-    }
-  }, 200)
-}
-
-//重置密码
-const resetPassword = () => {
-  state.isShowResetPassWord = true
-  state.resetPasswordTitle = '提示'
-  state.closable = true
-  state.resetModalStyle = {
-    width: 424,
-    height: 138
-  }
-}
-//重置密码 请求
-const resetPasswordFN = async () => {
-  state.resetPasswordSuccessInfo = await putResetPassWord({ id: state.record.contactUserId })
-  state.resetPasswordTitle = ''
-  state.closable = false
-  state.resetModalStyle = {
-    width: 488,
-    height: 270
-  }
-  state.isResetPasswordSuccessMark = true
-}
-
-//复制密码
-const copyText = async () => {
-  try {
-    await toClipboard(state.resetPasswordSuccessInfo.password) //实现复制
-    message.success('复制成功')
-  } catch (e) {
-    message.error('复制失败，您使用的浏览器可能不支持复制功能')
-  }
+const rgbFN = () => {
+  //rgb颜色随机
+  const r = Math.floor(Math.random() * 256)
+  const g = Math.floor(Math.random() * 256)
+  const b = Math.floor(Math.random() * 256)
+  return `rgb(${r},${g},${b})`
 }
 
 //上传图片转base64
@@ -2403,11 +2067,6 @@ function getBase64(file) {
 const previewVisible = ref(false)
 const previewImage = ref('')
 const previewTitle = ref('')
-// const fileList = ref([
-//   {
-//     url: 'https://wcl.shenghuoduo.com:10102/v2/wclpro/local/files/2023/05/04/67129b133a5d4c8b9ed555e09775fba8.png'
-//   }
-// ])
 //上传的 预览 关闭modal
 const handleCancel = () => {
   previewVisible.value = false
@@ -2453,14 +2112,27 @@ const checkImageWH = (file, width, height) => {
 }
 //上传前
 const beforeUpload = async (file: UploadProps['beforeUpload'][number], fileList, type) => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-  if (!isJpgOrPng) {
-    message.error('仅支持jpg/png格式')
-    return Upload.LIST_IGNORE
+  if (type === 'environment') {
+    //环境图片
+    const isJpgOrPng =
+      file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
+    if (!isJpgOrPng) {
+      message.error('仅支持jpg/jpeg/png/gif格式')
+      return Upload.LIST_IGNORE
+    }
+  } else {
+    //其他图片上传
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
+    if (!isJpgOrPng) {
+      message.error('仅支持jpg/png格式')
+      return Upload.LIST_IGNORE
+    }
   }
+  //是否放行  - - 图片 宽高 满足 则放行
+  let isTrue = true
   switch (type) {
     case 'logo':
-      const isTrue = await checkImageWH(file, 400, 400)
+      isTrue = await checkImageWH(file, 400, 400)
       if (!isTrue) {
         //不上传 包括前端不显示
         return Upload.LIST_IGNORE
@@ -2470,6 +2142,20 @@ const beforeUpload = async (file: UploadProps['beforeUpload'][number], fileList,
       //max 300kb
       if (!isLt30kb) {
         message.error('图片不能超过300kb')
+        return Upload.LIST_IGNORE
+      }
+      break
+    case 'environment':
+      isTrue = await checkImageWH(file, 1125, 633)
+      if (!isTrue) {
+        //不上传 包括前端不显示
+        return Upload.LIST_IGNORE
+      }
+
+      const isLt5M = file.size / 1024 / 1024 < 5
+      //max 5M
+      if (!isLt5M) {
+        message.error('图片不能超过5M')
         return Upload.LIST_IGNORE
       }
       break
@@ -2563,14 +2249,6 @@ const removeImg = (file, type) => {
   }
 }
 
-// //永久有效 取消勾选清空 日期选择器值
-// const foreverChange = (e) => {
-//   console.log('e', e)
-//   if (e.target.checked === false) {
-//     state.formState.effectiveStartEndTime = []
-//   }
-// }
-
 //table 列伸缩
 const handleResizeColumn = (w, col) => {
   col.width = w
@@ -2594,24 +2272,6 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.refreshTable = false
   state.refreshTable = true
 }
-//
-// //TODO:这个方法有空再抽出去
-// //获取默认的columns
-// const getColumns = () => {
-//   //organization 为当前存储的页面
-//   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
-//   //有缓存 取缓存
-//   if (columnsObj[PageKeyObj.organization]) {
-//     state.changedColumnsObj = columnsObj[PageKeyObj.organization]
-//     return columnsObj[PageKeyObj.organization].currentColumns
-//   }
-//   const currentColumns = allColumns.filter((columnsItem) => {
-//     return state.defaultKeys.some((item) => columnsItem.key === item)
-//   })
-//   return currentColumns
-// }
-// // //初始化 获取默认的 columns
-// // state.columns = getColumns()
 
 //初始化 获取默认的 columns
 state.columns = getColumns(state, PageKeyObj.organization, allColumns, state.defaultKeys)
@@ -2631,20 +2291,6 @@ const removeContactInformation = (item) => {
     state.formAttributeState.contactInformationArr.splice(index, 1)
   }
 }
-
-//监听  左侧选中数据  更新 右侧展示数据
-watch(
-  () => [state.checkedKeys, checkedKeysBack.value],
-  () => {
-    state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
-    state.selectTree = filterTree(state.menuTreeList, state.idArr)
-    state.isShowRightTree = false
-    //右侧展开显示 左侧选中的数据
-    nextTick(() => {
-      state.isShowRightTree = true
-    })
-  }
-)
 </script>
 
 <style lang="scss" scoped>
@@ -2656,7 +2302,8 @@ watch(
 
 //新增  导出 button
 .card-content {
-  min-width: 1650px;
+  width: 100%;
+  //min-width: 1650px;
   height: 62px;
   //background: skyblue;
   padding: 0 15px;
@@ -2676,7 +2323,8 @@ watch(
 //antd card
 :deep(.ant-card-body) {
   padding: 0;
-  max-height: 870px;
+  //max-height: 870px;
+  //min-height: 870px;
 }
 
 .operation-content {
@@ -2720,7 +2368,7 @@ watch(
   cursor: pointer;
 }
 
-//功能配置弹窗
+//设置属性弹窗
 .per-content {
   height: 680px;
   padding: 20px 20px 23px 20px;
@@ -2876,7 +2524,7 @@ watch(
 }
 //详情修改文字
 .details-edit {
-  width: 100%;
+  width: 50%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -3053,8 +2701,27 @@ watch(
 .adress-input {
   width: 530px;
 }
-.tag-content {
+.tags-content {
+  flex-wrap: wrap;
   display: flex;
+}
+.tag-content {
+  margin-right: 15px;
+  margin-bottom: 20px;
+  display: flex;
+}
+//设置属性 联系方式  +
+.add-circle {
+  position: relative;
+  top: 5px;
+}
+.flex-space {
+  display: flex;
+  justify-content: space-between;
+}
+//详情 机构属性  基本信息 类型 独占一行
+.width-full {
+  width: 100%;
 }
 </style>
 
@@ -3104,6 +2771,17 @@ watch(
   //可用名额
   .ant-input-number {
     width: 200px;
+  }
+}
+
+.set-attribute-modal {
+  //星级
+  .ant-rate {
+    display: flex;
+  }
+  [class^='ant-rate-star-'] {
+    display: flex;
+    align-items: center;
   }
 }
 </style>

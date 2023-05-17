@@ -23,6 +23,10 @@ const setDefaultTheme = () => {
 }
 setDefaultTheme()
 
+const getPopupContainer = () => {
+  return document.getElementById('card-content');
+}
+
 watchEffect(() => {
   //antdV黑暗模式
   DarkMode(appStore.isDark)
@@ -35,7 +39,7 @@ import 'dayjs/locale/zh-cn'
   <!--  element plus 全局配置-->
   <ConfigGlobal :size="currentSize">
     <!--  antdV 全局配置  -->
-    <a-config-provider :componentSize="currentSize" :locale="zhCN">
+    <a-config-provider :componentSize="currentSize" :locale="zhCN" :get-popup-container="getPopupContainer">
       <RouterView :class="greyMode ? `${prefixCls}-grey-mode` : ''" />
     </a-config-provider>
   </ConfigGlobal>
@@ -54,6 +58,8 @@ body {
   margin: 0;
   overflow: hidden;
   @extend .size;
+  //打开modal后body出现100%-17px(滚动条) 产生原因未知 没空找 直接这里改
+  width: 100%!important;
 
   #app {
     @extend .size;

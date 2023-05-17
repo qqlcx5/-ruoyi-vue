@@ -55,7 +55,7 @@
         <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
         <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
         <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
+        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
         <Icon
           icon="svg-icon:custom-column"
           :size="50"
@@ -122,13 +122,18 @@
         <template v-if="column.key === 'employeesNumber'">
           <div class="employees-Number">{{ record.type }}</div>
         </template>
-        <!--  状态   -->
+        <!--  菜单状态   -->
         <template v-if="column.key === 'status'">
-          <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
-          <!-- <div class="employees-Number">{{ record.status }}</div>-->
           <a-switch
             v-model:checked="record.statusSwitch"
             @change="(value) => tableStatusChange(value, record)"
+          />
+        </template>
+        <!--  显示状态   -->
+        <template v-if="column.key === 'visible'">
+          <a-switch
+            v-model:checked="record.visible"
+            @change="(value) => tableVisibleChange(value, record)"
           />
         </template>
         <!--  操作   -->
@@ -141,7 +146,7 @@
               <template #content>
                 <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
               </template>
-              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="10" />
+              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
             </a-popover>
           </div>
         </template>
@@ -205,7 +210,12 @@
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级目录"
+            :placeholder="
+              state.formState.type === SystemMenuTypeEnum.BUTTON
+                ? `请选择上级菜单`
+                : `请选择上级${state.currentMenu}`
+            "
+            treeDefaultExpandAll
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="label"
@@ -276,6 +286,7 @@
             v-model:checked="state.formState.statusSwitch"
             checked-children="开启"
             un-checked-children="关闭"
+            @change="addEditStatusChange"
           />
         </a-form-item>
 
@@ -289,6 +300,7 @@
             v-model:checked="state.formState.visible"
             checked-children="开启"
             un-checked-children="关闭"
+            @change="(value) => addEditVisibleChange(value)"
           />
           <a-tooltip placement="topLeft" class="icon-tip">
             <template #title>
@@ -374,10 +386,8 @@
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
-          <span class="status-span">{{
-            state.tableStatusChangeInfo.record?.children?.length
-          }}</span>
-          个菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
+          个子菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
     </div>
@@ -498,7 +508,7 @@ import {
 import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns } from '@/utils/utils'
+import { getColumns, toTreeCount } from '@/utils/utils'
 
 const queryParams = reactive({
   name: undefined,
@@ -569,7 +579,7 @@ const allColumns = [
     sort: 4
   },
   {
-    title: '状态',
+    title: '菜单状态',
     width: 100,
     dataIndex: 'status',
     key: 'status',
@@ -578,13 +588,22 @@ const allColumns = [
     sort: 5
   },
   {
-    title: '创建人',
-    dataIndex: 'creator',
+    title: '显示状态',
     width: 100,
-    key: 'creator',
+    dataIndex: 'visible',
+    key: 'visible',
     resizable: true,
     ellipsis: true,
     sort: 6
+  },
+  {
+    title: '创建人',
+    dataIndex: 'creatorName',
+    width: 100,
+    key: 'creatorName',
+    resizable: true,
+    ellipsis: true,
+    sort: 7
   },
   {
     title: '创建时间',
@@ -593,16 +612,16 @@ const allColumns = [
     key: 'createTime',
     resizable: true,
     ellipsis: true,
-    sort: 7
+    sort: 8
   },
   {
     title: '最近操作人',
     width: 100,
-    dataIndex: 'updater',
-    key: 'updater',
+    dataIndex: 'updaterName',
+    key: 'updaterName',
     resizable: true,
     ellipsis: true,
-    sort: 8
+    sort: 9
   },
   {
     title: '最近操作时间',
@@ -611,7 +630,7 @@ const allColumns = [
     key: 'updateTime',
     resizable: true,
     ellipsis: true,
-    sort: 9
+    sort: 10
   },
   {
     title: '操作',
@@ -620,7 +639,7 @@ const allColumns = [
     key: 'operation',
     resizable: true,
     ellipsis: true,
-    sort: 10
+    sort: 11
   }
 ]
 
@@ -660,7 +679,7 @@ const state = reactive({
   modalBtnLoading: false,
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [],
-  defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'operation'], //定制列默认的keys
+  defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'visible', 'operation'], //定制列默认的keys
   changedColumnsObj: {} //定制列组件接收到的当前列信息
 })
 
@@ -669,8 +688,10 @@ const layout = {
   wrapperCol: { span: 18 }
 }
 
-/** 查询列表 */
-const getList = async () => {
+/** 查询列表
+ * @param isRefresh 右侧刷新图标进
+ * */
+const getList = async (isRefresh = false) => {
   loading.value = true
   try {
     const res = await MenuApi.getMenuList(queryParams)
@@ -682,6 +703,9 @@ const getList = async () => {
     })
     state.menuArr = res
     list.value = handleTree(res)
+    if (isRefresh) {
+      message.success('刷新成功')
+    }
   } finally {
     loading.value = false
   }
@@ -922,6 +946,9 @@ const okDelete = () => {
 //table 状态开启关闭
 //表格状态开关
 const tableStatusChange = (value, record) => {
+  //菜单状态与显示状态同步开关
+  record.visible = value
+
   state.tableStatusChangeInfo = {
     value,
     record
@@ -931,12 +958,49 @@ const tableStatusChange = (value, record) => {
     state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   }
   state.isShowStatus = true
+}
+
+//显示状态
+const tableVisibleChange = async (value, record) => {
+  if (record.statusSwitch === false) {
+    record.visible = !record.visible
+    return message.warning('菜单状态未开启，不允许开启显示状态')
+  }
+
+  const params = {
+    id: record.id,
+    name: record.name,
+    parentId: record.parentId,
+    sort: record.sort,
+    status: record.statusSwitch === true ? 0 : 1,
+    type: record.type,
+    visible: record.visible
+  }
+
+  try {
+    await MenuApi.updateMenuStatus(params)
+    message.success('修改显示状态成功')
+    // 清空，从而触发刷新
+    wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    await getList()
+  } finally {
+  }
+}
+
+//新增修改 modal 显示状态
+const addEditVisibleChange = (value) => {
+  if (state.formState.statusSwitch === false) {
+    state.formState.visible = !state.formState.visible
+    message.warning('菜单状态未开启，不允许开启显示状态')
+  }
 }
 
 //关闭 状态开始关闭 确认modal
@@ -955,7 +1019,8 @@ const tableStatusConfirm = async () => {
     parentId: state.tableStatusChangeInfo.record.parentId,
     sort: state.tableStatusChangeInfo.record.sort,
     status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1,
-    type: state.tableStatusChangeInfo.record.type
+    type: state.tableStatusChangeInfo.record.type,
+    visible: state.tableStatusChangeInfo.record.visible
   }
 
   try {
@@ -1147,6 +1212,13 @@ const handleResizeColumn = (w, col) => {
   col.width = w
 }
 
+const addEditStatusChange = (checked: boolean, event: Event) => {
+  //菜单状态与显示状态同步开关
+  if (checked !== state.formState.visible) {
+    state.formState.visible = checked
+  }
+}
+
 watch(
   () => state.formState.type,
   () => {
@@ -1170,7 +1242,8 @@ watch(
 
 //新增  导出 button
 .card-content {
-  min-width: 1650px;
+  width: 100%;
+  //min-width: 1650px;
   height: 62px;
   //background: skyblue;
   padding: 0 15px;
@@ -1190,7 +1263,8 @@ watch(
 //antd card
 :deep(.ant-card-body) {
   padding: 0;
-  max-height: 870px;
+  //max-height: 870px;
+  //min-height: 870px;
 }
 
 .operation-content {

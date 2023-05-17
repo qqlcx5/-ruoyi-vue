@@ -21,7 +21,7 @@ export const getOrganizationTypeList = () => {
 }
 
 // 获取上级机构列表
-export const getSimpleOrganizationList = (params?) => {
+export const getSimpleOrganizationList = (params) => {
   return request.get({ url: '/system/organization/list-all-simple', params })
 }
 
