@@ -6,7 +6,7 @@
       <LeftTreeSelect
         :tree-data="state.organizationOptions"
         @sendCurrentSelect="sendCurrentSelect"
-      ></LeftTreeSelect>
+      />
     </div>
     <div class="right-card-content">
       <!--  搜索  -->
@@ -42,7 +42,7 @@
                   :options="state.postTypeOptions"
                   class="width-100"
                   placeholder="请选择"
-                ></a-select>
+                />
               </div>
             </div>
             <div class="search-item">
@@ -64,7 +64,7 @@
                   class="width-100"
                   :options="state.partPostOptions"
                   placeholder="请选择"
-                ></a-select>
+                />
               </div>
             </div>
 
@@ -77,7 +77,7 @@
                   :options="state.configureRolesOptions"
                   mode="multiple"
                   placeholder="请选择"
-                ></a-select>
+                />
               </div>
             </div>
             <div class="search-item">
@@ -88,7 +88,7 @@
                   class="width-100"
                   :options="state.memberTypeOptions"
                   placeholder="请选择"
-                ></a-select>
+                />
               </div>
             </div>
             <div class="search-item">
@@ -99,7 +99,7 @@
                   class="width-100"
                   :options="state.onJobOptions"
                   placeholder="请选择"
-                ></a-select>
+                />
               </div>
             </div>
             <div class="search-item">
@@ -110,7 +110,7 @@
                   class="width-100"
                   :options="state.userTypeOptions"
                   placeholder="请选择"
-                ></a-select>
+                />
               </div>
             </div>
           </div>
@@ -148,6 +148,18 @@
               </template>
               展开收起
             </a-button>
+            <a-button
+              type="primary"
+              :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
+              @click="batchChangePost()"
+              >批量转岗</a-button
+            >
+            <a-button
+              type="primary"
+              :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
+              @click="batchAssignUserRole()"
+              >批量设角色</a-button
+            >
           </div>
           <!--  右侧操作  -->
           <div class="operation-content">
@@ -175,8 +187,8 @@
           :data-source="state.tableDataList"
           :scroll="{ x: '100%' }"
           @change="onChange"
-          :row-key="(record) => record.id"
-          :row-selection="rowSelection"
+          row-key="id"
+          :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
           :loading="state.loading"
           :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
           :defaultExpandAllRows="state.isExpandAll"
@@ -480,8 +492,7 @@
                       label: 'title',
                       value: 'key'
                     }"
-                  >
-                  </a-tree-select>
+                  />
                 </div>
               </template>
 
@@ -506,8 +517,7 @@
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
                     :tree-data="state.postTypeOptions"
-                  >
-                  </a-tree-select>
+                  />
                 </div>
               </template>
 
@@ -518,7 +528,7 @@
                     class="width-100"
                     :options="state.partPostOptionsText"
                     placeholder="请选择"
-                  ></a-select>
+                  />
                 </div>
               </template>
 
@@ -820,6 +830,8 @@
   >
     <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
   </a-modal>
+  <BatchChangePostModal ref="batchChangePostModalRef" @success="resetQuery" />
+  <BatchAssignUserRoleModal ref="batchAssignUserRoleModalRef" @success="resetQuery" />
 </template>
 
 <script lang="tsx" setup>
@@ -871,7 +883,8 @@ import {
 } from '@/api/system/member'
 import { getOrganizationTypeList, getSimpleOrganizationList } from '@/api/system/organization'
 import { accessSync } from 'fs'
-import { aassignUserRoleApi } from '@/api/system/permission'
+import BatchChangePostModal from './components/BatchChangePostModal.vue'
+import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
 
 const { wsCache } = useCache()
 
@@ -1062,6 +1075,7 @@ const state = reactive({
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
   loading: true, //表格加载中
+  selectedRowKeys: [],
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
   isExpandAll: false, //展开折叠
@@ -2361,18 +2375,19 @@ interface DataItem {
   children?: DataItem[]
 }
 
-const rowSelection = ref({
-  checkStrictly: false,
-  onChange: (selectedRowKeys: (string | number)[], selectedRows: DataItem[]) => {
-    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
-  },
-  onSelect: (record: DataItem, selected: boolean, selectedRows: DataItem[]) => {
-    console.log(record, selected, selectedRows)
-  },
-  onSelectAll: (selected: boolean, selectedRows: DataItem[], changeRows: DataItem[]) => {
-    console.log(selected, selectedRows, changeRows)
-  }
-})
+// const rowSelection = ref({
+//   selectedRowKeys: state.selectedRowKeys,
+//   checkStrictly: false,
+//   onChange: (selectedRowKeys: (string | number)[], selectedRows: DataItem[]) => {
+//     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
+//   },
+//   onSelect: (record: DataItem, selected: boolean, selectedRows: DataItem[]) => {
+//     console.log(record, selected, selectedRows)
+//   },
+//   onSelectAll: (selected: boolean, selectedRows: DataItem[], changeRows: DataItem[]) => {
+//     console.log(selected, selectedRows, changeRows)
+//   }
+// })
 
 //获取部门列表
 const getOrganizationListFN = async () => {
@@ -2665,6 +2680,20 @@ watch(
     })
   }
 )
+
+// 批量转岗
+const batchChangePostModalRef = ref()
+const batchAssignUserRoleModalRef = ref()
+const onSelectChange = (selectedRowKeys) => {
+  state.selectedRowKeys = selectedRowKeys
+}
+const batchChangePost = (): void => {
+  batchChangePostModalRef.value.openModal(state.selectedRowKeys)
+}
+const batchAssignUserRole = (): void => {
+  batchAssignUserRoleModalRef.value.openModal(state.selectedRowKeys)
+}
+// 批量设角色
 </script>
 
 <style lang="scss" scoped>

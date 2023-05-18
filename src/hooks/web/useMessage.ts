@@ -1,7 +1,7 @@
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { useI18n } from './useI18n'
-import {h} from "vue";
-import {ElMessageBoxOptions} from "element-plus/es/components/message-box/src/message-box.type";
+import { h } from 'vue'
+import { ElMessageBoxOptions } from 'element-plus/es/components/message-box/src/message-box.type'
 export const useMessage = () => {
   const { t } = useI18n()
   return {
@@ -79,15 +79,25 @@ export const useMessage = () => {
       })
     },
     // 自定义确认窗体
-    wgConfirm(content: string | VNode | (() => VNode), tip?: string, options?: ElMessageBoxOptions) {
+    wgConfirm(
+      content: string | VNode | (() => VNode),
+      tip?: string,
+      options?: ElMessageBoxOptions
+    ) {
       return ElMessageBox.confirm(
         h('div', { class: 'flex' }, [
-          tip ? h('i', { class: 'iconfont icon-xinzeng', style: {'marginRight': '16px'} }) : '',
+          tip
+            ? h('i', {
+                class: 'iconfont icon-Warning',
+                style: { marginRight: '16px', color: '#FAAD14', fontSize: '24px', lineHeight: 1 }
+              })
+            : '',
           h('div', [
-            tip ? h('div', { class: 'font-medium', style: {'marginBottom': '14px'}}, tip) : '',
-            h('div', { class: 'text-confirm-gray'}, h('span', content)),
+            tip ? h('div', { class: 'font-medium', style: { marginBottom: '14px' } }, tip) : '',
+            h('div', { class: 'text-confirm-gray' }, h('span', content))
           ])
-        ]), {
+        ]),
+        {
           confirmButtonText: t('common.ok'),
           cancelButtonText: t('common.cancel'),
           lockScroll: false,
@@ -131,6 +141,6 @@ export const useMessage = () => {
         type: 'warning',
         lockScroll: false
       })
-    },
+    }
   }
 }

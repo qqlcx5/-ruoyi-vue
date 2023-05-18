@@ -1,5 +1,4 @@
 import request from '@/config/axios'
-import { TenantPackageVO } from '@/api/system/tenantPackage'
 
 export interface MajorIndividual {
   pageNo?: number
@@ -23,7 +22,7 @@ export const getOrganizationTypeList = () => {
 
 // 获取上级机构列表
 export const getSimpleOrganizationList = (params) => {
-  return request.get({ url: '/system/organization/list-all-simple',params })
+  return request.get({ url: '/system/organization/list-all-simple', params })
 }
 
 // 新增机构

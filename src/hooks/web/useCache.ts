@@ -15,7 +15,8 @@ export const CACHE_KEY = {
   ROLE_ROUTERS: 'roleRouters',
   DICT_CACHE: 'dictCache',
   TABLE_COLUMN: 'tableColumn',
-  TABLE_COLUMNS_OBJ: 'tableColumnsObj'
+  TABLE_COLUMNS_OBJ: 'tableColumnsObj',
+  DEPARTMENT: 'department'
 }
 
 export const useCache = (type: CacheType = 'localStorage') => {

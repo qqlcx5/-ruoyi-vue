@@ -14,10 +14,11 @@
     :columns="getColumnSchema"
     @columnChange="handleColumnChange"
     @confirm="handleColumnChange"
-    @reset="handleReset" />
+    @reset="handleReset"
+  />
 </template>
 <script setup lang="ts" name="XTable">
-import {nextTick, PropType} from 'vue'
+import { nextTick, PropType } from 'vue'
 import { SizeType, VxeGridInstance } from 'vxe-table'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -25,9 +26,8 @@ import { XTableProps } from './type'
 import { isBoolean, isFunction } from '@/utils/is'
 
 import download from '@/utils/download'
-import {log} from "util";
-import WGTools from "@/components/XTable/src/WGTools.vue";
-import {getTableColumnConfig} from "@/utils/tableColumn";
+import WGTools from '@/components/XTable/src/WGTools.vue'
+import { getTableColumnConfig } from '@/utils/tableColumn'
 
 const { t } = useI18n()
 const message = useMessage() // 消息弹窗
@@ -43,9 +43,8 @@ const emit = defineEmits(['register'])
 watch(
   () => appStore.getIsDark,
   () => {
-    const t = new Date().getTime();
     if (appStore.getIsDark == true) {
-      import(`./style/dark.scss`);
+      import(`./style/dark.scss`)
     } else {
       import(`./style/light.scss`)
     }
@@ -100,34 +99,34 @@ const getProps = computed(() => {
 const xGrid = ref<VxeGridInstance>() // 列表 Grid Ref
 
 const getColumnSchema = computed(() => {
-  return getProps.value?.allSchemas?.columnSchema;
+  return getProps.value?.allSchemas?.columnSchema
 })
 const getTableKey = computed(() => {
-  return getProps.value?.tableKey;
+  return getProps.value?.tableKey
 })
 
-let drawerVisible = ref<boolean> (false)
+let drawerVisible = ref<boolean>(false)
 
 const handleReset = async () => {
   const g = unref(xGrid)
   if (!g) {
     return
   }
-  let originColumn = getProps.value?.allSchemas?.columnSchema;
-  let currentColumns = reactive<any>(g.columns);
-  let newColumn: any[] = [];
+  let originColumn = getProps.value?.allSchemas?.columnSchema
+  let currentColumns = reactive<any>(g.columns)
+  let newColumn: any[] = []
   originColumn.map((col) => {
     currentColumns.map((item) => {
       if (item.field === col.field) {
-        newColumn.push(item);
+        newColumn.push(item)
       }
-    });
-  });
-  g.reloadColumn(newColumn);
-  drawerVisible.value = false;
+    })
+  })
+  g.reloadColumn(newColumn)
+  drawerVisible.value = false
 }
 
-const handleColumnChange = (columns):void => {
+const handleColumnChange = (columns): void => {
   const g = unref(xGrid)
   if (!g) {
     return
@@ -149,15 +148,15 @@ const handleColumnChange = (columns):void => {
       }
     }
   }
-  let currentColumns = reactive<any>(g.columns);
-  currentColumns.forEach(item => {
-    let index = columns.findIndex(c => c.field === item.field)
-    item.sortId = index;
-    item.check = index !== -1 ? columns[index].check : true;
+  let currentColumns = reactive<any>(g.columns)
+  currentColumns.forEach((item) => {
+    let index = columns.findIndex((c) => c.field === item.field)
+    item.sortId = index
+    item.check = index !== -1 ? columns[index].check : true
   })
-  currentColumns = currentColumns.filter(col => col.check).sort(sort("sortId"));
-  g.reloadColumn(currentColumns);
-  drawerVisible.value = false;
+  currentColumns = currentColumns.filter((col) => col.check).sort(sort('sortId'))
+  g.reloadColumn(currentColumns)
+  drawerVisible.value = false
 }
 
 let proxyForm = false
@@ -313,15 +312,33 @@ const getPageConfig = (options: XTableProps) => {
         pagerCount: 7, // 显示页码按钮的数量
         autoHidden: false, // 当只有一页时自动隐藏
         pageSizes: [5, 10, 20, 30, 50, 100], // 每页大小选项列表
+        // pageSizes: [
+        //   { label: '5条/页', value: 5 },
+        //   { label: '10条/页', value: 10 },
+        //   { label: '15条/页', value: 15 },
+        //   { label: '20条/页', value: 20 },
+        //   { label: '25条/页', value: 25 },
+        //   { label: '30条/页', value: 30 },
+        //   { label: '35条/页', value: 35 },
+        //   { label: '40条/页', value: 40 },
+        //   { label: '45条/页', value: 45 },
+        //   { label: '50条/页', value: 50 },
+        //   { label: '100条/页', value: 100 },
+        //   { label: '200条/页', value: 200 },
+        //   { label: '300条/页', value: 300 },
+        //   { label: '500条/页', value: 500 },
+        //   { label: '1000条/页', value: 1000 }
+        // ], // 每页大小选项列表
+        // className: 'wg-xtable-pagination',
         layouts: [
           'Sizes',
+          'Total',
           'PrevJump',
           'PrevPage',
           'Number',
           'NextPage',
           'NextJump',
-          'FullJump',
-          'Total'
+          'FullJump'
         ]
       }
     }
@@ -331,7 +348,7 @@ const getPageConfig = (options: XTableProps) => {
 // tool bar
 const getToolBarConfig = (options: XTableProps) => {
   const { toolBar, toolbarConfig, topActionSlots } = options
-  if (toolbarConfig) return;
+  if (toolbarConfig) return
   if (toolBar) {
     if (!isBoolean(toolBar)) {
       options.toolbarConfig = toolBar
@@ -348,25 +365,25 @@ const getToolBarConfig = (options: XTableProps) => {
   }
 }
 
-const handleToolClick = (key):void => {
-  console.log(getProps.value);
+const handleToolClick = (key): void => {
+  console.log(getProps.value.pagerConfig)
   const g = unref(xGrid)
   if (!g) {
     return
   }
   switch (key) {
     case 'print':
-      exportList();
-      break;
+      exportList()
+      break
     case 'refresh':
-      reload();
-      break;
+      reload()
+      break
     case 'fullScreen':
-      g.zoom();
-      break;
+      g.zoom()
+      break
     case 'custom':
-      drawerVisible.value = true;
-      break;
+      drawerVisible.value = true
+      break
   }
 }
 
@@ -523,14 +540,14 @@ const setProps = (prop: Partial<XTableProps>) => {
 const columnInit = () => {
   nextTick(() => {
     if (getTableKey.value) {
-      const columnConfig = getTableColumnConfig(getTableKey.value, getColumnSchema.value);
-      if (columnConfig) handleColumnChange(columnConfig);
+      const columnConfig = getTableColumnConfig(getTableKey.value, getColumnSchema.value)
+      if (columnConfig) handleColumnChange(columnConfig)
     }
   })
 }
 
 onMounted(() => {
-  columnInit();
+  columnInit()
 })
 
 defineExpose({ reload, Ref: xGrid, getSearchData, deleteData, exportList, deleteReq })

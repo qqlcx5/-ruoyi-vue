@@ -230,7 +230,6 @@ const scroll = ({ scrollLeft }) => {
 
 // 移动到某个位置
 const move = (to: number) => {
-  console.log(scrollbarRef);
   const wrap$ = unref(scrollbarRef)?.wrapRef
   const { start } = useScrollTo({
     el: wrap$!,
@@ -368,7 +367,7 @@ watch(
                   <!--                    :size="12"-->
                   <!--                    class="mr-5px"-->
                   <!--                  />-->
-                  {{ t(item?.meta?.title as string) }}
+                  {{ t(item?.meta?.title) }}
                   <Icon
                     :class="`${prefixCls}__item--close`"
                     color="#333"
@@ -527,7 +526,7 @@ $prefix-cls: #{$namespace}-tags-view;
     font-family: $font-family;
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid #DCDFE6;
+    border: 1px solid #dcdfe6;
 
     //首页
     &.#{$prefix-cls}__item--affix {

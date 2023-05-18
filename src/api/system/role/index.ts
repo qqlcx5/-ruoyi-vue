@@ -56,3 +56,18 @@ export const updateRoleStatusApi = async (data: UpdateStatusReqVO) => {
 export const deleteRoleApi = async (id: number) => {
   return await request.delete({ url: '/system/role/delete?id=' + id })
 }
+
+// 获得角色配置人员信息
+export const getPersonsByRole = async (params) => {
+  return await request.get({ url: '/system/role/get-persons-by-role', params })
+}
+
+// 赋予角色菜单和数据权限
+export const assignRoleMenuDataScope = async (data) => {
+  return await request.post({ url: '/system/permission/assign-role-menu-data-scope', data })
+}
+
+// 获得角色的菜单和数据权限
+export const getRoleMenuDataScope = async (params) => {
+  return await request.get({ url: '/system/permission/get-role-menu-data-scope', params })
+}

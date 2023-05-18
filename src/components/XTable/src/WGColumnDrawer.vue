@@ -2,12 +2,12 @@
 import { PropType } from 'vue'
 import { propTypes } from '@/utils/propTypes'
 import { getTableColumnConfig } from '@/utils/tableColumn'
-import vuedraggable from "vuedraggable";
-import {ColumnType, useTableColumnStoreWithOut } from '@/store/modules/tableColumn'
+import vuedraggable from 'vuedraggable'
+import { useTableColumnStoreWithOut } from '@/store/modules/tableColumn'
 
 const attrs = useAttrs()
 
-const tableColumnStore = useTableColumnStoreWithOut();
+const tableColumnStore = useTableColumnStoreWithOut()
 
 const props = defineProps({
   title: propTypes.string.def(''),
@@ -23,34 +23,42 @@ const emits = defineEmits(['columnChange', 'confirm', 'reset'])
 const getBindValue = computed(() => {
   let attrs = useAttrs()
   let obj = { ...attrs, ...props }
-  obj['class'] = '';
+  obj['class'] = ''
   return obj
 })
 
 const getProps = computed(() => {
-  let obj = getBindValue;
-  delete obj['class'];
-  return obj;
+  let obj = getBindValue
+  delete obj['class']
+  return obj
 })
 
 const state: any = reactive({
   columnSet: []
 })
 
-watch(() => props.columns, (data) => {
-  if (state.columnSet.length === 0) {
-    state.columnSet = data.filter(column => !column.fixed);
-  }
-}, {immediate: true})
+watch(
+  () => props.columns,
+  (data) => {
+    if (state.columnSet.length === 0) {
+      state.columnSet = data.filter((column) => !column.fixed)
+    }
+  },
+  { immediate: true }
+)
 
-watch(() => attrs.modelValue, (data) => {
-  // 这里获取缓存进行比较
-  if (data) {
-    // 打开时的column配置，从缓存获取
-    const columnConfig = getTableColumnConfig(props.tableKey, props.columns);
-    if (columnConfig) state.columnSet = columnConfig;
-  }
-}, {immediate: true})
+watch(
+  () => attrs.modelValue,
+  (data) => {
+    // 这里获取缓存进行比较
+    if (data) {
+      // 打开时的column配置，从缓存获取
+      const columnConfig = getTableColumnConfig(props.tableKey, props.columns)
+      if (columnConfig) state.columnSet = columnConfig
+    }
+  },
+  { immediate: true }
+)
 
 // 动态变更
 // watch(() => state.columnSet, (data) => {
@@ -58,23 +66,28 @@ watch(() => attrs.modelValue, (data) => {
 //   emits('columnChange', data)
 // }, {immediate: true})
 
-const drag = ref(false);
+const drag = ref(false)
 
 const reset = () => {
-  state.columnSet = props.columns.filter(column => !column.fixed);
-  tableColumnStore.setTableColumn({tableKey: props.tableKey, column: null})
-  emits('reset');
+  state.columnSet = props.columns.filter((column) => !column.fixed)
+  tableColumnStore.setTableColumn({ tableKey: props.tableKey, column: null })
+  emits('reset')
 }
 
 const confirm = () => {
-  tableColumnStore.setTableColumn({tableKey: props.tableKey, column: state.columnSet});
-  emits('confirm', state.columnSet);
+  tableColumnStore.setTableColumn({ tableKey: props.tableKey, column: state.columnSet })
+  emits('confirm', state.columnSet)
 }
-
 </script>
 
 <template>
-  <el-drawer class="columns-drawer" v-bind="getProps" direction="rtl" :lockScroll="false" size="240px">
+  <el-drawer
+    class="columns-drawer"
+    v-bind="getProps"
+    direction="rtl"
+    :lockScroll="false"
+    size="240px"
+  >
     <template #header>
       <h4 class="text-18px font-black m-0">定制列</h4>
     </template>
@@ -83,10 +96,11 @@ const confirm = () => {
         class="flex flex-col justify-center"
         v-model="state.columnSet"
         group="column"
-        @start="drag=true"
-        @end="drag=false"
-        item-key="field">
-        <template #item="{element, index}">
+        @start="drag = true"
+        @end="drag = false"
+        item-key="field"
+      >
+        <template #item="{ element }">
           <el-checkbox class="mb-4px" v-model="element.check" @click.native.stop>
             {{ element.title }}
           </el-checkbox>
@@ -106,9 +120,7 @@ const confirm = () => {
   .el-drawer__header {
     padding: 25px 20px;
     margin-bottom: 0;
-    border-bottom: 1px solid #EAEBEF;
+    border-bottom: 1px solid #eaebef;
   }
 }
-
-
 </style>

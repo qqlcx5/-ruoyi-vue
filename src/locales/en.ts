@@ -59,6 +59,10 @@ export default {
     copyError: 'Copy Error',
     operator: 'operator',
     operationTime: 'operation time',
+    confirmOpen: 'Confirm To Open',
+    confirmClose: 'Confirm To Close',
+    toOperate: 'To Operate',
+    confirmDel: 'Confirm To Delete'
   },
   error: {
     noPermission: `Sorry, you don't have permission to access this page.`,
@@ -301,9 +305,7 @@ export default {
     typeCreate: 'Dict Type Create',
     typeUpdate: 'Dict Type Eidt',
     dataCreate: 'Dict Data Create',
-    dataUpdate: 'Dict Data Eidt',
-    toOperate: 'To Operate',
-    confirmDel: 'Confirm Delete',
+    dataUpdate: 'Dict Data Eidt'
   },
   dialog: {
     dialog: 'Dialog',

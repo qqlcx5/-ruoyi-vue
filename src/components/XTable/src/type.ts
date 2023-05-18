@@ -28,7 +28,7 @@ export type VxeTableColumn = {
 } & Recordable
 
 export interface WGVxeTools {
-  key: string,
-  show?: boolean,
-  disable?: boolean,
+  key: string
+  show?: boolean
+  disable?: boolean
 }

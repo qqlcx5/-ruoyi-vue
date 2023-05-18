@@ -31,7 +31,8 @@ export const useXTable = (props: XTableProps): [Function, tableMethod] => {
     reload: () => getInstance().reload(),
     refreshColumn: () => getInstance().refreshColumn(),
     setProps: (props) => getInstance().setProps(props),
-    deleteData: (id: string | number, msg?: string | VNode | (() => VNode)) => getInstance().deleteData(id, msg),
+    deleteData: (id: string | number, msg?: string | VNode | (() => VNode)) =>
+      getInstance().deleteData(id, msg),
     deleteReq: (id: string | number) => getInstance().deleteReq(id),
     deleteBatch: () => getInstance().deleteBatch(),
     exportList: (fileName?: string) => getInstance().exportList(fileName),
