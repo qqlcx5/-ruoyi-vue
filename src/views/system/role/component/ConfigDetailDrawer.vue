@@ -26,7 +26,7 @@
             :backstageTableData="[]"
           />
         </el-tab-pane>
-        <el-tab-pane label="配置人员" name="staff">
+        <el-tab-pane v-if="props.showStaff" label="配置人员" name="staff">
           <el-form class="wg-query-form w-full" ref="elFormRef" label-position="left">
             <el-row :gutter="12">
               <el-col :span="8">
@@ -81,6 +81,13 @@ import { getDictLabel, DICT_TYPE } from '@/utils/dict'
 import ConfigDetail from './ConfigDetail.vue'
 import { getPersonsByRole } from '@/api/system/role'
 
+const props = defineProps({
+  showStaff: {
+    type: Boolean,
+    default: true
+  }
+})
+
 // 弹窗相关的变量
 const roleInfo = ref()
 const drawerVisible = ref(false) // 是否显示弹出层
@@ -127,7 +134,6 @@ const hightLightText = (text) => {
 const openDrawer = async (row) => {
   roleInfo.value = row
   drawerVisible.value = true
-  console.log(roleInfo.value.permissions)
 }
 defineExpose({ openDrawer }) // 提供 openModal 方法，用于打开弹窗
 </script>
