@@ -17,17 +17,17 @@ export const getMemberList = (params: MajorIndividual) => {
 
 // 获取岗位类型
 export const getPostTypeList = () => {
-  return request.get({ url: '/system/post-type/list-all-simple'})
+  return request.get({ url: '/system/post-type/list-all-simple' })
 }
 
 // 获取岗位列表
 export const getPostList = () => {
-  return request.get({ url: '/system/post/list-all-simple'})
+  return request.get({ url: '/system/post/list-all-simple' })
 }
 
 // 获取角色信息
 export const getRolesList = () => {
-  return request.get({ url: '/system/role/list-all-simple'})
+  return request.get({ url: '/system/role/list-all-simple' })
 }
 
 // 新增成员
@@ -36,7 +36,7 @@ export const addMember = (data) => {
 }
 
 // 编辑成员
-export const updateMember= (data) => {
+export const updateMember = (data) => {
   return request.put({ url: '/system/user/update', data })
 }
 
@@ -55,20 +55,17 @@ export const deleteMember = (id: number) => {
   return request.delete({ url: '/system/user/delete?id=' + id })
 }
 
-
-
-
 // 重置密码
 export const putResetPassWord = (data) => {
   return request.put({ url: '/system/tenant/update-password', data })
 }
 
 // 批量转岗
-export const batchPostAdjustment = (params) => {
-  return request.post({ url: '/system/user/extra/post-adjustment', params })
+export const batchPostAdjustment = (data) => {
+  return request.post({ url: '/system/user/extra/post-adjustment', data })
 }
 
 // 批量赋予用户角色
-export const batchAssignUserRole = (params) => {
-  return request.post({ url: '/system/permission/assign-user-role/batch', params })
+export const batchAssignUserRole = (data) => {
+  return request.post({ url: '/system/permission/assign-user-role/batch', data })
 }

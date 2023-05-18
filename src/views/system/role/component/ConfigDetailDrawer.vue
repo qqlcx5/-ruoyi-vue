@@ -49,16 +49,18 @@
           </el-form>
           <div class="card-gary-bg mt-16px p-16px">
             <div v-if="staff && staff.length > 0">
-              <div class="flex flex-row-reverse">共{{ personnelCount }}人</div>
+              <div class="flex flex-row-reverse text-title">共{{ personnelCount }}人</div>
               <div v-for="(item, index) in staff" :key="index">
-                <div>
-                  {{ item.postName }}<span>({{ item.personsInfos.length }})</span>
+                <div class="text-title">
+                  <span v-html="hightLightText(item.postName)"></span>
+                  <span class="text-tip"> ({{ item.personsInfos.length }})</span>
                 </div>
                 <div class="flex items-center">
                   <div
                     v-for="user in item.personsInfos"
                     :key="user.userId"
-                    class="px-8px py-4px mt-8px mr-10px border-1px"
+                    class="text-12px leading-normal py-4px px-8px mt-10px mr-10px border-1px rounded-4px bg-[var(--el-color-white)] dark:(bg-[var(--el-bg-color)]"
+                    :class="{ 'height-light': user.nickname === searchForm.nickname }"
                   >
                     {{ `${user.nickname}` }}
                     <span v-if="user.status === 1">(停用)</span>
@@ -113,6 +115,13 @@ const searchReset = () => {
   searchForm.value = { postName: '', nickname: '' }
   getPersons()
 }
+const hightLightText = (text) => {
+  console.log(text)
+  if (text) {
+    const reg = new RegExp(searchForm.value.postName, 'gi') // 动态正则表达式
+    return text.replace(reg, `<span class="text-error">${searchForm.value.postName}</span>`) // 使用replace替换
+  }
+}
 
 // 打开弹窗
 const openDrawer = async (row) => {
@@ -122,4 +131,10 @@ const openDrawer = async (row) => {
 }
 defineExpose({ openDrawer }) // 提供 openModal 方法，用于打开弹窗
 </script>
-<style lang="scss" scoped></style>
+
+<style lang="scss" scoped>
+.height-light {
+  color: $error-color;
+  border-color: $error-color;
+}
+</style>

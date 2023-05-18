@@ -112,6 +112,7 @@ import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from './component/ConfigDetailDrawer.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
+import { ElMessageBox } from 'element-plus'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -168,28 +169,69 @@ const handleDetail = async (rowId) => {
 
 // 删除操作
 const onRoleDel = async (row) => {
-  message
-    .wgConfirm(
+  const activeUserCount = await RoleApi.getActiveUsersCount(row.id) // 请求在职员工数
+  if (activeUserCount > 0) {
+    ElMessageBox.confirm(
       h('span', [
-        h('span', `删除后， ${row.name} 底下的 `),
-        h('span', { style: { color: 'red' } }, row.staffCount),
-        h('span', ` 个员工的角色将同步删除，且不可恢复，请谨慎操作。`)
+        h('span', '系统校验到该岗位类型底下还存在 '),
+        h('span', { style: { color: 'red' } }, activeUserCount),
+        h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
       ]),
-      `确定删除 ${row.name} 角色吗？`,
+      `提示`,
       {
-        confirmButtonText: t('common.confirmDel'),
-        cancelButtonText: t('common.cancel')
+        confirmButtonText: t('common.toOperate'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning',
+        lockScroll: false
       }
     )
-    .then(async () => {
-      await deleteReq(row.id)
-    })
-    .catch(() => {})
+      .then(async () => {})
+      .catch(() => {})
+  } else {
+    message
+      .wgConfirm(
+        h('span', [
+          h('span', `删除后， ${row.name} 底下的 `),
+          h('span', { style: { color: 'red' } }, row.staffCount),
+          h('span', ` 个员工的角色将同步删除，且不可恢复，请谨慎操作。`)
+        ]),
+        `确定删除 ${row.name} 角色吗？`,
+        {
+          confirmButtonText: t('common.confirmDel'),
+          cancelButtonText: t('common.cancel')
+        }
+      )
+      .then(async () => {
+        await deleteReq(row.id)
+      })
+      .catch(() => {})
+  }
 }
-
 // 状态变更
 const roleStatusChange = async (row) => {
   const text = row.status === CommonStatusEnum.ENABLE ? '开启' : '关闭'
+  if (row.status === CommonStatusEnum.DISABLE) {
+    const activeUserCount = await RoleApi.getActiveUsersCount(row.id) // 请求在职员工数
+    if (activeUserCount > 0) {
+      return ElMessageBox.confirm(
+        h('span', [
+          h('span', '系统校验到该机构底下还存在 '),
+          h('span', { style: { color: 'red' } }, activeUserCount),
+          h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
+        ]),
+        `提示`,
+        {
+          confirmButtonText: t('common.toOperate'),
+          cancelButtonText: t('common.cancel'),
+          type: 'warning',
+          lockScroll: false
+        }
+      )
+        .then(async () => {})
+        .catch(() => {})
+        .finally(() => reload())
+    }
+  }
   message
     .wgConfirm(
       h('span', [

@@ -88,12 +88,13 @@ const submitForm = async () => {
   if (role.value.length === 0) return message.warning('请完善分配角色内容')
   loading.value = true
   let params = {
-    roleIds: role.value.map((i) => i.roleId).join(','),
-    userIds: memberList.value.join(',')
+    roleIds: role.value.map((i) => i.roleId),
+    userIds: memberList.value
   }
   const result = await batchAssignUserRole(params).finally(() => (loading.value = false))
   if (result) {
     emit('success')
+    message.success('设置角色成功')
     modelVisible.value = false
   }
 }
