@@ -19,6 +19,7 @@
                 <a-input
                   class="width-100"
                   v-model:value="queryParams.memberName"
+                  @pressEnter="getList"
                   placeholder="请输入成员姓名或工号"
                 />
               </div>
@@ -30,6 +31,7 @@
                 <a-input
                   class="width-100"
                   v-model:value="queryParams.memberPhone"
+                  @pressEnter="getList"
                   placeholder="请输入联系电话"
                 />
               </div>
@@ -51,6 +53,7 @@
                 <a-input
                   class="width-100"
                   v-model:value="queryParams.post"
+                  @pressEnter="getList"
                   placeholder="输入岗位名称搜索"
                 />
               </div>
@@ -276,6 +279,7 @@
                 <div class="text-color margin-right-5" @click="assignPermission(record)"
                   >分配角色</div
                 >
+                <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
                 <a-popover placement="bottom">
                   <template #content>
                     <div
@@ -283,7 +287,9 @@
                       @click="setTableStatusChangeInfo(false, record, 'delete')"
                       >删除</div
                     >
-                    <!--                    <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>-->
+                    <div class="text-color margin-right-5" @click="resetPassword(record)">
+                      重置密码
+                    </div>
                   </template>
                   <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
                 </a-popover>
@@ -302,7 +308,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'900px'"
+    :width="'800px'"
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
@@ -317,7 +323,7 @@
           <a-form-item
             :label="`成员工号`"
             name="memberNum"
-            :rules="[{ required: true, message: `主体编码不能为空` }]"
+            :rules="[{ required: true, message: `成员编码不能为空` }]"
             calss="width-50"
           >
             <a-input v-model:value="formState.memberNum" placeholder="请输入成员工号" />
@@ -350,7 +356,7 @@
             :rules="[{ required: true, message: `入职时间不能为空` }]"
             calss="width-50"
           >
-            <a-date-picker show-time placeholder="请选择时间" v-model:value="formState.entryTime" />
+            <a-date-picker placeholder="请选择时间" v-model:value="formState.entryTime" />
           </a-form-item>
 
           <a-form-item
@@ -388,6 +394,7 @@
               :data-source="addDataSource.addEditTableData"
               :columns="addEditColumns"
               :pagination="false"
+              @resizeColumn="handleResizeColumn"
             >
               <template #bodyCell="{ column, text, record, index }">
                 <template v-if="column.key === 'phoneType'">
@@ -477,6 +484,7 @@
             :data-source="addPostDataSource.addEditTableData"
             :columns="addEditPostColumns"
             :pagination="false"
+            @resizeColumn="handleResizeColumn"
           >
             <template #bodyCell="{ column, text, record, index }">
               <template v-if="column.key === 'department'">
@@ -558,7 +566,7 @@
 
         <div class="form-content">
           <a-form-item :label="`出生日期`" calss="width-50">
-            <a-date-picker show-time placeholder="请选择时间" v-model:value="formState.birthDay" />
+            <a-date-picker placeholder="请选择时间" v-model:value="formState.birthDay" />
           </a-form-item>
 
           <a-form-item :label="`QQ`" calss="width-50">
@@ -613,7 +621,7 @@
     title="分配角色"
     @cancel="closePermissionModal"
     :width="'665px'"
-    :bodyStyle="{ height: '237px', margin: '0', padding: '0', overflow: 'auto' }"
+    :bodyStyle="{ height: '207px', margin: '0', padding: '0', overflow: 'auto' }"
   >
     <div class="assign-roles-content">
       <div class="member-info">
@@ -654,7 +662,7 @@
 
     <template #footer>
       <a-button type="primary" html-type="submit" @click="PermissionOk">确定</a-button>
-      <a-button @click="closePermissionModal">取消</a-button>
+      <a-button @click="closePermissionModal">暂不设置</a-button>
     </template>
   </a-modal>
 
@@ -706,12 +714,14 @@
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
   >
-    <div class="details-edit" @click="edit(state.record, true)"
-      ><img :src="editImg" alt="" class="edit-Img" />修改</div
-    >
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
-      <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
-      <div class="info-content" v-if="item.baseTitle !== '配置权限'">
+      <div class="flex-space">
+        <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
+        <div class="details-edit" @click="edit(state.detailsRecord, true)" v-if="item?.needEdit"
+          ><img :src="editImg" alt="" class="edit-Img" />修改</div
+        >
+      </div>
+      <div class="info-content">
         <div
           :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
           v-for="(childItem, childIndex) in item.infoArr"
@@ -734,21 +744,6 @@
           <div v-if="childItem?.isSuperAdmin" class="send-code-btn" @click="resetPassword">
             重置密码
           </div>
-        </div>
-      </div>
-      <div class="details-modal-content select-content" v-else>
-        <div class="details-modal-left">
-          <div class="details-heard">前台</div>
-          <!--          <a-tree-->
-          <!--            defaultExpandAll-->
-          <!--            :tree-data="item.treeArr"-->
-          <!--            :fieldNames="state.fieldNames"-->
-          <!--          >-->
-          <!--          </a-tree>-->
-        </div>
-        <div class="details-modal-left">
-          <div class="details-heard">后台({{ item.treeArr?.length }})</div>
-          <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
         </div>
       </div>
     </div>
@@ -779,18 +774,13 @@
         重置密码成功！
       </div>
       <div class="user-info1">
-        <span>超管用户名：</span>
+        <span>用户名：</span>
         <span>{{ state.resetPasswordSuccessInfo?.username }}</span>
       </div>
       <div class="user-info2">
         <span>新密码：</span>
         <span>{{ state.resetPasswordSuccessInfo?.password }}</span>
         <div class="copy-button" @click="copyText">复制</div>
-      </div>
-      <div class="user-info3">
-        重置密码的信息已成功发送到负责人手机号{{
-          state.resetPasswordSuccessInfo.mobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
-        }}中，请注意查收!
       </div>
     </div>
 
@@ -920,7 +910,8 @@ const formState = reactive({
   email: null, //电子邮箱
   wechat: null, //微信号
   companyAddress: [], //公司地址
-  detailedAddress: '' //公司地址 详细地址
+  detailedAddress: '', //公司地址 详细地址
+  cascadeInfo: [] //选中的省市区全部信息
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -990,6 +981,16 @@ const state = reactive({
       label: '岗位2'
     }
   ], //岗位类型Options
+  barnOptions: [
+    {
+      value: 'G1',
+      label: '岗位1'
+    },
+    {
+      value: 'G2',
+      label: '岗位2'
+    }
+  ], //所属品牌Options
   partPostOptions: [
     {
       value: '0',
@@ -1064,7 +1065,7 @@ const state = reactive({
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
-  messageText: '为了保护您的主体公司业务数据安全，请通过安全验证：',
+  messageText: '为了保护您的成员公司业务数据安全，请通过安全验证：',
   canSendCode: true, //能否发送验证码
   codeCountdown: 60, //短信发送倒计时 s
   messageCode: '', //短信验证码
@@ -1096,10 +1097,10 @@ const state = reactive({
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
   formState: {
-    belongTenantId: 0, //上级主体编号
-    code: '', //主体编码
-    name: '', //主体名称
-    abbreviate: '', //主体简称
+    belongTenantId: 0, //上级成员编号
+    code: '', //成员编码
+    name: '', //成员名称
+    abbreviate: '', //成员简称
     systemName: '', //系统名称
     logoUrl: '', //系统logo
     contactName: '', //负责人
@@ -1121,7 +1122,7 @@ const state = reactive({
 
     businessLicenseUrl: '' //营业执照
   }, //新增表单
-  addSuccessId: undefined, //创建主体成功ID 主要是用于创建主体后配置权限
+  addSuccessId: undefined, //创建成员成功ID 主要是用于创建成员后分配角色
   activeKey: 'backstage', // tabsKey frontDesk前台 backstage后台
   selectAll: false, //权限配置 全选
   isExpandAllTab: false, //权限配置 展开折叠
@@ -1151,7 +1152,7 @@ const state = reactive({
   }, //重置密码 modal样式
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [], //表格 columns
-  optionalMenuTree: [], //上级主体 treeList
+  optionalMenuTree: [], //上级成员 treeList
   logoListUrl: [], //系统logo 上传 回显 - -
   logoUrlSuccess: '', //系统logo 新增编辑入参
   legalPersonListUrl: [], //法人身份证 上传回显
@@ -1461,7 +1462,7 @@ const openModal = async (record = {}) => {
 
   let menuTree = []
   // let menu = {}
-  let menu: Tree = { id: 0, name: '顶层主体', children: [] }
+  let menu: Tree = { id: 0, name: '顶层成员', children: [] }
   menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
   menuTree.push(menu)
 
@@ -1539,7 +1540,7 @@ const edit = async (record, isCloseDetails = false) => {
     //关闭详情moal
     state.isShowDetails = false
   }
-  //获取主体详情
+  //获取成员详情
   const res = await getMemberDetails({ id: record.id })
   console.log('成员详情res', res)
   formState.id = record.id
@@ -1578,16 +1579,37 @@ const edit = async (record, isCloseDetails = false) => {
     })
   })
 
+  if (record?.phoneVOList === null) {
+    tempPhoneList.push({
+      index: 0,
+      phoneType: '',
+      phoneNum: '',
+      useType: '',
+      isService: ''
+    })
+  }
+
+  if (record?.postVOList === null) {
+    tempPostList.push({
+      index: 0,
+      department: null,
+      post: null,
+      brand: null,
+      isMainPost: null,
+      isShow: true
+    })
+  }
+
   //赋值 回显
   formState.memberNum = record.username //成员工号
   formState.memberName = record.nickname ///成员姓名
   formState.sex = String(record.sex) //性别
-  formState.entryTime = dayjs(record.onboardingTime) //入职时间
+  formState.entryTime = record.onboardingTime ? dayjs(record.onboardingTime) : dayjs() //入职时间
   formState.memberType = String(record.userType) //人员类型
   formState.isOnJob = String(res.userStatus) //人员状态
   addDataSource.addEditTableData = tempPhoneList //联系电话
   addPostDataSource.addEditTableData = tempPostList //岗位信息
-  formState.birthDay = dayjs(record.birthDay) //出生日期
+  formState.birthDay = record.birthDay ? dayjs(record.birthDay) : dayjs() //出生日期
   formState.qqNum = record.qq //QQ
   formState.email = record.email //电子邮箱
   formState.wechat = record.wechat //微信号
@@ -1655,7 +1677,7 @@ let needReplaceKey = [
 state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
 console.log('state.proMunAreaList', state.proMunAreaList)
 
-//新增主体
+//新增成员
 const addMajorIndividualFN = async () => {
   // console.log('dayjs', dayjs().format('YYYY/MM/DD'))
   // 校验表单
@@ -1717,23 +1739,25 @@ const addMajorIndividualFN = async () => {
     username: formState.memberNum, //成员工号
     nickname: formState.memberName, //成员姓名
     sex: formState.sex, //性别
-    onboardingTime: formState.entryTime.format('YYYY-MM-DD HH:mm:ss'), //入职时间
+    onboardingTime: formState.entryTime?.format('YYYY-MM-DD'), //入职时间
     userType: formState.memberType, //人员类型
     userStatus: formState.isOnJob, //人员状态
     phoneList: tempPhoneList, //联系电话
     avatar: state.legalPersonUrlSuccess, //成员头像
     postList: tempPostList, //岗位信息
-    birthDay: formState.birthDay.format('YYYY-MM-DD HH:mm:ss'), //出生日期
+    birthDay: formState.birthDay?.format('YYYY-MM-DD'), //出生日期
     qq: formState.qqNum, //QQ
     email: formState.email, //电子邮箱
     wechat: formState.wechat, //微信号
     address: formState.detailedAddress //公司地址 详细地址
   }
 
+  console.log('formState?.cascadeInfo', formState?.cascadeInfo)
   //省市区
   if (formState?.cascadeInfo[0]) {
     params['province'] = formState.cascadeInfo[0].label
     params['provinceCode'] = formState.cascadeInfo[0].value
+    debugger
   }
   if (formState?.cascadeInfo[1]) {
     params['city'] = formState.cascadeInfo[1].label
@@ -1754,7 +1778,7 @@ const addMajorIndividualFN = async () => {
       state.addSuccessId = res
       console.log('新增成员res', res)
       message.success('新增成功')
-      //配置权限
+      //分配角色
       openPermissionModal()
     } else {
       params['id'] = formState.id
@@ -1782,21 +1806,19 @@ const closePermissionModal = () => {
 }
 
 //开启分配角色 modal
-const openPermissionModal = async () => {
+const openPermissionModal = async (isAdd = false) => {
+  if (isAdd) {
+    const res = await getMemberDetails({ id: state.addSuccessId })
+    state.permissionRecord = res
+    console.log('新增后获取res', res)
+  }
   state.isShowPermission = true
-  // //获取菜单列表
-  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  //获取菜单列表
-  const menuList = await MenuApi.getSimpleMenusList()
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = menuList.filter((item) => item.type !== 3)
-  state.menuTreeList = handleTree(tempArr)
 }
 
 //分配角色 Modal 确认
 const PermissionOk = async () => {
   const params = {
-    userId: state.permissionRecord?.id,
+    userId: state.permissionRecord?.id || state.addSuccessId,
     roleIds: state.roleId
   }
   await aassignUserRoleApi(params)
@@ -1807,21 +1829,14 @@ const PermissionOk = async () => {
 const assignPermission = async (record) => {
   console.log('分配角色record=》', record)
   state.permissionRecord = record
-  state.PermissionType = 'edit'
-  if (record.packageId) {
-    const res = await getTenantPackage({ id: record.packageId })
-    //... res 可能为null
-    const { menuIds = [], id } = res || []
-    state.editPermissionID = id
-    state.checkedKeys = menuIds
-    state.selectTree = filterTree(state.menuTreeList, menuIds)
-  }
-  //右侧展开显示 左侧选中的数据
-  state.isShowRightTree = false
-  nextTick(() => {
-    state.isShowRightTree = true
+  const { roleVOList = [] } = record
+  //回显 已分配的角色
+  state.roleId = []
+  roleVOList?.map((item) => {
+    state.roleId.push(item.roleId)
   })
-  await openPermissionModal()
+  state.PermissionType = 'edit'
+  openPermissionModal()
 }
 
 //表格状态改变 确认modal... 然后才开短信 modal
@@ -1920,7 +1935,7 @@ const statusCancel = () => {
   state.isShowMessage = false
   state.record = {}
   state.messageContactMobile = '18888888888' //短信验证手机号
-  state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
+  state.messageText = '为了保护您的成员公司业务数据安全，请通过安全验证：'
   state.canSendCode = true //能否发送验证码
   state.codeCountdown = 60 //短信发送倒计时 s
   state.messageCode = '' //短信验证码
@@ -1994,82 +2009,117 @@ function getChildArr(data) {
 //详情(打开)
 const detailsInfo = async (record) => {
   // state.record = record
-  //获取主体详情
-  const res = await getMajorIndividualDetails({ id: record.id })
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = res.menus?.filter((item) => item.type !== 3)
-
-  state.record = res
-
-  let companyAddress = ''
-  if (res?.province) {
-    companyAddress = res?.province + res?.city + res?.county + res?.address
+  //获取成员详情
+  const res = await getMemberDetails({ id: record.id })
+  console.log('详情record', record)
+  console.log('详情res', res)
+  let sexText = '男'
+  let isOnJobText = '在职'
+  switch (res.sex) {
+    case 1:
+      sexText = '女'
+      break
+    case 2:
+      sexText = '男'
   }
 
-  const tempRes = await getSimpleTenantList()
-  const tempItem = tempRes.filter((item) => item.id === record.belongTenantId)
+  switch (res.userStatus) {
+    case 0:
+      isOnJobText = '在职'
+      break
+    case 1:
+      isOnJobText = '离职'
+  }
+  return
+
+  // state.record = res
+  //
+  // let companyAddress = ''
+  // if (res?.province) {
+  //   companyAddress = res?.province + res?.city + res?.county + res?.address
+  // }
+  //
+  // const tempRes = await getSimpleTenantList()
+  // const tempItem = tempRes.filter((item) => item.id === record.belongTenantId)
 
   state.detailsInfo = [
     {
       baseTitle: '基本信息',
+      needEdit: true,
       infoArr: [
         {
-          textSpan: '上级主体：',
-          text: tempItem[0]?.name
+          textSpan: '成员工号：',
+          text: record?.memberNum
         },
         {
-          textSpan: '主体名称：',
-          text: res.name
+          textSpan: '成员姓名：',
+          text: record.memberName
         },
         {
-          textSpan: '主体编码：',
-          text: res.code
+          textSpan: '姓名拼音全拼：',
+          text: ''
         },
         {
-          textSpan: '主体简称：',
-          text: res.abbreviate
+          textSpan: '英文名：',
+          text: ''
         },
         {
-          textSpan: '系统名称：',
-          text: res.systemName
+          textSpan: '性别：',
+          text: sexText
         },
         {
-          textSpan: '系统logo：',
+          textSpan: '入职时间：',
+          text: res.onboardingTime
+        },
+        {
+          textSpan: '人员类型：',
+          text: record.memberType
+        },
+        {
+          textSpan: '人员状态：',
+          text: isOnJobText
+        },
+        {
+          textSpan: '离职时间：',
+          text: res.departureTime
+        },
+        {
+          textSpan: '账号状态：',
+          text: record.statusSwitch ? '开启' : '关闭'
+        },
+        {
+          textSpan: '联系电话：',
+          text: '',
+          isTable: true,
+          tableColumns: [],
+          tableData: []
+        },
+        {
+          textSpan: '成员头像：',
           text: '暂无上传图片',
-          imgUrl: res.logoUrl
-        },
-        {
-          textSpan: '负责人：',
-          text: res.contactName
-        },
-        {
-          textSpan: '负责人电话：',
-          text: res.contactMobile
-        },
-        {
-          textSpan: '有效期：',
-          text:
-            res.expireTime === '2099-12-31'
-              ? '永久有效'
-              : `${res.effectiveStartDate}-${res.expireTime}`
-        },
-        {
-          textSpan: '绑定域名：',
-          text: res.domain
-        },
-        {
-          textSpan: '状态：',
-          text: res.status === 0 ? '开启' : '关闭'
+          imgUrl: record.avatar
         }
       ]
     },
     {
-      baseTitle: '账户信息',
+      baseTitle: '岗位信息',
       infoArr: [
         {
-          textSpan: '超级管理员：',
-          text: res.username,
-          isSuperAdmin: true
+          textSpan: '岗位信息：',
+          text: '',
+          isTable: true,
+          tableColumns: [],
+          tableData: []
+        }
+      ]
+    },
+    {
+      baseTitle: '角色信息',
+      infoArr: [
+        {
+          textSpan: '岗位信息：',
+          text: '',
+          tagsArr: []
         }
       ]
     },
@@ -2077,44 +2127,31 @@ const detailsInfo = async (record) => {
       baseTitle: '详细信息',
       infoArr: [
         {
-          textSpan: '统一社会信用代码：',
+          textSpan: '出生日期：',
           text: res.creditCode
         },
         {
-          textSpan: '组织机构代码：',
+          textSpan: '电子邮箱：',
           text: res.organizationCode
         },
         {
-          textSpan: '法定代表人：',
+          textSpan: 'QQ：',
           text: res.legalRepresentative
         },
         {
-          textSpan: '法人联系电话：',
+          textSpan: '微信号：',
           text: res.legalMobile
         },
         {
-          textSpan: '法人身份证：',
-          text: '暂无上传图片',
-          imgUrl: res.legalIdentityUrl
-        },
-        {
-          textSpan: '成立日期：',
-          text: res.establishDate
-        },
-        {
-          textSpan: '公司地址：',
-          text: companyAddress
-        },
-        {
-          textSpan: '营业执照：',
-          text: '暂无上传图片',
-          imgUrl: res.businessLicenseUrl
+          textSpan: '家庭地址：',
+          text: '暂无上传图片'
         }
       ]
     },
     {
-      baseTitle: '配置权限',
-      treeArr: handleTree(tempArr)
+      baseTitle: '变更记录 ',
+      infoArr: [],
+      changeRecord: []
     }
   ]
 
@@ -2136,7 +2173,7 @@ const closePasswordModal = () => {
 }
 
 //重置密码
-const resetPassword = () => {
+const resetPassword = (record) => {
   state.isShowResetPassWord = true
   state.resetPasswordTitle = '提示'
   state.closable = true
@@ -2144,10 +2181,11 @@ const resetPassword = () => {
     width: 424,
     height: 138
   }
+  state.record = record
 }
 //重置密码 请求
 const resetPasswordFN = async () => {
-  state.resetPasswordSuccessInfo = await putResetPassWord({ id: state.record.contactUserId })
+  state.resetPasswordSuccessInfo = await putResetPassWord({ id: state.record.id })
   state.resetPasswordTitle = ''
   state.closable = false
   state.resetModalStyle = {
@@ -2430,6 +2468,8 @@ const getAllType = async () => {
   const tempMemberType = dictRes.filter((item) => item.dictType === 'person_type')
   //岗位类型  主岗/兼岗
   const tempPostType = dictRes.filter((item) => item.dictType === 'post_type')
+  //所属品牌
+  const tempBarnOptions = dictRes.filter((item) => item.dictType === 'brand')
 
   //处理一下吧 当然换成 在标签上通过fieldNames更改也可以
   const needReplaceKey = [
@@ -2447,6 +2487,7 @@ const getAllType = async () => {
     state.memberTypeOptions = tempMemberType
     state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
     state.partPostOptionsText = tempPostType
+    state.barnOptions = tempBarnOptions
   })
 
   console.log('岗位类型', res)
@@ -2458,6 +2499,7 @@ const getAllType = async () => {
   console.log('岗位列表', postList)
   console.log('岗位列表D', state.postListOptions)
   console.log('岗位类型主岗/兼岗', tempPostType)
+  console.log('所属品牌', tempBarnOptions)
 }
 
 getAllType()
@@ -2466,9 +2508,14 @@ getAllType()
 const addEditColumns = [
   {
     title: '序号',
+    width: 50,
     dataIndex: 'index',
     key: 'index',
-    align: 'center'
+    align: 'center',
+    resizable: true,
+    customRender: (text: any, record: any, index: any, column: any) => {
+      return text.index + 1
+    }
   },
   {
     title: '号码类别',
@@ -2882,7 +2929,7 @@ const batchAssignUserRole = (): void => {
   display: flex;
   justify-content: space-between;
 }
-//配置权限左侧
+//分配角色左侧
 .left-content {
   width: 290px;
   height: 620px;
@@ -2890,7 +2937,7 @@ const batchAssignUserRole = (): void => {
   //background: skyblue;
 }
 
-//配置权限右侧
+//分配角色右侧
 .right-content {
   width: 290px;
   height: 620px;
@@ -3011,13 +3058,17 @@ const batchAssignUserRole = (): void => {
   display: flex;
   flex-direction: column;
 }
+.flex-space {
+  display: flex;
+  justify-content: space-between;
+}
 .info-content,
 .details-modal-content {
   flex: 1;
 }
 //详情修改文字
 .details-edit {
-  width: 100%;
+  width: 50%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -3114,7 +3165,7 @@ const batchAssignUserRole = (): void => {
   padding: 28px 0 0 139px;
 }
 .user-info2 {
-  padding: 9px 0 0 167px;
+  padding: 9px 0 0 139px;
   display: flex;
 }
 .copy-button {
@@ -3127,6 +3178,7 @@ const batchAssignUserRole = (): void => {
   color: rgba(255, 255, 255, 1);
   border-radius: 4px;
   background-color: rgba(0, 129, 255, 1);
+  cursor: pointer;
 }
 .user-info3 {
   margin: 19px 0 0 50px;
