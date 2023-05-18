@@ -4,7 +4,7 @@
       <el-row :gutter="12">
         <el-col :span="6">
           <el-form-item label-width="70px" label="角色名称">
-            <el-input v-model="searchForm.name" placeholder="请输入角色名称" />
+            <el-input v-model="searchForm.keyword" placeholder="请输入角色名称" />
           </el-form-item>
         </el-col>
         <el-col :span="6">
@@ -118,7 +118,7 @@ const message = useMessage() // 消息弹窗
 const router = useRouter() // 路由
 
 // 列表相关的变量
-const searchForm = ref({ name: '', status: '' })
+const searchForm = ref({ keyword: '', status: '' })
 const [registerTable, { reload, deleteReq }] = useXTable({
   tableKey: 'role-table',
   allSchemas: allSchemas,
@@ -128,7 +128,7 @@ const [registerTable, { reload, deleteReq }] = useXTable({
 })
 // 查询重置
 const onRoleSearchReset = () => {
-  searchForm.value = { name: '', status: '' }
+  searchForm.value = { keyword: '', status: '' }
   reload()
 }
 
@@ -206,7 +206,7 @@ const roleStatusChange = async (row) => {
       }
     )
     .then(async () => {
-      const result = await deleteData(row.id)
+      const result = await RoleApi.updateRoleApi(row.id)
       if (result) {
         message.success(`成功${text}${row.name}`)
       } else {

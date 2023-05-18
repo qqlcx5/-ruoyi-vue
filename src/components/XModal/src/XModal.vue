@@ -57,7 +57,7 @@ const getBindValue = computed(() => {
   }
   .vxe-modal--footer {
     padding: 15px 26px !important;
-    border-top: 1px solid #EAEBEF;
+    border-top: 1px solid #eaebef;
   }
   .el-select {
     width: 100%;

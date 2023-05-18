@@ -1,5 +1,4 @@
 import request from '@/config/axios'
-import { TenantPackageVO } from '@/api/system/tenantPackage'
 
 export interface MajorIndividual {
   pageNo?: number
@@ -107,3 +106,13 @@ export const putResetPassWord = (data) => {
 // export const deleteMenu = (id: number) => {
 //   return request.delete({ url: '/system/menu/delete?id=' + id })
 // }
+
+// 批量转岗
+export const batchPostAdjustment = (params) => {
+  return request.post({ url: '/system/user/extra/post-adjustment', params })
+}
+
+// 批量赋予用户角色
+export const batchAssignUserRole = (params) => {
+  return request.post({ url: '/system/permission/assign-user-role/batch', params })
+}

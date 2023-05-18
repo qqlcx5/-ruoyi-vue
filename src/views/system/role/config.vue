@@ -10,18 +10,10 @@
           </template>
           <el-tabs class="-mt-16px" v-model="activeName">
             <el-tab-pane label="前台" name="front">
-              <ConfigContent
-                ref="frontConfigRef"
-                stage="front"
-                @front-change="onFrontConfigChange"
-              />
+              <ConfigContent ref="frontConfigRef" stage="front" @change="onConfigChange" />
             </el-tab-pane>
             <el-tab-pane label="后台" name="backstage">
-              <ConfigContent
-                ref="backstageConfigRef"
-                stage="backstage"
-                @backstage-change="onBackstageConfigChange"
-              />
+              <ConfigContent ref="backstageConfigRef" stage="backstage" @change="onConfigChange" />
             </el-tab-pane>
           </el-tabs>
         </el-card>
@@ -60,6 +52,7 @@ import { useTagsViewStore } from '@/store/modules/tagsView'
 
 const { t } = useI18n() // 国际化
 const router = useRouter()
+const { query } = useRoute()
 const message = useMessage()
 const tagsViewStore = useTagsViewStore()
 
@@ -68,22 +61,33 @@ const frontTableData = ref<any[]>([]) // 前台已选权限
 const backstageTableData = ref<any[]>([]) // 后台已选权限
 const loading = ref<boolean>(false)
 
-const onFrontConfigChange = (data) => {
-  frontTableData.value = data || []
-}
-const onBackstageConfigChange = (data) => {
-  backstageTableData.value = data || []
+const onConfigChange = (config) => {
+  if (config.stage === 'front') {
+    frontTableData.value = config.data || []
+  } else if (config.stage === 'backstage') {
+    console.log(config)
+    backstageTableData.value = config.data || []
+  }
 }
 // ============ footer操作 ===========
 const frontConfigRef = ref()
 const backstageConfigRef = ref()
 const handleOk = async () => {
-  console.log(frontConfigRef.value.getParams())
   loading.value = true
-  const params = frontConfigRef.value.getParams()
-  const result = await RoleApi.assignRoleMenuDataScope(params)
-  result ? message.success('保存成功') : message.error('保存失败')
-  loading.value = false
+  const params = {
+    menuDataScopeItemList: frontConfigRef.value.getParams(),
+    roleId: query.id
+  }
+  // console.log(params);
+  const result = await RoleApi.assignRoleMenuDataScope(params).finally(
+    () => (loading.value = false)
+  )
+  if (result) {
+    message.success('保存成功')
+    handleCancel()
+  } else {
+    message.error('保存失败')
+  }
 }
 const handleCancel = () => {
   tagsViewStore.delView(unref(router.currentRoute))

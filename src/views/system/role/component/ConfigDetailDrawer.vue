@@ -5,6 +5,7 @@
     direction="rtl"
     :lockScroll="false"
     size="764px"
+    @close="tabsActive = 'permission'"
   >
     <template #header>
       <h4 class="text-18px font-black m-0">详情</h4>
@@ -19,7 +20,11 @@
       </el-descriptions>
       <el-tabs v-model="tabsActive" @tab-change="onTabChange">
         <el-tab-pane label="配置权限" name="permission">
-          <ConfigDetail />
+          <ConfigDetail
+            origin="detail"
+            :frontTableData="roleInfo.permissions"
+            :backstageTableData="[]"
+          />
         </el-tab-pane>
         <el-tab-pane label="配置人员" name="staff">
           <el-form class="wg-query-form w-full" ref="elFormRef" label-position="left">
@@ -43,19 +48,26 @@
             </el-row>
           </el-form>
           <div class="card-gary-bg mt-16px p-16px">
-            <div class="flex flex-row-reverse">共{{ 10 }}人</div>
-            <div>
-              销售顾问<span>({{ staff.length }})</span>
-            </div>
-            <div class="flex items-center">
-              <div
-                v-for="item in staff"
-                :key="item"
-                class="px-8px py-4px mt-8px mr-10px border-1px"
-              >
-                {{ `ssdf${item}` }}
+            <div v-if="staff && staff.length > 0">
+              <div class="flex flex-row-reverse">共{{ personnelCount }}人</div>
+              <div v-for="(item, index) in staff" :key="index">
+                <div>
+                  {{ item.postName }}<span>({{ item.personsInfos.length }})</span>
+                </div>
+                <div class="flex items-center">
+                  <div
+                    v-for="user in item.personsInfos"
+                    :key="user.userId"
+                    class="px-8px py-4px mt-8px mr-10px border-1px"
+                  >
+                    {{ `${user.nickname}` }}
+                    <span v-if="user.status === 1">(停用)</span>
+                    <span v-if="user.userStatus === 1">(离职)</span>
+                  </div>
+                </div>
               </div>
             </div>
+            <div v-else class="text-center text-tip">暂无配置人员</div>
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -70,6 +82,14 @@ import { getPersonsByRole } from '@/api/system/role'
 // 弹窗相关的变量
 const roleInfo = ref()
 const drawerVisible = ref(false) // 是否显示弹出层
+const personnelCount = computed(() => {
+  let count = 0
+  staff.value.forEach((item) => {
+    const len: any[] = item['personsInfos'] || []
+    count += len.length
+  })
+  return count
+})
 const onTabChange = async (tab) => {
   if (tab === 'staff') {
     await getPersons()
@@ -98,6 +118,7 @@ const searchReset = () => {
 const openDrawer = async (row) => {
   roleInfo.value = row
   drawerVisible.value = true
+  console.log(roleInfo.value.permissions)
 }
 defineExpose({ openDrawer }) // 提供 openModal 方法，用于打开弹窗
 </script>

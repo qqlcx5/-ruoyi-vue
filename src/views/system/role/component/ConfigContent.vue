@@ -65,23 +65,23 @@
           v-if="currentNode && currentNode.type === 2"
           v-model="currentNode.dataScope"
         >
-          <el-radio :label="1">仅看自己</el-radio>
-          <el-radio :label="2">仅看本部门及以下</el-radio>
+          <el-radio :label="5">仅看自己</el-radio>
+          <el-radio :label="4">仅看本部门及以下</el-radio>
           <el-radio :label="3">仅看本部门</el-radio>
-          <el-radio :label="4">
+          <el-radio :label="2">
             指定部门
             <div
-              v-if="currentNode.dataScope === 4"
+              v-if="currentNode.dataScope === 2"
               class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
               @click="openDepartModal"
               >{{
-                currentNode.dataScopeDeptIds
-                  ? `已选${currentNode.dataScopeDeptIds.split(',').length}个部门`
+                currentNode.dataScopeDeptIds.length > 0
+                  ? `已选${currentNode.dataScopeDeptIds.length}个部门`
                   : '请选择'
               }}
             </div>
           </el-radio>
-          <el-radio :label="5">看所有人</el-radio>
+          <el-radio :label="1">看所有人</el-radio>
         </el-radio-group>
         <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
       </div>
@@ -106,7 +106,7 @@ const props = defineProps({
     type: String
   }
 })
-const emit = defineEmits(['frontChange', 'backstageChange'])
+const emit = defineEmits(['change'])
 const roleConfig = ref<any[]>([])
 // ================= 菜单 ====================
 const defaultCheckedKeys = ref()
@@ -118,7 +118,9 @@ const checkedNodes = ref()
 watch(
   () => checkedNodes.value,
   (data) => {
-    emit(props.stage === 'backstage' ? 'backstageChange' : 'frontChange', data)
+    emit('change', {
+      data, stage: props.stage
+    })
   },
   { immediate: true, deep: true }
 )
@@ -166,50 +168,27 @@ const handleNodeClick = (node) => {
 const handleCheckChange = (node) => {
   currentNode.value = node
   treeRef.value!.setCurrentKey(node.id, true)
-  checkedNodes.value = getParams()
+  checkedNodes.value = treeRef.value!.getCheckedNodes()
 }
 
 // ================= 数据权限 ====================
 const selectOrgModalRef = ref()
 const openDepartModal = () => {
-  selectOrgModalRef.value.openModal(currentNode.value.dataScopeDeptIds.split(','))
+  selectOrgModalRef.value.openModal(currentNode.value.dataScopeDeptIds)
 }
 const onSelectOrgConfirm = (data) => {
-  currentNode.value.dataScopeDeptIds = data.map((item) => item.id).join(',')
+  currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
 }
 
 // ================= 初始化 ====================
 const init = async () => {
   const menuRes = await getSimpleMenusList()
   btnPermissionsOptions.value = menuRes.filter((menu) => menu.type === 3)
-  // roleConfig.value = [
-  //   {
-  //     dataScope: 1,
-  //     dataScopeDeptIds: '',
-  //     menuId: 2131,
-  //     menuParentId: 2130,
-  //     operations: [
-  //       {
-  //         id: 2132,
-  //         name: '账号查询',
-  //         parentId: 2131,
-  //         type: 3
-  //       },
-  //       {
-  //         id: 2135,
-  //         name: '账号查询',
-  //         parentId: 2131,
-  //         type: 3
-  //       }
-  //     ],
-  //     type: 2
-  //   }
-  // ]
   let result = { menuDataScopeItemList: [] }
   if (props.stage === 'front') {
     result = await getRoleMenuDataScope({ roleId: query.id })
   } else if (props.stage === 'backstage') {
-    result = await getRoleMenuDataScope({ roleId: query.id })
+    // result = await getRoleMenuDataScope({ roleId: query.id })
   }
   if (result) roleConfig.value = result.menuDataScopeItemList || []
   defaultCheckedKeys.value = roleConfig.value
@@ -221,13 +200,13 @@ const init = async () => {
         const roleData = roleConfig.value.find((item) => item.menuId === menu.id)
         menu.operations = roleData?.operations || []
         menu.dataScope = roleData?.dataScope || ''
-        menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || ''
+        menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
       }
       return menu.type !== 3
     })
   )
   nextTick(() => {
-    checkedNodes.value = getParams()
+    checkedNodes.value = treeRef.value!.getCheckedNodes()
   })
 }
 watch(
@@ -239,7 +218,12 @@ watch(
 )
 
 const getParams = () => {
-  return treeRef.value!.getCheckedNodes()
+  const menuDataScopeItemList = treeRef.value!.getCheckedNodes();
+  return menuDataScopeItemList.map(item => {
+    item['menuId'] = item.id;
+    item['menuParentId'] = item.parentId;
+    return item
+  })
 }
 
 defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗

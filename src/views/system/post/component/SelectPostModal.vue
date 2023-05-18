@@ -42,11 +42,18 @@
 </template>
 <script setup lang="ts">
 import * as PostInfoApi from '@/api/system/post/info'
-import { allSchemas as infoAllSchemas } from './post.data'
+import { crudConfig } from './post.data'
 const { t } = useI18n() // 国际化
+const props = defineProps({
+  mode: {
+    type: String,
+    default: 'multipart' // multipart or single
+  }
+})
 
 // 弹窗相关的变量
 const modelVisible = ref(false) // 是否显示弹出层
+const { allSchemas } = crudConfig(props.mode === 'single' ? 'radio' : 'checkbox')
 
 /* 岗位信息 */
 const postInfoSearchForm = ref({
@@ -55,17 +62,19 @@ const postInfoSearchForm = ref({
   typeCode: ''
 })
 // 列表相关的变量
-const [registerPostInfo, { reload: postInfoGet, getCheckboxRecords: getCheckboxRecords }] =
-  useXTable({
-    allSchemas: infoAllSchemas, // 列表配置
-    params: postInfoSearchForm,
-    getListApi: PostInfoApi.getPostPageApi, // 加载列表的 API
-    deleteApi: PostInfoApi.deletePostApi, // 删除数据的 API
-    exportListApi: PostInfoApi.exportPostApi, // 导出数据的 API
-    border: true,
-    height: 606,
-    toolBar: false
-  })
+const [
+  registerPostInfo,
+  { reload: postInfoGet, getCheckboxRecords: getCheckboxRecords, getRadioRecord: getRadioRecord }
+] = useXTable({
+  allSchemas: allSchemas, // 列表配置
+  params: postInfoSearchForm,
+  getListApi: PostInfoApi.getPostPageApi, // 加载列表的 API
+  deleteApi: PostInfoApi.deletePostApi, // 删除数据的 API
+  exportListApi: PostInfoApi.exportPostApi, // 导出数据的 API
+  border: true,
+  height: 606,
+  toolBar: false
+})
 // 查询重置
 const onPostInfoSearchReset = () => {
   postInfoSearchForm.value = {
@@ -78,7 +87,7 @@ const onPostInfoSearchReset = () => {
 
 // 打开弹窗
 const openModal = async (code) => {
-  postInfoSearchForm.value.typeCode = code
+  if (code) postInfoSearchForm.value.typeCode = code
   modelVisible.value = true
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
@@ -86,7 +95,11 @@ defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 // 提交新增/修改的表单
 const emit = defineEmits(['confirm']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
-  emit('confirm', getCheckboxRecords())
+  if (props.mode === 'single') {
+    emit('confirm', getRadioRecord())
+  } else {
+    emit('confirm', getCheckboxRecords())
+  }
   modelVisible.value = false
 }
 </script>
