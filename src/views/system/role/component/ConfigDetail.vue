@@ -1,7 +1,7 @@
 <template>
   <div class="table-box card-gary-bg">
     <div class="mb-15px">
-      前台<span>（{{ props.frontTableData.length || 0 }}）</span>
+      前台<span>（{{ props.frontTableData?.length || 0 }}）</span>
     </div>
     <el-table :data="props.frontTableData" max-height="300">
       <template v-if="origin === 'detail'">
@@ -26,7 +26,7 @@
   </div>
   <div class="table-box card-gary-bg">
     <div class="mb-15px">
-      后台<span>（{{ props.backstageTableData.length || 0 }}）</span>
+      后台<span>（{{ props.backstageTableData?.length || 0 }}）</span>
     </div>
     <el-table :data="props.backstageTableData" max-height="300">
       <el-table-column fixed prop="name" label="菜单权限" />
