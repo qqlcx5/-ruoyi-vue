@@ -2526,6 +2526,7 @@ watch(
   color: rgba(255, 255, 255, 1);
   border-radius: 4px;
   background-color: rgba(0, 129, 255, 1);
+  cursor: pointer;
 }
 .user-info3 {
   margin: 19px 0 0 50px;

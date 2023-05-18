@@ -781,7 +781,6 @@
           :key="`info${index}`"
           class="details-content"
         >
-          <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
           <div class="info-content">
             <div
               :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
@@ -2634,6 +2633,7 @@ const removeContactInformation = (item) => {
   color: rgba(255, 255, 255, 1);
   border-radius: 4px;
   background-color: rgba(0, 129, 255, 1);
+  cursor: pointer;
 }
 .user-info3 {
   margin: 19px 0 0 50px;
