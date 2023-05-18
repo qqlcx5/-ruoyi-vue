@@ -9,7 +9,9 @@
         <el-table-column prop="operations" label="操作权限" show-overflow-tooltip>
           <template #default="{ row }">{{ operationAccess(row.operations) }}</template>
         </el-table-column>
-        <el-table-column prop="dataScopeName" label="数据权限" show-overflow-tooltip />
+        <el-table-column label="数据权限" show-overflow-tooltip>
+          <template #default="{ row }">{{ dataAccess(row) }}</template>
+        </el-table-column>
       </template>
       <template v-else>
         <el-table-column fixed prop="name" label="菜单权限" />
@@ -55,24 +57,39 @@ const props = defineProps({
 })
 const operationAccess = (data): string => {
   if (data) {
-    return props.origin === 'detail' ? data.join('、') : data.map((item) => item.name).join('、')
+    if (props.origin === 'detail') {
+      return data.join('、')
+    } else {
+      return data
+        .filter((item) => item)
+        .map((item) => item.name)
+        .join('、')
+    }
   }
   return '-'
 }
 const dataAccess = (data): string => {
   const departmentStore = useDepartmentStoreWithOut()
-  if (data.dataScope === 2) {
-    let departmentMap = wsCache.get(CACHE_KEY.DEPARTMENT)
-    if (!departmentMap) {
-      departmentStore.setDepartment()
+  if (props.origin === 'detail') {
+    if (data.dataScopeDept && data.dataScopeDept.length > 0) {
+      return data.dataScopeDept.join('、')
+    } else {
+      return data.dataScopeName
     }
-    return data.dataScopeDeptIds
-      .map((item) => {
-        return departmentMap[item]
-      })
-      .join('、')
   } else {
-    return DATA_ACCESS_MAP[data.dataScope]
+    if (data.dataScope === 2) {
+      let departmentMap = wsCache.get(CACHE_KEY.DEPARTMENT)
+      if (!departmentMap) {
+        departmentStore.setDepartment()
+      }
+      return data.dataScopeDeptIds
+        .map((item) => {
+          return departmentMap[item]
+        })
+        .join('、')
+    } else {
+      return DATA_ACCESS_MAP[data.dataScope]
+    }
   }
 }
 </script>

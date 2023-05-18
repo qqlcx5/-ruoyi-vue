@@ -119,7 +119,8 @@ watch(
   () => checkedNodes.value,
   (data) => {
     emit('change', {
-      data, stage: props.stage
+      data,
+      stage: props.stage
     })
   },
   { immediate: true, deep: true }
@@ -142,7 +143,9 @@ const handleCheckedTreeExpand = () => {
 
 // ================= 操作权限 ====================
 const btnPermissionsOptions = ref<any[]>([]) // 按钮权限
-const btnPermissionAll = ref(false)
+const btnPermissionAll = computed(() => {
+  return currentNode.value.operations.length === getPermissions.value.length
+})
 const currentNode = ref<TreeNodeData>({})
 const getPermissions = computed(() => {
   return currentNode.value.type === 2
@@ -159,7 +162,6 @@ const selectedPermissions = computed({
 }) // 选中select
 
 const handleCheckAllChange = (val: boolean) => {
-  btnPermissionAll.value = val
   currentNode.value.operations = val ? getPermissions.value : []
 }
 const handleNodeClick = (node) => {
@@ -218,10 +220,10 @@ watch(
 )
 
 const getParams = () => {
-  const menuDataScopeItemList = treeRef.value!.getCheckedNodes();
-  return menuDataScopeItemList.map(item => {
-    item['menuId'] = item.id;
-    item['menuParentId'] = item.parentId;
+  const menuDataScopeItemList = treeRef.value!.getCheckedNodes()
+  return menuDataScopeItemList.map((item) => {
+    item['menuId'] = item.id
+    item['menuParentId'] = item.parentId
     return item
   })
 }
@@ -257,6 +259,11 @@ defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
       top: 50%;
       right: 8px;
       transform: translateY(-50%);
+    }
+  }
+  :deep(.el-tree) {
+    .el-tree-node.is-current {
+      color: var(--el-color-primary);
     }
   }
 }

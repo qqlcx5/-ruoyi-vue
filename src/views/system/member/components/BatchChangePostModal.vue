@@ -82,11 +82,12 @@ const submitForm = async () => {
   let params = {
     organizationId: organization.value.id,
     postId: post.value.id,
-    userIdList: memberList.value.join(',')
+    userIdList: memberList.value
   }
   const result = await batchPostAdjustment(params).finally(() => (loading.value = false))
   if (result) {
     emit('success')
+    message.success('转岗成功')
     modelVisible.value = false
   }
 }
