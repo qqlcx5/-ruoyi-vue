@@ -1,6 +1,6 @@
 <!-- 成员管理  -->
 <template>
-  <div class="total-content">
+  <div class="total-content" id="card-content">
     <div class="left-card-content">
       <!--  tree  -->
       <LeftTreeSelect
@@ -123,7 +123,7 @@
       </a-card>
 
       <!--  表格  -->
-      <a-card :bordered="false" style="padding-bottom: 30px" id="card-content">
+      <a-card :bordered="false" style="padding-bottom: 30px">
         <!--  <ContentWrap>-->
         <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
         <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -264,14 +264,7 @@
 
             <!--  状态   -->
             <template v-if="column?.key === 'statusSwitch'">
-              <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
-              <!-- <div class="employees-Number">{{ record.status }}</div>-->
-              <!--          <a-switch-->
-              <!--            v-model:checked="record.statusSwitch"-->
-              <!--            @change="(value) => tableStatusChange(value, record)"-->
-              <!--          />-->
               <a-switch
-                :disabled="record.level === 1"
                 v-model:checked="record.statusSwitch"
                 @change="(value) => setTableStatusChangeInfo(value, record)"
               />
@@ -280,16 +273,20 @@
             <template v-if="column?.key === 'operation'">
               <div class="operation-content">
                 <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-                <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
-                <!--                <div class="text-color margin-right-5" @click="assignPermission(record)"-->
-                <!--                  >功能配置</div-->
-                <!--                >-->
-                <!--                <a-popover placement="bottom">-->
-                <!--                  <template #content>-->
-                <!--                    <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>-->
-                <!--                  </template>-->
-                <!--                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />-->
-                <!--                </a-popover>-->
+                <div class="text-color margin-right-5" @click="assignPermission(record)"
+                  >分配角色</div
+                >
+                <a-popover placement="bottom">
+                  <template #content>
+                    <div
+                      class="text-color margin-right-5"
+                      @click="setTableStatusChangeInfo(false, record, 'delete')"
+                      >删除</div
+                    >
+                    <!--                    <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>-->
+                  </template>
+                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+                </a-popover>
               </div>
             </template>
           </template>
@@ -420,8 +417,8 @@
                 <template v-if="column.key === 'isService'">
                   <div>
                     <a-radio-group v-model:value="record.isService" name="radioIsServiceGroup">
-                      <a-radio value="1">是</a-radio>
-                      <a-radio value="2">否</a-radio>
+                      <a-radio value="0">是</a-radio>
+                      <a-radio value="1">否</a-radio>
                     </a-radio-group>
                   </div>
                 </template>
@@ -441,6 +438,37 @@
               </template>
             </a-table>
           </a-form-item>
+
+          <a-form-item label="成员头像" name="legalIdentityUrl" calss="width-100">
+            <a-upload
+              v-model:file-list="state.legalPersonListUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'legalPerson')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'legalPerson')
+                }
+              "
+            >
+              <div v-if="state.legalPersonListUrl.length < 1">
+                <plus-outlined />
+                <div style="margin-top: 8px">上传照片</div>
+              </div>
+            </a-upload>
+
+            <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。 </div>
+          </a-form-item>
         </div>
 
         <div class="title-content"><div class="blue-line"></div> 岗位信息 </div>
@@ -458,7 +486,7 @@
                     style="width: 100%"
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
-                    :tree-data="state.organizationOptions"
+                    :tree-data="state.organizationIDOptions"
                     :field-names="{
                       children: 'children',
                       label: 'title',
@@ -475,8 +503,9 @@
                     style="width: 100%"
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
-                    :tree-data="state.postTypeOptions"
-                  />
+                    :tree-data="state.postListOptions"
+                  >
+                  </a-tree-select>
                 </div>
               </template>
 
@@ -529,19 +558,19 @@
 
         <div class="form-content">
           <a-form-item :label="`出生日期`" calss="width-50">
-            <a-date-picker show-time placeholder="请选择时间" v-model:value="formState.entryTime" />
+            <a-date-picker show-time placeholder="请选择时间" v-model:value="formState.birthDay" />
           </a-form-item>
 
           <a-form-item :label="`QQ`" calss="width-50">
-            <a-input v-model:value="formState.memberName" placeholder="请输入QQ" />
+            <a-input v-model:value="formState.qqNum" placeholder="请输入QQ" />
           </a-form-item>
 
           <a-form-item :label="`电子邮箱`" calss="width-50">
-            <a-input v-model:value="formState.memberName" placeholder="请输入电子邮箱" />
+            <a-input v-model:value="formState.email" placeholder="请输入电子邮箱" />
           </a-form-item>
 
           <a-form-item :label="`微信号`" calss="width-50">
-            <a-input v-model:value="formState.memberName" placeholder="请输入微信号" />
+            <a-input v-model:value="formState.wechat" placeholder="请输入微信号" />
           </a-form-item>
         </div>
 
@@ -550,49 +579,18 @@
           <div class="flex-content adress-content">
             <a-form-item-rest>
               <a-cascader
-                v-model:value="state.formState.companyAddress"
+                v-model:value="formState.companyAddress"
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
               />
             </a-form-item-rest>
             <a-input
-              v-model:value="state.formState.detailedAddress"
+              v-model:value="formState.detailedAddress"
               placeholder="请输入详细的公司地址，具体门牌号"
               class="adress-input"
             />
           </div>
-        </a-form-item>
-
-        <a-form-item label="照片" name="legalIdentityUrl">
-          <a-upload
-            v-model:file-list="state.legalPersonListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'legalPerson')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'legalPerson')
-              }
-            "
-          >
-            <div v-if="state.legalPersonListUrl.length < 1">
-              <plus-outlined />
-              <div style="margin-top: 8px">上传照片</div>
-            </div>
-          </a-upload>
-
-          <div class="upload-text"> 请上传成员的员工照片，支持png/jpg格式的照片 </div>
         </a-form-item>
       </a-form>
     </div>
@@ -609,129 +607,58 @@
     </template>
   </a-modal>
 
-  <!-- 配置权限 Modal -->
+  <!-- 分配角色 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
-    title="配置权限"
-    @ok="closePermissionModal"
+    title="分配角色"
     @cancel="closePermissionModal"
     :width="'665px'"
-    :bodyStyle="{ height: '700px', margin: '0', padding: '0', overflow: 'auto' }"
+    :bodyStyle="{ height: '237px', margin: '0', padding: '0', overflow: 'auto' }"
   >
-    <div class="per-content">
-      <div class="text-content">请选择该主体的功能配置权限：</div>
-      <!--  左右两侧  -->
-      <div class="select-content">
-        <div class="left-content">
-          <a-tabs
-            v-model:activeKey="state.activeKey"
-            tabBarGutter="40px"
-            :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
-          >
-            <a-tab-pane key="frontDesk" tab="前台" force-render>前台</a-tab-pane>
-            <a-tab-pane key="backstage" tab="后台">
-              <div class="tab-search-content">
-                <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
-                <a-checkbox v-model:checked="state.isExpandAllTab" @change="expandAllFN"
-                  >展开/折叠</a-checkbox
-                >
-              </div>
-              <div>
-                <a-tree
-                  v-if="state.isShowTree"
-                  v-model:selectedKeys="state.selectedKeys"
-                  v-model:checkedKeys="state.checkedKeys"
-                  :defaultExpandAll="state.defaultExpandAll"
-                  checkable
-                  :height="533"
-                  :tree-data="state.menuTreeList"
-                  :fieldNames="state.fieldNames"
-                  @check="testCheck"
-                  multiple
-                >
-                  <!--                  <template #title="{ title, key }">-->
-                  <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
-                  <!--                    <template v-else>{{ title }}</template>-->
-                  <!--                  </template>-->
-                </a-tree>
-              </div>
-            </a-tab-pane>
-          </a-tabs>
+    <div class="assign-roles-content">
+      <div class="member-info">
+        <div class="member-num">
+          {{ state.permissionRecord?.username }}
         </div>
-        <div class="right-content">
-          <div>
-            <a-tree
-              v-if="state.isShowRightTree"
-              defaultExpandAll
-              :height="533"
-              :tree-data="state.selectTree"
-              :fieldNames="state.fieldNames"
-            >
-              <!--                  <template #title="{ title, key }">-->
-              <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
-              <!--                    <template v-else>{{ title }}</template>-->
-              <!--                  </template>-->
-            </a-tree>
-          </div>
+        <div class="member-name">
+          {{ state.permissionRecord?.memberName }}
         </div>
+      </div>
+
+      <div
+        class="message-text assign-roles-tip"
+        v-if="state.permissionRecord?.roleVOList?.length === 0"
+      >
+        <img :src="warningImg" alt="" class="tip-img message-img waring-img" />
+        <div class="roles-text">
+          系统校验到您设置的岗位
+          <span v-for="item in state.permissionRecord?.postVOList">
+            【{{ item.postName }}】、
+          </span>
+          已有分配以下角色，您可修改或增加
+        </div>
+      </div>
+
+      <div class="roles-select-content">
+        <div class="role-text">分配角色</div>
+        <a-select
+          v-model:value="state.roleId"
+          mode="multiple"
+          style="width: 100%"
+          placeholder="请选择角色"
+          :options="state.configureRolesOptions"
+          @change="rolesChange"
+        ></a-select>
       </div>
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="PermissionOk">确定选择</a-button>
+      <a-button type="primary" html-type="submit" @click="PermissionOk">确定</a-button>
       <a-button @click="closePermissionModal">取消</a-button>
     </template>
   </a-modal>
 
-  <!--  状态开始关闭 短信提示Modal  -->
-  <a-modal
-    v-model:visible="state.isShowMessage"
-    :title="state.messageTitle"
-    @ok="statusOk"
-    @cancel="statusCancel"
-    width="560px"
-    :bodyStyle="{
-      width: '100%',
-      height: '200px',
-      margin: '0',
-      padding: '30px 0 0 0',
-      overflow: 'auto'
-    }"
-  >
-    <div class="message-content">
-      <!--      <img :src="warningImg" alt="" class="tip-img" />-->
-      <div class="message-text-content">
-        <div class="message-text">
-          <img :src="warningImg" alt="" class="tip-img message-img" />
-          {{ state.messageText }}
-        </div>
-        <div class="message-phone">
-          主体负责人绑定的手机号：{{
-            state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
-          }}
-        </div>
-        <div class="message-input-content"
-          >短信验证码:
-          <a-input
-            v-model:value="state.messageCode"
-            placeholder="请输入验证码"
-            style="width: 180px; margin-left: 8px"
-          />
-          <div v-if="state.canSendCode" class="send-code-btn" @click="senCodeFN"> 发送验证码 </div>
-          <div v-else class="countdown-code-btn">{{ state.codeCountdown }}s重新获取</div>
-        </div>
-      </div>
-    </div>
-
-    <template #footer>
-      <a-button type="primary" html-type="submit" @click="statusOk">{{
-        state.messageBtnText
-      }}</a-button>
-      <a-button @click="statusCancel">取消</a-button>
-    </template>
-  </a-modal>
-
-  <!--  状态开始关闭 确认Modal  -->
+  <!--  状态开始关闭  删除 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
     :closable="false"
@@ -749,21 +676,16 @@
       <div class="status-text-content">
         <div class="status-text">
           <img :src="warningImg" alt="" class="tip-img" />{{
-            state.tableStatusChangeInfo.statusBtnText
+            state.tableStatusChangeInfo.statusTitleText
           }}
-          {{ state.tableStatusChangeInfo.record.name }} 吗？</div
+          {{ state.tableStatusChangeInfo.record.memberName }}
+          {{ state.tableStatusChangeInfo.statusText }}
+          吗？</div
         >
-        <div
-          v-if="state.tableStatusChangeInfo.record?.children?.length > 0"
-          class="status-text-info"
-        >
-          {{ state.tableStatusChangeInfo.statusTopText }} ，{{
-            state.tableStatusChangeInfo.record.name
-          }}底下
-          <span class="status-span">{{
-            state.tableStatusChangeInfo.record?.children?.length
-          }}</span>
-          个子项主体将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+        <div class="status-text-info">
+          {{ state.tableStatusChangeInfo.statusTopText }}，
+          {{ state.tableStatusChangeInfo.record.name }}
+          {{ state.tableStatusChangeInfo.statusContentText }}
         </div>
       </div>
     </div>
@@ -948,7 +870,17 @@ import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import LeftTreeSelect from '@/components/LeftTreeSelect/LeftTreeSelect.vue'
-import { getMemberList, getPostTypeList, getRolesList } from '@/api/system/member'
+import {
+  addMember,
+  deleteMember,
+  getMemberDetails,
+  getMemberList,
+  getPostList,
+  getPostTypeList,
+  getRolesList,
+  updateMember,
+  updateMemberStatus
+} from '@/api/system/member'
 import { getOrganizationTypeList, getSimpleOrganizationList } from '@/api/system/organization'
 import { accessSync } from 'fs'
 import BatchChangePostModal from './components/BatchChangePostModal.vue'
@@ -982,7 +914,13 @@ const formState = reactive({
   sex: '1', //性别
   entryTime: null, //入职时间
   memberType: null, //人员类型
-  isOnJob: null //在职(人员)状态
+  isOnJob: null, //在职(人员)状态
+  birthDay: null, //出生日期
+  qqNum: null, //QQ
+  email: null, //电子邮箱
+  wechat: null, //微信号
+  companyAddress: [], //公司地址
+  detailedAddress: '' //公司地址 详细地址
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -1110,6 +1048,7 @@ const state = reactive({
       label: '禁用'
     }
   ], //帐号状态 Options tree
+  roleId: [], //分配角色modal
 
   partPostOptionsText: [
     {
@@ -1121,6 +1060,7 @@ const state = reactive({
       label: '兼岗'
     }
   ], //新增修改 岗位信息 主岗/兼岗 Options
+  postListOptions: [], //新增修改 岗位列表
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1515,7 +1455,7 @@ const fullScreen = () => {
 const openModal = async (record = {}) => {
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
-    state.formState.belongTenantId = record.id
+    formState.belongTenantId = record.id
   }
   const res = await getSimpleTenantList()
 
@@ -1534,40 +1474,25 @@ const closeModal = () => {
   state.isShow = false
   formRef.value.resetFields()
   //级联选择器 需要单独清空
-  state.formState.companyAddress = []
-  state.formState = {
-    belongTenantId: 0, //上级主体
-    code: '', //主体编码
-    name: '', //主体名称
-    abbreviate: '', //主体简称
-    systemName: '', //系统名称
-    logoUrl: '', //系统logo
-    contactName: '', //负责人
-    contactMobile: '', //负责人电话
-    effectiveStartEndTime: [], //有效期
-    // forever: false, //永久有效
-    accountCount: undefined, //可用名额
-    bindingDomainName: '', //绑定域名
-    status: true, //状态
-    creditCode: '', //统一社会信用代码
-    organizationCode: '', //组织机构代码
-    legalRepresentative: '', //法定代表人
-    legalMobile: '', //法人联系电话
-    legalIdentityUrl: '', //法人身份证
-    establishDate: '', //成立日期
-    companyAddress: [], //公司地址
-    cascadeInfo: [], //选中的省市区全部信息
-    detailedAddress: '', //公司地址 详细地址
-    businessLicenseUrl: '' //营业执照
-  }
+  formState.companyAddress = []
 
-  state.logoListUrl = [] //系统logo 上传 回显 - -
-  state.logoUrlSuccess = '' //系统logo 新增编辑入参
-  state.legalPersonListUrl = [] //法人身份证 上传回显
-  state.legalPersonUrlSuccess = '' //法人身份证 新增编辑入参
-  state.businessLicenseListUrl = [] //营业执照 上传回显
-  state.businessLicenseSuccess = '' //营业执照 新增编辑入参
-  delete state.formState?.id
+  formState.memberNum = null //成员工号
+  formState.memberName = null //成员姓名
+  formState.sex = '1' //性别
+  formState.entryTime = null //入职时间
+  formState.memberType = null //人员类型
+  formState.isOnJob = null //在职(人员)状态
+  formState.birthDay = null //出生日期
+  formState.qqNum = null //QQ
+  formState.email = null //电子邮箱
+  formState.wechat = null //微信号
+  formState.companyAddress = [] //公司地址
+  formState.cascadeInfo = [] //选中的省市区全部信息
+  formState.detailedAddress = '' //公司地址 详细地址
+
+  state.legalPersonListUrl = [] //成员头像 上传回显
+  state.legalPersonUrlSuccess = '' //成员头像 新增编辑入参
+  delete formState?.id
   state.modalTitle = '新增'
   state.modalType = 'add'
 
@@ -1609,12 +1534,15 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
+  console.log('成员record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
   }
   //获取主体详情
-  const res = await getMajorIndividualDetails({ id: record.id })
+  const res = await getMemberDetails({ id: record.id })
+  console.log('成员详情res', res)
+  formState.id = record.id
 
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
@@ -1622,87 +1550,87 @@ const edit = async (record, isCloseDetails = false) => {
 
   state.modalType = 'edit'
   state.modalTitle = '编辑'
+
+  const tempPhoneList = []
+  const tempPostList = []
+  // addDataSource.addEditTableData.map((item) => {
+  record?.phoneVOList?.map((item, index) => {
+    tempPhoneList.push({
+      index: index,
+      id: item.id,
+      phoneType: item.phoneCategory,
+      phoneNum: item.phone,
+      useType: item.usageType,
+      isService: item.recordEnable ? '0' : '1'
+    })
+  })
+
+  // addPostDataSource.addEditTableData.map((item) => {
+  record?.postVOList?.map((item, index) => {
+    tempPostList.push({
+      index: index,
+      id: item.id,
+      department: item.organizationId,
+      post: item.postId,
+      brand: item.brands,
+      isMainPost: item.type,
+      isShow: item.visible
+    })
+  })
+
   //赋值 回显
-  state.formState = {
-    belongTenantId: res.belongTenantId, //上级主体
-    id: record.id,
-    code: res.code, //主体编码
-    name: res.name, //主体名称
-    abbreviate: res.abbreviate, //主体简称
-    systemName: res.systemName, //系统名称
-    // logoUrl: res.logoUrl, //系统logo
-    contactName: res.contactName, //负责人
-    contactMobile: res.contactMobile, //负责人电话
-    effectiveStartEndTime: [dayjs(res.effectiveStartDate), dayjs(res.expireTime)], //有效期 开始时间
-    // expireTime: , //有效期 结束时间
-    accountCount: res.accountCount, //可用名额
-    bindingDomainName: res.domain, //绑定域名
-    creditCode: res.creditCode, //统一社会信用代码
-    organizationCode: res.organizationCode, //组织机构代码
-    legalRepresentative: res.legalRepresentative, //法定代表人
-    legalMobile: res.legalMobile, //法人联系电话
-    // legalIdentityUrl: res.legalIdentityUrl, //法人身份证
-    detailedAddress: res.address //公司地址 详细地址
-    // businessLicenseUrl: res.businessLicenseUrl //营业执照
-  }
+  formState.memberNum = record.username //成员工号
+  formState.memberName = record.nickname ///成员姓名
+  formState.sex = String(record.sex) //性别
+  formState.entryTime = dayjs(record.onboardingTime) //入职时间
+  formState.memberType = String(record.userType) //人员类型
+  formState.isOnJob = String(res.userStatus) //人员状态
+  addDataSource.addEditTableData = tempPhoneList //联系电话
+  addPostDataSource.addEditTableData = tempPostList //岗位信息
+  formState.birthDay = dayjs(record.birthDay) //出生日期
+  formState.qqNum = record.qq //QQ
+  formState.email = record.email //电子邮箱
+  formState.wechat = record.wechat //微信号
+  formState.detailedAddress = record.address //公司地址 详细地址
 
-  if (res.logoUrl) {
-    state.logoListUrl = [
-      {
-        url: res.logoUrl //系统logo
-      }
-    ]
-    state.logoUrlSuccess = res.logoUrl
-  }
+  console.log('formState.isOnJob=========', formState.isOnJob)
 
-  if (res.legalIdentityUrl) {
+  if (record.avatar) {
     state.legalPersonListUrl = [
       {
-        url: res.legalIdentityUrl //法人身份证
+        url: record.avatar //成员头像
       }
     ]
-    state.legalPersonUrlSuccess = res.legalIdentityUrl
-  }
-
-  if (res.businessLicenseUrl) {
-    state.businessLicenseListUrl = [
-      {
-        url: res.businessLicenseUrl //营业执照
-      }
-    ]
-    state.businessLicenseSuccess = res.businessLicenseUrl
+    state.legalPersonUrlSuccess = record.avatar
   }
 
   if (res.establishDate) {
     state.formState['establishDate'] = dayjs(res.establishDate) //成立日期
   }
 
-  //永久有效 起始时间为当前时间 结束时间为2099-12-31
-  // state.formState.forever = res.expireTime === '2099-12-31'
-
   //状态0 开启 1关闭
   state.formState.status = res.status === 0
 
   //省市区
-  state.formState.companyAddress = []
-  state.formState.cascadeInfo = []
+  formState.companyAddress = []
+  formState.cascadeInfo = []
   if (res?.provinceCode) {
-    state.formState.companyAddress.push(res?.provinceCode)
-    state.formState.cascadeInfo.push({
+    formState.companyAddress.push(res?.provinceCode)
+    formState.cascadeInfo.push({
       label: res?.province,
       value: res?.provinceCode
     })
   }
   if (res?.cityCode) {
-    state.formState.companyAddress.push(res?.cityCode)
-    state.formState.cascadeInfo.push({
+    formState.companyAddress.push(res?.cityCode)
+    formState.cascadeInfo.push({
       label: res?.city,
       value: res?.cityCode
     })
   }
   if (res?.countyCode) {
-    state.formState.companyAddress.push(res?.countyCode)
-    state.formState.cascadeInfo.push({
+    formState.companyAddress.push(res?.countyCode)
+    formState.cascadeInfo.push({
       label: res?.county,
       value: res?.countyCode
     })
@@ -1725,6 +1653,7 @@ let needReplaceKey = [
   ['value', 'code']
 ]
 state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
+console.log('state.proMunAreaList', state.proMunAreaList)
 
 //新增主体
 const addMajorIndividualFN = async () => {
@@ -1733,78 +1662,103 @@ const addMajorIndividualFN = async () => {
   if (!formRef) return
   const valid = await formRef.value.validate()
   state.addEditLoading = true
-  let params = {
-    belongTenantId: state.formState.belongTenantId, //上级主体
-    code: state.formState.code, //主体编码
-    name: state.formState.name, //主体名称
-    abbreviate: state.formState.abbreviate, //主体简称
-    systemName: state.formState.systemName, //系统名称
-    logoUrl: state.logoUrlSuccess, //系统logo
-    contactName: state.formState.contactName, //负责人
-    contactMobile: state.formState.contactMobile, //负责人电话
-    effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
-    expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD'), //有效期 结束时间
-    // effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY/MM/DD'), //有效期 开始时间
-    // expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY/MM/DD'), //有效期 结束时间
-    accountCount: state.formState.accountCount, //可用名额
-    domain: state.formState.bindingDomainName, //绑定域名
-    creditCode: state.formState.creditCode, //统一社会信用代码
-    organizationCode: state.formState.organizationCode, //组织机构代码
-    legalRepresentative: state.formState.legalRepresentative, //法定代表人
-    legalMobile: state.formState.legalMobile, //法人联系电话
-    legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
-    address: state.formState.detailedAddress, //公司地址 详细地址
-    //
-    businessLicenseUrl: state.businessLicenseSuccess //营业执照
-  }
 
-  // //永久有效 起始时间为当前时间 结束时间为2099-12-31
-  // if (state.formState.forever) {
-  //   params.effectiveStartDate = dayjs().format('YYYY-MM-DD')
-  //   // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
-  //   params.expireTime = '2099-12-31'
-  // } else {
-  //   params.effectiveStartDate = state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD') //有效期 开始时间
-  //   // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
-  //   params.expireTime = state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD') //有效期 结束时间
-  // }
-  //状态0 开启 1关闭
-  if (state.formState.status) {
-    params['status'] = 0
-  } else {
-    params['status'] = 1
+  const tempPhoneList = []
+  const tempPostList = []
+  addDataSource.addEditTableData.map((item) => {
+    if (formState.id) {
+      //修改时
+      tempPhoneList.push({
+        phoneCategory: item.phoneType, //号码类别
+        phone: item.phoneNum, //手机号
+        usageType: item.useType, //使用类型
+        recordEnable: item.isService === '0', //是否开通云录音
+        userId: formState.id,
+        id: item.id
+      })
+    } else {
+      tempPhoneList.push({
+        phoneCategory: item.phoneType, //号码类别
+        phone: item.phoneNum, //手机号
+        usageType: item.useType, //使用类型
+        recordEnable: item.isService === '0' //是否开通云录音
+      })
+    }
+  })
+
+  addPostDataSource.addEditTableData.map((item) => {
+    //修改时
+    if (formState.id) {
+      tempPostList.push({
+        organizationId: item.department, //所属部门
+        postId: item.post, //岗位
+        brands: item.brand, //所属品牌
+        type: item.isMainPost, //主岗/兼岗
+        visible: item.isShow, //是否显示
+        userId: formState.id,
+        id: item.id
+      })
+    } else {
+      tempPostList.push({
+        organizationId: item.department, //所属部门
+        postId: item.post, //岗位
+        brands: item.brand, //所属品牌
+        type: item.isMainPost, //主岗/兼岗
+        visible: item.isShow //是否显示
+      })
+    }
+  })
+
+  console.log('tempPhoneList==========>', tempPhoneList)
+  console.log('tempPostList===========>', tempPostList)
+  console.log('formState.birthDay===>', formState.birthDay)
+
+  let params = {
+    username: formState.memberNum, //成员工号
+    nickname: formState.memberName, //成员姓名
+    sex: formState.sex, //性别
+    onboardingTime: formState.entryTime.format('YYYY-MM-DD HH:mm:ss'), //入职时间
+    userType: formState.memberType, //人员类型
+    userStatus: formState.isOnJob, //人员状态
+    phoneList: tempPhoneList, //联系电话
+    avatar: state.legalPersonUrlSuccess, //成员头像
+    postList: tempPostList, //岗位信息
+    birthDay: formState.birthDay.format('YYYY-MM-DD HH:mm:ss'), //出生日期
+    qq: formState.qqNum, //QQ
+    email: formState.email, //电子邮箱
+    wechat: formState.wechat, //微信号
+    address: formState.detailedAddress //公司地址 详细地址
   }
 
   //省市区
-  if (state.formState?.cascadeInfo[0]) {
-    params['province'] = state.formState.cascadeInfo[0].label
-    params['provinceCode'] = state.formState.cascadeInfo[0].value
+  if (formState?.cascadeInfo[0]) {
+    params['province'] = formState.cascadeInfo[0].label
+    params['provinceCode'] = formState.cascadeInfo[0].value
   }
-  if (state.formState?.cascadeInfo[1]) {
-    params['city'] = state.formState.cascadeInfo[1].label
-    params['cityCode'] = state.formState.cascadeInfo[1].value
+  if (formState?.cascadeInfo[1]) {
+    params['city'] = formState.cascadeInfo[1].label
+    params['cityCode'] = formState.cascadeInfo[1].value
   }
-  if (state.formState?.cascadeInfo[2]) {
-    params['county'] = state.formState.cascadeInfo[2].label
-    params['countyCode'] = state.formState.cascadeInfo[2].value
-  }
-
-  if (state.formState.establishDate) {
-    params['establishDate'] = state.formState.establishDate?.format('YYYY-MM-DD') //成立日期
-    // establishDate: state.formState.establishDate.format('YYYY/MM/DD'), //成立日期
+  if (formState?.cascadeInfo[2]) {
+    params['county'] = formState.cascadeInfo[2].label
+    params['countyCode'] = formState.cascadeInfo[2].value
   }
 
+  console.log('新增params', params)
   try {
     let res = []
     if (state.modalType === 'add') {
-      res = await addMajorIndividual(params)
+      //后端说新增默认给个密码
+      params['password'] = '123456'
+      res = await addMember(params)
       state.addSuccessId = res
+      console.log('新增成员res', res)
       message.success('新增成功')
       //配置权限
       openPermissionModal()
     } else {
-      params['id'] = state.formState.id
-      res = await updateEditMajorIndividual(params)
+      params['id'] = formState.id
+      res = await updateMember(params)
       message.success('编辑成功')
     }
 
@@ -1817,19 +1771,17 @@ const addMajorIndividualFN = async () => {
 
 //级联选择器选中的内容 改变
 const cascadeChange = (value, selectedOptions) => {
-  state.formState.cascadeInfo = selectedOptions
+  formState.cascadeInfo = selectedOptions
 }
 
 //关闭功能配置 modal
 const closePermissionModal = () => {
   state.isShowPermission = false
-  state.PermissionType = 'add'
-  state.addSuccessId = undefined
-  state.selectTree = []
-  state.checkedKeys = []
+  state.roleId = []
+  state.permissionRecord = {}
 }
 
-//开启功能配置 modal
+//开启分配角色 modal
 const openPermissionModal = async () => {
   state.isShowPermission = true
   // //获取菜单列表
@@ -1841,26 +1793,19 @@ const openPermissionModal = async () => {
   state.menuTreeList = handleTree(tempArr)
 }
 
-//功能配置 Modal 确认
+//分配角色 Modal 确认
 const PermissionOk = async () => {
   const params = {
-    menuIds: state.idArr,
-    tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
-    status: 0
+    userId: state.permissionRecord?.id,
+    roleIds: state.roleId
   }
-  if (state.PermissionType === 'add') {
-    await addTenantPackage(params)
-    message.success('新增成功')
-  } else {
-    params['id'] = state.editPermissionID
-    await editTenantPackage(params)
-    message.success('编辑成功')
-  }
+  await aassignUserRoleApi(params)
   await getList()
   closePermissionModal()
 }
 
 const assignPermission = async (record) => {
+  console.log('分配角色record=》', record)
   state.permissionRecord = record
   state.PermissionType = 'edit'
   if (record.packageId) {
@@ -1882,6 +1827,7 @@ const assignPermission = async (record) => {
 //表格状态改变 确认modal... 然后才开短信 modal
 //打开 状态开始关闭 确认modal
 const openStatusModal = () => {
+  message.success('账号状态修改成功')
   state.isShowStatus = true
 }
 //关闭 状态开始关闭 确认modal
@@ -1895,49 +1841,58 @@ const closeStatusModal = () => {
 }
 
 //表格状态开关
-const setTableStatusChangeInfo = (value, record) => {
+const setTableStatusChangeInfo = (value, record, type = 'switch') => {
   state.tableStatusChangeInfo = {
     value,
-    record
+    record,
+    type: type
   }
-
-  if (value) {
-    state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
-    state.tableStatusChangeInfo['statusTopText'] = `开启后`
-    state.tableStatusChangeInfo['statusText'] = `开启`
-  } else {
-    state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
-    state.tableStatusChangeInfo['statusTopText'] = `关闭后`
-    state.tableStatusChangeInfo['statusText'] = `关闭`
-  }
-
-  //过滤得到父级项
-  const parentItem = state.rawData.filter((item) => item.id === record.belongTenantId)
-  if (parentItem.length > 0 && parentItem[0]?.status === 1) {
-    record.statusSwitch = !record.statusSwitch
-    return message.warning('请先开启父级状态')
+  console.log('value', value)
+  console.log('record', record)
+  switch (type) {
+    case 'delete':
+      //删除
+      state.tableStatusChangeInfo['statusTitleText'] = '确定删除成员'
+      state.tableStatusChangeInfo['statusBtnText'] = '确定删除'
+      state.tableStatusChangeInfo['statusTopText'] = `删除后`
+      state.tableStatusChangeInfo['statusText'] = ``
+      state.tableStatusChangeInfo['statusContentText'] =
+        '该成员信息将全部删除，且不可恢复，请谨慎操作。'
+      break
+    default:
+      if (value) {
+        state.tableStatusChangeInfo['statusTitleText'] = '确定把成员'
+        state.tableStatusChangeInfo['statusBtnText'] = '确定开启'
+        state.tableStatusChangeInfo['statusTopText'] = `开启后`
+        state.tableStatusChangeInfo['statusText'] = `开启`
+        state.tableStatusChangeInfo['statusContentText'] = '该成员将可以登录系统，请谨慎操作。'
+      } else {
+        state.tableStatusChangeInfo['statusTitleText'] = '确定把成员'
+        state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
+        state.tableStatusChangeInfo['statusTopText'] = `关闭后`
+        state.tableStatusChangeInfo['statusText'] = `关闭`
+        state.tableStatusChangeInfo['statusContentText'] = '该成员将不可以再登录系统，请谨慎操作。'
+      }
   }
 
   openStatusModal()
 }
-//表格状态开关
-const tableStatusChange = (value, record) => {
-  if (value) {
-    state.messageBtnText = '确认开启'
-    state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
-  } else {
-    state.messageBtnText = '确认关闭'
-    state.messageText =
-      '因您的主体公司还存在业务数据，如关闭则严重影响到业务，为了保护您的主体公司业务数据安全，请通过安全验证：'
-  }
-  state.isShowMessage = true
-  state.messageContactMobile = record.contactMobile
-  state.record = record
-}
 
 //表格状态开关modal 确认
-const tableStatusConfirm = () => {
-  tableStatusChange(state.tableStatusChangeInfo?.value, state.tableStatusChangeInfo?.record)
+const tableStatusConfirm = async () => {
+  switch (state.tableStatusChangeInfo?.type) {
+    case 'delete':
+      await deleteMember(state.tableStatusChangeInfo.record.id)
+      message.success('删除成员成功')
+      break
+    default:
+      await updateMemberStatus({
+        id: state.tableStatusChangeInfo.record.id,
+        status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1
+      })
+      message.success('修改账号状态成功')
+  }
+
   closeStatusModal()
 }
 
@@ -2446,9 +2401,15 @@ const getOrganizationListFN = async () => {
     ['title', 'name'],
     ['key', 'component']
   ]
+  let needReplaceIDKey = [
+    ['title', 'name'],
+    ['key', 'id']
+  ]
   state.organizationOptions = reconstructedTreeData(organizationList, needReplaceKey)
+  state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   console.log('组织机构List', res)
   console.log('组织机构tempArr', state.organizationOptions)
+  console.log('组织机构取ID', state.organizationIDOptions)
 }
 
 getOrganizationListFN()
@@ -2457,6 +2418,8 @@ getOrganizationListFN()
 const getAllType = async () => {
   //岗位类型
   const res = await getPostTypeList()
+  //岗位列表
+  const postList = await getPostList()
   //角色信息
   const rolesRes = await getRolesList()
   //获取数据字典
@@ -2465,6 +2428,8 @@ const getAllType = async () => {
 
   //人员类型
   const tempMemberType = dictRes.filter((item) => item.dictType === 'person_type')
+  //岗位类型  主岗/兼岗
+  const tempPostType = dictRes.filter((item) => item.dictType === 'post_type')
 
   //处理一下吧 当然换成 在标签上通过fieldNames更改也可以
   const needReplaceKey = [
@@ -2480,14 +2445,19 @@ const getAllType = async () => {
     state.postTypeOptions = reconstructionArrayObject(res, needReplaceKey)
     state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
     state.memberTypeOptions = tempMemberType
+    state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
+    state.partPostOptionsText = tempPostType
   })
 
   console.log('岗位类型', res)
   console.log('岗位类型D', state.postTypeOptions)
   console.log('角色信息', rolesRes)
-  console.log('角色信息D', state.partPostOptions)
+  console.log('角色信息D', state.configureRolesOptions)
   console.log('人员类型', tempMemberType)
   console.log('人员类型D', state.memberTypeOptions)
+  console.log('岗位列表', postList)
+  console.log('岗位列表D', state.postListOptions)
+  console.log('岗位类型主岗/兼岗', tempPostType)
 }
 
 getAllType()
@@ -2692,6 +2662,11 @@ const deletePostColumns = (index) => {
   })
 }
 
+const rolesChange = (rolesID) => {
+  console.log('rolesID', rolesID)
+  console.log('state.roleId===>', state.roleId)
+}
+
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
@@ -2792,6 +2767,7 @@ const batchAssignUserRole = (): void => {
   //overflow: auto;
   display: flex;
   justify-content: space-between;
+  background: rgb(245, 247, 249);
 }
 
 .left-card-content {
@@ -3238,6 +3214,48 @@ const batchAssignUserRole = (): void => {
 }
 .width-100 {
   width: 100%;
+}
+//分配角色 modal
+.assign-roles-content {
+  margin: 20px;
+}
+.member-info {
+  display: flex;
+  margin-bottom: 14px;
+}
+//分配角色 工号
+.member-num {
+  margin-right: 50px;
+  color: rgba(51, 51, 51, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+}
+//分配角色 姓名
+.member-num {
+  color: rgba(51, 51, 51, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+}
+//分配角色 modal
+.assign-roles-tip {
+  padding: 10px;
+  margin: 0 0 15px;
+  background-color: rgba(253, 246, 237, 1);
+}
+.waring-img {
+  width: 14px;
+  height: 14px;
+}
+.roles-text {
+  color: rgba(231, 162, 60, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+}
+.role-text {
+  margin-bottom: 10px;
+}
+//分配角色 select
+.roles-select-content {
 }
 </style>
 
