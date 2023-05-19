@@ -497,7 +497,7 @@
               "
             >
               <div v-if="state.legalPersonListUrl.length < 1">
-                <plus-outlined />
+                <Icon icon="svg-icon:add-upload" :size="15" />
                 <div style="margin-top: 8px">上传照片</div>
               </div>
             </a-upload>
@@ -595,7 +595,11 @@
 
         <div class="form-content">
           <a-form-item :label="`出生日期`" class="width-50">
-            <a-date-picker placeholder="请选择时间" v-model:value="formState.birthDay" />
+            <a-date-picker
+              placeholder="请选择时间"
+              v-model:value="formState.birthDay"
+              :disabled-date="disabledDate"
+            />
           </a-form-item>
 
           <a-form-item :label="`QQ`" class="width-50">
@@ -933,7 +937,6 @@
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
@@ -1788,10 +1791,12 @@ const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
-  state.addEditLoading = true
 
   const tempPhoneList = []
   const tempPostList = []
+  let mark = false
+  let markDep = false
+  let markPost = false
   addDataSource.addEditTableData.map((item) => {
     if (formState.id) {
       //修改时
@@ -1811,7 +1816,15 @@ const addMajorIndividualFN = async () => {
         recordEnable: item.isService === '0' //是否开通云录音
       })
     }
+
+    if (!item.phoneNum) {
+      mark = true
+    }
   })
+
+  if (mark) {
+    return message.warning('请输入手机号')
+  }
 
   addPostDataSource.addEditTableData.map((item) => {
     //修改时
@@ -1834,7 +1847,21 @@ const addMajorIndividualFN = async () => {
         visible: item.isShow //是否显示
       })
     }
+
+    if (!item.organizationId) {
+      markDep = true
+    }
+    if (!item.postId) {
+      markPost = true
+    }
   })
+
+  if (markDep) {
+    return message.warning('请选择所属部门')
+  }
+  if (markPost) {
+    return message.warning('请选择岗位')
+  }
 
   console.log('tempPhoneList==========>', tempPhoneList)
   console.log('tempPostList===========>', tempPostList)
@@ -1873,6 +1900,7 @@ const addMajorIndividualFN = async () => {
     params['countyCode'] = formState.cascadeInfo[2].value
   }
 
+  state.addEditLoading = true
   console.log('新增params', params)
   try {
     let res = []
@@ -3068,6 +3096,11 @@ const clickRoleTag = async (childItem) => {
   const res = await getRoleApi(childItem.roleId)
   console.log('角色权限res', res)
   await configDetailDrawerRef.value.openDrawer(res)
+}
+
+const disabledDate = (current) => {
+  //日期大于当天
+  return current && current > dayjs()
 }
 
 //监听  左侧选中数据  更新 右侧展示数据
