@@ -1097,7 +1097,7 @@ const legalMobileValidator = (rule, value) => {
 const memberNameValidator = (rule, value) => {
   return new Promise<void>((resolve, reject) => {
     if (value) {
-      const regExp = /^[\u4e00-\u9fa5]$/
+      const regExp = /^[\u4e00-\u9fa5]*$/
       if (!regExp.test(value)) {
         reject('请输入中文')
       } else {

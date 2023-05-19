@@ -1290,7 +1290,7 @@ const getList = async (isRefresh = false) => {
     })
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'parentId', 'children')
-
+console.log(' state.tableDataList',  state.tableDataList)
     state.total = res.total
     if (isRefresh) {
       message.success('刷新成功')
