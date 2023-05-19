@@ -120,7 +120,7 @@
         </template>
         <!--  员工数   -->
         <template v-if="column.key === 'employeesNumber'">
-          <div class="employees-Number">{{ record.type }}</div>
+          <div class="employees-Number">{{ record?.userCount }}</div>
         </template>
         <!--  菜单状态   -->
         <template v-if="column.key === 'status'">
@@ -184,6 +184,7 @@
         >
           <a-radio-group
             v-model:value="state.formState.type"
+            :disabled="state.modalType === 'edit' ? true : false"
             :options="options"
             @change="typeChange"
           />

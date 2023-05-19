@@ -356,12 +356,13 @@
           />
         </a-form-item>
 
-        <a-form-item :label="`组织机构代码`" name="organizationCode">
-          <a-input
-            v-model:value="state.formState.organizationCode"
-            placeholder="请输入组织机构代码"
-          />
-        </a-form-item>
+        <!--  这里注释掉 不删 免得哪天又要  -->
+        <!--        <a-form-item :label="`组织机构代码`" name="organizationCode">-->
+        <!--          <a-input-->
+        <!--            v-model:value="state.formState.organizationCode"-->
+        <!--            placeholder="请输入组织机构代码"-->
+        <!--          />-->
+        <!--        </a-form-item>-->
 
         <a-form-item :label="`法定代表人`" name="legalRepresentative">
           <a-input
@@ -372,6 +373,14 @@
 
         <a-form-item label="法人电话" name="legalMobile" :rules="state.legalMobileRules">
           <a-input v-model:value="state.formState.legalMobile" placeholder="请输入法人联系电话" />
+        </a-form-item>
+
+        <a-form-item :label="`成立日期`" name="establishDate">
+          <a-date-picker
+            v-model:value="state.formState.establishDate"
+            format="YYYY/MM/DD"
+            placeholder="请选择时间"
+          />
         </a-form-item>
 
         <a-form-item label="法人身份证" name="legalIdentityUrl">
@@ -405,14 +414,6 @@
           <div class="upload-text">
             请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
           </div>
-        </a-form-item>
-
-        <a-form-item :label="`成立日期`" name="establishDate">
-          <a-date-picker
-            v-model:value="state.formState.establishDate"
-            format="YYYY/MM/DD"
-            placeholder="请选择时间"
-          />
         </a-form-item>
 
         <!--  级联选择器  - -   -->
@@ -965,7 +966,7 @@ const state = reactive({
     bindingDomainName: '', //绑定域名
     status: true, //状态
     creditCode: '', //统一社会信用代码
-    organizationCode: '', //组织机构代码
+    // organizationCode: '', //组织机构代码
     legalRepresentative: '', //法定代表人
     legalMobile: '', //法人联系电话
     legalIdentityUrl: '', //法人身份证
@@ -1314,7 +1315,7 @@ const closeModal = () => {
     bindingDomainName: '', //绑定域名
     status: true, //状态
     creditCode: '', //统一社会信用代码
-    organizationCode: '', //组织机构代码
+    // organizationCode: '', //组织机构代码
     legalRepresentative: '', //法定代表人
     legalMobile: '', //法人联系电话
     legalIdentityUrl: '', //法人身份证
@@ -1381,7 +1382,7 @@ const edit = async (record, isCloseDetails = false) => {
     accountCount: res.accountCount, //可用名额
     bindingDomainName: res.domain, //绑定域名
     creditCode: res.creditCode, //统一社会信用代码
-    organizationCode: res.organizationCode, //组织机构代码
+    // organizationCode: res.organizationCode, //组织机构代码
     legalRepresentative: res.legalRepresentative, //法定代表人
     legalMobile: res.legalMobile, //法人联系电话
     // legalIdentityUrl: res.legalIdentityUrl, //法人身份证
@@ -1492,7 +1493,7 @@ const addMajorIndividualFN = async () => {
     accountCount: state.formState.accountCount, //可用名额
     domain: state.formState.bindingDomainName, //绑定域名
     creditCode: state.formState.creditCode, //统一社会信用代码
-    organizationCode: state.formState.organizationCode, //组织机构代码
+    // organizationCode: state.formState.organizationCode, //组织机构代码
     legalRepresentative: state.formState.legalRepresentative, //法定代表人
     legalMobile: state.formState.legalMobile, //法人联系电话
     legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
@@ -1870,10 +1871,10 @@ const detailsInfo = async (record) => {
           textSpan: '统一社会信用代码：',
           text: res.creditCode
         },
-        {
-          textSpan: '组织机构代码：',
-          text: res.organizationCode
-        },
+        // {
+        //   textSpan: '组织机构代码：',
+        //   text: res.organizationCode
+        // },
         {
           textSpan: '法定代表人：',
           text: res.legalRepresentative

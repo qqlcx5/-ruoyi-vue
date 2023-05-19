@@ -501,12 +501,13 @@
           />
         </a-form-item>
 
-        <a-form-item :label="`组织机构代码`" name="organizationCode">
-          <a-input
-            v-model:value="state.formAttributeState.organizationCode"
-            placeholder="请输入组织机构代码"
-          />
-        </a-form-item>
+        <!--  这里注释掉 不删 免得哪天又要  -->
+        <!--        <a-form-item :label="`组织机构代码`" name="organizationCode">-->
+        <!--          <a-input-->
+        <!--            v-model:value="state.formAttributeState.organizationCode"-->
+        <!--            placeholder="请输入组织机构代码"-->
+        <!--          />-->
+        <!--        </a-form-item>-->
 
         <a-form-item :label="`法定代表人`" name="legalRepresentative">
           <a-input
@@ -519,6 +520,14 @@
           <a-input
             v-model:value="state.formAttributeState.legalMobile"
             placeholder="请输入法人联系电话"
+          />
+        </a-form-item>
+
+        <a-form-item :label="`成立日期`" name="establishDate">
+          <a-date-picker
+            v-model:value="state.formAttributeState.establishDate"
+            format="YYYY/MM/DD"
+            placeholder="请选择时间"
           />
         </a-form-item>
 
@@ -553,14 +562,6 @@
           <div class="upload-text">
             请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
           </div>
-        </a-form-item>
-
-        <a-form-item :label="`成立日期`" name="establishDate">
-          <a-date-picker
-            v-model:value="state.formAttributeState.establishDate"
-            format="YYYY/MM/DD"
-            placeholder="请选择时间"
-          />
         </a-form-item>
 
         <a-form-item label="营业执照" name="businessLicenseUrl">
@@ -1054,7 +1055,7 @@ const state = reactive({
     ], //联系方式 设置属性
     status: true, //状态
     creditCode: '', //统一社会信用代码
-    organizationCode: '', //组织机构代码
+    // organizationCode: '', //组织机构代码
     legalRepresentative: '', //法定代表人
     legalMobile: '', //法人联系电话
     legalIdentityUrl: '', //法人身份证
@@ -1532,7 +1533,7 @@ const closePermissionModal = () => {
     ], //联系方式 设置属性
     status: true, //状态
     creditCode: '', //统一社会信用代码
-    organizationCode: '', //组织机构代码
+    // organizationCode: '', //组织机构代码
     legalRepresentative: '', //法定代表人
     legalMobile: '', //法人联系电话
     legalIdentityUrl: '', //法人身份证
@@ -1576,7 +1577,7 @@ const PermissionOk = async () => {
     address: state.formAttributeState.detailedAddress, //公司地址 详细地址
     contact: state.formAttributeState.contactInformationArr, //联系方式 设置属性
     creditCode: state.formAttributeState.creditCode, //统一社会信用代码
-    organizationCode: state.formAttributeState.organizationCode, //组织机构代码
+    // organizationCode: state.formAttributeState.organizationCode, //组织机构代码
     legalRepresentative: state.formAttributeState.legalRepresentative, //法定代表人
     legalMobile: state.formAttributeState.legalMobile, //法人联系电话
     legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
@@ -1646,7 +1647,7 @@ const assignPermission = async (record, isCloseDetails = false) => {
       detailedAddress: res.relVO?.address, //地址 详细地址
       contactInformationArr: res.relVO?.contact, //联系方式 设置属性
       creditCode: res.relVO?.creditCode, //统一社会信用代码
-      organizationCode: res.relVO?.organizationCode, //组织机构代码
+      // organizationCode: res.relVO?.organizationCode, //组织机构代码
       legalRepresentative: res.relVO?.legalRepresentative, //法定代表人
       legalMobile: res.relVO?.legalMobile //法人联系电话
     }
@@ -2011,10 +2012,10 @@ const detailsInfo = async (record) => {
           textSpan: '统一社会信用代码：',
           text: res.relVO?.creditCode
         },
-        {
-          textSpan: '组织机构代码：',
-          text: res.relVO?.organizationCode
-        },
+        // {
+        //   textSpan: '组织机构代码：',
+        //   text: res.relVO?.organizationCode
+        // },
         {
           textSpan: '法定代表人：',
           text: res.relVO?.legalRepresentative

@@ -10,7 +10,7 @@
     </div>
     <div class="right-card-content">
       <!--  搜索  -->
-      <a-card>
+      <a-card :bodyStyle="{ marginBottom: '10px' }">
         <div class="total-search-content">
           <div class="search-content">
             <div class="search-item">
@@ -42,28 +42,48 @@
                 <a-select
                   v-model:value="queryParams.postType"
                   :options="state.postTypeOptions"
+                  @change="postTypeChange"
                   class="width-100"
                   placeholder="请选择"
                 />
               </div>
             </div>
+
             <div class="search-item">
               <div class="item-label">岗位：</div>
-              <div class="item-condition flex-style">
-                <a-input
-                  class="width-100"
+              <div class="item-condition">
+                <a-select
                   v-model:value="queryParams.post"
-                  @pressEnter="getList"
-                  placeholder="输入岗位名称搜索"
+                  :options="state.postTypeSpecifyOptions"
+                  class="width-100"
+                  placeholder="请选择"
                 />
               </div>
             </div>
+
+            <!--            <div class="search-item">-->
+            <!--              <div class="item-label">岗位：</div>-->
+            <!--              <div class="item-condition flex-style">-->
+            <!--                <a-select-->
+            <!--                  v-model:value="queryParams.post"-->
+            <!--                  :options="state.postTypeSpecifyOptions"-->
+            <!--                  class="width-100"-->
+            <!--                  placeholder="请选择"-->
+            <!--                />-->
+            <!--                &lt;!&ndash;                <a-input&ndash;&gt;-->
+            <!--                &lt;!&ndash;                  class="width-100"&ndash;&gt;-->
+            <!--                &lt;!&ndash;                  v-model:value="queryParams.post"&ndash;&gt;-->
+            <!--                &lt;!&ndash;                  @pressEnter="getList"&ndash;&gt;-->
+            <!--                &lt;!&ndash;                  placeholder="输入岗位名称搜索"&ndash;&gt;-->
+            <!--                &lt;!&ndash;                />&ndash;&gt;-->
+            <!--              </div>-->
+            <!--            </div>-->
 
             <div class="search-item">
               <div class="item-label">是否兼岗：</div>
               <div class="item-condition">
                 <a-select
-                  v-model:value="queryParams.memberType"
+                  v-model:value="queryParams.partPost"
                   class="width-100"
                   :options="state.partPostOptions"
                   placeholder="请选择"
@@ -340,7 +360,7 @@
           <a-form-item
             :label="`成员姓名`"
             name="memberName"
-            :rules="[{ required: true, message: `成员姓名不能为空` }]"
+            :rules="state.memberNameRules"
             class="width-50"
           >
             <a-input
@@ -540,8 +560,7 @@
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
                     :tree-data="state.postListOptions"
-                  >
-                  </a-tree-select>
+                  />
                 </div>
               </template>
 
@@ -603,10 +622,15 @@
           </a-form-item>
 
           <a-form-item :label="`QQ`" class="width-50">
-            <a-input v-model:value="formState.qqNum" placeholder="请输入QQ" />
+            <a-input
+              v-model:value="formState.qqNum"
+              show-count
+              :maxlength="20"
+              placeholder="请输入QQ"
+            />
           </a-form-item>
 
-          <a-form-item :label="`电子邮箱`" class="width-50">
+          <a-form-item :label="`电子邮箱`" class="width-50" :rules="state.contactMailRules">
             <a-input v-model:value="formState.email" placeholder="请输入电子邮箱" />
           </a-form-item>
 
@@ -689,7 +713,7 @@
           placeholder="请选择角色"
           :options="state.configureRolesOptions"
           @change="rolesChange"
-        ></a-select>
+        />
       </div>
     </div>
 
@@ -979,6 +1003,7 @@ import {
   getPostList,
   getPostTypeList,
   getRolesList,
+  getTypePostList,
   updateMember,
   updateMemberStatus
 } from '@/api/system/member'
@@ -1001,14 +1026,14 @@ const queryParams = reactive({
   memberName: null, //成员姓名
   memberPhone: null, //联系电话
   postType: null, //岗位类型
-  partPost: null, //是否有兼岗 主岗 兼岗
+  partPost: '2', //是否有兼岗 主岗 兼岗
   post: null, //岗位
   department: null, //部门
   configureRoles: [], //配置角色
-  memberType: null, //人员类型
+  memberType: 'all', //人员类型
   postStatus: '', //岗位状态
-  isOnJob: null, //在职状态
-  userType: null //账号类型
+  isOnJob: 'all', //在职状态
+  userType: 'all' //账号类型
 })
 //新增编辑
 const formState = reactive({
@@ -1068,6 +1093,22 @@ const legalMobileValidator = (rule, value) => {
   })
 }
 
+//成员姓名中文校验
+const memberNameValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[\u4e00-\u9fa5]$/
+      if (!regExp.test(value)) {
+        reject('请输入中文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -1086,27 +1127,14 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
-  postTypeOptions: [
-    {
-      value: 'G1',
-      label: '岗位1'
-    },
-    {
-      value: 'G2',
-      label: '岗位2'
-    }
-  ], //岗位类型Options
-  barnOptions: [
-    {
-      value: 'G1',
-      label: '岗位1'
-    },
-    {
-      value: 'G2',
-      label: '岗位2'
-    }
-  ], //所属品牌Options
+  postTypeOptions: [], //岗位类型Options
+  postTypeSpecifyOptions: [], //岗位类型 对应的岗位Options
+  barnOptions: [], //所属品牌Options
   partPostOptions: [
+    {
+      value: '2',
+      label: '全部'
+    },
     {
       value: '0',
       label: '是'
@@ -1115,25 +1143,8 @@ const state = reactive({
       value: '1',
       label: '否'
     }
-  ], //配置角色 Options tree
-  configureRolesOptions: [
-    {
-      value: 'R1',
-      label: '角色1'
-    },
-    {
-      value: 'R2',
-      label: '角色2'
-    },
-    {
-      value: 'R3',
-      label: '角色3'
-    },
-    {
-      value: 'R4',
-      label: '角色4'
-    }
   ], //是否兼岗 Options tree
+  configureRolesOptions: [], //配置角色 Options tree
   memberTypeOptions: [
     {
       value: 'full_members',
@@ -1146,6 +1157,10 @@ const state = reactive({
   ], //人员类型 Options tree
   onJobOptions: [
     {
+      label: '全部',
+      value: 'all'
+    },
+    {
       value: '0',
       label: '在职'
     },
@@ -1156,12 +1171,16 @@ const state = reactive({
   ], //在职状态 Options tree
   userTypeOptions: [
     {
+      label: '全部',
+      value: 'all'
+    },
+    {
       value: '0',
-      label: '正常'
+      label: '开启'
     },
     {
       value: '1',
-      label: '禁用'
+      label: '关闭'
     }
   ], //帐号状态 Options tree
   roleId: [], //分配角色modal
@@ -1177,6 +1196,10 @@ const state = reactive({
     }
   ], //新增修改 岗位信息 主岗/兼岗 Options
   postListOptions: [], //新增修改 岗位列表
+  memberNameRules: [
+    { required: true, message: `成员姓名不能为空` },
+    { validator: memberNameValidator }
+  ],
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1380,9 +1403,9 @@ const allColumns = [
 
   {
     title: '创建人',
-    dataIndex: 'creator',
+    dataIndex: 'creatorName',
     width: 100,
-    key: 'creator',
+    key: 'creatorName',
     resizable: true,
     ellipsis: true,
     sort: 10
@@ -1399,8 +1422,8 @@ const allColumns = [
   {
     title: '最近操作人',
     width: 100,
-    dataIndex: 'updater',
-    key: 'updater',
+    dataIndex: 'updaterName',
+    key: 'updaterName',
     resizable: true,
     ellipsis: true,
     sort: 12
@@ -1429,6 +1452,23 @@ const allColumns = [
 /** 查询列表 */
 const getList = async () => {
   state.loading = true
+
+  let tempConfigureRoles = []
+  let roleExist = null
+  console.log('queryParams.configureRoles', queryParams.configureRoles)
+  queryParams.configureRoles.map((item) => {
+    if (item === 'all') {
+      roleExist = null
+    }
+    if (item === 'empty') {
+      roleExist = '1'
+    }
+  })
+  //配置角色排除全部跟空
+  tempConfigureRoles = queryParams.configureRoles.filter(
+    (item) => item !== 'all' && item !== 'empty'
+  )
+
   const params = {
     pageNo: queryParams.current,
     pageSize: queryParams.pageSize,
@@ -1437,11 +1477,12 @@ const getList = async () => {
     phone: queryParams.memberPhone, //联系电话
     postTypeCode: queryParams.postType, //岗位类型
     postName: queryParams.post, //岗位名称
-    postType: queryParams.memberType, //是否兼岗
-    roleId: queryParams.configureRoles, //配置角色
-    userType: queryParams.memberType, //人员类型
-    status: queryParams.userType, //账号状态
-    userStatus: queryParams.isOnJob //在职状态
+    postType: queryParams.partPost === '2' ? null : queryParams.partPost, //是否兼岗
+    roleId: tempConfigureRoles, //配置角色
+    userType: queryParams.memberType === 'all' ? null : queryParams.memberType, //人员类型
+    status: queryParams.userType === 'all' ? null : queryParams.userType, //账号状态
+    userStatus: queryParams.isOnJob === 'all' ? null : queryParams.isOnJob, //在职状态
+    roleExist: roleExist //配置角色为空时 传'1'
   }
 
   try {
@@ -1490,6 +1531,9 @@ const getList = async () => {
       item.departmentPostList = tempDepartmentPost
       item.statusSwitch = item?.status === 0 //账号状态
       item.memberType = tempMemberType[0]?.label //人员类型
+      item.isOnJob = item.userStatus === 0 ? '在职' : '离职'
+      item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
+      item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
     })
 
     console.log('state.tableDataList', state.tableDataList)
@@ -1530,14 +1574,14 @@ const resetQuery = () => {
     memberName: null, //成员姓名
     memberPhone: null, //联系电话
     postType: null, //岗位类型
-    partPost: null, //是否有兼岗 主岗 兼岗
+    partPost: '2', //是否有兼岗 主岗 兼岗
     post: null, //岗位
     department: null, //部门
     configureRoles: [], //配置角色
-    memberType: null, //人员类型
+    memberType: 'all', //人员类型
     postStatus: '', //岗位状态
-    isOnJob: null, //在职状态
-    userType: null //账号类型
+    isOnJob: 'all', //在职状态
+    userType: 'all' //账号类型
   }
   handleQuery()
 }
@@ -1847,11 +1891,12 @@ const addMajorIndividualFN = async () => {
         visible: item.isShow //是否显示
       })
     }
+    console.log('item.organizationId', item.organizationId)
 
-    if (!item.organizationId) {
+    if (!item.department) {
       markDep = true
     }
-    if (!item.postId) {
+    if (!item.post) {
       markPost = true
     }
   })
@@ -1910,13 +1955,13 @@ const addMajorIndividualFN = async () => {
       res = await addMember(params)
       state.addSuccessId = res
       console.log('新增成员res', res)
-      message.success('新增成功')
+      message.success('新建成员成功')
       //分配角色
       openPermissionModal()
     } else {
       params['id'] = formState.id
       res = await updateMember(params)
-      message.success('编辑成功')
+      message.success('修改成员成功')
     }
 
     closeModal()
@@ -2830,6 +2875,7 @@ const getAllType = async () => {
   const rolesRes = await getRolesList()
   //获取数据字典
   const dictRes = await getOrganizationTypeList()
+
   console.log('dictRes', dictRes)
 
   //人员类型
@@ -2852,7 +2898,24 @@ const getAllType = async () => {
   await nextTick(() => {
     state.postTypeOptions = reconstructionArrayObject(res, needReplaceKey)
     state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
-    state.memberTypeOptions = tempMemberType
+    state.configureRolesOptions = [
+      {
+        label: '全部',
+        value: 'all'
+      },
+      {
+        label: '空',
+        value: 'empty'
+      },
+      ...state.configureRolesOptions
+    ]
+    state.memberTypeOptions = [
+      {
+        label: '全部',
+        value: 'all'
+      },
+      ...tempMemberType
+    ]
     state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
     state.partPostOptionsText = tempPostType
     state.barnOptions = tempBarnOptions
@@ -2860,8 +2923,8 @@ const getAllType = async () => {
 
   console.log('岗位类型', res)
   console.log('岗位类型D', state.postTypeOptions)
-  console.log('角色信息', rolesRes)
-  console.log('角色信息D', state.configureRolesOptions)
+  console.log('配置角色', rolesRes)
+  console.log('配置角色D', state.configureRolesOptions)
   console.log('人员类型', tempMemberType)
   console.log('人员类型D', state.memberTypeOptions)
   console.log('岗位列表', postList)
@@ -2978,7 +3041,7 @@ const deleteColumns = (index) => {
 const addEditPostColumns = [
   {
     title: '所属部门',
-    width: 130,
+    width: 200,
     dataIndex: 'department',
     key: 'department',
     resizable: true,
@@ -2988,7 +3051,7 @@ const addEditPostColumns = [
   },
   {
     title: '岗位',
-    width: 110,
+    width: 140,
     dataIndex: 'post',
     key: 'post',
     resizable: true,
@@ -3008,7 +3071,7 @@ const addEditPostColumns = [
   },
   {
     title: '主岗/兼岗',
-    width: 120,
+    width: 90,
     dataIndex: 'isMainPost',
     key: 'isMainPost',
     resizable: true,
@@ -3101,6 +3164,19 @@ const clickRoleTag = async (childItem) => {
 const disabledDate = (current) => {
   //日期大于当天
   return current && current > dayjs()
+}
+
+//岗位类型 获取岗位列表
+const postTypeChange = async (value) => {
+  const postListRes = await getTypePostList({ typeCode: value })
+  queryParams.post = null
+  const needReplacePartPostKey = [
+    ['label', 'name'],
+    ['value', 'id']
+  ]
+  state.postTypeSpecifyOptions = reconstructionArrayObject(postListRes, needReplacePartPostKey)
+
+  console.log('岗位列表postListRes', postListRes)
 }
 
 //监听  左侧选中数据  更新 右侧展示数据
@@ -3672,6 +3748,7 @@ const batchAssignUserRole = (): void => {
 }
 .width-100 {
   width: 100%;
+  //background: skyblue;
 }
 //分配角色 modal
 .assign-roles-content {
@@ -3808,7 +3885,14 @@ const batchAssignUserRole = (): void => {
   .ant-table-tbody {
     background: white;
   }
-  .ant-table-cell {
+
+  .ant-modal .ant-table tbody > tr > td {
+    border-bottom: 1px solid rgba(234, 235, 239, 1);
+  }
+  .ant-modal .ant-table thead > tr > th {
+    border-bottom: 1px solid rgba(234, 235, 239, 1);
+  }
+  .ant-modal .ant-table tbody .ant-table-cell {
     background: white !important;
   }
   .ant-table-cell-row-hover {
@@ -3820,7 +3904,7 @@ const batchAssignUserRole = (): void => {
   }
 
   .ant-table-cell {
-    padding: 0;
+    padding: 8px;
     margin: 0;
   }
 }
@@ -3834,7 +3918,14 @@ const batchAssignUserRole = (): void => {
   .ant-table-tbody {
     background: white;
   }
-  .ant-table-cell {
+
+  .ant-modal .ant-table tbody > tr > td {
+    border-bottom: 1px solid rgba(234, 235, 239, 1);
+  }
+  .ant-modal .ant-table thead > tr > th {
+    border-bottom: 1px solid rgba(234, 235, 239, 1);
+  }
+  .ant-modal .ant-table tbody .ant-table-cell {
     background: white !important;
   }
   .ant-table-cell-row-hover {
@@ -3846,7 +3937,7 @@ const batchAssignUserRole = (): void => {
   }
 
   .ant-table-cell {
-    padding: 0;
+    padding: 8px;
     margin: 0;
   }
 }

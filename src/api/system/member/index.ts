@@ -19,6 +19,10 @@ export const getMemberList = (params: MajorIndividual) => {
 export const getPostTypeList = () => {
   return request.get({ url: '/system/post-type/list-all-simple' })
 }
+// 通过岗位类型获取岗位列表
+export const getTypePostList = (params) => {
+  return request.get({ url: '/system/post/list-all-simple/code', params })
+}
 
 // 获取岗位列表
 export const getPostList = () => {
