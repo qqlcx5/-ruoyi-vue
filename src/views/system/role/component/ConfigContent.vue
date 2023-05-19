@@ -1,9 +1,9 @@
 <template>
-  <div class="grid grid-cols-3 gap-x-16px pb-80px">
+  <div class="role-config grid grid-cols-3 gap-x-16px pb-80px">
     <div class="box">
       <div class="box-header"> 请选择菜单（可多选） </div>
       <div class="box-content">
-        <div class="flex justify-between items-center px-14px border-b-1">
+        <div class="box-tool flex justify-between items-center px-14px border-b-1">
           <el-checkbox
             v-model="treeNodeAll"
             label="全选"
@@ -18,7 +18,7 @@
           />
         </div>
         <el-tree
-          class="px-6px py-10px max-h-560px overflow-y-scroll"
+          class="py-10px max-h-560px overflow-y-scroll"
           ref="treeRef"
           node-key="id"
           show-checkbox
@@ -37,7 +37,7 @@
       <div class="box-content">
         <div v-if="currentNode && currentNode.type === 2">
           <div v-if="getPermissions && getPermissions.length">
-            <div class="flex justify-between items-center px-14px border-b-1">
+            <div class="box-tool flex justify-between items-center px-14px border-b-1">
               <el-checkbox
                 v-model="btnPermissionAll"
                 label="全选"
@@ -81,12 +81,26 @@
               }}
             </div>
           </el-radio>
+          <el-radio :label="6">
+            指定人
+            <div
+              v-if="currentNode.dataScope === 6"
+              class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
+              @click="openMemberModal"
+              >{{
+                currentNode.dataScopeUserIds.length > 0
+                  ? `已选${currentNode.dataScopeUserIds.length}个成员`
+                  : '请选择'
+              }}
+            </div>
+          </el-radio>
           <el-radio :label="1">看所有人</el-radio>
         </el-radio-group>
         <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
       </div>
     </div>
     <SelectOrgModal ref="selectOrgModalRef" @confirm="onSelectOrgConfirm" />
+    <SelectMemberModal ref="selectMemberModalRef" @confirm="onSelectMemberConfirm" />
   </div>
 </template>
 
@@ -97,6 +111,8 @@ import { getRoleMenuDataScope } from '@/api/system/role'
 import { ElTree } from 'element-plus'
 import { TreeNodeData } from 'element-plus/es/components/tree/src/tree.type'
 import SelectOrgModal from '../../organization/components/SelectOrgModal.vue'
+import SelectMemberModal from '../../member/components/SelectMemberModal/index.vue'
+import { cloneDeep } from 'lodash-es'
 
 const { query } = useRoute()
 
@@ -175,11 +191,19 @@ const handleCheckChange = (node) => {
 
 // ================= 数据权限 ====================
 const selectOrgModalRef = ref()
+const selectMemberModalRef = ref()
 const openDepartModal = () => {
   selectOrgModalRef.value.openModal(currentNode.value.dataScopeDeptIds)
 }
 const onSelectOrgConfirm = (data) => {
   currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
+}
+const openMemberModal = () => {
+  selectMemberModalRef.value.openModal(currentNode.value.dataScopeUserIds)
+}
+const onSelectMemberConfirm = (data) => {
+  console.log(data)
+  currentNode.value.dataScopeUserIds = data.map((item) => item.id)
 }
 
 // ================= 初始化 ====================
@@ -203,6 +227,7 @@ const init = async () => {
         menu.operations = roleData?.operations || []
         menu.dataScope = roleData?.dataScope || ''
         menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
+        menu.dataScopeUserIds = roleData?.dataScopeUserIds || []
       }
       return menu.type !== 3
     })
@@ -220,18 +245,16 @@ watch(
 )
 
 const getParams = () => {
-  const menuDataScopeItemList = treeRef.value!.getCheckedNodes()
+  const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes())
   return menuDataScopeItemList.map((item) => {
     item['menuId'] = item.id
     item['menuParentId'] = item.parentId
+    delete item.children
     return item
   })
 }
 
 defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
-// onMounted(() => {
-//   init()
-// })
 </script>
 
 <style lang="scss" scoped>
@@ -244,12 +267,16 @@ defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
     padding: 10px 14px;
     background-color: var(--table-bg-color);
   }
+  .box-tool {
+    border-bottom: 1px solid #eaebef;
+  }
   .box-content .el-radio-group {
     align-items: normal;
     flex-direction: column;
     flex-wrap: nowrap;
   }
   .depart {
+    border-color: #eaebef;
     &:after {
       content: '\e68f';
       font-family: iconfont;
@@ -261,10 +288,12 @@ defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
       transform: translateY(-50%);
     }
   }
-  :deep(.el-tree) {
-    .el-tree-node.is-current {
-      color: var(--el-color-primary);
-    }
+  :deep(.el-tree .el-tree-node.is-checked) {
+    color: var(--el-color-primary);
+    background-color: #ebf5ff;
+  }
+  :deep(.el-tree .el-tree-node.is-current > .el-tree-node__content) {
+    background-color: #c1e0ff;
   }
 }
 </style>

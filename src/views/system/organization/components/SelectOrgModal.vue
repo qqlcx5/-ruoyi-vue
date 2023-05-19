@@ -20,7 +20,7 @@
       <!-- 按钮：取消 -->
       <XButton :title="t('common.cancel')" @click="modelVisible = false" />
       <!-- 按钮：确认 -->
-      <XButton type="primary" :title="t('common.ok')" @click="submitForm()" />
+      <XButton type="primary" :title="t('common.confirmSelect')" @click="submitForm()" />
     </template>
   </XModal>
 </template>

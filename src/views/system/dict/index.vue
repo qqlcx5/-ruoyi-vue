@@ -502,16 +502,19 @@ const submitTypeForm = async () => {
         const data = unref(typeFormRef)?.formModel as DictTypeReqVO
         if (actionType.value === 'typeCreate') {
           data.type = dictTypeValue.value
-          await DictTypeApi.createDictTypeApi(data)
-          message.success(t('common.createSuccess'))
+          await DictTypeApi.createDictTypeApi(data).then(() => {
+            message.success(t('common.createSuccess'))
+            typeGetList()
+          })
         } else if (actionType.value === 'typeUpdate') {
-          await DictTypeApi.updateDictTypeApi(data)
-          message.success(t('common.updateSuccess'))
+          await DictTypeApi.updateDictTypeApi(data).then(() => {
+            message.success(t('common.updateSuccess'))
+            typeGetList()
+          })
         }
         dialogVisible.value = false
       } finally {
         actionLoading.value = false
-        typeGetList()
       }
     }
   })
@@ -532,24 +535,29 @@ const submitDataForm = async () => {
         }
         if (actionType.value === 'dataCreate') {
           data.dictType = parent.value.type
-          await DictDataApi.createDictDataApi(data)
-          message.success(t('common.createSuccess'))
+          await DictDataApi.createDictDataApi(data).then(() => {
+            message.success(t('common.createSuccess'))
+            dataGetList()
+          })
         } else if (actionType.value === 'dataUpdate') {
-          await DictDataApi.updateDictDataApi(data)
-          message.success(t('common.updateSuccess'))
+          await DictDataApi.updateDictDataApi(data).then(() => {
+            message.success(t('common.updateSuccess'))
+            dataGetList()
+          })
         } else if (actionType.value === 'dataLevel3Create') {
-          await DictDataApi.createDictDataApi(data)
-          message.success(t('common.createSuccess'))
-          dataLevel3GetList()
+          await DictDataApi.createDictDataApi(data).then(() => {
+            message.success(t('common.createSuccess'))
+            dataLevel3GetList()
+          })
         } else if (actionType.value === 'dataLevel3Update') {
-          await DictDataApi.updateDictDataApi(data)
-          message.success(t('common.updateSuccess'))
-          dataLevel3GetList()
+          await DictDataApi.updateDictDataApi(data).then(() => {
+            message.success(t('common.updateSuccess'))
+            dataLevel3GetList()
+          })
         }
         dialogVisible.value = false
       } finally {
         actionLoading.value = false
-        dataGetList()
       }
     }
   })

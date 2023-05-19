@@ -62,7 +62,8 @@ export default {
     confirmOpen: '确认开启',
     confirmClose: '确认关闭',
     toOperate: '去操作',
-    confirmDel: '确认删除'
+    confirmDel: '确认删除',
+    confirmSelect: '确认选择'
   },
   error: {
     noPermission: `抱歉，您无权访问此页面。`,

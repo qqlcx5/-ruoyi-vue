@@ -45,6 +45,9 @@
           @click="handleCreate()"
         />
       </template>
+      <template #staff_count="{ row }">
+        <el-link type="primary" @click="goto(row, 'postType')">{{ row.staffCount }}</el-link>
+      </template>
       <template #status_default="{ row }">
         <el-switch
           v-model="row.status"
@@ -295,6 +298,12 @@ const submitForm = async () => {
 // ========== 权限配置 ==========
 const openConfigModal = (row) => {
   router.push(`/system/role-config?id=${row.id}`)
+}
+const goto = ({ code }) => {
+  router.push({
+    name: 'Member',
+    state: { roleCode: code }
+  })
 }
 
 // ========== 初始化 ==========
