@@ -10,7 +10,7 @@ export const useMessage = () => {
       ElMessage({
         type: 'info',
         message: content,
-        customClass: `wg-message`,
+        customClass: `wg-message-plain`,
         ...options
       })
     },
@@ -19,7 +19,7 @@ export const useMessage = () => {
       ElMessage({
         type: 'error',
         message: content,
-        customClass: `wg-message`,
+        customClass: `wg-message-plain`,
         ...options
       })
     },
@@ -28,7 +28,7 @@ export const useMessage = () => {
       ElMessage({
         type: 'success',
         message: content,
-        customClass: `wg-message`,
+        customClass: `wg-message-plain`,
         ...options
       })
     },
@@ -37,43 +37,43 @@ export const useMessage = () => {
       ElMessage({
         type: 'warning',
         message: content,
-        customClass: `wg-message`,
+        customClass: `wg-message-plain`,
         ...options
       })
     },
     // 消息提示
-    plainInfo(content: string, options?) {
+    infoSolid(content: string, options?) {
       ElMessage({
         type: 'info',
         message: content,
-        customClass: `wg-message-plain`,
+        customClass: `wg-message`,
         ...options
       })
     },
     // 错误消息
-    plainError(content: string, options?) {
+    errorSolid(content: string, options?) {
       ElMessage({
         type: 'error',
         message: content,
-        customClass: `wg-message-plain`,
+        customClass: `wg-message`,
         ...options
       })
     },
     // 成功消息
-    plainSuccess(content: string, options?) {
+    successSolid(content: string, options?) {
       ElMessage({
         type: 'success',
         message: content,
-        customClass: `wg-message-plain`,
+        customClass: `wg-message`,
         ...options
       })
     },
     // 警告消息
-    plainWarning(content: string, options?) {
+    warningSolid(content: string, options?) {
       ElMessage({
         type: 'warning',
         message: content,
-        customClass: `wg-message-plain`,
+        customClass: `wg-message`,
         ...options
       })
     },
