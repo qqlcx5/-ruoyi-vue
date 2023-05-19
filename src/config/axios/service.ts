@@ -15,6 +15,7 @@ import errorCode from './errorCode'
 import { resetRouter } from '@/router'
 import { useCache } from '@/hooks/web/useCache'
 
+const message = useMessage()
 const tenantEnable = import.meta.env.VITE_APP_TENANT_ENABLE
 const { result_code, base_url, request_timeout } = config
 // 版本（用于灰度）
@@ -170,6 +171,9 @@ service.interceptors.response.use(
           })
         })
       }
+    } else if (code === 403) {
+      message.warning('啊哦~您没有权限查看次页面，宁可联系系统管理员添加~')
+      return Promise.reject(new Error(msg))
     } else if (code === 500) {
       ElMessage.error(t('sys.api.errMsg500'))
       return Promise.reject(new Error(msg))

@@ -6,35 +6,75 @@ export const useMessage = () => {
   const { t } = useI18n()
   return {
     // 消息提示
-    info(content: string) {
+    info(content: string, options?) {
       ElMessage({
         type: 'info',
         message: content,
-        customClass: 'wg-message'
+        customClass: `wg-message`,
+        ...options
       })
     },
     // 错误消息
-    error(content: string) {
+    error(content: string, options?) {
       ElMessage({
         type: 'error',
         message: content,
-        customClass: 'wg-message'
+        customClass: `wg-message`,
+        ...options
       })
     },
     // 成功消息
-    success(content: string) {
+    success(content: string, options?) {
       ElMessage({
         type: 'success',
         message: content,
-        customClass: 'wg-message'
+        customClass: `wg-message`,
+        ...options
       })
     },
     // 警告消息
-    warning(content: string) {
+    warning(content: string, options?) {
       ElMessage({
         type: 'warning',
         message: content,
-        customClass: 'wg-message'
+        customClass: `wg-message`,
+        ...options
+      })
+    },
+    // 消息提示
+    plainInfo(content: string, options?) {
+      ElMessage({
+        type: 'info',
+        message: content,
+        customClass: `wg-message-plain`,
+        ...options
+      })
+    },
+    // 错误消息
+    plainError(content: string, options?) {
+      ElMessage({
+        type: 'error',
+        message: content,
+        customClass: `wg-message-plain`,
+        ...options
+      })
+    },
+    // 成功消息
+    plainSuccess(content: string, options?) {
+      ElMessage({
+        type: 'success',
+        message: content,
+        customClass: `wg-message-plain`,
+        ...options
+      })
+    },
+    // 警告消息
+    plainWarning(content: string, options?) {
+      ElMessage({
+        type: 'warning',
+        message: content,
+        customClass: `wg-message-plain`,
+        ...options
       })
     },
     // 弹出提示

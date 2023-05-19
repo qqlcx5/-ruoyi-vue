@@ -70,7 +70,7 @@ VXETable.setup({
   icon: {
     TOOLBAR_TOOLS_REFRESH: 'iconfont icon-shuaxin',
     TOOLBAR_TOOLS_PRINT: 'iconfont icon-dayin',
-    TOOLBAR_TOOLS_FULLSCREEN: 'iconfont icon-quanping',
+    TOOLBAR_TOOLS_FULLSCREEN: 'iconfont icon-quanping'
   },
   grid: {
     toolbarConfig: {
