@@ -391,7 +391,7 @@
             "
           >
             <div v-if="state.logoListUrl.length < 1">
-              <plus-outlined />
+              <Icon icon="svg-icon:add-upload" :size="15" />
               <div style="margin-top: 8px">上传logo</div>
             </div>
           </a-upload>
@@ -421,7 +421,7 @@
             "
           >
             <div v-if="state.environmentUrl.length < 1">
-              <plus-outlined />
+              <Icon icon="svg-icon:add-upload" :size="15" />
               <div style="margin-top: 8px">上传环境图片</div>
             </div>
           </a-upload>
@@ -545,7 +545,7 @@
             "
           >
             <div v-if="state.legalPersonListUrl.length < 1">
-              <plus-outlined />
+              <Icon icon="svg-icon:add-upload" :size="15" />
               <div style="margin-top: 8px">上传法人证件</div>
             </div>
           </a-upload>
@@ -586,7 +586,7 @@
             "
           >
             <div v-if="state.businessLicenseListUrl.length < 1">
-              <plus-outlined />
+              <Icon icon="svg-icon:add-upload" :size="15" />
               <div style="margin-top: 8px">上传营业执照</div>
             </div>
           </a-upload>
@@ -838,7 +838,6 @@
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
-import { PlusOutlined, LoadingOutlined, MinusCircleOutlined } from '@ant-design/icons-vue'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'

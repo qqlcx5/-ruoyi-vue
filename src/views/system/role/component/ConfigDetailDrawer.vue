@@ -6,6 +6,7 @@
     :lockScroll="false"
     size="764px"
     @close="tabsActive = 'permission'"
+    :modal-append-to-body="false"
   >
     <template #header>
       <h4 class="text-18px font-black m-0">详情</h4>

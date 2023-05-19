@@ -300,6 +300,9 @@
         <!--  </ContentWrap>-->
       </a-card>
     </div>
+
+    <!--  详情 角色信息 tags弹窗-->
+    <ConfigDetailDrawer ref="configDetailDrawerRef" :showStaff="false" />
   </div>
 
   <!-- 新增 编辑 Modal -->
@@ -308,7 +311,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'800px'"
+    :width="'900px'"
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
@@ -324,25 +327,35 @@
             :label="`成员工号`"
             name="memberNum"
             :rules="[{ required: true, message: `成员编码不能为空` }]"
-            calss="width-50"
+            class="width-50"
           >
-            <a-input v-model:value="formState.memberNum" placeholder="请输入成员工号" />
+            <a-input
+              v-model:value="formState.memberNum"
+              show-count
+              :maxlength="20"
+              placeholder="请输入成员工号"
+            />
           </a-form-item>
 
           <a-form-item
             :label="`成员姓名`"
             name="memberName"
             :rules="[{ required: true, message: `成员姓名不能为空` }]"
-            calss="width-50"
+            class="width-50"
           >
-            <a-input v-model:value="formState.memberName" placeholder="请输入成员真实姓名" />
+            <a-input
+              v-model:value="formState.memberName"
+              show-count
+              :maxlength="20"
+              placeholder="请输入成员真实姓名"
+            />
           </a-form-item>
 
           <a-form-item
             :label="`性别`"
             name="sex"
             :rules="[{ required: true, message: `性别不能为空` }]"
-            calss="width-50"
+            class="width-50"
           >
             <a-radio-group v-model:value="formState.sex" name="radioSexGroup">
               <a-radio value="1">男</a-radio>
@@ -354,7 +367,7 @@
             :label="`入职时间`"
             name="entryTime"
             :rules="[{ required: true, message: `入职时间不能为空` }]"
-            calss="width-50"
+            class="width-50"
           >
             <a-date-picker placeholder="请选择时间" v-model:value="formState.entryTime" />
           </a-form-item>
@@ -363,7 +376,7 @@
             :label="`人员类型`"
             name="memberType"
             :rules="[{ required: true, message: `人员类型不能为空` }]"
-            calss="width-50"
+            class="width-50"
           >
             <a-radio-group v-model:value="formState.memberType" name="radioMemberTypeGroup">
               <a-radio v-for="item in state.memberTypeOptions" :value="item.value">{{
@@ -373,10 +386,11 @@
           </a-form-item>
 
           <a-form-item
+            v-if="state.modalType === 'edit'"
             :label="`人员状态`"
             name="isOnJob"
             :rules="[{ required: true, message: `人员状态不能为空` }]"
-            calss="width-50"
+            class="width-50"
           >
             <a-radio-group v-model:value="formState.isOnJob" name="radioIsOnJobGroup">
               <a-radio v-for="item in state.onJobOptions" :value="item.value">{{
@@ -386,9 +400,23 @@
           </a-form-item>
 
           <a-form-item
+            v-if="state.modalType === 'add'"
+            label="账号状态"
+            name="status"
+            :rules="[{ required: true, message: '菜单状态!' }]"
+            class="width-50"
+          >
+            <a-switch
+              v-model:checked="formState.status"
+              checked-children="开启"
+              un-checked-children="关闭"
+            />
+          </a-form-item>
+
+          <a-form-item
             :label="`联系电话`"
             :rules="[{ required: true, message: `联系电话不能为空` }]"
-            calss="width-100"
+            class="width-100"
           >
             <a-table
               :data-source="addDataSource.addEditTableData"
@@ -446,7 +474,7 @@
             </a-table>
           </a-form-item>
 
-          <a-form-item label="成员头像" name="legalIdentityUrl" calss="width-100">
+          <a-form-item label="成员头像" name="legalIdentityUrl" class="width-100">
             <a-upload
               v-model:file-list="state.legalPersonListUrl"
               :action="updateUrl + '?updateSupport=' + updateSupport"
@@ -469,7 +497,7 @@
               "
             >
               <div v-if="state.legalPersonListUrl.length < 1">
-                <plus-outlined />
+                <Icon icon="svg-icon:add-upload" :size="15" />
                 <div style="margin-top: 8px">上传照片</div>
               </div>
             </a-upload>
@@ -479,7 +507,7 @@
         </div>
 
         <div class="title-content"><div class="blue-line"></div> 岗位信息 </div>
-        <a-form-item :label="``" calss="width-100">
+        <a-form-item :label="``" class="width-100">
           <a-table
             :data-source="addPostDataSource.addEditTableData"
             :columns="addEditPostColumns"
@@ -524,19 +552,20 @@
                     style="width: 100%"
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
-                    :tree-data="state.postTypeOptions"
+                    :tree-data="state.barnOptions"
                   />
                 </div>
               </template>
 
               <template v-if="column.key === 'isMainPost'">
                 <div>
-                  <a-select
-                    v-model:value="record.isMainPost"
-                    class="width-100"
-                    :options="state.partPostOptionsText"
-                    placeholder="请选择"
-                  />
+                  <!--                  <a-select-->
+                  <!--                    v-model:value="record.isMainPost"-->
+                  <!--                    class="width-100"-->
+                  <!--                    :options="state.partPostOptionsText"-->
+                  <!--                    placeholder="请选择"-->
+                  <!--                  />-->
+                  {{ record?.isMainPostText }}
                 </div>
               </template>
 
@@ -565,25 +594,29 @@
         <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
 
         <div class="form-content">
-          <a-form-item :label="`出生日期`" calss="width-50">
-            <a-date-picker placeholder="请选择时间" v-model:value="formState.birthDay" />
+          <a-form-item :label="`出生日期`" class="width-50">
+            <a-date-picker
+              placeholder="请选择时间"
+              v-model:value="formState.birthDay"
+              :disabled-date="disabledDate"
+            />
           </a-form-item>
 
-          <a-form-item :label="`QQ`" calss="width-50">
+          <a-form-item :label="`QQ`" class="width-50">
             <a-input v-model:value="formState.qqNum" placeholder="请输入QQ" />
           </a-form-item>
 
-          <a-form-item :label="`电子邮箱`" calss="width-50">
+          <a-form-item :label="`电子邮箱`" class="width-50">
             <a-input v-model:value="formState.email" placeholder="请输入电子邮箱" />
           </a-form-item>
 
-          <a-form-item :label="`微信号`" calss="width-50">
+          <a-form-item :label="`微信号`" class="width-50">
             <a-input v-model:value="formState.wechat" placeholder="请输入微信号" />
           </a-form-item>
         </div>
 
         <!--  级联选择器  - -   -->
-        <a-form-item :label="`公司地址`" name="detailedAddress">
+        <a-form-item :label="`家庭地址`" name="detailedAddress">
           <div class="flex-content adress-content">
             <a-form-item-rest>
               <a-cascader
@@ -595,7 +628,7 @@
             </a-form-item-rest>
             <a-input
               v-model:value="formState.detailedAddress"
-              placeholder="请输入详细的公司地址，具体门牌号"
+              placeholder="请输入详细的地址信息，具体到门牌号"
               class="adress-input"
             />
           </div>
@@ -721,30 +754,107 @@
           ><img :src="editImg" alt="" class="edit-Img" />修改</div
         >
       </div>
-      <div class="info-content">
-        <div
-          :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
-          v-for="(childItem, childIndex) in item.infoArr"
-          :key="`childItem${childIndex}`"
-          ><span>{{ childItem.textSpan }}</span>
-          <img
-            v-if="childItem?.imgUrl"
-            :src="childItem?.imgUrl"
-            alt=""
-            class="details-img"
-            @click="setPreviewImage(childItem?.imgUrl)"
-          />
-          <template v-else>
-            <a-tooltip>
-              <template #title> {{ childItem.text }}</template>
-              {{ childItem.text }}
-            </a-tooltip>
-          </template>
+      <div :class="['info-content', { 'tags-content': item?.isShow }]">
+        <template v-if="!item.isShow">
+          <div
+            :class="[
+              'text-style',
+              { 'super-admin-style': childItem?.isSuperAdmin },
+              { 'width-full': childItem?.isFull }
+            ]"
+            v-for="(childItem, childIndex) in item.infoArr"
+            :key="`childItem${childIndex}`"
+          >
+            <span>{{ childItem.textSpan }}</span>
+            <img
+              v-if="childItem?.imgUrl"
+              :src="childItem?.imgUrl"
+              alt=""
+              class="details-img"
+              @click="setPreviewImage(childItem?.imgUrl)"
+            />
+            <template v-else>
+              <a-tooltip>
+                <template #title> {{ childItem.text }}</template>
+                {{ childItem.text }}
+              </a-tooltip>
+            </template>
 
-          <div v-if="childItem?.isSuperAdmin" class="send-code-btn" @click="resetPassword">
-            重置密码
+            <!--  联系电话  -->
+            <div v-if="childItem?.type === 'contactNumber'">
+              <a-table
+                :dataSource="childItem?.tableData"
+                :columns="childItem?.tableColumns"
+                :pagination="false"
+              />
+            </div>
+
+            <!--  岗位信息 -->
+            <div v-if="childItem?.type === 'postInfo'">
+              <a-table
+                :dataSource="childItem?.tableData"
+                :columns="childItem?.tableColumns"
+                :pagination="false"
+              />
+            </div>
           </div>
-        </div>
+        </template>
+
+        <!--  角色信息 tag  -->
+        <template v-if="item.isShow">
+          <div
+            v-for="(childItem, childIndex) in item.infoArr"
+            :key="`childItem${childIndex}`"
+            class="margin-left-6"
+          >
+            <a-tag @click="clickRoleTag(childItem)" class="tag-style">{{
+              childItem?.roleName
+            }}</a-tag>
+          </div>
+        </template>
+      </div>
+
+      <!--  变更记录  -->
+      <div v-if="item?.type === 'changeRecord'" class="change-record">
+        <a-timeline>
+          <a-timeline-item
+            v-for="(recorditem, index) in item?.changeRecord"
+            :key="`recorditem${index}`"
+          >
+            <div class="record-title-content">
+              <div class="record-data">
+                {{ recorditem.date }}
+              </div>
+              <div class="record-time">
+                {{ recorditem.time }}
+              </div>
+              <div class="record-type">
+                {{ recorditem.type }}
+              </div>
+            </div>
+
+            <div class="record-tip-content">
+              <div class="width-10"> 变更前: </div>
+              <div class="width-90">
+                {{ recorditem.beforeChange }}
+              </div>
+            </div>
+
+            <div class="record-tip-content">
+              <div class="width-10"> 变更后: </div>
+              <div class="width-90">
+                {{ recorditem.afterChange }}
+              </div>
+            </div>
+
+            <div class="record-tip-content">
+              <div class="width-10"> 操作人: </div>
+              <div class="width-90">
+                {{ recorditem.operator }}
+              </div>
+            </div>
+          </a-timeline-item>
+        </a-timeline>
       </div>
     </div>
   </a-modal>
@@ -827,7 +937,6 @@
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
@@ -845,6 +954,7 @@ import {
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
 import { aassignUserRoleApi } from '@/api/system/permission'
+import { getRoleApi } from '@/api/system/role'
 import { provincesMunicipalitiesArea } from './pr'
 import {
   filterTree,
@@ -876,6 +986,8 @@ import { getOrganizationTypeList, getSimpleOrganizationList } from '@/api/system
 import { accessSync } from 'fs'
 import BatchChangePostModal from './components/BatchChangePostModal.vue'
 import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
+import * as RoleApi from '@/api/system/role'
+import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer.vue'
 
 const { wsCache } = useCache()
 
@@ -903,9 +1015,10 @@ const formState = reactive({
   memberNum: null, //成员工号
   memberName: null, //成员姓名
   sex: '1', //性别
-  entryTime: null, //入职时间
-  memberType: null, //人员类型
-  isOnJob: null, //在职(人员)状态
+  entryTime: dayjs(), //入职时间
+  memberType: 'trial_members', //人员类型
+  isOnJob: '0', //在职(人员)状态
+  status: true, //账号状态
   birthDay: null, //出生日期
   qqNum: null, //QQ
   email: null, //电子邮箱
@@ -916,6 +1029,7 @@ const formState = reactive({
 })
 
 const queryFormRef = ref() // 搜索的表单
+const configDetailDrawerRef = ref()
 
 //手机号码正则校验 -  简单校验没有全按国内的号码段来  -
 const isValidPhoneNumber = (phoneNumber) => {
@@ -1022,11 +1136,11 @@ const state = reactive({
   ], //是否兼岗 Options tree
   memberTypeOptions: [
     {
-      value: '0',
+      value: 'full_members',
       label: '正式'
     },
     {
-      value: '1',
+      value: 'trial_members',
       label: '试用'
     }
   ], //人员类型 Options tree
@@ -1455,20 +1569,6 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
-  if (!(Object.keys(record).length === 0)) {
-    //非空对象判断 新增子项时回显
-    formState.belongTenantId = record.id
-  }
-  const res = await getSimpleTenantList()
-
-  let menuTree = []
-  // let menu = {}
-  let menu: Tree = { id: 0, name: '顶层成员', children: [] }
-  menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
-  menuTree.push(menu)
-
-  state.optionalMenuTree = menuTree
-
   state.isShow = true
 }
 //关闭Modal
@@ -1481,9 +1581,9 @@ const closeModal = () => {
   formState.memberNum = null //成员工号
   formState.memberName = null //成员姓名
   formState.sex = '1' //性别
-  formState.entryTime = null //入职时间
-  formState.memberType = null //人员类型
-  formState.isOnJob = null //在职(人员)状态
+  formState.entryTime = dayjs() //入职时间
+  formState.memberType = 'trial_members' //人员类型
+  formState.isOnJob = '0' //在职(人员)状态
   formState.birthDay = null //出生日期
   formState.qqNum = null //QQ
   formState.email = null //电子邮箱
@@ -1501,10 +1601,10 @@ const closeModal = () => {
   addDataSource.addEditTableData = [
     {
       index: 0,
-      phoneType: '',
+      phoneType: '1',
       phoneNum: '',
-      useType: '',
-      isService: ''
+      useType: '1',
+      isService: '0'
     }
   ]
 
@@ -1515,6 +1615,8 @@ const closeModal = () => {
       post: null,
       brand: null,
       isMainPost: null,
+      isMainPostKey: 'main_post',
+      isMainPostText: '主岗',
       isShow: true
     }
   ]
@@ -1576,6 +1678,8 @@ const edit = async (record, isCloseDetails = false) => {
       post: item.postId,
       brand: item.brands,
       isMainPost: item.type,
+      isMainPostKey: item.type,
+      isMainPostText: item.type === 'main_post' ? '主岗' : '兼岗',
       isShow: item.visible
     })
   })
@@ -1597,6 +1701,8 @@ const edit = async (record, isCloseDetails = false) => {
       post: null,
       brand: null,
       isMainPost: null,
+      isMainPostKey: 'main_post',
+      isMainPostText: '主岗',
       isShow: true
     })
   }
@@ -1608,6 +1714,7 @@ const edit = async (record, isCloseDetails = false) => {
   formState.entryTime = record.onboardingTime ? dayjs(record.onboardingTime) : dayjs() //入职时间
   formState.memberType = String(record.userType) //人员类型
   formState.isOnJob = String(res.userStatus) //人员状态
+  formState.status = record.statusSwitch // 账号状态
   addDataSource.addEditTableData = tempPhoneList //联系电话
   addPostDataSource.addEditTableData = tempPostList //岗位信息
   formState.birthDay = record.birthDay ? dayjs(record.birthDay) : dayjs() //出生日期
@@ -1684,10 +1791,12 @@ const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
-  state.addEditLoading = true
 
   const tempPhoneList = []
   const tempPostList = []
+  let mark = false
+  let markDep = false
+  let markPost = false
   addDataSource.addEditTableData.map((item) => {
     if (formState.id) {
       //修改时
@@ -1707,7 +1816,15 @@ const addMajorIndividualFN = async () => {
         recordEnable: item.isService === '0' //是否开通云录音
       })
     }
+
+    if (!item.phoneNum) {
+      mark = true
+    }
   })
+
+  if (mark) {
+    return message.warning('请输入手机号')
+  }
 
   addPostDataSource.addEditTableData.map((item) => {
     //修改时
@@ -1716,7 +1833,7 @@ const addMajorIndividualFN = async () => {
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
         brands: item.brand, //所属品牌
-        type: item.isMainPost, //主岗/兼岗
+        type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow, //是否显示
         userId: formState.id,
         id: item.id
@@ -1726,11 +1843,25 @@ const addMajorIndividualFN = async () => {
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
         brands: item.brand, //所属品牌
-        type: item.isMainPost, //主岗/兼岗
+        type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow //是否显示
       })
     }
+
+    if (!item.organizationId) {
+      markDep = true
+    }
+    if (!item.postId) {
+      markPost = true
+    }
   })
+
+  if (markDep) {
+    return message.warning('请选择所属部门')
+  }
+  if (markPost) {
+    return message.warning('请选择岗位')
+  }
 
   console.log('tempPhoneList==========>', tempPhoneList)
   console.log('tempPostList===========>', tempPostList)
@@ -1743,6 +1874,7 @@ const addMajorIndividualFN = async () => {
     onboardingTime: formState.entryTime?.format('YYYY-MM-DD'), //入职时间
     userType: formState.memberType, //人员类型
     userStatus: formState.isOnJob, //人员状态
+    status: formState.status ? '0' : '1', //账号状态
     phoneList: tempPhoneList, //联系电话
     avatar: state.legalPersonUrlSuccess, //成员头像
     postList: tempPostList, //岗位信息
@@ -1758,7 +1890,6 @@ const addMajorIndividualFN = async () => {
   if (formState?.cascadeInfo[0]) {
     params['province'] = formState.cascadeInfo[0].label
     params['provinceCode'] = formState.cascadeInfo[0].value
-    debugger
   }
   if (formState?.cascadeInfo[1]) {
     params['city'] = formState.cascadeInfo[1].label
@@ -1769,6 +1900,7 @@ const addMajorIndividualFN = async () => {
     params['countyCode'] = formState.cascadeInfo[2].value
   }
 
+  state.addEditLoading = true
   console.log('新增params', params)
   try {
     let res = []
@@ -2009,13 +2141,46 @@ function getChildArr(data) {
 
 //详情(打开)
 const detailsInfo = async (record) => {
-  // state.record = record
+  state.detailsRecord = record
   //获取成员详情
   const res = await getMemberDetails({ id: record.id })
+  const { roleVOList = [] } = record
+  const { userHistoryVOList = [], phoneVOList = [], postVOList = [] } = res
   console.log('详情record', record)
   console.log('详情res', res)
   let sexText = '男'
   let isOnJobText = '在职'
+  let homeAddress = ''
+  let changeRecord = [
+    {
+      date: '2023-05-11',
+      time: '09:00:00',
+      type: '入职',
+      beforeChange:
+        '变更前：入职时间-2022-11-16、部门/岗位-厦门分公司-厦门后溪哈弗红蓝标4S店 /  销售顾问',
+      afterChange:
+        '变更后：入职时间-2023-08-01、部门/岗位-厦门分公司-厦门后溪哈弗红蓝标4S店 /  销售顾问',
+      operator: '操作人：张三（010005）'
+    },
+    {
+      date: '2023-04-11',
+      time: '16:00:00',
+      type: '离职',
+      beforeChange: '变更前：在职状态-在职',
+      afterChange: '变更后：在职状态-离职、离职时间-2023-05-15',
+      operator: '操作人：张三（010005）'
+    },
+    {
+      date: '2023-05-11',
+      time: '09:00:00',
+      type: '入职',
+      beforeChange: '入职时间-2022-11-16、部门/岗位-厦门分公司-厦门后溪哈弗红蓝标4S店 /  销售顾问',
+      afterChange: '入职时间-2023-08-01、部门/岗位-厦门分公司-厦门后溪哈弗红蓝标4S店 /  销售顾问',
+      operator: '张三（010005）'
+    }
+  ]
+  let tableData = []
+  let tablePostData = []
   switch (res.sex) {
     case 1:
       sexText = '女'
@@ -2031,17 +2196,221 @@ const detailsInfo = async (record) => {
     case 1:
       isOnJobText = '离职'
   }
-  return
+  if (record?.province) {
+    homeAddress += record?.province
+  }
+  if (record?.city) {
+    homeAddress += record?.city
+  }
+  if (record?.county) {
+    homeAddress += record?.county
+  }
+  if (record?.address) {
+    homeAddress += record?.address
+  }
 
-  // state.record = res
-  //
-  // let companyAddress = ''
-  // if (res?.province) {
-  //   companyAddress = res?.province + res?.city + res?.county + res?.address
-  // }
-  //
-  // const tempRes = await getSimpleTenantList()
-  // const tempItem = tempRes.filter((item) => item.id === record.belongTenantId)
+  //联系电话
+  phoneVOList?.map((item) => {
+    tableData.push({
+      phoneType: item?.phoneCategory === '1' ? '手机' : '座机',
+      phoneNum: item?.phone,
+      useType: item?.usageType === '1' ? '私人' : '公司',
+      isService: item?.recordEnable ? '是' : '否'
+    })
+  })
+
+  //岗位信息
+  postVOList?.map((item) => {
+    const tempBarn = state.barnOptions.find((barnItem) => barnItem.value === item?.brands)
+    tablePostData.push({
+      department: item?.componentName,
+      post: item?.postName,
+      brand: tempBarn?.label,
+      isMainPost: item?.type === 'main_post' ? '主岗' : '兼岗',
+      isShow: item?.visible ? '显示' : '隐藏'
+    })
+  })
+
+  changeRecord = []
+  //变更记录
+  userHistoryVOList.map((item) => {
+    const temp1 = JSON.parse(item.beforeData)
+    const temp2 = JSON.parse(item.afterData)
+    let tempItem = {
+      date: dayjs(temp1?.createTime)?.format('YYYY-MM-DD'),
+      time: dayjs(temp1?.createTime)?.format('HH:mm:ss')
+      // type: '离职',
+      // beforeChange: '变更前：在职状态-在职',
+      // afterChange: '变更后：在职状态-离职、离职时间-2023-05-15',
+      // operator: '操作人：张三（010005）'
+    }
+
+    console.log('时间戳', dayjs(temp1?.createTime))
+    console.log('beforeData', temp1)
+    console.log('afterData', temp2)
+    switch (item?.historyType) {
+      case 'update':
+        //修改
+        tempItem.type = '修改'
+        tempItem.beforeChange = '部门/岗位-'
+        tempItem.afterChange = `部门/岗位-`
+        temp1?.map((item) => {
+          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+          tempItem.beforeChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+        })
+
+        temp2?.map((item) => {
+          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+          tempItem.afterChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+        })
+
+        tempItem.operator = `操作人：${item.createName}`
+        break
+      case 'entry':
+        //入职
+        tempItem.type = '入职'
+        // tempItem.beforeChange = '变更前：入职时间-'
+        tempItem.afterChange = `入职时间-`
+        // temp1?.map((item) => {
+        //   const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+        //   tempItem.beforeChange += `${item?.updateTime?.year}-${item?.updateTime?.month}-${item?.updateTime?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+        // })
+
+        temp2?.map((item) => {
+          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+          console.log('item============>', item)
+          console.log('item.updateTime', item.updateTime)
+          console.log('item.updateTime.date', item.updateTime.date)
+          console.log('item.updateTime.date.year', item.updateTime.date.year)
+          console.log('item?.updateTime?.data?.month', item?.updateTime?.data)
+
+          tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+        })
+
+        // tempItem.beforeChange = `变更前：入职时间-${temp1?.updateTime?.year}-${temp1?.updateTime?.month}-${temp1?.updateTime?.day}、部门/岗位-${temp1?.componentName}/ ${temp1?.postName}`
+        // tempItem.afterChange = `变更后：入职时间-${temp2?.updateTime?.year}-${temp2?.updateTime?.month}-${temp2?.updateTime?.day}、部门/岗位-${temp2?.componentName}/ ${temp2?.postName}`
+        tempItem.operator = `${item.createName}`
+        break
+      case 'depart':
+        //离职
+        tempItem.type = '离职'
+        tempItem.beforeChange = `在职状态-在职`
+        tempItem.afterChange = `在职状态-离职、离职时间-${dayjs(temp1?.createTime)?.format(
+          'YYYY-MM-DD'
+        )}`
+        tempItem.operator = `${item.createName}`
+        break
+    }
+
+    changeRecord.push(tempItem)
+  })
+
+  let tableColumns = [
+    {
+      title: '序号',
+      width: 50,
+      dataIndex: 'index',
+      key: 'index',
+      align: 'center',
+      resizable: true,
+      customRender: (text: any, record: any, index: any, column: any) => {
+        return text.index + 1
+      }
+    },
+    {
+      title: '号码类别',
+      width: 130,
+      dataIndex: 'phoneType',
+      key: 'phoneType',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 1
+    },
+    {
+      title: '号码',
+      width: 110,
+      dataIndex: 'phoneNum',
+      key: 'phoneNum',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 2
+    },
+    {
+      title: '使用类型',
+      width: 130,
+      dataIndex: 'useType',
+      key: 'useType',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 3
+    },
+    {
+      title: '是否开通云服务',
+      width: 120,
+      dataIndex: 'isService',
+      key: 'isService',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 4
+    }
+  ]
+
+  let tablePostColumns = [
+    {
+      title: '所属部门',
+      width: 130,
+      dataIndex: 'department',
+      key: 'department',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 1
+    },
+    {
+      title: '岗位',
+      width: 110,
+      dataIndex: 'post',
+      key: 'post',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 2
+    },
+    {
+      title: '所属品牌',
+      width: 130,
+      dataIndex: 'brand',
+      key: 'brand',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 3
+    },
+    {
+      title: '主岗/兼岗',
+      width: 120,
+      dataIndex: 'isMainPost',
+      key: 'isMainPost',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 4
+    },
+    {
+      title: '是否显示',
+      width: 120,
+      dataIndex: 'isShow',
+      key: 'isShow',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 4
+    }
+  ]
 
   state.detailsInfo = [
     {
@@ -2091,14 +2460,16 @@ const detailsInfo = async (record) => {
         {
           textSpan: '联系电话：',
           text: '',
-          isTable: true,
-          tableColumns: [],
-          tableData: []
+          type: 'contactNumber',
+          isFull: true,
+          tableColumns: tableColumns,
+          tableData: tableData
         },
         {
           textSpan: '成员头像：',
           text: '暂无上传图片',
-          imgUrl: record.avatar
+          imgUrl: record.avatar,
+          isFull: true
         }
       ]
     },
@@ -2106,53 +2477,49 @@ const detailsInfo = async (record) => {
       baseTitle: '岗位信息',
       infoArr: [
         {
-          textSpan: '岗位信息：',
+          textSpan: '',
           text: '',
-          isTable: true,
-          tableColumns: [],
-          tableData: []
+          type: 'postInfo',
+          isFull: true,
+          tableColumns: tablePostColumns,
+          tableData: tablePostData
         }
       ]
     },
     {
       baseTitle: '角色信息',
-      infoArr: [
-        {
-          textSpan: '岗位信息：',
-          text: '',
-          tagsArr: []
-        }
-      ]
+      isShow: true,
+      infoArr: roleVOList
     },
     {
       baseTitle: '详细信息',
       infoArr: [
         {
           textSpan: '出生日期：',
-          text: res.creditCode
+          text: record.birthDay
         },
         {
           textSpan: '电子邮箱：',
-          text: res.organizationCode
+          text: record.email
         },
         {
           textSpan: 'QQ：',
-          text: res.legalRepresentative
+          text: record.qq
         },
         {
           textSpan: '微信号：',
-          text: res.legalMobile
+          text: record.wechat
         },
         {
           textSpan: '家庭地址：',
-          text: '暂无上传图片'
+          text: homeAddress
         }
       ]
     },
     {
       baseTitle: '变更记录 ',
-      infoArr: [],
-      changeRecord: []
+      type: 'changeRecord',
+      changeRecord: changeRecord
     }
   ]
 
@@ -2573,10 +2940,10 @@ const addDataSource = reactive({
   addEditTableData: [
     {
       index: 0,
-      phoneType: '',
+      phoneType: '1',
       phoneNum: '',
-      useType: '',
-      isService: ''
+      useType: '1',
+      isService: '0'
     }
   ]
 })
@@ -2584,10 +2951,10 @@ const addDataSource = reactive({
 //新增编辑 联系电话 add
 const addColumns = () => {
   addDataSource.addEditTableData.push({
-    phoneType: '',
+    phoneType: '1',
     phoneNum: '',
-    useType: '',
-    isService: ''
+    useType: '1',
+    isService: '0'
   })
 
   addDataSource.addEditTableData.map((item, index) => {
@@ -2678,6 +3045,8 @@ const addPostDataSource = reactive({
       post: null,
       brand: null,
       isMainPost: null,
+      isMainPostKey: 'main_post',
+      isMainPostText: '主岗',
       isShow: true
     }
   ]
@@ -2690,6 +3059,8 @@ const addPostColumns = () => {
     post: null,
     brand: null,
     isMainPost: null,
+    isMainPostKey: 'secondary_post',
+    isMainPostText: '兼岗',
     isShow: false
   })
 
@@ -2700,19 +3071,36 @@ const addPostColumns = () => {
 
 //新增编辑 岗位信息 delete
 const deletePostColumns = (index) => {
+  console.log('index', index)
+  console.log('addPostDataSource.addEditTableData', addPostDataSource.addEditTableData)
   addPostDataSource.addEditTableData = addPostDataSource.addEditTableData.filter(
     (item) => item.index !== index
   )
 
   console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
-  addPostDataSource.addEditTableData.map((item, index) => {
-    item.index = index + 1
+  nextTick(() => {
+    addPostDataSource.addEditTableData.map((item, index) => {
+      item.index = index
+    })
   })
 }
 
 const rolesChange = (rolesID) => {
   console.log('rolesID', rolesID)
   console.log('state.roleId===>', state.roleId)
+}
+
+//详情 角色信息标签点击事件
+const clickRoleTag = async (childItem) => {
+  console.log('角色信息标签点击事件childItem', childItem)
+  const res = await getRoleApi(childItem.roleId)
+  console.log('角色权限res', res)
+  await configDetailDrawerRef.value.openDrawer(res)
+}
+
+const disabledDate = (current) => {
+  //日期大于当天
+  return current && current > dayjs()
 }
 
 //监听  左侧选中数据  更新 右侧展示数据
@@ -3117,6 +3505,23 @@ const batchAssignUserRole = (): void => {
   align-items: center;
 }
 
+.margin-left-6 {
+  margin-left: 6px;
+}
+
+.tags-content {
+  margin-top: 15px;
+  justify-content: flex-start;
+}
+
+.tag-style {
+  cursor: pointer;
+}
+
+.change-record {
+  margin-left: 13px;
+}
+
 //提示弹窗 img
 .tip-img {
   width: 20px;
@@ -3263,7 +3668,7 @@ const batchAssignUserRole = (): void => {
   justify-content: space-between;
 }
 .width-50 {
-  width: 40%;
+  width: 50%;
 }
 .width-100 {
   width: 100%;
@@ -3309,6 +3714,42 @@ const batchAssignUserRole = (): void => {
 }
 //分配角色 select
 .roles-select-content {
+}
+
+//详情 modal 变更记录
+.record-title-content {
+  display: flex;
+  color: rgba(51, 51, 51, 1);
+  font-size: 16px;
+  font-weight: bold;
+  font-family: PingFangSC-Medium;
+}
+.record-time {
+  margin-left: 20px;
+}
+.record-type {
+  margin-left: 64px;
+}
+.record-ellipsis {
+  color: rgba(51, 51, 51, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+}
+.record-tip-content {
+  display: flex;
+}
+.width-10 {
+  width: 50px;
+}
+.width-90 {
+  width: 90%;
+}
+.width-full {
+  width: 100% !important;
 }
 </style>
 
@@ -3360,6 +3801,32 @@ const batchAssignUserRole = (): void => {
     width: 200px;
   }
 
+  //联系电话表格
+  .ant-table thead > tr > th {
+    background: rgb(246, 246, 246);
+  }
+  .ant-table-tbody {
+    background: white;
+  }
+  .ant-table-cell {
+    background: white !important;
+  }
+  .ant-table-cell-row-hover {
+    background: white !important;
+  }
+
+  .ant-table-tbody .ant-table-row-hover > td {
+    background: white !important;
+  }
+
+  .ant-table-cell {
+    padding: 0;
+    margin: 0;
+  }
+}
+
+//详情modal
+.details-modal {
   //联系电话表格
   .ant-table thead > tr > th {
     background: rgb(246, 246, 246);

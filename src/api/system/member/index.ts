@@ -42,7 +42,7 @@ export const updateMember = (data) => {
 
 // 查询成员详情
 export const getMemberDetails = (params) => {
-  return request.get({ url: '/system/user/get', params })
+  return request.get({ url: '/system/user/extra/get', params })
 }
 
 // 更改成员状态
