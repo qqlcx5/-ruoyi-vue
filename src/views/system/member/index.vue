@@ -329,7 +329,12 @@
             :rules="[{ required: true, message: `成员编码不能为空` }]"
             class="width-50"
           >
-            <a-input v-model:value="formState.memberNum" placeholder="请输入成员工号" />
+            <a-input
+              v-model:value="formState.memberNum"
+              show-count
+              :maxlength="20"
+              placeholder="请输入成员工号"
+            />
           </a-form-item>
 
           <a-form-item
@@ -338,7 +343,12 @@
             :rules="[{ required: true, message: `成员姓名不能为空` }]"
             class="width-50"
           >
-            <a-input v-model:value="formState.memberName" placeholder="请输入成员真实姓名" />
+            <a-input
+              v-model:value="formState.memberName"
+              show-count
+              :maxlength="20"
+              placeholder="请输入成员真实姓名"
+            />
           </a-form-item>
 
           <a-form-item
@@ -376,6 +386,7 @@
           </a-form-item>
 
           <a-form-item
+            v-if="state.modalType === 'edit'"
             :label="`人员状态`"
             name="isOnJob"
             :rules="[{ required: true, message: `人员状态不能为空` }]"
@@ -386,6 +397,20 @@
                 item.label
               }}</a-radio>
             </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            v-if="state.modalType === 'add'"
+            label="账号状态"
+            name="status"
+            :rules="[{ required: true, message: '菜单状态!' }]"
+            class="width-50"
+          >
+            <a-switch
+              v-model:checked="formState.status"
+              checked-children="开启"
+              un-checked-children="关闭"
+            />
           </a-form-item>
 
           <a-form-item
@@ -534,12 +559,13 @@
 
               <template v-if="column.key === 'isMainPost'">
                 <div>
-                  <a-select
-                    v-model:value="record.isMainPost"
-                    class="width-100"
-                    :options="state.partPostOptionsText"
-                    placeholder="请选择"
-                  />
+                  <!--                  <a-select-->
+                  <!--                    v-model:value="record.isMainPost"-->
+                  <!--                    class="width-100"-->
+                  <!--                    :options="state.partPostOptionsText"-->
+                  <!--                    placeholder="请选择"-->
+                  <!--                  />-->
+                  {{ record?.isMainPostText }}
                 </div>
               </template>
 
@@ -986,9 +1012,10 @@ const formState = reactive({
   memberNum: null, //成员工号
   memberName: null, //成员姓名
   sex: '1', //性别
-  entryTime: null, //入职时间
-  memberType: null, //人员类型
-  isOnJob: null, //在职(人员)状态
+  entryTime: dayjs(), //入职时间
+  memberType: 'trial_members', //人员类型
+  isOnJob: '0', //在职(人员)状态
+  status: true, //账号状态
   birthDay: null, //出生日期
   qqNum: null, //QQ
   email: null, //电子邮箱
@@ -1106,11 +1133,11 @@ const state = reactive({
   ], //是否兼岗 Options tree
   memberTypeOptions: [
     {
-      value: '0',
+      value: 'full_members',
       label: '正式'
     },
     {
-      value: '1',
+      value: 'trial_members',
       label: '试用'
     }
   ], //人员类型 Options tree
@@ -1539,20 +1566,6 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
-  if (!(Object.keys(record).length === 0)) {
-    //非空对象判断 新增子项时回显
-    formState.belongTenantId = record.id
-  }
-  const res = await getSimpleTenantList()
-
-  let menuTree = []
-  // let menu = {}
-  let menu: Tree = { id: 0, name: '顶层成员', children: [] }
-  menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
-  menuTree.push(menu)
-
-  state.optionalMenuTree = menuTree
-
   state.isShow = true
 }
 //关闭Modal
@@ -1565,9 +1578,9 @@ const closeModal = () => {
   formState.memberNum = null //成员工号
   formState.memberName = null //成员姓名
   formState.sex = '1' //性别
-  formState.entryTime = null //入职时间
-  formState.memberType = null //人员类型
-  formState.isOnJob = null //在职(人员)状态
+  formState.entryTime = dayjs() //入职时间
+  formState.memberType = 'trial_members' //人员类型
+  formState.isOnJob = '0' //在职(人员)状态
   formState.birthDay = null //出生日期
   formState.qqNum = null //QQ
   formState.email = null //电子邮箱
@@ -1585,10 +1598,10 @@ const closeModal = () => {
   addDataSource.addEditTableData = [
     {
       index: 0,
-      phoneType: '',
+      phoneType: '1',
       phoneNum: '',
-      useType: '',
-      isService: ''
+      useType: '1',
+      isService: '0'
     }
   ]
 
@@ -1599,6 +1612,8 @@ const closeModal = () => {
       post: null,
       brand: null,
       isMainPost: null,
+      isMainPostKey: 'main_post',
+      isMainPostText: '主岗',
       isShow: true
     }
   ]
@@ -1660,6 +1675,8 @@ const edit = async (record, isCloseDetails = false) => {
       post: item.postId,
       brand: item.brands,
       isMainPost: item.type,
+      isMainPostKey: item.type,
+      isMainPostText: item.type === 'main_post' ? '主岗' : '兼岗',
       isShow: item.visible
     })
   })
@@ -1681,6 +1698,8 @@ const edit = async (record, isCloseDetails = false) => {
       post: null,
       brand: null,
       isMainPost: null,
+      isMainPostKey: 'main_post',
+      isMainPostText: '主岗',
       isShow: true
     })
   }
@@ -1692,6 +1711,7 @@ const edit = async (record, isCloseDetails = false) => {
   formState.entryTime = record.onboardingTime ? dayjs(record.onboardingTime) : dayjs() //入职时间
   formState.memberType = String(record.userType) //人员类型
   formState.isOnJob = String(res.userStatus) //人员状态
+  formState.status = record.statusSwitch // 账号状态
   addDataSource.addEditTableData = tempPhoneList //联系电话
   addPostDataSource.addEditTableData = tempPostList //岗位信息
   formState.birthDay = record.birthDay ? dayjs(record.birthDay) : dayjs() //出生日期
@@ -1800,7 +1820,7 @@ const addMajorIndividualFN = async () => {
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
         brands: item.brand, //所属品牌
-        type: item.isMainPost, //主岗/兼岗
+        type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow, //是否显示
         userId: formState.id,
         id: item.id
@@ -1810,7 +1830,7 @@ const addMajorIndividualFN = async () => {
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
         brands: item.brand, //所属品牌
-        type: item.isMainPost, //主岗/兼岗
+        type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow //是否显示
       })
     }
@@ -1827,6 +1847,7 @@ const addMajorIndividualFN = async () => {
     onboardingTime: formState.entryTime?.format('YYYY-MM-DD'), //入职时间
     userType: formState.memberType, //人员类型
     userStatus: formState.isOnJob, //人员状态
+    status: formState.status ? '0' : '1', //账号状态
     phoneList: tempPhoneList, //联系电话
     avatar: state.legalPersonUrlSuccess, //成员头像
     postList: tempPostList, //岗位信息
@@ -2891,10 +2912,10 @@ const addDataSource = reactive({
   addEditTableData: [
     {
       index: 0,
-      phoneType: '',
+      phoneType: '1',
       phoneNum: '',
-      useType: '',
-      isService: ''
+      useType: '1',
+      isService: '0'
     }
   ]
 })
@@ -2902,10 +2923,10 @@ const addDataSource = reactive({
 //新增编辑 联系电话 add
 const addColumns = () => {
   addDataSource.addEditTableData.push({
-    phoneType: '',
+    phoneType: '1',
     phoneNum: '',
-    useType: '',
-    isService: ''
+    useType: '1',
+    isService: '0'
   })
 
   addDataSource.addEditTableData.map((item, index) => {
@@ -2996,6 +3017,8 @@ const addPostDataSource = reactive({
       post: null,
       brand: null,
       isMainPost: null,
+      isMainPostKey: 'main_post',
+      isMainPostText: '主岗',
       isShow: true
     }
   ]
@@ -3008,6 +3031,8 @@ const addPostColumns = () => {
     post: null,
     brand: null,
     isMainPost: null,
+    isMainPostKey: 'secondary_post',
+    isMainPostText: '兼岗',
     isShow: false
   })
 
@@ -3018,13 +3043,17 @@ const addPostColumns = () => {
 
 //新增编辑 岗位信息 delete
 const deletePostColumns = (index) => {
+  console.log('index', index)
+  console.log('addPostDataSource.addEditTableData', addPostDataSource.addEditTableData)
   addPostDataSource.addEditTableData = addPostDataSource.addEditTableData.filter(
     (item) => item.index !== index
   )
 
   console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
-  addPostDataSource.addEditTableData.map((item, index) => {
-    item.index = index + 1
+  nextTick(() => {
+    addPostDataSource.addEditTableData.map((item, index) => {
+      item.index = index
+    })
   })
 }
 
