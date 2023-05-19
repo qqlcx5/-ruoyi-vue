@@ -4,7 +4,11 @@
       <el-row :gutter="12">
         <el-col :span="6">
           <el-form-item label-width="70px" label="角色名称">
-            <el-input v-model="searchForm.keyword" placeholder="请输入角色名称" />
+            <el-input
+              v-model="searchForm.keyword"
+              placeholder="请输入角色名称"
+              @keyup.enter="reload"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="6">

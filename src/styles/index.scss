@@ -45,10 +45,10 @@
 }
 
 $messageMap: (
-  (type: 'success', color: #ffffff, bgColor: #52C41A),
-  (type: 'warning', color: #ffffff, bgColor: #FAAD14),
-  (type: 'info', color: #ffffff, bgColor: #D2D2D2),
-  (type: 'error', color: #ffffff, bgColor: #FF4141),
+  (type: 'success', color: #ffffff, bgColor: #52C41A, fill: #F0F9EC, fillColor: #67C33A),
+  (type: 'warning', color: #ffffff, bgColor: #FAAD14, fill: #FDF6ED, fillColor: #FAAD14),
+  (type: 'info', color: #ffffff, bgColor: #D2D2D2, fill: #ECECEC, fillColor: #999999),
+  (type: 'error', color: #ffffff, bgColor: #FF4141, fill: #FFEFEF, fillColor: #FF4141),
 );
 
 @for $i from 1 through 4 {
@@ -56,12 +56,23 @@ $messageMap: (
   $type: map-get($map: $item, $key: type);
   $bgColor: map-get($map: $item, $key: bgColor);
   $color: map-get($map: $item, $key: color);
+  $fill: map-get($map: $item, $key: fill);
+  $fillColor: map-get($map: $item, $key: fillColor);
   .wg-message {
     &.el-message--#{$type} {
       border-color: $color;
       background-color: $bgColor;
       .el-message-icon--#{$type}, .el-message__content {
         color: $color;
+      }
+    }
+  }
+  .wg-message-plain {
+    &.el-message--#{$type} {
+      border-color: $fillColor;
+      background-color: $fill;
+      .el-message-icon--#{$type}, .el-message__content {
+        color: $fillColor;
       }
     }
   }

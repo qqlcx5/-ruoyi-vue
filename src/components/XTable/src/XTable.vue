@@ -7,6 +7,9 @@
       <!-- 操作：操作table columns -->
       <WGTools v-bind="getProps" @toolClick="handleToolClick" />
     </template>
+    <template #empty>
+      <Empty />
+    </template>
   </VxeGrid>
   <WGColumnDrawer
     v-model="drawerVisible"
