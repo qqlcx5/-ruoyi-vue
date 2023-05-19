@@ -62,7 +62,8 @@ export default {
     confirmOpen: 'Confirm To Open',
     confirmClose: 'Confirm To Close',
     toOperate: 'To Operate',
-    confirmDel: 'Confirm To Delete'
+    confirmDel: 'Confirm To Delete',
+    confirmSelect: 'Confirm To Select'
   },
   error: {
     noPermission: `Sorry, you don't have permission to access this page.`,

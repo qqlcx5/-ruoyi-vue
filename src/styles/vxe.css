@@ -24,6 +24,9 @@
 .xtable-scrollbar ::-webkit-scrollbar-corner {
   background-color: #ffffff;
 }
+.xtable-scrollbar .vxe-table--render-default .vxe-table--empty-placeholder {
+  z-index: 1;
+}
 /*移除 vxe-grid 右侧外框*/
 .vxe-button.size--medium.type--button.is--circle {
   border: 0;

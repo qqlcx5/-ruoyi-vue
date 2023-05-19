@@ -124,7 +124,6 @@ const searchReset = () => {
   getPersons()
 }
 const hightLightText = (text) => {
-  console.log(text)
   if (text) {
     const reg = new RegExp(searchForm.value.postName, 'gi') // 动态正则表达式
     return text.replace(reg, `<span class="text-error">${searchForm.value.postName}</span>`) // 使用replace替换

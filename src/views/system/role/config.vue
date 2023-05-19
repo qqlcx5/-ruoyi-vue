@@ -65,7 +65,6 @@ const onConfigChange = (config) => {
   if (config.stage === 'front') {
     frontTableData.value = config.data || []
   } else if (config.stage === 'backstage') {
-    console.log(config)
     backstageTableData.value = config.data || []
   }
 }
@@ -78,7 +77,6 @@ const handleOk = async () => {
     menuDataScopeItemList: frontConfigRef.value.getParams(),
     roleId: query.id
   }
-  // console.log(params);
   const result = await RoleApi.assignRoleMenuDataScope(params).finally(
     () => (loading.value = false)
   )

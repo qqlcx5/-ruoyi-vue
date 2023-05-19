@@ -25,8 +25,13 @@ const crudSchemas = reactive<VxeCrudSchema>({
       field: 'postCount'
     },
     {
-      title: '成员',
-      field: 'memberCount'
+      title: '在职成员',
+      field: 'userCount',
+      table: {
+        slots: {
+          default: 'user_count'
+        }
+      }
     }
   ]
 })

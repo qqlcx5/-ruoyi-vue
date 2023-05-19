@@ -52,22 +52,25 @@
               v-hasPermi="['system:post:create']"
               @click="openModal('create', 'type')"
             />
-            <XButton
-              type="primary"
-              plain
-              iconFont="icon-daoru"
-              :title="t('action.import')"
-              v-hasPermi="['system:post:create']"
-              @click="openModal('create', 'type')"
-            />
-            <XButton
-              type="primary"
-              plain
-              iconFont="icon-daochu"
-              :title="t('action.export')"
-              v-hasPermi="['system:post:export']"
-              @click="postTypeExport('岗位类型.xls')"
-            />
+            <!--            <XButton-->
+            <!--              type="primary"-->
+            <!--              plain-->
+            <!--              iconFont="icon-daoru"-->
+            <!--              :title="t('action.import')"-->
+            <!--              v-hasPermi="['system:post:create']"-->
+            <!--              @click="openModal('create', 'type')"-->
+            <!--            />-->
+            <!--            <XButton-->
+            <!--              type="primary"-->
+            <!--              plain-->
+            <!--              iconFont="icon-daochu"-->
+            <!--              :title="t('action.export')"-->
+            <!--              v-hasPermi="['system:post:export']"-->
+            <!--              @click="postTypeExport('岗位类型.xls')"-->
+            <!--            />-->
+          </template>
+          <template #user_count="{ row }">
+            <el-link type="primary" @click="goto(row, 'postType')">{{ row.userCount }}</el-link>
           </template>
           <template #actionbtns_default="{ row }">
             <!-- 操作：修改数据 -->
@@ -147,22 +150,22 @@
                 v-hasPermi="['system:post:create']"
                 @click="openModal('create', 'info')"
               />
-              <XButton
-                type="primary"
-                plain
-                iconFont="icon-daoru"
-                :title="t('action.import')"
-                v-hasPermi="['system:post:create']"
-                @click="openModal('create', 'info')"
-              />
-              <XButton
-                type="primary"
-                plain
-                iconFont="icon-daochu"
-                :title="t('action.export')"
-                v-hasPermi="['system:post:export']"
-                @click="postInfoExport('岗位信息.xls')"
-              />
+              <!--              <XButton-->
+              <!--                type="primary"-->
+              <!--                plain-->
+              <!--                iconFont="icon-daoru"-->
+              <!--                :title="t('action.import')"-->
+              <!--                v-hasPermi="['system:post:create']"-->
+              <!--                @click="openModal('create', 'info')"-->
+              <!--              />-->
+              <!--              <XButton-->
+              <!--                type="primary"-->
+              <!--                plain-->
+              <!--                iconFont="icon-daochu"-->
+              <!--                :title="t('action.export')"-->
+              <!--                v-hasPermi="['system:post:export']"-->
+              <!--                @click="postInfoExport('岗位信息.xls')"-->
+              <!--              />-->
               <XButton
                 color="#666666"
                 plain
@@ -184,6 +187,9 @@
                 @click.stop
                 @change="postInfoStatusChange(row)"
               />
+            </template>
+            <template #user_count="{ row }">
+              <el-link type="primary" @click="goto(row, 'post')">{{ row.userCount }}</el-link>
             </template>
             <template #actionbtns_default="{ row }">
               <!-- 操作：修改数据 -->
@@ -230,6 +236,7 @@ import { ElMessageBox } from 'element-plus'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
+const { push } = useRouter()
 
 /* 岗位类型 */
 const postTypeSearchForm = ref({
@@ -237,17 +244,17 @@ const postTypeSearchForm = ref({
   status: ''
 })
 // 列表相关的变量
-const [registerPostType, { reload: postTypeGet, deleteReq, exportList: postTypeExport }] =
-  useXTable({
-    tableKey: 'post-type-table',
-    allSchemas: typeAllSchemas, // 列表配置
-    params: postTypeSearchForm,
-    getListApi: PostTypeApi.getPostPageApi, // 加载列表的 API
-    deleteApi: PostTypeApi.deletePostApi, // 删除数据的 API
-    exportListApi: PostTypeApi.exportPostApi, // 导出数据的 API
-    border: true,
-    height: 660
-  })
+// const [registerPostType, { reload: postTypeGet, deleteReq, exportList: postTypeExport }] =
+const [registerPostType, { reload: postTypeGet, deleteReq }] = useXTable({
+  tableKey: 'post-type-table',
+  allSchemas: typeAllSchemas, // 列表配置
+  params: postTypeSearchForm,
+  getListApi: PostTypeApi.getPostPageApi, // 加载列表的 API
+  deleteApi: PostTypeApi.deletePostApi, // 删除数据的 API
+  exportListApi: PostTypeApi.exportPostApi, // 导出数据的 API
+  border: true,
+  height: 660
+})
 // 字典分类点击行事件
 const postParent = ref()
 const postTypeSelect = ref(false)
@@ -279,7 +286,7 @@ const [
   {
     reload: postInfoGet,
     deleteData: postInfoDel,
-    exportList: postInfoExport,
+    // exportList: postInfoExport,
     getCheckboxRecords: getInfoCheckboxRecords
   }
 ] = useXTable({
@@ -406,6 +413,14 @@ const openDistributeModal = (row, mode: string) => {
       distributeModalRef.value.openModal(checkedRow, mode, postParent.value.code)
     }
   }
+}
+
+// 跳转
+const goto = ({ code }) => {
+  push({
+    name: 'Member',
+    state: { postTypeCode: code }
+  })
 }
 </script>
 
