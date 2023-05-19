@@ -1017,6 +1017,9 @@ import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
+import { useRouter, useRoute } from 'vue-router'
+const $router = useRouter() // 这是路由跳转的
+const $route = useRoute() // 用于接收路由参数的
 
 //查询
 const queryParams = reactive({
@@ -1199,7 +1202,8 @@ const state = reactive({
   memberNameRules: [
     { required: true, message: `成员姓名不能为空` },
     { validator: memberNameValidator }
-  ],
+  ], //成员姓名限定中文
+  organizationList: [], //左侧组织机构 List 用于过滤查找 当前选中的子级id
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1346,7 +1350,7 @@ const allColumns = [
   },
   {
     title: '联系电话',
-    width: 100,
+    width: 150,
     dataIndex: 'memberPhone',
     key: 'memberPhone',
     resizable: true,
@@ -1472,11 +1476,13 @@ const getList = async () => {
   const params = {
     pageNo: queryParams.current,
     pageSize: queryParams.pageSize,
-    component: queryParams.organization, //机构 左侧tree
+    // component: queryParams.organization, //机构 左侧tree
+    organizationIds: queryParams.organization, //机构 左侧tree arr
     nameOrNumber: queryParams.memberName, //姓名or工号
     phone: queryParams.memberPhone, //联系电话
     postTypeCode: queryParams.postType, //岗位类型
-    postName: queryParams.post, //岗位名称
+    // postName: queryParams.post, //岗位名称
+    postId: queryParams.post,
     postType: queryParams.partPost === '2' ? null : queryParams.partPost, //是否兼岗
     roleId: tempConfigureRoles, //配置角色
     userType: queryParams.memberType === 'all' ? null : queryParams.memberType, //人员类型
@@ -2812,9 +2818,41 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 //初始化 获取默认的 columns
 state.columns = getColumns(state, PageKeyObj.member, allColumns, state.defaultKeys)
 
+/*一维数组对象模糊搜索
+  dataList 为一维数组数据结构
+  value 为input框的输入值
+  type 为指定想要搜索的字段名，array格式 ["name", "number"];
+ */
+function filterOne(dataList, value, type) {
+  var s = dataList.filter(function (item, index, arr) {
+    // console.log(item)
+    for (let j = 0; j < type.length; j++) {
+      if (item[type[j]] != undefined || item[type[j]] != null) {
+        if (item[type[j]].indexOf(value) >= 0) {
+          return item
+        }
+      }
+    }
+  })
+  return s
+}
+
 const sendCurrentSelect = (currentKey) => {
-  console.log('currentKey', currentKey)
-  queryParams.organization = currentKey
+  console.log('currentKey==================>', currentKey)
+  debugger
+  const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
+  console.log('organizationList', organizationList)
+  const tempItem = state.organizationList.filter((item) => item.id === currentKey)
+  const tempComponent = tempItem[0]?.component
+  console.log('tempItem', tempItem)
+  console.log('tempComponent', tempComponent)
+  const needArr = filterOne(state.organizationList, tempComponent, ['component'])
+  console.log('needArr===>', needArr)
+  const tempArr = []
+  needArr.map((item) => {
+    tempArr.push(item.id)
+  })
+  queryParams.organization = tempArr
   getList()
 }
 
@@ -2847,18 +2885,20 @@ const getOrganizationListFN = async () => {
   // console.log('res', res)
   // console.log('organization', organizationList)
 
+  state.organizationList = res
   // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
-  let needReplaceKey = [
-    ['title', 'name'],
-    ['key', 'component']
-  ]
+  // let needReplaceKey = [
+  //   ['title', 'name'],
+  //   ['key', 'component']
+  // ]
   let needReplaceIDKey = [
     ['title', 'name'],
     ['key', 'id']
   ]
-  state.organizationOptions = reconstructedTreeData(organizationList, needReplaceKey)
+  //...TODO:这里有空再换 冗余了 本来是用 component 后面又换成id了
+  state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
-  console.log('组织机构List', res)
+  console.log('组织机构List', state.organizationList)
   console.log('组织机构tempArr', state.organizationOptions)
   console.log('组织机构取ID', state.organizationIDOptions)
 }
@@ -3206,6 +3246,18 @@ const batchAssignUserRole = (): void => {
   batchAssignUserRoleModalRef.value.openModal(state.selectedRowKeys)
 }
 // 批量设角色
+
+onMounted(() => {
+  const $route = useRoute() // 用于接收路由参数的
+  console.log('$route==========>', $route)
+  if ($route.name === 'Member') {
+    const { isOnJob = '0', organization = '' } = $route.query
+    queryParams.isOnJob = isOnJob
+    queryParams.organization = organization
+    getList()
+    console.log('成员管理进！！！！！')
+  }
+})
 </script>
 
 <style lang="scss" scoped>

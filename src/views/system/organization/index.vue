@@ -121,6 +121,13 @@
       </template>
       <!--  单元格插槽  -->
       <template #bodyCell="{ column, record }">
+        <!--  员工数  -->
+        <template v-if="column?.key === 'employeesNumber'">
+          <div class="employees-Number" @click="jumpToMember(record)"
+            >{{ record.staffCount }}123</div
+          >
+        </template>
+
         <!--  可用名额   -->
         <template v-if="column?.key === 'usableAmount'">
           <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
@@ -936,10 +943,9 @@ const contactMobileValidator = (rule, value) => {
       } else {
         resolve()
       }
+    } else {
+      resolve()
     }
-    // else {
-    //   reject('负责人电话不能为空')
-    // }
   })
 }
 
@@ -953,8 +959,8 @@ const contactMailRulesValidator = (rule, value) => {
         resolve()
       }
     } else {
+      console.log('123456')
       resolve()
-      // reject('负责人电话不能为空')
     }
   })
 }
@@ -1290,7 +1296,7 @@ const getList = async (isRefresh = false) => {
     })
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'parentId', 'children')
-console.log(' state.tableDataList',  state.tableDataList)
+    console.log(' state.tableDataList', state.tableDataList)
     state.total = res.total
     if (isRefresh) {
       message.success('刷新成功')
@@ -1451,6 +1457,7 @@ const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
+  console.log('valid', valid)
   state.addEditLoading = true
   let params = {
     parentId: state.formState.parentId, //上级机构
@@ -2290,6 +2297,21 @@ const removeContactInformation = (item) => {
     state.formAttributeState.contactInformationArr.splice(index, 1)
   }
 }
+
+import { useRouter, useRoute } from 'vue-router'
+const $router = useRouter() // 这是路由跳转的
+const $route = useRoute() // 用于接收路由参数的
+//员工数 跳转到成员管理
+const jumpToMember = (record) => {
+  console.log('员工数record', record)
+  $router.push({
+    path: '/system/member',
+    query: {
+      isOnJob: '0', //在职状态
+      organization: record.component //机构
+    }
+  })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -2722,6 +2744,10 @@ const removeContactInformation = (item) => {
 //详情 机构属性  基本信息 类型 独占一行
 .width-full {
   width: 100%;
+}
+//员工数
+.employees-Number {
+  color: rgba(0, 129, 255, 100);
 }
 </style>
 

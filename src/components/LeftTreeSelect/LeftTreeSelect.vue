@@ -10,7 +10,11 @@
     </div>
     <div class="cross-line"></div>
     <div class="tree-select-content">
-      <a-input-search v-model:value="searchValue" style="margin-bottom: 8px" placeholder="请输入部门名称搜索" />
+      <a-input-search
+        v-model:value="searchValue"
+        style="margin-bottom: 8px"
+        placeholder="请输入部门名称搜索"
+      />
       <a-tree
         :expanded-keys="expandedKeys"
         :auto-expand-parent="autoExpandParent"
@@ -128,7 +132,8 @@ const autoExpandParent = ref<boolean>(true)
 
 const state = reactive({
   treeData: cloneDeep(props.treeData),
-  selectedKeys: [cloneDeep(props.treeData[0]?.key)]
+  selectedKeys: []
+  // selectedKeys: [cloneDeep(props.treeData[0]?.key)]
 })
 
 const dataList: TreeProps['treeData'] = []
@@ -270,7 +275,8 @@ watch(
   () => props.treeData,
   () => {
     state.treeData = cloneDeep(props.treeData)
-    state.selectedKeys = [cloneDeep(props.treeData[0]?.key)]
+    // state.selectedKeys = [cloneDeep(props.treeData[0]?.key)]
+    state.selectedKeys = []
   }
 )
 </script>
