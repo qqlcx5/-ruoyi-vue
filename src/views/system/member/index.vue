@@ -6,6 +6,8 @@
       <LeftTreeSelect
         :tree-data="state.organizationOptions"
         @sendCurrentSelect="sendCurrentSelect"
+        :selectedKeys="state.selectedKeys"
+        :testArr="state.testArr"
       />
     </div>
     <div class="right-card-content">
@@ -1204,6 +1206,8 @@ const state = reactive({
     { validator: memberNameValidator }
   ], //成员姓名限定中文
   organizationList: [], //左侧组织机构 List 用于过滤查找 当前选中的子级id
+  selectedKeys: [], //左侧 机构选中的
+  testArr:[1,2,3,4],
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1833,7 +1837,7 @@ let needReplaceKey = [
   ['value', 'code']
 ]
 state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
-console.log('state.proMunAreaList', state.proMunAreaList)
+// console.log('state.proMunAreaList', state.proMunAreaList)
 
 //新增成员
 const addMajorIndividualFN = async () => {
@@ -2818,14 +2822,13 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 //初始化 获取默认的 columns
 state.columns = getColumns(state, PageKeyObj.member, allColumns, state.defaultKeys)
 
-/*一维数组对象模糊搜索
-  dataList 为一维数组数据结构
-  value 为input框的输入值
-  type 为指定想要搜索的字段名，array格式 ["name", "number"];
+/**一维数组对象模糊搜索
+ * dataList 为一维数组数据结构
+ * value 为input框的输入值
+ *  type 为指定想要搜索的字段名，array格式 ["name", "number"];
  */
 function filterOne(dataList, value, type) {
   var s = dataList.filter(function (item, index, arr) {
-    // console.log(item)
     for (let j = 0; j < type.length; j++) {
       if (item[type[j]] != undefined || item[type[j]] != null) {
         if (item[type[j]].indexOf(value) >= 0) {
@@ -2838,21 +2841,33 @@ function filterOne(dataList, value, type) {
 }
 
 const sendCurrentSelect = (currentKey) => {
-  console.log('currentKey==================>', currentKey)
-  debugger
-  const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
-  console.log('organizationList', organizationList)
-  const tempItem = state.organizationList.filter((item) => item.id === currentKey)
+  // console.log('currentKey==================>', currentKey)
+  // console.log('typeof currentKey', typeof currentKey)
+  // const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
+  // console.log('organizationList', organizationList)
+  //currentKey 有值 取本身id以及所有子项id  currentKey无值 取所有id
+  // console.log('state.organizationList!!!!!!!!!!', state.organizationList)
+  //Number强转 路由跳转进来为String
+  const tempItem = state.organizationList.filter((item) => item.id === Number(currentKey))
+  // console.log('tempItem', tempItem)
   const tempComponent = tempItem[0]?.component
-  console.log('tempItem', tempItem)
-  console.log('tempComponent', tempComponent)
   const needArr = filterOne(state.organizationList, tempComponent, ['component'])
-  console.log('needArr===>', needArr)
   const tempArr = []
-  needArr.map((item) => {
-    tempArr.push(item.id)
-  })
-  queryParams.organization = tempArr
+  // console.log('needArr!!!!!!!', needArr)
+  if (currentKey) {
+    needArr.map((item) => {
+      tempArr.push(item.id)
+    })
+    queryParams.organization = tempArr
+    // console.log('tempArr11111111111111111111', tempArr)
+  } else {
+    state.organizationList.map((item) => {
+      tempArr.push(item.id)
+    })
+    queryParams.organization = tempArr
+    // console.log('tempArr222222222222222222222222222222', tempArr)
+  }
+  // console.log('queryParams.organization', queryParams.organization)
   getList()
 }
 
@@ -2882,7 +2897,7 @@ interface DataItem {
 const getOrganizationListFN = async () => {
   const res = await getSimpleOrganizationList()
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
-  // console.log('res', res)
+  console.log('res', res)
   // console.log('organization', organizationList)
 
   state.organizationList = res
@@ -2898,12 +2913,14 @@ const getOrganizationListFN = async () => {
   //...TODO:这里有空再换 冗余了 本来是用 component 后面又换成id了
   state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
-  console.log('组织机构List', state.organizationList)
+  // console.log('组织机构List', state.organizationList)
   console.log('组织机构tempArr', state.organizationOptions)
-  console.log('组织机构取ID', state.organizationIDOptions)
+  // console.log('组织机构取ID', state.organizationIDOptions)
+  console.log('组织机构Liststate.organizationList', state.organizationList)
+  return res
 }
 
-getOrganizationListFN()
+// getOrganizationListFN()
 
 //获取岗位类型 配置角色 人员类型
 const getAllType = async () => {
@@ -2916,7 +2933,7 @@ const getAllType = async () => {
   //获取数据字典
   const dictRes = await getOrganizationTypeList()
 
-  console.log('dictRes', dictRes)
+  // console.log('dictRes', dictRes)
 
   //人员类型
   const tempMemberType = dictRes.filter((item) => item.dictType === 'person_type')
@@ -2960,17 +2977,17 @@ const getAllType = async () => {
     state.partPostOptionsText = tempPostType
     state.barnOptions = tempBarnOptions
   })
-
-  console.log('岗位类型', res)
-  console.log('岗位类型D', state.postTypeOptions)
-  console.log('配置角色', rolesRes)
-  console.log('配置角色D', state.configureRolesOptions)
-  console.log('人员类型', tempMemberType)
-  console.log('人员类型D', state.memberTypeOptions)
-  console.log('岗位列表', postList)
-  console.log('岗位列表D', state.postListOptions)
-  console.log('岗位类型主岗/兼岗', tempPostType)
-  console.log('所属品牌', tempBarnOptions)
+  //
+  // console.log('岗位类型', res)
+  // console.log('岗位类型D', state.postTypeOptions)
+  // console.log('配置角色', rolesRes)
+  // console.log('配置角色D', state.configureRolesOptions)
+  // console.log('人员类型', tempMemberType)
+  // console.log('人员类型D', state.memberTypeOptions)
+  // console.log('岗位列表', postList)
+  // console.log('岗位列表D', state.postListOptions)
+  // console.log('岗位类型主岗/兼岗', tempPostType)
+  // console.log('所属品牌', tempBarnOptions)
 }
 
 getAllType()
@@ -3247,16 +3264,23 @@ const batchAssignUserRole = (): void => {
 }
 // 批量设角色
 
-onMounted(() => {
-  const $route = useRoute() // 用于接收路由参数的
-  console.log('$route==========>', $route)
-  if ($route.name === 'Member') {
-    const { isOnJob = '0', organization = '' } = $route.query
+onMounted(async () => {
+  state.organizationList = await getOrganizationListFN()
+  let organizationId = ''
+  //机构管理 员工数跳转进来
+  if ($router.options.history.state?.back === '/system/organization') {
+    const { isOnJob = '0', organization = null } = $route?.query || {}
     queryParams.isOnJob = isOnJob
-    queryParams.organization = organization
-    getList()
-    console.log('成员管理进！！！！！')
+    organizationId = organization
+    nextTick(()=>{
+      state.selectedKeys = [Number(organization)]
+      console.log('state.selectedKeys', state.selectedKeys)
+    })
+  } else if ($router.options.history.state?.back === '/system/post') {
+    //岗位管理 页面跳转进来
   }
+
+  sendCurrentSelect(organizationId)
 })
 </script>
 

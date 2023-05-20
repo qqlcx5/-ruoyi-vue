@@ -2306,9 +2306,10 @@ const jumpToMember = (record) => {
   console.log('员工数record', record)
   $router.push({
     path: '/system/member',
+    //使用query 而不使用 params 是为了跳转后刷新 参数丢失
     query: {
       isOnJob: '0', //在职状态
-      organization: record.component //机构
+      organization: record.id //机构
     }
   })
 }

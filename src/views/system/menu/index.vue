@@ -120,7 +120,7 @@
         </template>
         <!--  员工数   -->
         <template v-if="column.key === 'employeesNumber'">
-          <div class="employees-Number">{{ record?.userCount }}</div>
+          <div class="employees-Number" @click="openDetails(record)">{{ record?.userCount }}</div>
         </template>
         <!--  菜单状态   -->
         <template v-if="column.key === 'status'">
@@ -478,6 +478,61 @@
     </div>
   </a-modal>
 
+  <!-- 员工数modal  -->
+  <a-modal
+    v-model:visible="state.isShowEmployees"
+    wrapClassName="details-modal"
+    title="员工数"
+    width="763px"
+    :bodyStyle="{
+      margin: '0',
+      padding: '14px 25px',
+      overflow: 'auto'
+    }"
+    :footer="null"
+  >
+    <div> 按钮：线索管理-线索列表-新增（共配置5个员工） </div>
+    <div class="total-search-content">
+      <div class="search-content">
+        <div class="search-item">
+          <div class="item-label">岗位：</div>
+          <div class="item-condition">
+            <a-input
+              class="width-100"
+              v-model:value="queryParams.memberName"
+              placeholder="请输入岗位名称搜索"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="search-content">
+        <div class="search-item">
+          <div class="item-label">姓名：</div>
+          <div class="item-condition">
+            <a-input
+              class="width-100"
+              v-model:value="queryParams.memberName"
+              placeholder="请输入员工名称搜索"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="search-btn-content">
+        <a-button type="primary" html-type="submit"  @click="search">搜索</a-button>
+        <a-button >重置</a-button>
+      </div>
+    </div>
+
+    <div class="employees-content">
+      <div class="employees-name-content">
+        <template v-for="item in state.testArr">
+          <div v-html="item.name" class="employees-name"></div>
+        </template>
+      </div>
+    </div>
+  </a-modal>
+
   <!--  定制列  -->
   <CustomColumn
     v-if="state.isShowCustomColumnModal"
@@ -650,6 +705,7 @@ const state = reactive({
   isFullScreen: false, //全屏
   isShow: false,
   isShowDetails: false, //详情modal
+  isShowEmployees: false, //员工数modal
   currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
   isShowStatus: false, //table 状态开启关闭 modal
@@ -680,7 +736,19 @@ const state = reactive({
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [],
   defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'visible', 'operation'], //定制列默认的keys
-  changedColumnsObj: {} //定制列组件接收到的当前列信息
+  changedColumnsObj: {}, //定制列组件接收到的当前列信息
+  testArr: [
+    {
+      name: '张三'
+    },
+    {
+      name: '李四'
+    },
+    {
+      name: '王四四'
+    }
+  ],
+  searchKeyword: ''
 })
 
 const layout = {
@@ -1219,6 +1287,21 @@ const addEditStatusChange = (checked: boolean, event: Event) => {
   }
 }
 
+//员工数打开 弹窗
+const openDetails = (record) => {
+  state.isShowEmployees = true
+}
+
+//员工数 高亮搜索
+const search = () => {
+  console.log('state.searchKeyword', state.searchKeyword)
+  const pattern = new RegExp(queryParams.memberName, 'gi')
+  state.testArr.map((item) => {
+    item.name = item.name.replace(pattern, `<span class="highlight">$&</span>`)
+  })
+  console.log('state.testArr', state.testArr)
+}
+
 watch(
   () => state.formState.type,
   () => {
@@ -1457,6 +1540,76 @@ watch(
 .icon-tip {
   margin-left: 8px;
 }
+//========================== 员工数 modal search start ==================================
+.total-search-content {
+  display: flex;
+  //justify-content: space-between;
+}
+
+.search-content {
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  //flex: 1 3 auto;
+}
+
+.search-btn-content {
+  width: 200px;
+  margin-top: 10px;
+  display: flex;
+  //justify-content: space-between;
+  //background: skyblue;
+  //flex: 1 1 auto;
+}
+
+.search-item {
+  display: flex;
+  //flex: 1;
+  margin-top: 10px;
+}
+
+.item-label {
+  width: 45px;
+  //margin-left: 10px;
+  display: flex;
+  //justify-content: flex-start;
+  //justify-content: flex-end;
+  align-items: center;
+}
+
+.item-condition {
+  width: 180px;
+}
+
+.flex-style {
+  display: flex;
+}
+
+.select-input {
+  width: 270px;
+}
+
+.width-70 {
+  width: 70px;
+}
+
+.width-180 {
+  width: 180px;
+  flex: 1;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+//========================== 员工数 modal search end ==================================
+.employees-content {
+  margin-top: 40px;
+  width: 100%;
+  height: 200px;
+  background-color: rgba(244, 246, 247, 1);
+}
 </style>
 
 <style lang="scss">
@@ -1494,6 +1647,23 @@ watch(
   }
   .ant-modal-body {
     flex: 1;
+  }
+  //员工姓名高亮
+  .highlight {
+    color: red;
+  }
+  .employees-name-content {
+    display: flex;
+  }
+  .employees-name {
+    margin-right: 10px;
+    padding: 4px 8px;
+    text-align: center;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 1);
+    border: 1px solid rgba(221, 223, 229, 1);
+    color: rgba(102, 102, 102, 1);
+    font-family: PingFangSC-Regular;
   }
 }
 </style>

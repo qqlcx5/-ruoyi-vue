@@ -47,79 +47,15 @@ interface treeDataType {
 
 interface TreeDataProps {
   treeData?: Array<treeDataType>
+  selectedKeys?: Array<any>
+  testArr?: Array<any>
 }
 
 const props = withDefaults(defineProps<TreeDataProps>(), {
-  treeData: [
-    {
-      title: '福建省ABC集团',
-      key: 'ABC',
-      children: [
-        {
-          title: '集团总部',
-          key: 'ZB',
-          children: [
-            {
-              title: '公司1',
-              key: 'GS1'
-            },
-            {
-              title: '公司2',
-              key: 'GS2'
-            }
-          ]
-        },
-        {
-          title: '厦门分公司',
-          key: 'XMFGS',
-          children: [
-            {
-              title: '所有部门',
-              key: 'SYBM',
-              children: [
-                {
-                  title: '研发部',
-                  key: 'YFB'
-                },
-                {
-                  title: '产品运营部',
-                  key: 'CPYYB'
-                }
-              ]
-            },
-            {
-              title: '中埔哈佛红蓝标4S店',
-              key: '4S1',
-              children: [
-                {
-                  title: '分店1',
-                  key: 'FD1'
-                },
-                {
-                  title: '分店2',
-                  key: 'FD2'
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      title: '厦航集团',
-      key: 'XH',
-      children: [
-        {
-          title: '厦航1',
-          key: 'XH1'
-        },
-        {
-          title: '厦航2',
-          key: 'XH2'
-        }
-      ]
-    }
-  ]
+  treeData: [],
+  selectedKeys: [],
+  isShow: false,
+  testArr: []
 })
 
 const emit = defineEmits<{
@@ -276,7 +212,28 @@ watch(
   () => {
     state.treeData = cloneDeep(props.treeData)
     // state.selectedKeys = [cloneDeep(props.treeData[0]?.key)]
-    state.selectedKeys = []
+    // console.log('props.treeData[0]?.key',  props.treeData[0]?.key)
+    // console.log('typeof props.treeData[0]?.key', typeof props.treeData[0]?.key)
+  },
+  {
+    immediate: true
+  }
+)
+
+watch(
+  () => props.selectedKeys,
+  () => {
+    nextTick(() => {
+      const tempArr = []
+      props.selectedKeys?.map((item) => {
+        tempArr.push(item)
+      })
+      state.selectedKeys = tempArr
+      expandedKeys.value = tempArr
+    })
+  },
+  {
+    immediate: true
   }
 )
 </script>
