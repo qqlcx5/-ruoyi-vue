@@ -1549,7 +1549,7 @@ const addMajorIndividualFN = async () => {
     } else {
       params['id'] = state.formState.id
       res = await updateEditMajorIndividual(params)
-      message.success('编辑成功')
+      message.success('修改成功')
     }
 
     closeModal()
@@ -1598,7 +1598,7 @@ const PermissionOk = async () => {
   } else {
     params['id'] = state.editPermissionID
     await editTenantPackage(params)
-    message.success('编辑成功')
+    message.success('修改成功')
   }
   await getList()
   closePermissionModal()

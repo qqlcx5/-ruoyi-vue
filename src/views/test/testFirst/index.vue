@@ -822,7 +822,7 @@ const saveForm = async () => {
       message.success('新增成功')
     } else {
       res = await MenuApi.updateMenu(params)
-      message.success('编辑成功')
+      message.success('修改成功')
     }
 
     closeModal()

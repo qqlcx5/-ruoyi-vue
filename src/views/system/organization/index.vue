@@ -123,9 +123,7 @@
       <template #bodyCell="{ column, record }">
         <!--  员工数  -->
         <template v-if="column?.key === 'employeesNumber'">
-          <div class="employees-Number" @click="jumpToMember(record)"
-            >{{ record.staffCount }}123</div
-          >
+          <div class="employees-Number" @click="jumpToMember(record)">{{ record.staffCount }}</div>
         </template>
 
         <!--  可用名额   -->
@@ -1499,7 +1497,7 @@ const addMajorIndividualFN = async () => {
     } else {
       params['id'] = state.formState.id
       res = await updateOrganization(params)
-      message.success('编辑成功')
+      message.success('修改成功')
     }
 
     closeModal()
@@ -1625,7 +1623,7 @@ const PermissionOk = async () => {
   } else {
     params['id'] = state.detailsRecord.relVO?.id
     await updateAttribute(params)
-    message.success('编辑成功')
+    message.success('修改成功')
   }
   await getList()
   closePermissionModal()

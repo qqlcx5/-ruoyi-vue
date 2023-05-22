@@ -1207,7 +1207,7 @@ const state = reactive({
   ], //成员姓名限定中文
   organizationList: [], //左侧组织机构 List 用于过滤查找 当前选中的子级id
   selectedKeys: [], //左侧 机构选中的
-  testArr:[1,2,3,4],
+  testArr: [1, 2, 3, 4],
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1367,6 +1367,15 @@ const allColumns = [
     width: 200,
     dataIndex: 'departmentPost',
     key: 'departmentPost',
+    resizable: true,
+    ellipsis: true,
+    sort: 4
+  },
+  {
+    title: '入职时间',
+    width: 100,
+    dataIndex: 'entryTime',
+    key: 'entryTime',
     resizable: true,
     ellipsis: true,
     sort: 4
@@ -1544,6 +1553,7 @@ const getList = async () => {
       item.isOnJob = item.userStatus === 0 ? '在职' : '离职'
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
+      item.entryTime = item.onboardingTime //入职时间
     })
 
     console.log('state.tableDataList', state.tableDataList)
@@ -2820,6 +2830,9 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 }
 
 //初始化 获取默认的 columns
+allColumns.map((item, index) => {
+  item.sort = index + 1
+})
 state.columns = getColumns(state, PageKeyObj.member, allColumns, state.defaultKeys)
 
 /**一维数组对象模糊搜索
@@ -3272,7 +3285,7 @@ onMounted(async () => {
     const { isOnJob = '0', organization = null } = $route?.query || {}
     queryParams.isOnJob = isOnJob
     organizationId = organization
-    nextTick(()=>{
+    nextTick(() => {
       state.selectedKeys = [Number(organization)]
       console.log('state.selectedKeys', state.selectedKeys)
     })

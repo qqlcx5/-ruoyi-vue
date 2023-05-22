@@ -483,23 +483,40 @@
     v-model:visible="state.isShowEmployees"
     wrapClassName="details-modal"
     title="员工数"
-    width="763px"
+    width="940px"
     :bodyStyle="{
       margin: '0',
       padding: '14px 25px',
       overflow: 'auto'
     }"
     :footer="null"
+    @cancel="closeEmployees"
   >
-    <div> 按钮：线索管理-线索列表-新增（共配置5个员工） </div>
+    <div class="role-style"> 按钮：线索管理-线索列表-新增（共配置5个员工） </div>
     <div class="total-search-content">
+      <div class="search-content">
+        <div class="search-item">
+          <div class="item-label">角色：</div>
+          <div class="item-condition">
+            <a-select
+              v-model:value="state.configureRoles"
+              class="width-100"
+              :options="state.configureRolesOptions"
+              mode="multiple"
+              placeholder="请选择"
+              :getPopupContainer="(triggerNode) => (triggerNode.parentElement)"
+            />
+          </div>
+        </div>
+      </div>
+
       <div class="search-content">
         <div class="search-item">
           <div class="item-label">岗位：</div>
           <div class="item-condition">
             <a-input
               class="width-100"
-              v-model:value="queryParams.memberName"
+              v-model:value="state.post"
               placeholder="请输入岗位名称搜索"
             />
           </div>
@@ -511,7 +528,7 @@
           <div class="item-condition">
             <a-input
               class="width-100"
-              v-model:value="queryParams.memberName"
+              v-model:value="state.memberName"
               placeholder="请输入员工名称搜索"
             />
           </div>
@@ -519,17 +536,34 @@
       </div>
 
       <div class="search-btn-content">
-        <a-button type="primary" html-type="submit"  @click="search">搜索</a-button>
-        <a-button >重置</a-button>
+        <a-button type="primary" html-type="submit" @click="search">搜索</a-button>
+        <a-button>重置</a-button>
       </div>
     </div>
 
     <div class="employees-content">
-      <div class="employees-name-content">
-        <template v-for="item in state.testArr">
-          <div v-html="item.name" class="employees-name"></div>
-        </template>
+      <div
+        v-for="(item, index) in state.testArr"
+        :key="`employees${index}`"
+        class="employees-info-card"
+      >
+        <div v-html="item.role" class="role-style"></div>
+        <div v-html="item.post" class="post-style"></div>
+
+        <div class="employees-name-content">
+          <template
+            v-for="(childrenItem, childrenIndex) in item.allInfo"
+            :key="`employees${index}-${childrenIndex}`"
+          >
+            <div v-html="childrenItem.name" class="employees-name"></div>
+          </template>
+        </div>
       </div>
+      <!--      <div class="employees-name-content">-->
+      <!--        <template v-for="item in state.testArr">-->
+      <!--          <div v-html="item.name" class="employees-name"></div>-->
+      <!--        </template>-->
+      <!--      </div>-->
     </div>
   </a-modal>
 
@@ -563,7 +597,9 @@ import {
 import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns, toTreeCount } from '@/utils/utils'
+import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
+import { cloneDeep } from 'lodash-es'
+import { getRolesList } from '@/api/system/member'
 
 const queryParams = reactive({
   name: undefined,
@@ -737,18 +773,74 @@ const state = reactive({
   columns: [],
   defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'visible', 'operation'], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
-  testArr: [
+  configureRolesOptions: [], //角色 Options tree  员工数 modal
+  configureRoles: [], //角色 选中  员工数 modal
+  employeesInfo: [
     {
-      name: '张三'
+      role: '角色：销售顾问 - 仅看本部门及以下',
+      post: '销售顾问（3）：',
+      allInfo: [
+        {
+          name: '张三'
+        },
+        {
+          name: '李四'
+        },
+        {
+          name: '王四四'
+        }
+      ]
     },
     {
-      name: '李四'
-    },
-    {
-      name: '王四四'
+      role: '角色：销售顾问 - 看所有人',
+      post: '前端（3）：',
+      allInfo: [
+        {
+          name: '张1'
+        },
+        {
+          name: '李2'
+        },
+        {
+          name: '王3'
+        }
+      ]
     }
   ],
-  searchKeyword: ''
+  testArr: [
+    {
+      role: '角色：销售顾问 - 仅看本部门及以下',
+      post: '销售顾问（3）：',
+      allInfo: [
+        {
+          name: '张三'
+        },
+        {
+          name: '李四'
+        },
+        {
+          name: '王四四'
+        }
+      ]
+    },
+    {
+      role: '角色：销售顾问 - 看所有人',
+      post: '前端（3）：',
+      allInfo: [
+        {
+          name: '张1'
+        },
+        {
+          name: '李2'
+        },
+        {
+          name: '王3'
+        }
+      ]
+    }
+  ],
+  memberName: '', //员工数 modal 姓名
+  post: '' //岗位 modal 姓名
 })
 
 const layout = {
@@ -914,7 +1006,7 @@ const saveForm = async () => {
       message.success('新增成功')
     } else {
       res = await MenuApi.updateMenu(params)
-      message.success('编辑成功')
+      message.success('修改成功')
     }
 
     closeModal()
@@ -1288,18 +1380,99 @@ const addEditStatusChange = (checked: boolean, event: Event) => {
 }
 
 //员工数打开 弹窗
-const openDetails = (record) => {
+const openDetails = async (record) => {
+  //角色信息
+  const rolesRes = await getRolesList()
+  const needReplacePartPostKey = [
+    ['label', 'name'],
+    ['value', 'id']
+  ]
+  state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
   state.isShowEmployees = true
 }
 
 //员工数 高亮搜索
 const search = () => {
-  console.log('state.searchKeyword', state.searchKeyword)
-  const pattern = new RegExp(queryParams.memberName, 'gi')
+  console.log('state.memberName', state.memberName)
+  state.testArr = cloneDeep(state.employeesInfo)
+  const pattern = new RegExp(state.memberName, 'gi')
+  // state.testArr.map((item) => {
+  //   item.name = item.name.replace(pattern, `<span class="highlight">$&</span>`)
+  // })
+  const patternPost = new RegExp(state.post, 'gi')
   state.testArr.map((item) => {
-    item.name = item.name.replace(pattern, `<span class="highlight">$&</span>`)
+    item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
+    item.allInfo.map((childrenItem) => {
+      childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
+    })
   })
   console.log('state.testArr', state.testArr)
+}
+
+//员工数modal
+const closeEmployees = () => {
+  state.employeesInfo = [
+    {
+      post: '销售顾问（3）：',
+      allInfo: [
+        {
+          name: '张三'
+        },
+        {
+          name: '李四'
+        },
+        {
+          name: '王四四'
+        }
+      ]
+    },
+    {
+      post: '前端（3）：',
+      allInfo: [
+        {
+          name: '张1'
+        },
+        {
+          name: '李2'
+        },
+        {
+          name: '王3'
+        }
+      ]
+    }
+  ]
+  state.testArr = [
+    {
+      post: '销售顾问（3）：',
+      allInfo: [
+        {
+          name: '张三'
+        },
+        {
+          name: '李四'
+        },
+        {
+          name: '王四四'
+        }
+      ]
+    },
+    {
+      post: '前端（3）：',
+      allInfo: [
+        {
+          name: '张1'
+        },
+        {
+          name: '李2'
+        },
+        {
+          name: '王3'
+        }
+      ]
+    }
+  ]
+  state.memberName = '' //员工数 modal 姓名
+  state.post = '' //岗位 modal 姓名
 }
 
 watch(
@@ -1607,7 +1780,7 @@ watch(
 .employees-content {
   margin-top: 40px;
   width: 100%;
-  height: 200px;
+  min-height: 200px;
   background-color: rgba(244, 246, 247, 1);
 }
 </style>
@@ -1652,11 +1825,25 @@ watch(
   .highlight {
     color: red;
   }
+  .role-style {
+    color: rgba(51, 51, 51, 1);
+    font-size: 16px;
+    font-weight: bold;
+    font-family: PingFangSC-Medium;
+  }
+  .post-style {
+    font-size: 14px;
+    font-family: PingFangSC-Regular;
+  }
   .employees-name-content {
     display: flex;
   }
+  .employees-info-card {
+    padding: 15px;
+  }
   .employees-name {
     margin-right: 10px;
+    margin-top: 19px;
     padding: 4px 8px;
     text-align: center;
     border-radius: 4px;
