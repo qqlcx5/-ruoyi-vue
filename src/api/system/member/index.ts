@@ -10,9 +10,19 @@ export interface MajorIndividual {
   expireTime?: Date
 }
 
-// 查询成员管理列表
+// 查询成员管理列表分页
 export const getMemberList = (params: MajorIndividual) => {
   return request.get({ url: '/system/user/extra/page', params })
+}
+
+// 查询成员管理列表不分页
+export const getMemberAllList = (params: MajorIndividual) => {
+  return request.get({ url: '/system/user/list-all-simple', params })
+}
+
+// 成员id获取手机号
+export const getMemberPhoneList = (params: MajorIndividual) => {
+  return request.get({ url: '/system/user/extra/get_phone_list', params })
 }
 
 // 获取岗位类型

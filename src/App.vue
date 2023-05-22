@@ -24,7 +24,7 @@ const setDefaultTheme = () => {
 setDefaultTheme()
 
 const getPopupContainer = () => {
-  return document.getElementById('card-content');
+  return document.getElementById('card-content')
 }
 
 watchEffect(() => {
@@ -34,18 +34,42 @@ watchEffect(() => {
 
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import 'dayjs/locale/zh-cn'
+import emptyImg from '@/assets/imgs/empty.png'
 </script>
 <template>
   <!--  element plus 全局配置-->
   <ConfigGlobal :size="currentSize">
     <!--  antdV 全局配置  -->
-    <a-config-provider :componentSize="currentSize" :locale="zhCN" :get-popup-container="getPopupContainer">
+    <a-config-provider
+      :componentSize="currentSize"
+      :locale="zhCN"
+      :get-popup-container="getPopupContainer"
+    >
+      <template #renderEmpty>
+        <div class="empty-content">
+          <a-empty
+            :image="emptyImg"
+            :image-style="{
+              height: '100px'
+            }"
+          >
+            <template #description>
+              <span> 暂无数据 </span>
+            </template>
+          </a-empty>
+        </div>
+      </template>
       <RouterView :class="greyMode ? `${prefixCls}-grey-mode` : ''" />
     </a-config-provider>
   </ConfigGlobal>
 </template>
 <style lang="scss">
 @import '@/styles/el-plus-var.scss';
+.empty-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 $prefix-cls: #{$namespace}-app;
 .size {
@@ -59,7 +83,7 @@ body {
   overflow: hidden;
   @extend .size;
   //打开modal后body出现100%-17px(滚动条) 产生原因未知 没空找 直接这里改
-  width: 100%!important;
+  width: 100% !important;
 
   #app {
     @extend .size;

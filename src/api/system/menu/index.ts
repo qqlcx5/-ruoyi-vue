@@ -28,6 +28,11 @@ export const getMenuList = (params) => {
   return request.get({ url: '/system/menu/list', params })
 }
 
+// 通过菜单查询员工数量
+export const getMemberNumList = (params) => {
+  return request.get({ url: '/system/tenant-menu/get/user/extra', params })
+}
+
 // 获取菜单详情
 export const getMenu = (id: number) => {
   return request.get({ url: '/system/menu/get?id=' + id })

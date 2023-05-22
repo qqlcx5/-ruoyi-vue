@@ -102,6 +102,7 @@
                   :options="state.configureRolesOptions"
                   mode="multiple"
                   placeholder="请选择"
+                  optionFilterProp="label"
                 />
               </div>
             </div>
@@ -208,6 +209,7 @@
 
         <a-table
           v-if="state.refreshTable"
+          class="table-list"
           :columns="state.columns"
           :data-source="state.tableDataList"
           :scroll="{ x: '100%' }"
@@ -262,9 +264,9 @@
             <template v-if="column?.key === 'memberPhone'">
               <div v-for="item in record?.memberPhoneList" class="phone-div-content">
                 <div class="phone-div">{{ item.phoneNum }}</div>
-                <a-tag :color="item.type === '1' ? '#35C6D9' : '#B05EFF'">{{
-                  item.phoneType
-                }}</a-tag>
+                <div :class="item.type === '1' ? 'private-tag' : 'company-tag'"
+                  >{{ item.phoneType }}
+                </div>
               </div>
             </template>
 
@@ -272,19 +274,26 @@
             <template v-if="column?.key === 'departmentPost'">
               <div v-for="item in record?.departmentPostList" class="phone-div-content">
                 <div class="phone-div">{{ item.department }}/{{ item.post }}</div>
-                <a-tag :color="item.type === '1' ? '#E7A23C' : '#52C41A'">{{
-                  item.typeText
-                }}</a-tag>
+                <div :class="item.type === '1' ? 'principal-tag' : 'part-tag'"
+                  >{{ item.typeText }}
+                </div>
               </div>
             </template>
 
             <!--  配置角色   -->
             <template v-if="column?.key === 'configureRoles'">
-              <a-tag
-                v-for="item in record?.roleVOList"
-                :color="item.type === '1' ? '#0081FF' : '#0081FF'"
-                >{{ item.roleName }}</a-tag
-              >
+              <!--              <a-tag-->
+              <!--                v-for="item in record?.roleVOList"-->
+              <!--                :color="item.type === '1' ? '#0081FF' : '#0081FF'"-->
+              <!--                >{{ item.roleName }}</a-tag-->
+              <!--              >-->
+              <div class="phone-div-content">
+                <div
+                  :class="item.type === '1' ? 'role-tag' : 'role-close-tag'"
+                  v-for="item in record?.roleVOList"
+                  >{{ item.roleName }}
+                </div>
+              </div>
             </template>
 
             <!--  状态   -->
@@ -713,8 +722,9 @@
           mode="multiple"
           style="width: 100%"
           placeholder="请选择角色"
-          :options="state.configureRolesOptions"
+          :options="state.configureRolesNewOptions"
           @change="rolesChange"
+          optionFilterProp="label"
         />
       </div>
     </div>
@@ -772,6 +782,7 @@
     wrapClassName="details-modal"
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
+    :footer="null"
   >
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
       <div class="flex-space">
@@ -1031,14 +1042,14 @@ const queryParams = reactive({
   memberName: null, //成员姓名
   memberPhone: null, //联系电话
   postType: null, //岗位类型
-  partPost: '2', //是否有兼岗 主岗 兼岗
+  partPost: null, //是否有兼岗 主岗 兼岗
   post: null, //岗位
   department: null, //部门
   configureRoles: [], //配置角色
-  memberType: 'all', //人员类型
-  postStatus: '', //岗位状态
-  isOnJob: 'all', //在职状态
-  userType: 'all' //账号类型
+  memberType: null, //人员类型
+  postStatus: null, //岗位状态
+  isOnJob: null, //在职状态
+  userType: null //账号类型
 })
 //新增编辑
 const formState = reactive({
@@ -1136,10 +1147,10 @@ const state = reactive({
   postTypeSpecifyOptions: [], //岗位类型 对应的岗位Options
   barnOptions: [], //所属品牌Options
   partPostOptions: [
-    {
-      value: '2',
-      label: '全部'
-    },
+    // {
+    //   value: '2',
+    //   label: '全部'
+    // },
     {
       value: '0',
       label: '是'
@@ -1150,6 +1161,7 @@ const state = reactive({
     }
   ], //是否兼岗 Options tree
   configureRolesOptions: [], //配置角色 Options tree
+  configureRolesNewOptions: [], //分配角色 Options tree
   memberTypeOptions: [
     {
       value: 'full_members',
@@ -1161,10 +1173,10 @@ const state = reactive({
     }
   ], //人员类型 Options tree
   onJobOptions: [
-    {
-      label: '全部',
-      value: 'all'
-    },
+    // {
+    //   label: '全部',
+    //   value: 'all'
+    // },
     {
       value: '0',
       label: '在职'
@@ -1175,10 +1187,10 @@ const state = reactive({
     }
   ], //在职状态 Options tree
   userTypeOptions: [
-    {
-      label: '全部',
-      value: 'all'
-    },
+    // {
+    //   label: '全部',
+    //   value: 'all'
+    // },
     {
       value: '0',
       label: '开启'
@@ -1594,14 +1606,14 @@ const resetQuery = () => {
     memberName: null, //成员姓名
     memberPhone: null, //联系电话
     postType: null, //岗位类型
-    partPost: '2', //是否有兼岗 主岗 兼岗
+    partPost: null, //是否有兼岗 主岗 兼岗
     post: null, //岗位
     department: null, //部门
     configureRoles: [], //配置角色
-    memberType: 'all', //人员类型
-    postStatus: '', //岗位状态
-    isOnJob: 'all', //在职状态
-    userType: 'all' //账号类型
+    memberType: null, //人员类型
+    postStatus: null, //岗位状态
+    isOnJob: null, //在职状态
+    userType: null //账号类型
   }
   handleQuery()
 }
@@ -2968,11 +2980,12 @@ const getAllType = async () => {
   await nextTick(() => {
     state.postTypeOptions = reconstructionArrayObject(res, needReplaceKey)
     state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
+    state.configureRolesNewOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
     state.configureRolesOptions = [
-      {
-        label: '全部',
-        value: 'all'
-      },
+      // {
+      //   label: '全部',
+      //   value: 'all'
+      // },
       {
         label: '空',
         value: 'empty'
@@ -2980,10 +2993,10 @@ const getAllType = async () => {
       ...state.configureRolesOptions
     ]
     state.memberTypeOptions = [
-      {
-        label: '全部',
-        value: 'all'
-      },
+      // {
+      //   label: '全部',
+      //   value: 'all'
+      // },
       ...tempMemberType
     ]
     state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
@@ -3382,6 +3395,7 @@ onMounted(async () => {
   height: 100%;
   overflow: auto;
   //background: slateblue;
+  background: rgb(255, 255, 255);
   flex: 4 1 auto;
   //margin-right: 10px;
   //flex-shrink: 3;
@@ -3916,6 +3930,86 @@ onMounted(async () => {
 }
 .width-full {
   width: 100% !important;
+}
+////表格空数据时大小
+//:deep(.table-list .empty-content) {
+//  min-height: 480px;
+//}
+//私人
+.private-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  width: 40px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgb(244, 234, 253);
+  color: rgba(176, 94, 255, 1);
+}
+//公司
+.company-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(53, 198, 217, 0.24);
+  color: rgba(53, 198, 217, 1);
+}
+//主岗
+.principal-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  width: 40px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(237, 249, 232, 1);
+  color: rgba(82, 196, 26, 1);
+}
+//兼岗
+.part-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  width: 40px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(253, 246, 235, 1);
+  color: rgba(231, 162, 60, 1);
+}
+//配置角色tag
+.role-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+  padding: 8px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(240, 248, 255, 1);
+  border: 0.5px solid rgba(0, 129, 255, 1);
+  color: rgba(0, 129, 255, 1);
+}
+.role-close-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+  padding: 8px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(240, 248, 255, 1);
+  border: 0.5px solid rgba(113, 185, 255, 1);
+  color: rgba(0, 129, 255, 0.52);
+}
+:deep(.ant-select-multiple .ant-select-selection-item-remove) {
+  display: flex;
+  align-items: center;
 }
 </style>
 

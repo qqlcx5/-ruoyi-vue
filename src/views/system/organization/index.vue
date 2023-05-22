@@ -230,7 +230,7 @@
             v-model:value="state.formState.name"
             show-count
             :maxlength="20"
-            placeholder="请输入机构编码"
+            placeholder="请输入机构名称"
           />
         </a-form-item>
 
@@ -256,16 +256,40 @@
           />
         </a-form-item>
 
+        <!--        <a-form-item-->
+        <!--          :label="`负责人`"-->
+        <!--          name="contactName"-->
+        <!--          :rules="[{ required: true, message: `负责人不能为空` }]"-->
+        <!--        >-->
+        <!--          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />-->
+        <!--        </a-form-item>-->
+
         <a-form-item
           :label="`负责人`"
           name="contactName"
           :rules="[{ required: true, message: `负责人不能为空` }]"
         >
-          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />
+          <a-select
+            v-model:value="state.formState.contactName"
+            class="width-100"
+            :options="state.memberOptions"
+            placeholder="请选择负责人"
+            optionFilterProp="label"
+            :getPopupContainer="(triggerNode) => triggerNode.parentElement"
+            @change="getPhoneList"
+          />
         </a-form-item>
 
         <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
-          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />
+          <!--          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />-->
+          <a-select
+            v-model:value="state.formState.contactMobile"
+            class="width-100"
+            :options="state.memberPhoneOptions"
+            placeholder="请选择负责人电话"
+            optionFilterProp="label"
+            :getPopupContainer="(triggerNode) => triggerNode.parentElement"
+          />
         </a-form-item>
 
         <a-form-item label="负责人邮箱" name="contactMail" :rules="state.contactMailRules">
@@ -850,7 +874,13 @@ import { SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
 import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from './pr'
-import { filterTree, getAllIds, reconstructedTreeData, getColumns } from '@/utils/utils'
+import {
+  filterTree,
+  getAllIds,
+  reconstructedTreeData,
+  getColumns,
+  reconstructionArrayObject
+} from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
@@ -870,6 +900,7 @@ import {
   updateOrganization,
   updateOrganizationStatus
 } from '@/api/system/organization'
+import { getMemberPhoneList } from '@/api/system/member/index.ts'
 import { cloneDeep } from 'lodash-es'
 
 const { wsCache } = useCache()
@@ -957,7 +988,6 @@ const contactMailRulesValidator = (rule, value) => {
         resolve()
       }
     } else {
-      console.log('123456')
       resolve()
     }
   })
@@ -1036,8 +1066,8 @@ const state = reactive({
     name: '', //机构名称
     code: '', //机构编码
     abbreviate: '', //机构简称
-    contactName: '', //负责人
-    contactMobile: '', //负责人电话
+    contactName: undefined, //负责人
+    contactMobile: undefined, //负责人电话
     contactMail: '', //负责人邮箱
     sort: 0, //排序
     status: true //状态
@@ -1106,7 +1136,9 @@ const state = reactive({
   ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   detailsRecord: {}, //当前点击的表格record后获取到的机构详情(包括属性)
-  currentType: '-1' //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '4'门店
+  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '4'门店
+  memberOptions: [], //新增修改 负责人list
+  memberPhoneOptions: [] //新增修改 负责人电话list
 })
 
 //获取数据字典
@@ -1120,6 +1152,19 @@ const getOrganizationTypeListFN = async () => {
   state.storeTypeOptions = res.filter((item) => item.dictType === 'store_type')
   //联系方式类型
   state.contactInformationOptions = res.filter((item) => item.dictType === 'contact_type')
+  //获取成员列表(不分页) 新增编辑 modal内的负责人list
+  // const memberRes = await getMemberList()
+  const memberRes = await getMemberAllList()
+  //username nickname
+  const needReplacePartPostKey = [
+    ['tempLabel', 'nickname'],
+    ['value', 'id'],
+    ['memberNum', 'username']
+  ]
+  state.memberOptions = reconstructionArrayObject(memberRes, needReplacePartPostKey)
+  state.memberOptions.map((item) => {
+    item.label = `${item.tempLabel}-${item.memberNum}`
+  })
 }
 //获取机构类型
 getOrganizationTypeListFN()
@@ -1373,8 +1418,8 @@ const closeModal = () => {
     name: '', //机构名称
     code: '', //机构编码
     abbreviate: '', //机构简称
-    contactName: '', //负责人
-    contactMobile: '', //负责人电话
+    contactName: undefined, //负责人
+    contactMobile: undefined, //负责人电话
     contactMail: '', //负责人邮箱
     sort: 0, //排序
     status: true //状态
@@ -1423,7 +1468,8 @@ const edit = async (record, isCloseDetails = false) => {
     name: res.name, //机构名称
     code: res.code, //机构编码
     abbreviate: res.abbreviate, //机构简称
-    contactName: res.contactName, //负责人
+    // contactName: res.contactName, //负责人
+    contactName: res.contactId, //负责人
     contactMobile: res.contactMobile, //负责人电话
     contactMail: res.contactMail, //负责人邮箱
     sort: res.sort, //排序
@@ -1455,7 +1501,6 @@ const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
-  console.log('valid', valid)
   state.addEditLoading = true
   let params = {
     parentId: state.formState.parentId, //上级机构
@@ -1463,8 +1508,10 @@ const addMajorIndividualFN = async () => {
     name: state.formState.name, //机构名称
     code: state.formState.code, //机构编码
     abbreviate: state.formState.abbreviate, //机构简称
-    contactName: state.formState.contactName, //负责人
+    // contactName: state.formState.contactName, //负责人
+    contactId: state.formState.contactName, //负责人
     contactMobile: state.formState.contactMobile, //负责人电话
+    // contactMobile: state.formState.contactMobile, //负责人电话
     contactMail: state.formState.contactMail, //负责人邮箱
     sort: state.formState.sort, //排序
     status: state.formState.status //状态
@@ -2296,12 +2343,26 @@ const removeContactInformation = (item) => {
   }
 }
 
+const getPhoneList = async (value) => {
+  const res = await getMemberPhoneList({ id: value })
+  state.memberPhoneOptions = []
+  res.map((item) => {
+    state.memberPhoneOptions.push({
+      label: item,
+      value: item
+    })
+  })
+  if (res?.length > 0) {
+    state.formState.contactMobile = res[0]
+  }
+}
+
 import { useRouter, useRoute } from 'vue-router'
+import { getMemberAllList, getMemberList } from '@/api/system/member'
 const $router = useRouter() // 这是路由跳转的
 const $route = useRoute() // 用于接收路由参数的
 //员工数 跳转到成员管理
 const jumpToMember = (record) => {
-  console.log('员工数record', record)
   $router.push({
     path: '/system/member',
     //使用query 而不使用 params 是为了跳转后刷新 参数丢失
@@ -2747,6 +2808,7 @@ const jumpToMember = (record) => {
 //员工数
 .employees-Number {
   color: rgba(0, 129, 255, 100);
+  cursor: pointer;
 }
 </style>
 

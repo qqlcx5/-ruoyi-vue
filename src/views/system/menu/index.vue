@@ -23,7 +23,7 @@
         />
       </a-form-item>
       <!-- TODO:权限-->
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
       <a-button @click="resetQuery">重置</a-button>
     </a-form>
   </ContentWrap>
@@ -483,7 +483,7 @@
     v-model:visible="state.isShowEmployees"
     wrapClassName="details-modal"
     title="员工数"
-    width="940px"
+    :width="state.employeesModalInfo.width"
     :bodyStyle="{
       margin: '0',
       padding: '14px 25px',
@@ -492,9 +492,14 @@
     :footer="null"
     @cancel="closeEmployees"
   >
-    <div class="role-style"> 按钮：线索管理-线索列表-新增（共配置5个员工） </div>
+    <div class="role-style">
+      {{ state.employeesModalInfo.typeText }}： {{ state.employeesModalInfo?.dirText
+      }}{{ state.employeesModalInfo?.menuText }}{{ state.employeesModalInfo?.btnText }} （共配置{{
+        state.employeesModalInfo?.employeesNum
+      }}个员工）
+    </div>
     <div class="total-search-content">
-      <div class="search-content">
+      <div class="search-content" v-if="state.employeesModalInfo?.needRole">
         <div class="search-item">
           <div class="item-label">角色：</div>
           <div class="item-condition">
@@ -503,8 +508,10 @@
               class="width-100"
               :options="state.configureRolesOptions"
               mode="multiple"
+              optionFilterProp="label"
+              show-search
               placeholder="请选择"
-              :getPopupContainer="(triggerNode) => (triggerNode.parentElement)"
+              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
           </div>
         </div>
@@ -514,11 +521,21 @@
         <div class="search-item">
           <div class="item-label">岗位：</div>
           <div class="item-condition">
-            <a-input
+            <a-select
+              v-model:value="state.postList"
               class="width-100"
-              v-model:value="state.post"
-              placeholder="请输入岗位名称搜索"
+              :options="state.postListOptions"
+              mode="multiple"
+              optionFilterProp="label"
+              show-search
+              placeholder="请选择"
+              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
+            <!--            <a-input-->
+            <!--              class="width-100"-->
+            <!--              v-model:value="state.post"-->
+            <!--              placeholder="请输入岗位名称搜索"-->
+            <!--            />-->
           </div>
         </div>
       </div>
@@ -537,7 +554,7 @@
 
       <div class="search-btn-content">
         <a-button type="primary" html-type="submit" @click="search">搜索</a-button>
-        <a-button>重置</a-button>
+        <a-button @click="employeesReset">重置</a-button>
       </div>
     </div>
 
@@ -547,7 +564,7 @@
         :key="`employees${index}`"
         class="employees-info-card"
       >
-        <div v-html="item.role" class="role-style"></div>
+        <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
         <div v-html="item.post" class="post-style"></div>
 
         <div class="employees-name-content">
@@ -555,7 +572,10 @@
             v-for="(childrenItem, childrenIndex) in item.allInfo"
             :key="`employees${index}-${childrenIndex}`"
           >
-            <div v-html="childrenItem.name" class="employees-name"></div>
+            <div
+              v-html="childrenItem.name"
+              :class="['employees-name', { 'border-red': childrenItem.needBorder }]"
+            ></div>
           </template>
         </div>
       </div>
@@ -599,7 +619,8 @@ import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
 import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
-import { getRolesList } from '@/api/system/member'
+import { getPostList, getRolesList } from '@/api/system/member'
+import { getMemberNumList } from '@/api/system/menu'
 
 const queryParams = reactive({
   name: undefined,
@@ -735,6 +756,7 @@ const allColumns = [
 ]
 
 const state = reactive({
+  currentRecord: {}, //当前点击的table item
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
@@ -774,6 +796,8 @@ const state = reactive({
   defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'visible', 'operation'], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   configureRolesOptions: [], //角色 Options tree  员工数 modal
+  postListOptions: [], //岗位 Options tree  员工数 modal
+  postList: [], //岗位  选中  员工数 modal
   configureRoles: [], //角色 选中  员工数 modal
   employeesInfo: [
     {
@@ -792,7 +816,7 @@ const state = reactive({
       ]
     },
     {
-      role: '角色：销售顾问 - 看所有人',
+      role: '角色：普通角色 - 看所有人',
       post: '前端（3）：',
       allInfo: [
         {
@@ -824,7 +848,7 @@ const state = reactive({
       ]
     },
     {
-      role: '角色：销售顾问 - 看所有人',
+      role: '角色：普通角色 - 看所有人',
       post: '前端（3）：',
       allInfo: [
         {
@@ -840,7 +864,16 @@ const state = reactive({
     }
   ],
   memberName: '', //员工数 modal 姓名
-  post: '' //岗位 modal 姓名
+  post: '', //岗位 modal 姓名
+  employeesModalInfo: {
+    width: '940px',
+    typeText: '目录',
+    dirText: '',
+    menuText: '',
+    btnText: '',
+    employeesNum: 0,
+    needRole: false
+  } //员工数modal配置信息
 })
 
 const layout = {
@@ -863,6 +896,7 @@ const getList = async (isRefresh = false) => {
     })
     state.menuArr = res
     list.value = handleTree(res)
+    console.log('list.value', list.value)
     if (isRefresh) {
       message.success('刷新成功')
     }
@@ -1381,19 +1415,86 @@ const addEditStatusChange = (checked: boolean, event: Event) => {
 
 //员工数打开 弹窗
 const openDetails = async (record) => {
+  console.log('员工数record', record)
+  state.currentRecord = record
+  // 1 目录 2菜单 3按钮
+  switch (record.type) {
+    case 1:
+      //目录
+      state.employeesModalInfo = {
+        width: '763px',
+        typeText: '目录',
+        dirText: record.name,
+        menuText: '',
+        btnText: '',
+        employeesNum: record.userCount,
+        needRole: false
+      } //员工数modal配置信息
+      break
+    case 2:
+      //菜单
+      const dirItem = state.menuArr.find((item) => item.id === record.parentId)
+      console.log('dirItem', dirItem)
+      state.employeesModalInfo = {
+        width: '940px',
+        typeText: '菜单',
+        dirText: dirItem.name,
+        menuText: `-${record.name}`,
+        btnText: '',
+        employeesNum: record.userCount,
+        needRole: true
+      } //员工数modal配置信息
+      break
+    case 3:
+      const menuItem = state.menuArr.find((item) => item.id === record.parentId)
+      const dirItemNew = state.menuArr.find((item) => item.id === menuItem.parentId)
+      //按钮
+      state.employeesModalInfo = {
+        width: '763px',
+        typeText: '按钮',
+        dirText: dirItemNew.name,
+        menuText: `-${menuItem.name}`,
+        btnText: `-${record.name}`,
+        employeesNum: record.userCount,
+        needRole: false
+      } //员工数modal配置信息
+      break
+  }
   //角色信息
   const rolesRes = await getRolesList()
+  //岗位列表
+  const postList = await getPostList()
   const needReplacePartPostKey = [
     ['label', 'name'],
     ['value', 'id']
   ]
   state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
+  state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
   state.isShowEmployees = true
 }
 
 //员工数 高亮搜索
-const search = () => {
+const search = async () => {
+  const res = await getMemberNumList({
+    menuId: state.currentRecord.id,
+    nickname: state.memberName,
+    postIds: state.postList,
+    roleIds: state.configureRoles
+  })
+  console.log('员工数res ', res )
+  console.log('state.configureRoles', state.configureRoles)
   console.log('state.memberName', state.memberName)
+
+  //角色
+  const selectRolesList = state.configureRolesOptions.filter((roleItem) => {
+    return state.configureRoles.some((item) => roleItem?.value === item)
+  })
+  //岗位
+  const selectPostList = state.postListOptions.filter((roleItem) => {
+    return state.postList.some((item) => roleItem?.value === item)
+  })
+  console.log('selectRolesList ', selectRolesList)
+
   state.testArr = cloneDeep(state.employeesInfo)
   const pattern = new RegExp(state.memberName, 'gi')
   // state.testArr.map((item) => {
@@ -1401,12 +1502,41 @@ const search = () => {
   // })
   const patternPost = new RegExp(state.post, 'gi')
   state.testArr.map((item) => {
-    item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
+    // //岗位
+    // item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
+    //姓名
     item.allInfo.map((childrenItem) => {
       childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
+      if (state.memberName && childrenItem.name.match(pattern)) {
+        childrenItem.needBorder = true
+      }
+    })
+  })
+
+  //角色
+  selectRolesList.map((roleItem) => {
+    const patternRole = new RegExp(roleItem.label, 'gi')
+    state.testArr.map((item) => {
+      item.role = item.role.replace(patternRole, `<span class="highlight">$&</span>`)
+    })
+  })
+
+  //岗位
+  selectPostList.map((roleItem) => {
+    const patternRole = new RegExp(roleItem.label, 'gi')
+    state.testArr.map((item) => {
+      item.post = item.post.replace(patternRole, `<span class="highlight">$&</span>`)
     })
   })
   console.log('state.testArr', state.testArr)
+}
+//员工数 modal 重置
+const employeesReset = () => {
+  state.configureRoles = []
+  state.postList = []
+  state.memberName = ''
+  state.post = ''
+  search()
 }
 
 //员工数modal
@@ -1472,7 +1602,8 @@ const closeEmployees = () => {
     }
   ]
   state.memberName = '' //员工数 modal 姓名
-  state.post = '' //岗位 modal 姓名
+  state.configureRoles = [] //角色
+  state.postList = [] //岗位
 }
 
 watch(
@@ -1539,6 +1670,7 @@ watch(
 //员工数
 .employees-Number {
   color: rgba(0, 129, 255, 100);
+  cursor: pointer;
 }
 :deep(.ant-table-cell-with-append) {
   display: flex;
@@ -1783,6 +1915,10 @@ watch(
   min-height: 200px;
   background-color: rgba(244, 246, 247, 1);
 }
+
+:deep(.ant-table-tbody) {
+  min-height: 520px;
+}
 </style>
 
 <style lang="scss">
@@ -1825,6 +1961,9 @@ watch(
   .highlight {
     color: red;
   }
+  .border-red {
+    border-color: red !important;
+  }
   .role-style {
     color: rgba(51, 51, 51, 1);
     font-size: 16px;
@@ -1851,6 +1990,10 @@ watch(
     border: 1px solid rgba(221, 223, 229, 1);
     color: rgba(102, 102, 102, 1);
     font-family: PingFangSC-Regular;
+  }
+  .ant-select-multiple .ant-select-selection-item-remove {
+    display: flex;
+    align-items: center;
   }
 }
 </style>
