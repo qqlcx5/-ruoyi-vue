@@ -48,14 +48,17 @@ const postInfoSearchForm = ref({
   name: ''
 })
 // 列表相关的变量
-const [registerPostInfo, { reload: postInfoGet, getCheckboxRecords: getCheckboxRecords }] =
-  useXTable({
-    allSchemas: allSchemas, // 列表配置
-    params: postInfoSearchForm,
-    getListApi: RoleApi.getRolePageApi, // 加载列表的 API
-    border: true,
-    height: 606
-  })
+const [
+  registerPostInfo,
+  { reload: postInfoGet, getCheckboxRecords: getCheckboxRecords, setCheckboxRow }
+] = useXTable({
+  allSchemas: allSchemas, // 列表配置
+  params: postInfoSearchForm,
+  getListApi: RoleApi.getRolePageApi, // 加载列表的 API
+  checkboxConfig: { reserve: true },
+  border: true,
+  height: 606
+})
 // 查询重置
 const onPostInfoSearchReset = () => {
   postInfoSearchForm.value = {
@@ -65,8 +68,13 @@ const onPostInfoSearchReset = () => {
 }
 
 // 打开弹窗
-const openModal = async () => {
+const openModal = async (defaultSelectRow) => {
   modelVisible.value = true
+  if (defaultSelectRow) {
+    await nextTick()
+    console.log(defaultSelectRow)
+    setCheckboxRow(defaultSelectRow)
+  }
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 
