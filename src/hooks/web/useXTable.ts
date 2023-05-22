@@ -11,6 +11,8 @@ export interface tableMethod {
   getCurrentColumn: () => void // 获取当前列
   getRadioRecord: () => void // 获取当前选中列，radio
   getCheckboxRecords: () => any //获取当前选中列， checkbox
+  setCheckboxRow: (row) => void // 设置复选选中行
+  setRadioRow: (row) => void // 设置单选选中行
 }
 
 export const useXTable = (props: XTableProps): [Function, tableMethod] => {
@@ -38,7 +40,9 @@ export const useXTable = (props: XTableProps): [Function, tableMethod] => {
     exportList: (fileName?: string) => getInstance().exportList(fileName),
     getCurrentColumn: () => getInstance().getCheckboxRecords(),
     getRadioRecord: () => getInstance().getRadioRecord(),
-    getCheckboxRecords: () => getInstance().getCheckboxRecords()
+    getCheckboxRecords: () => getInstance().getCheckboxRecords(),
+    setCheckboxRow: (row) => getInstance().setCheckboxRow(row),
+    setRadioRow: (row) => getInstance().setRadioRow(row)
   }
   return [register, methods]
 }

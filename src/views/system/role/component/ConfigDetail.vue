@@ -40,11 +40,7 @@
 </template>
 <script setup lang="ts">
 import { DATA_ACCESS_MAP } from './role.data'
-import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
-import { useDepartmentStoreWithOut } from '@/store/modules/department'
-// import { useMemberStoreWithOut } from '@/store/modules/members'
 
-const { wsCache } = useCache('sessionStorage')
 const props = defineProps({
   frontTableData: {
     type: Array,
@@ -73,23 +69,27 @@ const operationAccess = (data): string => {
   return '-'
 }
 const dataAccess = (data): string => {
-  const departmentStore = useDepartmentStoreWithOut()
-  // const memberStore = useMemberStoreWithOut()
   if (props.origin === 'detail') {
     if (data.dataScopeDept && data.dataScopeDept.length > 0) {
       return data.dataScopeDept.join('、')
+    } else if (data.dataScopeUser && data.dataScopeUser.length > 0) {
+      return data.dataScopeUser.join('、')
     } else {
       return data.dataScopeName
     }
   } else {
     if (data.dataScope === 2) {
-      let departmentMap = wsCache.get(CACHE_KEY.DEPARTMENT)
-      if (!departmentMap) {
-        departmentStore.setDepartment()
-      }
-      return data.dataScopeDeptIds
+      // 指定部门
+      return data.dataScopeDepts
         .map((item) => {
-          return departmentMap[item]
+          return item.name
+        })
+        .join('、')
+    } else if (data.dataScope === 6) {
+      // 指定人
+      return data.dataScopeUsers
+        .map((item) => {
+          return item.nickname
         })
         .join('、')
     } else {

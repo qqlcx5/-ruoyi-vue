@@ -40,6 +40,7 @@ const state: any = reactive({
 watch(
   () => props.columns,
   (data) => {
+    // console.log(data)
     if (state.columnSet.length === 0) {
       state.columnSet = data.filter((column) => !column.fixed)
     }
@@ -66,7 +67,17 @@ watch(
 //   emits('columnChange', data)
 // }, {immediate: true})
 
-const drag = ref(false)
+const isIndeterminate = computed(() => {
+  return state.columnSet.filter((column) => !column.disabled).every((item) => item.check)
+})
+
+const handleCheckAllChange = (val: boolean) => {
+  state.columnSet
+    .filter((column) => !column.disabled)
+    .forEach((item) => {
+      item.check = val
+    })
+}
 
 const reset = () => {
   state.columnSet = props.columns.filter((column) => !column.fixed)
@@ -92,18 +103,28 @@ const confirm = () => {
       <h4 class="text-18px font-black m-0">定制列</h4>
     </template>
     <template #default>
+      <el-checkbox :model-value="isIndeterminate" @change="handleCheckAllChange">全选</el-checkbox>
       <vuedraggable
         class="flex flex-col justify-center"
         v-model="state.columnSet"
         group="column"
-        @start="drag = true"
-        @end="drag = false"
         item-key="field"
+        filter=".forbid"
+        animation="300"
       >
         <template #item="{ element }">
-          <el-checkbox class="mb-4px" v-model="element.check" @click.native.stop>
-            {{ element.title }}
-          </el-checkbox>
+          <div class="flex justify-between items-center">
+            <el-checkbox
+              class="mb-4px"
+              :class="{ forbid: element?.disabled }"
+              v-model="element.check"
+              @click.stop
+              :disabled="element?.disabled"
+            >
+              {{ element.title }}
+            </el-checkbox>
+            <i class="iconfont icon-tuozhuai cursor-pointer"></i>
+          </div>
         </template>
       </vuedraggable>
     </template>
@@ -121,6 +142,9 @@ const confirm = () => {
     padding: 25px 20px;
     margin-bottom: 0;
     border-bottom: 1px solid #eaebef;
+  }
+  .el-drawer__body {
+    padding: 20px 30px;
   }
 }
 </style>

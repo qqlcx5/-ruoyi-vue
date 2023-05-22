@@ -29,7 +29,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       }
     },
     {
-      title: '字典类型',
+      title: '字典编码',
       field: 'type',
       // isSearch: true,
       form: {
@@ -51,7 +51,8 @@ const crudSchemas = reactive<VxeCrudSchema>({
         component: 'Switch',
         componentProps: {
           activeValue: 0,
-          inactiveValue: 1
+          inactiveValue: 1,
+          disabled: true
         },
         colProps: {
           span: 24

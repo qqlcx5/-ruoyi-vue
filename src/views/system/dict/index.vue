@@ -92,6 +92,7 @@
               :inactive-value="1"
               @click.stop
               @change="handleStatusChange(row, 'type')"
+              disabled
             />
           </template>
           <template #actionbtns_default="{ row }">
@@ -101,12 +102,12 @@
               v-hasPermi="['system:dict:update']"
               @click="handleTypeUpdate(row.id)"
             />
-            <!-- 操作：删除类型 -->
-            <XTextButton
-              :title="t('action.del')"
-              v-hasPermi="['system:dict:delete']"
-              @click="typeDeleteData(row.id, `是否删除字典名称为''${row.name}''的数据项?`)"
-            />
+            <!--            &lt;!&ndash; 操作：删除类型 &ndash;&gt;-->
+            <!--            <XTextButton-->
+            <!--              :title="t('action.del')"-->
+            <!--              v-hasPermi="['system:dict:delete']"-->
+            <!--              @click="typeDeleteData(row.id, `是否删除字典名称为''${row.name}''的数据项?`)"-->
+            <!--            />-->
           </template>
         </XTable>
       </div>
@@ -158,6 +159,7 @@
                 :active-value="0"
                 :inactive-value="1"
                 @change="handleStatusChange(row, 'data')"
+                disabled
               />
             </template>
             <template #actionbtns_default="{ row }">
@@ -173,12 +175,12 @@
                 :title="t('action.detail')"
                 @click="handleDataDetail(row)"
               />
-              <!-- 操作：删除数据 -->
-              <XTextButton
-                v-hasPermi="['system:dict:delete']"
-                :title="t('action.del')"
-                @click="dataDeleteData(row.id, `是否确认删除数据标签为''${row.label}''的数据项?`)"
-              />
+              <!--              &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
+              <!--              <XTextButton-->
+              <!--                v-hasPermi="['system:dict:delete']"-->
+              <!--                :title="t('action.del')"-->
+              <!--                @click="dataDeleteData(row.id, `是否确认删除数据标签为''${row.label}''的数据项?`)"-->
+              <!--              />-->
             </template>
           </XTable>
         </div>
@@ -205,7 +207,14 @@
         :schema="DictDataSchemas.allSchemas.formSchema"
         :rules="DictDataSchemas.dictDataRules"
         ref="dataFormRef"
-      />
+      >
+        <template #value="row">
+          <template v-if="['dataUpdate', 'dataLevel3Update'].includes(actionType)">
+            <div>{{ row.value }}</div>
+          </template>
+          <template v-else><el-input v-model="row.value" /> </template>
+        </template>
+      </Form>
       <!-- 操作按钮 -->
       <template #footer>
         <XButton
@@ -269,23 +278,22 @@
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(row, 'dataLevel3')"
+            disabled
           />
         </template>
         <template #actionbtns_default="{ row }">
           <!-- 操作：修改数据 -->
           <XTextButton
             v-hasPermi="['system:dict:update']"
-            preIcon="ep:edit"
             :title="t('action.edit')"
             @click="handleDataUpdate(row.id, 'dataLevel3Update')"
           />
-          <!-- 操作：删除数据 -->
-          <XTextButton
-            v-hasPermi="['system:dict:delete']"
-            preIcon="ep:delete"
-            :title="t('action.del')"
-            @click="dataLevel3DeleteData(row.id, `是否确认删除子项标签为''${row.label}''的数据项?`)"
-          />
+          <!--          &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
+          <!--          <XTextButton-->
+          <!--            v-hasPermi="['system:dict:delete']"-->
+          <!--            :title="t('action.del')"-->
+          <!--            @click="dataLevel3DeleteData(row.id, `是否确认删除子项标签为''${row.label}''的数据项?`)"-->
+          <!--          />-->
         </template>
       </XTable>
     </XModal>
