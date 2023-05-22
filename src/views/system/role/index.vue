@@ -255,7 +255,7 @@ const roleStatusChange = async (row) => {
       }
     )
     .then(async () => {
-      const result = await RoleApi.updateRoleApi(row.id)
+      const result = await RoleApi.updateRoleApi(row)
       if (result) {
         message.success(`成功${text}${row.name}`)
       } else {

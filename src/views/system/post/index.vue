@@ -175,8 +175,11 @@
               />
             </template>
             <template #role_list="{ row }">
-              <div>
-                <el-tag v-for="item in row.roleList" :key="item.roleId">{{ item.roleName }}</el-tag>
+              <div v-for="item in row.roleList" :key="item.roleId">
+                <el-tag>{{ item.roleName }}</el-tag>
+              </div>
+              <div v-for="item in row.roleList" :key="item.roleId">
+                <el-tag>{{ item.roleName }}</el-tag>
               </div>
             </template>
             <template #status_default="{ row }">

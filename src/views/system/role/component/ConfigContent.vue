@@ -202,7 +202,6 @@ const openMemberModal = () => {
   selectMemberModalRef.value.openModal(currentNode.value.dataScopeUserIds)
 }
 const onSelectMemberConfirm = (data) => {
-  console.log(data)
   currentNode.value.dataScopeUserIds = data.map((item) => item.id)
 }
 
