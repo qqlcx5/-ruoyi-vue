@@ -85,9 +85,10 @@ const getProps = computed(() => {
 
   options.size = currentSize as any
   options.height = innerProps.value?.height || 700
-  options.checkboxConfig = {
-    reserve: true
-  }
+  // options.checkboxConfig = {
+  //   // checkRowKeys: [166, 163],
+  //   reserve: true
+  // }
   getOptionInitConfig(options)
   getColumnsConfig(options)
   getProxyConfig(options)
@@ -369,11 +370,11 @@ const getToolBarConfig = (options: XTableProps) => {
 }
 
 const handleToolClick = (key): void => {
-  console.log(getProps.value.pagerConfig)
   const g = unref(xGrid)
   if (!g) {
     return
   }
+  g.setCheckboxRow([{ id: 146 }], true)
   switch (key) {
     case 'print':
       exportList()
@@ -525,7 +526,7 @@ const getRadioRecord = () => {
   if (!g) {
     return
   }
-  return g.getRadioRecord(false)
+  return g.getRadioRecord()
 }
 
 // 获取当前选中列，checkbox
@@ -534,8 +535,29 @@ const getCheckboxRecords = () => {
   if (!g) {
     return []
   }
-  return g.getCheckboxRecords(false)
+  const currentRecords = g.getCheckboxRecords()
+  const reserveRecords = g.getCheckboxReserveRecords()
+  return [...currentRecords, ...reserveRecords]
 }
+
+// 设置选中行
+const setCheckboxRow = (row) => {
+  const g = unref(xGrid)
+  if (!g) {
+    return
+  }
+  g.setCheckboxRow(row, true)
+}
+
+// 设置选中行
+const setRadioRow = (row) => {
+  const g = unref(xGrid)
+  if (!g) {
+    return
+  }
+  g.setRadioRow(row)
+}
+
 const setProps = (prop: Partial<XTableProps>) => {
   innerProps.value = { ...unref(innerProps), ...prop }
 }
@@ -553,7 +575,16 @@ onMounted(() => {
   columnInit()
 })
 
-defineExpose({ reload, Ref: xGrid, getSearchData, deleteData, exportList, deleteReq })
+defineExpose({
+  reload,
+  Ref: xGrid,
+  getSearchData,
+  deleteData,
+  exportList,
+  deleteReq,
+  setCheckboxRow,
+  setRadioRow
+})
 emit('register', {
   reload,
   getSearchData,
@@ -564,7 +595,9 @@ emit('register', {
   exportList,
   getCurrentColumn,
   getRadioRecord,
-  getCheckboxRecords
+  getCheckboxRecords,
+  setCheckboxRow,
+  setRadioRow
 })
 </script>
 <style lang="scss">
