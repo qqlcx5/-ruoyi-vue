@@ -136,11 +136,7 @@ const openModal = async (defaultRowKey) => {
   modelVisible.value = true
   await nextTick()
   if (defaultRowKey) {
-    setCheckboxRow(
-      defaultRowKey.map((item) => {
-        return { id: item }
-      })
-    )
+    setCheckboxRow(defaultRowKey)
   }
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗

@@ -56,7 +56,7 @@ const { query } = useRoute()
 const message = useMessage()
 const tagsViewStore = useTagsViewStore()
 
-const activeName = ref('front')
+const activeName = ref('backstage')
 const frontTableData = ref<any[]>([]) // 前台已选权限
 const backstageTableData = ref<any[]>([]) // 后台已选权限
 const loading = ref<boolean>(false)
@@ -74,7 +74,10 @@ const backstageConfigRef = ref()
 const handleOk = async () => {
   loading.value = true
   const params = {
-    menuDataScopeItemList: frontConfigRef.value.getParams(),
+    menuDataScopeItemList:
+      activeName.value === 'front'
+        ? frontConfigRef.value.getParams()
+        : backstageConfigRef.value.getParams(),
     roleId: query.id
   }
   const result = await RoleApi.assignRoleMenuDataScope(params).finally(

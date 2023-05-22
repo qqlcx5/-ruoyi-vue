@@ -26,7 +26,6 @@
           :default-checked-keys="defaultCheckedKeys"
           :props="defaultProps"
           :data="treeOptions"
-          empty-text="加载中，请稍后"
           @node-click="handleNodeClick"
           @check-change="handleCheckChange"
         />
@@ -223,32 +222,32 @@ const init = async () => {
   btnPermissionsOptions.value = menuRes.filter((menu) => menu.type === 3)
   let result = { menuDataScopeItemList: [] }
   if (props.stage === 'front') {
-    result = await getRoleMenuDataScope({ roleId: query.id })
-  } else if (props.stage === 'backstage') {
     // result = await getRoleMenuDataScope({ roleId: query.id })
-  }
-  if (result) roleConfig.value = result.menuDataScopeItemList || []
-  defaultCheckedKeys.value = roleConfig.value
-    .filter((item) => item.type === 2)
-    .map((item) => item.menuId)
-  treeOptions.value = handleTree(
-    menuRes.filter((menu) => {
-      if (menu.type === 2) {
-        const roleData = roleConfig.value.find((item) => item.menuId === menu.id)
-        menu.operations = roleData?.operations || []
-        menu.dataScope = roleData?.dataScope || ''
-        menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
-        menu.dataScopeDepts = roleData?.dataScopeDepts || []
-        menu.dataScopeUserIds = roleData?.dataScopeUserIds || []
-        menu.dataScopeUsers = roleData?.dataScopeUsers || []
-      }
-      return menu.type !== 3
+  } else if (props.stage === 'backstage') {
+    result = await getRoleMenuDataScope({ roleId: query.id })
+    if (result) roleConfig.value = result.menuDataScopeItemList || []
+    defaultCheckedKeys.value = roleConfig.value
+      .filter((item) => item.type === 2)
+      .map((item) => item.menuId)
+    treeOptions.value = handleTree(
+      menuRes.filter((menu) => {
+        if (menu.type === 2) {
+          const roleData = roleConfig.value.find((item) => item.menuId === menu.id)
+          menu.operations = roleData?.operations || []
+          menu.dataScope = roleData?.dataScope || ''
+          menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
+          menu.dataScopeDepts = roleData?.dataScopeDepts || []
+          menu.dataScopeUserIds = roleData?.dataScopeUserIds || []
+          menu.dataScopeUsers = roleData?.dataScopeUsers || []
+        }
+        return menu.type !== 3
+      })
+    )
+    nextTick(() => {
+      checkedNodes.value = treeRef.value!.getCheckedNodes()
+      handleCheckedTreeExpand()
     })
-  )
-  nextTick(() => {
-    checkedNodes.value = treeRef.value!.getCheckedNodes()
-    handleCheckedTreeExpand()
-  })
+  }
 }
 watch(
   () => props.stage,

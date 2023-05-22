@@ -113,7 +113,13 @@ const openSelectPostModal = () => {
 // 打开岗位弹窗
 const selectRoleModalRef = ref()
 const openSelectRoleModal = () => {
-  selectRoleModalRef.value.openModal()
+  selectRoleModalRef.value.openModal(
+    role.value.map((item) => {
+      return {
+        id: item.roleId
+      }
+    })
+  )
 }
 
 // 打开弹窗

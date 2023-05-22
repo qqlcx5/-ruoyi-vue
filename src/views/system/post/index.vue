@@ -178,9 +178,6 @@
               <div v-for="item in row.roleList" :key="item.roleId">
                 <el-tag>{{ item.roleName }}</el-tag>
               </div>
-              <div v-for="item in row.roleList" :key="item.roleId">
-                <el-tag>{{ item.roleName }}</el-tag>
-              </div>
             </template>
             <template #status_default="{ row }">
               <el-switch
