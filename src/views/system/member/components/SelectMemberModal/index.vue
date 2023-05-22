@@ -100,14 +100,20 @@ const searchForm = ref({
   postTypeCode: '',
   postName: ''
 })
-// 列表相关的变量
+
 const [
   registerPostInfo,
-  { reload: getList, getCheckboxRecords: getCheckboxRecords, getRadioRecord: getRadioRecord }
+  {
+    reload: getList,
+    getCheckboxRecords: getCheckboxRecords,
+    getRadioRecord: getRadioRecord,
+    setCheckboxRow
+  }
 ] = useXTable({
   allSchemas: allSchemas, // 列表配置
   params: searchForm,
   getListApi: getMemberList, // 加载列表的 API
+  checkboxConfig: { reserve: true },
   border: true,
   height: 606,
   toolBar: false
@@ -124,9 +130,18 @@ const onSearchReset = () => {
 }
 
 // 打开弹窗
-const openModal = async () => {
-  // if (code) searchForm.value.typeCode = code
+const openModal = async (defaultRowKey) => {
+  // console.log(defaultRowKey)
+  await init()
   modelVisible.value = true
+  await nextTick()
+  if (defaultRowKey) {
+    setCheckboxRow(
+      defaultRowKey.map((item) => {
+        return { id: item }
+      })
+    )
+  }
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 
@@ -149,7 +164,7 @@ const init = async () => {
 }
 
 onMounted(() => {
-  init()
+  // init()
 })
 </script>
 <style lang="scss" scoped></style>

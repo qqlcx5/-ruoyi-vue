@@ -19,7 +19,8 @@ const crudSchemas = reactive<VxeCrudSchema>({
         colProps: {
           span: 24
         }
-      }
+      },
+      disabled: true
     },
     {
       title: '角色名称',
@@ -28,7 +29,8 @@ const crudSchemas = reactive<VxeCrudSchema>({
         colProps: {
           span: 24
         }
-      }
+      },
+      disabled: true
     },
     {
       title: '成员数',
@@ -62,6 +64,28 @@ const crudSchemas = reactive<VxeCrudSchema>({
           default: 'status_default'
         }
       }
+    },
+    {
+      title: t('common.creater'),
+      field: 'creator',
+      isForm: false
+    },
+    {
+      title: t('common.createTime'),
+      field: 'createTime',
+      formatter: 'formatDate',
+      isForm: false
+    },
+    {
+      title: t('common.operator'),
+      field: 'updater',
+      isForm: false
+    },
+    {
+      title: t('common.operationTime'),
+      field: 'updateTime',
+      formatter: 'formatDate',
+      isForm: false
     }
   ]
 })

@@ -4,9 +4,16 @@ import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 
 export interface ColumnType {
-  field: string
-  check: boolean
-  title?: string
+  title: string
+  width?: number | string
+  dataIndex?: string
+  key?: string
+  field?: string
+  resizable?: boolean
+  ellipsis?: boolean
+  disabled?: boolean
+  check?: boolean
+  sort?: number | string
 }
 export interface TableColumnType {
   tableKey: string
@@ -19,21 +26,20 @@ export interface TableColumnState {
 
 export const useTableColumn = defineStore('tableColumn', {
   state: (): TableColumnState => ({
-    columns: [],
+    columns: []
   }),
-  getters: {
-  },
+  getters: {},
   actions: {
     setTableColumn(obj: TableColumnType) {
-      const tableColumnMap = wsCache.get(CACHE_KEY.TABLE_COLUMN) || {};
-      tableColumnMap[obj.tableKey] = obj.column;
+      const tableColumnMap = wsCache.get(CACHE_KEY.TABLE_COLUMN) || {}
+      tableColumnMap[obj.tableKey] = obj.column
       wsCache.set(CACHE_KEY.TABLE_COLUMN, tableColumnMap)
     },
     getTableColumn(tableKey: string) {
       const tableColumnMap = wsCache.get(CACHE_KEY.TABLE_COLUMN)
-      if (tableColumnMap) return tableColumnMap[tableKey];
+      if (tableColumnMap) return tableColumnMap[tableKey]
       return null
-    },
+    }
   }
 })
 

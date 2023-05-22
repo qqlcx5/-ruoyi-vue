@@ -12,6 +12,7 @@ import { FormSchema } from '@/types/form'
 import { VxeTableColumn } from '@/types/table'
 import { ComponentOptions } from '@/types/components'
 import { DescriptionsSchema } from '@/types/descriptions'
+import { TableColumnStorage } from '@/utils/tableColumn'
 
 export type VxeCrudSchema = {
   primaryKey?: string // 主键ID
@@ -40,6 +41,7 @@ type VxeCrudColumns = Omit<VxeTableColumn, 'children'> & {
   children?: VxeCrudColumns[] // 子级
   dictType?: string // 字典类型
   dictClass?: 'string' | 'number' | 'boolean' // 字典数据类型 string | number | boolean
+  disabled?: boolean // 是否可被定制列操作
 }
 
 type CrudSearchParams = {
@@ -73,7 +75,7 @@ export type VxeAllSchemas = {
   formSchema: FormSchema[]
   detailSchema: DescriptionsSchema[]
   printSchema: VxeTableDefines.ColumnInfo[]
-  columnSchema: any[]
+  columnSchema: TableColumnStorage[]
 }
 
 // 过滤所有结构
@@ -343,16 +345,19 @@ const filterDescriptionsSchema = (crudSchema: VxeCrudSchema): DescriptionsSchema
 // 过滤 columnschema 结构
 const filterColumnSchema = (crudSchema: VxeCrudSchema): any[] => {
   const { t } = useI18n()
-  const columnSchema: any[] = []
+  const columnSchema: TableColumnStorage[] = []
 
   eachTree(crudSchema.columns, (schemaItem: VxeCrudColumns) => {
     // 判断是否显示
     if (schemaItem?.isTable !== false && schemaItem.table?.show !== false) {
       const descriptionsSchemaItem = {
-        ...schemaItem.table,
+        // ...schemaItem.table,
         field: schemaItem.field,
+        key: schemaItem.field,
         title: schemaItem.table?.title || schemaItem.title,
         check: true,
+        disabled: schemaItem.disabled || false,
+        sort: 0
       }
       columnSchema.push(descriptionsSchemaItem)
     }

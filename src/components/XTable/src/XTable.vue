@@ -85,10 +85,6 @@ const getProps = computed(() => {
 
   options.size = currentSize as any
   options.height = innerProps.value?.height || 700
-  // options.checkboxConfig = {
-  //   // checkRowKeys: [166, 163],
-  //   reserve: true
-  // }
   getOptionInitConfig(options)
   getColumnsConfig(options)
   getProxyConfig(options)
@@ -153,12 +149,13 @@ const handleColumnChange = (columns): void => {
     }
   }
   let currentColumns = reactive<any>(g.columns)
+  // console.log(currentColumns)
   currentColumns.forEach((item) => {
     let index = columns.findIndex((c) => c.field === item.field)
-    item.sortId = index
+    item.sort = index
     item.check = index !== -1 ? columns[index].check : true
   })
-  currentColumns = currentColumns.filter((col) => col.check).sort(sort('sortId'))
+  currentColumns = currentColumns.filter((col) => col.check).sort(sort('sort'))
   g.reloadColumn(currentColumns)
   drawerVisible.value = false
 }

@@ -75,8 +75,8 @@
               class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
               @click="openDepartModal"
               >{{
-                currentNode.dataScopeDeptIds.length > 0
-                  ? `已选${currentNode.dataScopeDeptIds.length}个部门`
+                currentNode.dataScopeDepts.length > 0
+                  ? `已选${currentNode.dataScopeDepts.length}个部门`
                   : '请选择'
               }}
             </div>
@@ -129,7 +129,7 @@ const defaultCheckedKeys = ref()
 const treeOptions = ref<any[]>([]) // 菜单树形结构
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const treeNodeAll = ref(false)
-const treeNodeExpand = ref(false)
+const treeNodeExpand = ref(true)
 const checkedNodes = ref()
 watch(
   () => checkedNodes.value,
@@ -193,16 +193,28 @@ const handleCheckChange = (node) => {
 const selectOrgModalRef = ref()
 const selectMemberModalRef = ref()
 const openDepartModal = () => {
-  selectOrgModalRef.value.openModal(currentNode.value.dataScopeDeptIds)
+  selectOrgModalRef.value.openModal(currentNode.value.dataScopeDepts)
 }
 const onSelectOrgConfirm = (data) => {
   currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
+  currentNode.value.dataScopeDepts = data.map((item) => {
+    return {
+      id: item.id,
+      name: item.name
+    }
+  })
 }
 const openMemberModal = () => {
-  selectMemberModalRef.value.openModal(currentNode.value.dataScopeUserIds)
+  selectMemberModalRef.value.openModal(currentNode.value.dataScopeUsers)
 }
 const onSelectMemberConfirm = (data) => {
   currentNode.value.dataScopeUserIds = data.map((item) => item.id)
+  currentNode.value.dataScopeUsers = data.map((item) => {
+    return {
+      id: item.id,
+      nickname: item.nickname
+    }
+  })
 }
 
 // ================= 初始化 ====================
@@ -226,13 +238,16 @@ const init = async () => {
         menu.operations = roleData?.operations || []
         menu.dataScope = roleData?.dataScope || ''
         menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
+        menu.dataScopeDepts = roleData?.dataScopeDepts || []
         menu.dataScopeUserIds = roleData?.dataScopeUserIds || []
+        menu.dataScopeUsers = roleData?.dataScopeUsers || []
       }
       return menu.type !== 3
     })
   )
   nextTick(() => {
     checkedNodes.value = treeRef.value!.getCheckedNodes()
+    handleCheckedTreeExpand()
   })
 }
 watch(
