@@ -97,6 +97,11 @@ const handleCancel = () => {
   .el-card {
     border: none;
   }
+  .role-container {
+    :deep(.el-card__body) {
+      min-height: 74vh;
+    }
+  }
 }
 .footer {
   box-shadow: 0px -5px 8px 0px rgba(210, 210, 210, 0.2);
