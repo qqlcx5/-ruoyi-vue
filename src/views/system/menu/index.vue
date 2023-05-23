@@ -581,11 +581,6 @@
           </div>
         </template>
       </div>
-      <!--      <div class="employees-name-content">-->
-      <!--        <template v-for="item in state.testArr">-->
-      <!--          <div v-html="item.name" class="employees-name"></div>-->
-      <!--        </template>-->
-      <!--      </div>-->
     </div>
   </a-modal>
 
@@ -622,7 +617,7 @@ import dayjs from 'dayjs'
 import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
 import { getPostList, getRolesList } from '@/api/system/member'
-import { getMemberNumList } from '@/api/system/menu'
+import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 
 const queryParams = reactive({
   name: undefined,
@@ -857,62 +852,7 @@ const state = reactive({
       ]
     }
   ],
-  testArr: [
-    {
-      role: '角色：销售顾问 - 仅看本部门及以下',
-      // post: '销售顾问（3）：',
-      postInfo: [
-        {
-          post: '销售顾问（3）：',
-          allInfo: [
-            {
-              name: '张三'
-            },
-            {
-              name: '李四'
-            },
-            {
-              name: '王四四'
-            }
-          ]
-        },
-        {
-          post: '销售顾问（3）：',
-          allInfo: [
-            {
-              name: '张三'
-            },
-            {
-              name: '李四'
-            },
-            {
-              name: '王四四'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      role: '角色：普通角色 - 看所有人',
-      // post: '前端（3）：',
-      postInfo: [
-        {
-          post: '前端（3）：',
-          allInfo: [
-            {
-              name: '张1'
-            },
-            {
-              name: '李2'
-            },
-            {
-              name: '王3'
-            }
-          ]
-        }
-      ]
-    }
-  ],
+  testArr: [],
   memberName: '', //员工数 modal 姓名
   post: '', //岗位 modal 姓名
   employeesModalInfo: {
@@ -1552,78 +1492,94 @@ const arrayGroupBy = (list, groupId) => {
 
 //员工数 高亮搜索
 const search = async () => {
-  const res = await getMemberNumList({
-    menuId: state.currentRecord.id,
-    nickname: state.memberName,
-    postIds: state.postList,
-    roleIds: state.configureRoles
-  })
+  console.log('state.currentRecord', state.currentRecord)
 
-  console.log('res===>', res)
-  res.map((item) => {})
+  switch (state.currentRecord.type) {
+    case 2:
+      const resPost = await getMemberNumList({
+        menuId: state.currentRecord.id,
+        nickname: state.memberName,
+        postIds: state.postList,
+        roleIds: state.configureRoles
+      })
 
-  // const map = res.reduce((acc, item) => {
-  //   // 判断当前 id 在 map 对象是否已新建数组，如果没有，则新建一个空数组
-  //   if (!acc.has(item.roleId)) {
-  //     acc.set(item.roleId, [])
-  //   }
-  //   // 将当前元素推入对应的数组
-  //   acc.get(item.roleId).push(item)
-  //   return acc
-  // }, new Map())
-  //
-  // console.log('map', map)
-  const roleRes = arrayGroupBy(res, 'roleId')
-  console.log('roleRes', roleRes)
-  const tempArr = []
-  roleRes.map((item) => {
-    console.log('item', item)
-    const tempPostList = arrayGroupBy(item, 'postId')
-    console.log('tempPostList', tempPostList)
-    // tempArr.push(tempPostList)
-  })
-  console.log('Res', roleRes)
-  console.log('tempArr ', tempArr)
-  const tempArrList = []
-  // tempArr.map((item) => {
-  //   const tempObj = {}
-  //   const tempArr1 = []
-  //   item.map((childrenItem) => {
-  //     const tempArr = []
-  //     const tempObj1 = {}
-  //     childrenItem.map((nameItem) => {
-  //       tempObj1 = nameItem
-  //       tempArr.push({ name: nameItem.nickname })
-  //     })
-  //
-  //     tempArr.push({
-  //       allInfo: tempArr,
-  //       post: tempObj1.postName
-  //     })
-  //
-  //     tempArr1 = tempArr
-  //   })
-  //
-  //   tempArrList.push({
-  //     role:tempObj1.allInfo[0].roleName,
-  //     postInfo:tempArr
-  //   })
-  // })
+      console.log('岗位res', resPost)
+      let tempPostInfo = []
+      resPost.map((item) => {
+        let tempObj1 = {}
+        let tempAllInfo = []
+        item.userExtraVOS.map((nameItem) => {
+          let tempObj = {
+            name: nameItem.nickname
+          }
 
-  // tempArr.map((item) => {
-  //   item.map((childrenItem) => {
-  //     childrenItem.map((nameItem) => {
-  //       console.log('nameItem', nameItem)
-  //       tempArr.push({ name: nameItem.nickname })
-  //     })
-  //   })
-  // })
+          tempAllInfo.push(tempObj)
+        })
+        console.log('tempAllInfo', tempAllInfo)
 
-  // console.log('tempArrList', tempArrList)
+        tempObj1 = {
+          post: item.postName,
+          allInfo: tempAllInfo
+        }
+        tempPostInfo.push(tempObj1)
+      })
 
-  // console.log('员工数res ', res)
-  // console.log('state.configureRoles', state.configureRoles)
-  // console.log('state.memberName', state.memberName)
+      const tempArr1 = [
+        {
+          role: '',
+          postInfo: tempPostInfo
+        }
+      ]
+      state.testArr = tempArr1
+      console.log('tempPostInfo', tempPostInfo)
+      //菜单 需要角色 搜索
+      break
+    default:
+      //目录 按钮 无需角色 搜索
+      // 角色
+      const res = await getMemberNumRoleList({
+        menuId: state.currentRecord.id,
+        nickname: state.memberName,
+        postIds: state.postList,
+        roleIds: state.configureRoles
+      })
+
+      console.log('res===>', res)
+      const tempTestArr = []
+      //角色
+      res.map((item) => {
+        let tempObj = {}
+        let tempPostInfo = []
+        item.userExtraPostVOS.map((childrenPostItem) => {
+          let tempObj1 = {}
+          let tempAllInfo = []
+          childrenPostItem.userExtraVOS.map((nameItem) => {
+            let tempObj = {
+              name: nameItem.nickname
+            }
+
+            tempAllInfo.push(tempObj)
+          })
+
+          console.log('tempAllInfo', tempAllInfo)
+          tempObj1 = {
+            post: childrenPostItem.postName,
+            allInfo: tempAllInfo
+          }
+          tempPostInfo.push(tempObj1)
+        })
+        console.log('tempPostInfo', tempPostInfo)
+        tempObj = {
+          role: item.roleName,
+          postInfo: tempPostInfo
+        }
+        tempTestArr.push(tempObj)
+      })
+
+        state.testArr = tempTestArr
+
+      console.log('tempTestArr', tempTestArr)
+  }
 
   //角色
   const selectRolesList = state.configureRolesOptions.filter((roleItem) => {
@@ -1635,12 +1591,12 @@ const search = async () => {
   })
   console.log('selectRolesList ', selectRolesList)
 
-  state.testArr = cloneDeep(state.employeesInfo)
+  // state.testArr = cloneDeep(state.employeesInfo)
   const pattern = new RegExp(state.memberName, 'gi')
   // state.testArr.map((item) => {
   //   item.name = item.name.replace(pattern, `<span class="highlight">$&</span>`)
   // })
-  const patternPost = new RegExp(state.post, 'gi')
+  // const patternPost = new RegExp(state.post, 'gi')
   state.testArr.map((item) => {
     // //岗位
     // item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
@@ -1667,6 +1623,7 @@ const search = async () => {
     const patternRole = new RegExp(roleItem.label, 'gi')
     state.testArr.map((item) => {
       item.role = item.role.replace(patternRole, `<span class="highlight">$&</span>`)
+      console.log('item.role', item.role)
     })
   })
 
@@ -1700,118 +1657,8 @@ const employeesReset = () => {
 
 //员工数modal
 const closeEmployees = () => {
-  state.employeesInfo = [
-    {
-      role: '角色：销售顾问 - 仅看本部门及以下',
-      // post: '销售顾问（3）：',
-      postInfo: [
-        {
-          post: '销售顾问（3）：',
-          allInfo: [
-            {
-              name: '张三'
-            },
-            {
-              name: '李四'
-            },
-            {
-              name: '王四四'
-            }
-          ]
-        },
-        {
-          post: '销售顾问（3）：',
-          allInfo: [
-            {
-              name: '张三'
-            },
-            {
-              name: '李四'
-            },
-            {
-              name: '王四四'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      role: '角色：普通角色 - 看所有人',
-      // post: '前端（3）：',
-      postInfo: [
-        {
-          post: '前端（3）：',
-          allInfo: [
-            {
-              name: '张1'
-            },
-            {
-              name: '李2'
-            },
-            {
-              name: '王3'
-            }
-          ]
-        }
-      ]
-    }
-  ]
-  state.testArr = [
-    {
-      role: '角色：销售顾问 - 仅看本部门及以下',
-      // post: '销售顾问（3）：',
-      postInfo: [
-        {
-          post: '销售顾问（3）：',
-          allInfo: [
-            {
-              name: '张三'
-            },
-            {
-              name: '李四'
-            },
-            {
-              name: '王四四'
-            }
-          ]
-        },
-        {
-          post: '销售顾问（3）：',
-          allInfo: [
-            {
-              name: '张三'
-            },
-            {
-              name: '李四'
-            },
-            {
-              name: '王四四'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      role: '角色：普通角色 - 看所有人',
-      // post: '前端（3）：',
-      postInfo: [
-        {
-          post: '前端（3）：',
-          allInfo: [
-            {
-              name: '张1'
-            },
-            {
-              name: '李2'
-            },
-            {
-              name: '王3'
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  state.employeesInfo = []
+  state.testArr = []
   state.memberName = '' //员工数 modal 姓名
   state.configureRoles = [] //角色
   state.postList = [] //岗位

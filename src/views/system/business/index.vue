@@ -1288,6 +1288,7 @@ const getList = async (isRefresh = false) => {
   //不要展示按钮 默认按钮全选 后端处理
   const tempArr = menuList.filter((item) => item.type !== 3)
   state.menuTreeList = handleTree(tempArr)
+  console.log('menuList', menuList)
 
   // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
   state.parentCheckedKeys = []
@@ -1633,6 +1634,7 @@ const closePermissionModal = () => {
   state.addSuccessId = undefined
   state.selectTree = []
   state.checkedKeys = []
+  console.log('state.selectTree ', state.selectTree)
 }
 
 //开启功能配置 modal
@@ -1669,6 +1671,25 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
+const findParent = (childrenId, arr, path) => {
+  if (path === undefined) {
+    path = []
+  }
+  for (let i = 0; i < arr.length; i++) {
+    let tmpPath = path.concat()
+    tmpPath.push(arr[i].id)
+    if (childrenId == arr[i].id) {
+      return tmpPath
+    }
+    if (arr[i].children) {
+      let findResult = findParent(childrenId, arr[i].children, tmpPath)
+      if (findResult) {
+        return findResult
+      }
+    }
+  }
+}
+
 const assignPermission = async (record) => {
   console.log('record', record)
   state.permissionRecord = record
@@ -1676,10 +1697,14 @@ const assignPermission = async (record) => {
   if (record.packageId) {
     const res = await getTenantPackage({ id: record.packageId })
     //... res 可能为null
-    const { menuIds = [], id } = res || []
+    const { menuIds = [], dirIds = [], id } = res || []
     state.editPermissionID = id
     state.checkedKeys = menuIds
-    state.selectTree = filterTree(state.menuTreeList, menuIds)
+    nextTick(() => {
+      state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
+    })
+    console.log('state.selectTree', state.selectTree)
+    console.log('配置的res', res)
   }
   //右侧展开显示 左侧选中的数据
   state.isShowRightTree = false
@@ -2240,6 +2265,8 @@ state.columns = getColumns(state, PageKeyObj.business, allColumns, state.default
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
   () => {
+    console.log('state.checkedKeys)', state.checkedKeys)
+    console.log('checkedKeysBack.value', checkedKeysBack.value)
     state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
     state.selectTree = filterTree(state.menuTreeList, state.idArr)
     state.isShowRightTree = false
@@ -2247,6 +2274,10 @@ watch(
     nextTick(() => {
       state.isShowRightTree = true
     })
+  },
+  {
+    immediate: true,
+    deep: true
   }
 )
 </script>
