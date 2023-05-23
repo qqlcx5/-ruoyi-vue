@@ -11,7 +11,7 @@
       <a-form-item :label="`机构类型`" name="organizationType">
         <a-select
           v-model:value="queryParams.organizationType"
-          placeholder="请选择状态"
+          placeholder="请选择机构类型"
           style="width: 200px"
           :options="state.organizationTypeOptions"
         />
@@ -49,7 +49,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -183,7 +183,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :bodyStyle="{ maxHeight: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
+    :bodyStyle="{ height: '520px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
       <a-form
@@ -268,18 +268,26 @@
         <!--          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />-->
         <!--        </a-form-item>-->
 
-        <a-form-item
-          :label="`负责人`"
-          name="contactName"
-          :rules="[{ required: true, message: `负责人不能为空` }]"
-        >
-          <a-select
+        <a-form-item :label="`负责人`" name="contactName">
+          <!--          <a-select-->
+          <!--            v-model:value="state.formState.contactName"-->
+          <!--            class="width-100"-->
+          <!--            show-search-->
+          <!--            :options="state.memberOptions"-->
+          <!--            placeholder="请选择负责人"-->
+          <!--            optionFilterProp="label"-->
+          <!--            :getPopupContainer="(triggerNode) => triggerNode.parentElement"-->
+          <!--            @change="getPhoneList"-->
+          <!--          />-->
+
+          <a-tree-select
             v-model:value="state.formState.contactName"
-            class="width-100"
-            :options="state.memberOptions"
+            show-search
+            style="width: 100%"
+            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
             placeholder="请选择负责人"
-            optionFilterProp="label"
-            :getPopupContainer="(triggerNode) => triggerNode.parentElement"
+            :tree-data="state.memberOptions"
+            treeNodeFilterProp="label"
             @change="getPhoneList"
           />
         </a-form-item>
@@ -367,6 +375,7 @@
 
         <a-form-item
           label="分公司类型"
+          :rules="[{ required: true, message: `分公司类型不能为空` }]"
           v-if="
             state.currentType === '2' ||
             state.currentType === '分公司' ||
@@ -384,7 +393,11 @@
             >
           </a-checkbox-group>
         </a-form-item>
-        <a-form-item label="门店类型" v-else>
+        <a-form-item
+          label="门店类型"
+          :rules="[{ required: true, message: `门店类型不能为空` }]"
+          v-else
+        >
           <a-checkbox-group v-model:value="state.formAttributeState.type">
             <a-checkbox
               v-for="(item, index) in state.storeTypeOptions"
@@ -1655,6 +1668,11 @@ const PermissionOk = async () => {
   if (!formAttributeRef) return
   const valid = await formAttributeRef.value.validate()
   state.addEditLoading = true
+
+  console.log('state.formAttributeState.type', state.formAttributeState.type)
+  if (state.formAttributeState.type?.length === 0 || !state.formAttributeState.type) {
+    return message.warning('类型不能为空')
+  }
 
   const params = {
     organizationId: state.detailsRecord.id || state.addSuccessId,

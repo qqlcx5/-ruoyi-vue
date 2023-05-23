@@ -47,7 +47,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -74,6 +74,7 @@
       :defaultExpandAllRows="state.isExpandAll"
       v-if="state.refreshTable"
       @resizeColumn="handleResizeColumn"
+      :pagination="false"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -1231,7 +1232,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1270,7 +1271,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1329,7 +1330,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '按钮类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {

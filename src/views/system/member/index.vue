@@ -221,7 +221,7 @@
           :defaultExpandAllRows="state.isExpandAll"
           @resizeColumn="handleResizeColumn"
           :pagination="{
-            pageSizeOptions: ['20', '30', '60', '100'],
+            pageSizeOptions: ['20', '30', '60', '100', '200', '500', '1000'],
             showSizeChanger: true,
             showQuickJumper: true,
             pageSize: queryParams.pageSize,
@@ -357,7 +357,7 @@
           <a-form-item
             :label="`成员工号`"
             name="memberNum"
-            :rules="[{ required: true, message: `成员编码不能为空` }]"
+            :rules="[{ required: true, message: `成员工号不能为空` }, { validator: numValidator }]"
             class="width-50"
           >
             <a-input
@@ -400,7 +400,11 @@
             :rules="[{ required: true, message: `入职时间不能为空` }]"
             class="width-50"
           >
-            <a-date-picker placeholder="请选择时间" v-model:value="formState.entryTime" />
+            <a-date-picker
+              placeholder="请选择时间"
+              v-model:value="formState.entryTime"
+              class="width-100"
+            />
           </a-form-item>
 
           <a-form-item
@@ -629,6 +633,7 @@
               placeholder="请选择时间"
               v-model:value="formState.birthDay"
               :disabled-date="disabledDate"
+              class="width-100"
             />
           </a-form-item>
 
@@ -1125,6 +1130,22 @@ const memberNameValidator = (rule, value) => {
   })
 }
 
+//限制数字
+const numValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[0-9]*$/
+      if (!regExp.test(value)) {
+        reject('只能输入数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -1600,22 +1621,21 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  state.queryParams = {
-    current: 1, //当前页码
-    pageSize: 10, //显示条数
-    organization: null, //机构 左侧tree
-    memberName: null, //成员姓名
-    memberPhone: null, //联系电话
-    postType: null, //岗位类型
-    partPost: null, //是否有兼岗 主岗 兼岗
-    post: null, //岗位
-    department: null, //部门
-    configureRoles: [], //配置角色
-    memberType: null, //人员类型
-    postStatus: null, //岗位状态
-    isOnJob: null, //在职状态
-    userType: null //账号类型
-  }
+  queryParams.current = 1 //当前页码
+  queryParams.pageSize = 10 //显示条数
+  queryParams.organization = null //机构 左侧tree
+  queryParams.memberName = null //成员姓名
+  queryParams.memberPhone = null //联系电话
+  queryParams.postType = null //岗位类型
+  queryParams.partPost = null //是否有兼岗 主岗 兼岗
+  queryParams.post = null //岗位
+  queryParams.department = null //部门
+  queryParams.configureRoles = [] //配置角色
+  queryParams.memberType = null //人员类型
+  queryParams.postStatus = null //岗位状态
+  queryParams.isOnJob = null //在职状态
+  queryParams.userType = null //账号类型
+
   handleQuery()
 }
 
@@ -2866,7 +2886,7 @@ function filterOne(dataList, value, type) {
 }
 
 const sendCurrentSelect = (currentKey) => {
-  // console.log('currentKey==================>', currentKey)
+  console.log('currentKey==================>', currentKey)
   // console.log('typeof currentKey', typeof currentKey)
   // const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
   // console.log('organizationList', organizationList)

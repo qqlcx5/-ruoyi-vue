@@ -50,7 +50,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -124,7 +124,7 @@
       <template #bodyCell="{ column, record }">
         <!--  可用名额   -->
         <template v-if="column?.key === 'usableAmount'">
-          <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
+          <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
         </template>
         <!--  有效期   -->
         <template v-if="column?.key === 'validityPeriod'">
@@ -667,6 +667,7 @@
     wrapClassName="details-modal"
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
+    :footer="null"
   >
     <div class="details-edit" @click="edit(state.record, true)"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
