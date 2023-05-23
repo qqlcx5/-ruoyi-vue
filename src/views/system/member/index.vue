@@ -142,7 +142,7 @@
           </div>
 
           <div class="search-btn-content">
-            <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+            <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
             <a-button @click="resetQuery">重置</a-button>
           </div>
         </div>
@@ -274,7 +274,7 @@
             <template v-if="column?.key === 'departmentPost'">
               <div v-for="item in record?.departmentPostList" class="phone-div-content">
                 <div class="phone-div">{{ item.department }}/{{ item.post }}</div>
-                <div :class="item.type === '1' ? 'principal-tag' : 'part-tag'"
+                <div :class="item.type === 'main_post' ? 'principal-tag' : 'part-tag'"
                   >{{ item.typeText }}
                 </div>
               </div>
@@ -1541,7 +1541,8 @@ const getList = async () => {
       //部门、岗位
       item?.postVOList?.map((postItem) => {
         let tempText = '主岗'
-        if (postItem.type === '1') {
+        //main_post主岗 secondary_post兼岗
+        if (postItem.type === 'secondary_post') {
           tempText = '兼岗'
         }
         tempDepartmentPost.push({
@@ -2052,7 +2053,6 @@ const assignPermission = async (record) => {
 //表格状态改变 确认modal... 然后才开短信 modal
 //打开 状态开始关闭 确认modal
 const openStatusModal = () => {
-  message.success('账号状态修改成功')
   state.isShowStatus = true
 }
 //关闭 状态开始关闭 确认modal

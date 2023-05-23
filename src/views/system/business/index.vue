@@ -1,3 +1,4 @@
+<!--  主体管理  -->
 <template>
   <!-- 搜索工作栏 -->
 
@@ -25,7 +26,7 @@
           :options="state.statusOptions"
         />
       </a-form-item>
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
       <a-button @click="resetQuery">重置</a-button>
     </a-form>
   </ContentWrap>
