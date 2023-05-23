@@ -42,6 +42,7 @@ type VxeCrudColumns = Omit<VxeTableColumn, 'children'> & {
   dictType?: string // 字典类型
   dictClass?: 'string' | 'number' | 'boolean' // 字典数据类型 string | number | boolean
   disabled?: boolean // 是否可被定制列操作
+  defaultShow?: boolean // 是否默认显示
 }
 
 type CrudSearchParams = {
@@ -355,9 +356,9 @@ const filterColumnSchema = (crudSchema: VxeCrudSchema): any[] => {
         field: schemaItem.field,
         key: schemaItem.field,
         title: schemaItem.table?.title || schemaItem.title,
-        check: true,
+        check: schemaItem.defaultShow === undefined,
         disabled: schemaItem.disabled || false,
-        sort: 0
+        defaultShow: schemaItem.defaultShow === undefined
       }
       columnSchema.push(descriptionsSchemaItem)
     }
@@ -368,6 +369,8 @@ const filterColumnSchema = (crudSchema: VxeCrudSchema): any[] => {
       field: 'actionbtns',
       fixed: 'right' as unknown as VxeColumnPropTypes.Fixed,
       width: crudSchema.actionWidth ? crudSchema.actionWidth : '200px',
+      check: true,
+      defaultShow: true,
       slots: {
         default: 'actionbtns_default'
       }

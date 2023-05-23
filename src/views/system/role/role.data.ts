@@ -33,7 +33,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       disabled: true
     },
     {
-      title: '成员数',
+      title: '在职成员',
       field: 'staffCount',
       isForm: false,
       table: {
@@ -68,24 +68,28 @@ const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: t('common.creater'),
       field: 'creator',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
     {
       title: t('common.createTime'),
       field: 'createTime',
       formatter: 'formatDate',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
     {
       title: t('common.operator'),
       field: 'updater',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
     {
       title: t('common.operationTime'),
       field: 'updateTime',
       formatter: 'formatDate',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     }
   ]
 })

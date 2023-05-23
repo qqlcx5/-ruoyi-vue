@@ -117,7 +117,7 @@ const handleReset = async () => {
   let newColumn: any[] = []
   originColumn.map((col) => {
     currentColumns.map((item) => {
-      if (item.field === col.field) {
+      if (col.defaultShow !== false && item.field === col.field) {
         newColumn.push(item)
       }
     })
@@ -149,7 +149,6 @@ const handleColumnChange = (columns): void => {
     }
   }
   let currentColumns = reactive<any>(g.columns)
-  // console.log(currentColumns)
   currentColumns.forEach((item) => {
     let index = columns.findIndex((c) => c.field === item.field)
     item.sort = index
@@ -429,12 +428,10 @@ const deleteReq = async (id: string | number) => {
     console.error('未传入delListApi')
     return
   }
-  return new Promise(async () => {
-    await (options?.deleteApi && options?.deleteApi(id))
-    message.success(t('common.delSuccess'))
-    // 刷新列表
-    reload()
-  })
+  await (options?.deleteApi && options?.deleteApi(id))
+  message.success(t('common.delSuccess'))
+  // 刷新列表
+  await reload()
 }
 
 // 批量删除
@@ -563,7 +560,11 @@ const columnInit = () => {
   nextTick(() => {
     if (getTableKey.value) {
       const columnConfig = getTableColumnConfig(getTableKey.value, getColumnSchema.value)
-      if (columnConfig) handleColumnChange(columnConfig)
+      if (columnConfig) {
+        handleColumnChange(columnConfig)
+      } else {
+        handleReset()
+      }
     }
   })
 }

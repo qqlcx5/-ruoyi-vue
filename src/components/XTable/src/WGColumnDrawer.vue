@@ -4,6 +4,7 @@ import { propTypes } from '@/utils/propTypes'
 import { getTableColumnConfig } from '@/utils/tableColumn'
 import vuedraggable from 'vuedraggable'
 import { useTableColumnStoreWithOut } from '@/store/modules/tableColumn'
+import { cloneDeep } from 'lodash-es'
 
 const attrs = useAttrs()
 
@@ -40,9 +41,8 @@ const state: any = reactive({
 watch(
   () => props.columns,
   (data) => {
-    // console.log(data)
     if (state.columnSet.length === 0) {
-      state.columnSet = data.filter((column) => !column.fixed)
+      state.columnSet = cloneDeep(data.filter((column) => !column.fixed))
     }
   },
   { immediate: true }
@@ -55,7 +55,11 @@ watch(
     if (data) {
       // 打开时的column配置，从缓存获取
       const columnConfig = getTableColumnConfig(props.tableKey, props.columns)
-      if (columnConfig) state.columnSet = columnConfig
+      if (columnConfig) {
+        state.columnSet = columnConfig
+      } else {
+        state.columnSet = cloneDeep(props.columns.filter((column) => !column.fixed))
+      }
     }
   },
   { immediate: true }
@@ -80,7 +84,6 @@ const handleCheckAllChange = (val: boolean) => {
 }
 
 const reset = () => {
-  state.columnSet = props.columns.filter((column) => !column.fixed)
   tableColumnStore.setTableColumn({ tableKey: props.tableKey, column: null })
   emits('reset')
 }

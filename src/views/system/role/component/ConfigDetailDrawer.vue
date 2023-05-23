@@ -23,8 +23,8 @@
         <el-tab-pane label="配置权限" name="permission">
           <ConfigDetail
             origin="detail"
-            :frontTableData="roleInfo.permissions"
-            :backstageTableData="[]"
+            :backstageTableData="roleInfo.permissions"
+            :frontTableData="[]"
           />
         </el-tab-pane>
         <el-tab-pane v-if="props.showStaff" label="配置人员" name="staff">

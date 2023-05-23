@@ -17,7 +17,7 @@
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label-width="70px" label="岗位类型">
-                <el-input v-model="postTypeSearchForm.name" placeholder="请输入岗位类型" />
+                <el-input v-model="postTypeSearchForm.name" placeholder="请输入岗位类型或编码" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -75,7 +75,7 @@
           <template #actionbtns_default="{ row }">
             <!-- 操作：修改数据 -->
             <XTextButton
-              :title="t('action.edit')"
+              :title="t('action.modify')"
               v-hasPermi="['system:post:update']"
               @click="openModal('update', 'type', row?.id)"
             />
@@ -194,7 +194,7 @@
             <template #actionbtns_default="{ row }">
               <!-- 操作：修改数据 -->
               <XTextButton
-                :title="t('action.edit')"
+                :title="t('action.modify')"
                 v-hasPermi="['system:post:update']"
                 @click="openModal('update', 'info', row?.id)"
               />
@@ -285,7 +285,7 @@ const [
   registerPostInfo,
   {
     reload: postInfoGet,
-    deleteData: postInfoDel,
+    deleteReq: postInfoDelete,
     // exportList: postInfoExport,
     getCheckboxRecords: getInfoCheckboxRecords
   }
@@ -307,27 +307,31 @@ const onPostInfoSearchReset = () => {
 }
 // 删除
 const onPostDel = async (row, type: string) => {
-  if (type === 'type') {
-    // 校验
-    // const delFlag = await PostTypeApi.postTypePostCount(row.id);
-    if (row.postCount) {
-      ElMessageBox.confirm(
-        h('span', [
-          h('span', '系统校验到该岗位类型底下还存在 '),
-          h('span', { style: { color: 'red' } }, row.postCount),
-          h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
-        ]),
-        `提示`,
-        {
-          confirmButtonText: t('common.toOperate'),
-          cancelButtonText: t('common.cancel'),
-          type: 'warning',
-          lockScroll: false
-        }
-      )
-        .then(async () => {})
-        .catch(() => {})
-    } else {
+  if (+row.postCount) {
+    ElMessageBox.confirm(
+      type === 'type'
+        ? h('span', [
+            h('span', '系统校验到该岗位类型底下还存在 '),
+            h('span', { style: { color: 'red' } }, row.postCount),
+            h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
+          ])
+        : h('span', [
+            h('span', '系统校验到该岗位类型底下还存在 '),
+            h('span', { style: { color: 'red' } }, row.userCount),
+            h('span', ' 个在职员工，请先关闭或转移所有员工再操作删除哦~')
+          ]),
+      `提示`,
+      {
+        confirmButtonText: t('common.toOperate'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning',
+        lockScroll: false
+      }
+    )
+      .then(async () => {})
+      .catch(() => {})
+  } else {
+    if (type === 'type') {
       message
         .wgConfirm(
           h('span', [
@@ -339,18 +343,26 @@ const onPostDel = async (row, type: string) => {
         )
         .then(async () => {
           deleteReq(row.id)
+          postParent.value = {}
+          postInfoGet()
+        })
+        .catch(() => {})
+    } else if (type === 'info') {
+      message
+        .wgConfirm(
+          h('span', [
+            h('span', `删除后， ${row.name} 底下的 `),
+            h('span', { style: { color: 'red' } }, row.userCount),
+            h('span', ' 个员工岗位将同步删除，且不可恢复，请谨慎操作。')
+          ]),
+          `确定删除 ${row.name} 该岗位类型吗？`
+        )
+        .then(async () => {
+          await postInfoDelete(row.id)
+          await postTypeGet()
         })
         .catch(() => {})
     }
-  } else if (type === 'info') {
-    postInfoDel(
-      row.id,
-      h('span', [
-        h('span', '系统校验到该岗位类型底下还存在 '),
-        h('span', { style: { color: 'red' } }, row.postCount),
-        h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
-      ])
-    )
   }
 }
 // 更新岗位状态
@@ -375,15 +387,20 @@ const postInfoStatusChange = async (row) => {
       type: 'warning',
       lockScroll: false
     }
-  ).then(async () => {
-    const updateStatus = await PostInfoApi.updatePostApi({ ...row })
-    await postTypeGet()
-    if (updateStatus) {
-      message.success(text + '成功')
-    } else {
-      message.warning(t('sys.api.operationFailed'))
-    }
-  })
+  )
+    .then(async () => {
+      const updateStatus = await PostInfoApi.updatePostApi({ ...row })
+      await postTypeGet()
+      if (updateStatus) {
+        message.success(text + '成功')
+      } else {
+        message.warning(t('sys.api.operationFailed'))
+      }
+    })
+    .catch(() => {
+      row.status =
+        row.status === CommonStatusEnum.ENABLE ? CommonStatusEnum.DISABLE : CommonStatusEnum.ENABLE
+    })
 }
 
 const postFormSuccess = (type): void => {
@@ -391,6 +408,7 @@ const postFormSuccess = (type): void => {
     postTypeGet()
   } else if (type === 'info') {
     postInfoGet()
+    postTypeGet()
   }
 }
 
@@ -416,10 +434,11 @@ const openDistributeModal = (row, mode: string) => {
 }
 
 // 跳转
-const goto = ({ code }) => {
+const goto = ({ id }, type) => {
   push({
     name: 'Member',
-    state: { postTypeCode: code }
+    query:
+      type === 'postType' ? { postTypeId: id } : { postId: id, postTypeId: postParent.value.id }
   })
 }
 </script>

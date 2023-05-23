@@ -1,5 +1,5 @@
 <template>
-  <div class="role-config grid grid-cols-3 gap-x-16px pb-80px">
+  <div class="role-config grid grid-cols-3 gap-x-16px">
     <div class="box">
       <div class="box-header"> 请选择菜单（可多选） </div>
       <div class="box-content">

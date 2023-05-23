@@ -292,6 +292,7 @@ export default {
     del: 'Delete',
     delete: 'Delete',
     edit: 'Edit',
+    modify: 'Modify',
     update: 'Update',
     preview: 'Preview',
     more: 'More',
