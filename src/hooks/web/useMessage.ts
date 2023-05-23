@@ -134,7 +134,13 @@ export const useMessage = () => {
               })
             : '',
           h('div', [
-            tip ? h('div', { class: 'font-medium', style: { marginBottom: '14px' } }, tip) : '',
+            tip
+              ? h(
+                  'div',
+                  { class: 'font-bold', style: { marginBottom: '14px', fontSize: '16px' } },
+                  tip
+                )
+              : '',
             h('div', { class: 'text-confirm-gray' }, h('span', content))
           ])
         ]),
@@ -144,6 +150,40 @@ export const useMessage = () => {
           lockScroll: false,
           showClose: false,
           customClass: 'wg-message-confirm',
+          autofocus: false,
+          ...options
+        }
+      )
+    },
+    // 自定义去操作窗体
+    wgOperateConfirm(
+      content: string | VNode | (() => VNode),
+      tip?: string,
+      options?: ElMessageBoxOptions
+    ) {
+      return ElMessageBox.confirm(
+        h('div', { class: '' }, [
+          tip
+            ? h(
+                'div',
+                { class: 'font-bold', style: { marginBottom: '14px', fontSize: '16px' } },
+                tip
+              )
+            : '',
+          h('div', { class: 'flex' }, [
+            h('i', {
+              class: 'iconfont icon-Warning',
+              style: { marginRight: '16px', color: '#FAAD14', fontSize: '24px', lineHeight: 1 }
+            }),
+            h('span', { class: 'font-bold', style: { fontSize: '14px' } }, content)
+          ])
+        ]),
+        {
+          confirmButtonText: t('common.ok'),
+          cancelButtonText: t('common.cancel'),
+          lockScroll: false,
+          showClose: false,
+          customClass: 'wg-message-operate-confirm',
           autofocus: false,
           ...options
         }

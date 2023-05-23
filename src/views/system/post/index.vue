@@ -235,7 +235,6 @@ import PostForm from './form.vue'
 import DistributeModal from './component/DistributeModal.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
-import { ElMessageBox } from 'element-plus'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -311,27 +310,27 @@ const onPostInfoSearchReset = () => {
 // 删除
 const onPostDel = async (row, type: string) => {
   if (type === 'type' ? +row.postCount : +row.userCount) {
-    ElMessageBox.confirm(
-      type === 'type'
-        ? h('span', [
-            h('span', '系统校验到该岗位类型底下还存在 '),
-            h('span', { style: { color: 'red' } }, row.postCount),
-            h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
-          ])
-        : h('span', [
-            h('span', '系统校验到该岗位类型底下还存在 '),
-            h('span', { style: { color: 'red' } }, row.userCount),
-            h('span', ' 个在职员工，请先关闭或转移所有员工再操作删除哦~')
-          ]),
-      `提示`,
-      {
-        confirmButtonText: t('common.toOperate'),
-        cancelButtonText: t('common.cancel'),
-        type: 'warning',
-        lockScroll: false,
-        autofocus: false
-      }
-    )
+    message
+      .wgOperateConfirm(
+        type === 'type'
+          ? h('span', [
+              h('span', '系统校验到该岗位类型底下还存在 '),
+              h('span', { style: { color: 'red' } }, row.postCount),
+              h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
+            ])
+          : h('span', [
+              h('span', '系统校验到该岗位类型底下还存在 '),
+              h('span', { style: { color: 'red' } }, row.userCount),
+              h('span', ' 个在职员工，请先关闭或转移所有员工再操作删除哦~')
+            ]),
+        `提示`,
+        {
+          confirmButtonText: t('common.toOperate'),
+          cancelButtonText: t('common.cancel'),
+          lockScroll: false,
+          autofocus: false
+        }
+      )
       .then(async () => {})
       .catch(() => {})
   } else {
@@ -371,28 +370,28 @@ const onPostDel = async (row, type: string) => {
 }
 // 更新岗位状态
 const postInfoStatusChange = async (row) => {
-  const text = row.status === CommonStatusEnum.ENABLE ? '启用' : '停用'
-  ElMessageBox.confirm(
-    row.status === CommonStatusEnum.ENABLE
-      ? h('span', [
-          h('span', `${text}后，${row.name}底下的 `),
-          h('span', { style: { color: 'red' } }, '0'),
-          h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
-        ])
-      : h('span', [
-          h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
-          h('span', { style: { color: 'red' } }, '0'),
-          h('span', '个员工也将同步关闭该岗位，请谨慎操作。')
-        ]),
-    `确定${text} ${row.name} 吗？`,
-    {
-      confirmButtonText: t('common.ok'),
-      cancelButtonText: t('common.cancel'),
-      type: 'warning',
-      lockScroll: false,
-      autofocus: false
-    }
-  )
+  const text = row.status === CommonStatusEnum.ENABLE ? '开启' : '关闭'
+  message
+    .wgConfirm(
+      row.status === CommonStatusEnum.ENABLE
+        ? h('span', [
+            h('span', `${text}后，${row.name}底下的 `),
+            h('span', { style: { color: 'red' } }, '0'),
+            h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
+          ])
+        : h('span', [
+            h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
+            h('span', { style: { color: 'red' } }, row.userCount),
+            h('span', ' 个员工也将同步关闭该岗位，请谨慎操作。')
+          ]),
+      `确定${text} ${row.name} 吗？`,
+      {
+        confirmButtonText: t('common.ok'),
+        cancelButtonText: t('common.cancel'),
+        lockScroll: false,
+        autofocus: false
+      }
+    )
     .then(async () => {
       const updateStatus = await PostInfoApi.updatePostApi({ ...row })
       await postTypeGet()
