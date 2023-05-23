@@ -351,6 +351,7 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
         <div class="form-content">
@@ -572,9 +573,11 @@
                   <a-tree-select
                     v-model:value="record.post"
                     style="width: 100%"
+                    show-search
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
                     :tree-data="state.postListOptions"
+                    treeNodeFilterProp="label"
                   />
                 </div>
               </template>
@@ -1530,7 +1533,7 @@ const getList = async () => {
     // postName: queryParams.post, //岗位名称
     postId: queryParams.post,
     postType: queryParams.partPost === '2' ? null : queryParams.partPost, //是否兼岗
-    roleId: tempConfigureRoles, //配置角色
+    roleIds: tempConfigureRoles, //配置角色
     userType: queryParams.memberType === 'all' ? null : queryParams.memberType, //人员类型
     status: queryParams.userType === 'all' ? null : queryParams.userType, //账号状态
     userStatus: queryParams.isOnJob === 'all' ? null : queryParams.isOnJob, //在职状态
@@ -2278,12 +2281,14 @@ const detailsInfo = async (record) => {
   ]
   let tableData = []
   let tablePostData = []
+  console.log('res.sex', res.sex)
+  console.log('res.sexres.sex', typeof res.sex)
   switch (res.sex) {
     case 1:
-      sexText = '女'
+      sexText = '男'
       break
     case 2:
-      sexText = '男'
+      sexText = '女'
   }
 
   switch (res.userStatus) {
@@ -2711,12 +2716,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {

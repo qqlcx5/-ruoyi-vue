@@ -191,6 +191,7 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <a-form-item :label="`上级机构`" name="parentId">
           <a-tree-select
@@ -355,6 +356,7 @@
         ref="formAttributeRef"
         v-bind="layout1"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本属性 </div>
 
@@ -382,16 +384,26 @@
             state.detailsRecord?.type === '2'
           "
         >
-          <a-checkbox-group v-model:value="state.formAttributeState.type">
-            <a-checkbox
-              v-for="(item, index) in state.branchCompanyTypeOptions"
+          <!--          <a-checkbox-group v-model:value="state.formAttributeState.type">-->
+          <!--            <a-checkbox-->
+          <!--              v-for="(item, index) in state.branchCompanyTypeOptions"-->
+          <!--              :value="item.value"-->
+          <!--              :key="`type${index}`"-->
+          <!--              name="type"-->
+          <!--              :rules="[{ required: true, message: '分公司类型不能为空!' }]"-->
+          <!--              >{{ item.label }}</a-checkbox-->
+          <!--            >-->
+          <!--          </a-checkbox-group>-->
+
+          <a-radio-group v-model:value="state.formAttributeState.type">
+            <a-radio
               :value="item.value"
               :key="`type${index}`"
               name="type"
-              :rules="[{ required: true, message: '分公司类型不能为空!' }]"
-              >{{ item.label }}</a-checkbox
+              v-for="(item, index) in state.branchCompanyTypeOptions"
+              >{{ item.label }}</a-radio
             >
-          </a-checkbox-group>
+          </a-radio-group>
         </a-form-item>
         <a-form-item
           label="门店类型"
@@ -766,7 +778,13 @@
       </div>
     </div>
     <!--  机构属性  -->
-    <div class="details-content">
+    <div
+      class="details-content"
+      v-if="
+        state.detailsRecord.organizationType === '门店' ||
+        state.detailsRecord.organizationType === '分公司'
+      "
+    >
       <div class="flex-space">
         <div class="title-content"><div class="blue-line"></div>机构属性</div>
         <div class="details-edit" @click="assignPermission(state.detailsRecord, true)"
@@ -775,7 +793,13 @@
       </div>
     </div>
 
-    <a-tabs v-model:activeKey="state.activeKey">
+    <a-tabs
+      v-model:activeKey="state.activeKey"
+      v-if="
+        state.detailsRecord.organizationType === '门店' ||
+        state.detailsRecord.organizationType === '分公司'
+      "
+    >
       <a-tab-pane key="baseKey" tab="基本属性">
         <div
           v-for="(item, index) in state.detailsInfoSecond"
@@ -1673,6 +1697,10 @@ const PermissionOk = async () => {
   if (state.formAttributeState.type?.length === 0 || !state.formAttributeState.type) {
     return message.warning('类型不能为空')
   }
+  //判断是否是分公司的单选 分公司单选的话 是 string
+  if (typeof state.formAttributeState.type === 'string') {
+    state.formAttributeState.type = [state.formAttributeState.type]
+  }
 
   const params = {
     organizationId: state.detailsRecord.id || state.addSuccessId,
@@ -1731,6 +1759,7 @@ const PermissionOk = async () => {
 }
 
 const assignPermission = async (record, isCloseDetails = false) => {
+  console.log('设置属性record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1744,11 +1773,17 @@ const assignPermission = async (record, isCloseDetails = false) => {
     const res = await getOrganizationDetails({ id: record.id })
     //... res 可能为null
     state.detailsRecord = res
-
+    let tempType = [] || ''
+    console.log('设置属性详情res', res)
+    if (record.organizationType == '分公司') {
+      tempType = res.relVO?.type[0]
+    } else {
+      tempType = res.relVO?.type
+    }
     //赋值 回显
     state.formAttributeState = {
       organizationId: record.id, //机构id
-      type: res.relVO?.type, //分公司类型
+      type: tempType, //分公司类型
       startRating: res.relVO?.startRating, //星级
       detailedAddress: res.relVO?.address, //地址 详细地址
       contactInformationArr: res.relVO?.contact, //联系方式 设置属性
@@ -2196,12 +2231,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {

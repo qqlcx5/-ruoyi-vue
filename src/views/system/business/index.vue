@@ -178,6 +178,7 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
         <a-form-item :label="`上级主体`" name="belongTenantId">
@@ -1608,7 +1609,8 @@ const addMajorIndividualFN = async () => {
     if (state.modalType === 'add') {
       res = await addMajorIndividual(params)
       state.addSuccessId = res
-      message.success('新增成功')
+      // message.success('新增成功')
+      message.success('主体已建立成功！主体用户名和密码已发送到负责人手机号中，请注意查收！')
       //配置权限
       openPermissionModal()
     } else {
@@ -2092,12 +2094,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {
