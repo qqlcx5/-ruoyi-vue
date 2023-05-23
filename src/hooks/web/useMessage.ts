@@ -115,7 +115,8 @@ export const useMessage = () => {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
         type: 'warning',
-        lockScroll: false
+        lockScroll: false,
+        autofocus: false
       })
     },
     // 自定义确认窗体
@@ -143,6 +144,7 @@ export const useMessage = () => {
           lockScroll: false,
           showClose: false,
           customClass: 'wg-message-confirm',
+          autofocus: false,
           ...options
         }
       )
@@ -156,7 +158,8 @@ export const useMessage = () => {
           confirmButtonText: t('common.ok'),
           cancelButtonText: t('common.cancel'),
           type: 'warning',
-          lockScroll: false
+          lockScroll: false,
+          autofocus: false
         }
       )
     },
@@ -169,7 +172,8 @@ export const useMessage = () => {
           confirmButtonText: t('common.ok'),
           cancelButtonText: t('common.cancel'),
           type: 'warning',
-          lockScroll: false
+          lockScroll: false,
+          autofocus: false
         }
       )
     },
@@ -179,7 +183,8 @@ export const useMessage = () => {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
         type: 'warning',
-        lockScroll: false
+        lockScroll: false,
+        autofocus: false
       })
     }
   }

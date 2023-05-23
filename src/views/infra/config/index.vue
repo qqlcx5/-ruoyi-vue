@@ -86,11 +86,7 @@
           @click="handleUpdate(row.id)"
         />
         <!-- 操作：详情 -->
-        <XTextButton
-          :title="t('action.detail')"
-          v-hasPermi="['infra:config:query']"
-          @click="handleDetail(row)"
-        />
+        <XTextButton :title="t('action.detail')" @click="handleDetail(row)" />
         <!-- 操作：删除 -->
         <XTextButton
           v-if="row.type !== 1"
