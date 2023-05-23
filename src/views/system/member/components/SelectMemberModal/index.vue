@@ -113,7 +113,8 @@ const [
   allSchemas: allSchemas, // 列表配置
   params: searchForm,
   getListApi: getMemberList, // 加载列表的 API
-  checkboxConfig: { reserve: true },
+  checkboxConfig: { reserve: true, trigger: 'row' },
+  // mouseConfig: { selected: true },
   border: true,
   height: 606,
   toolBar: false

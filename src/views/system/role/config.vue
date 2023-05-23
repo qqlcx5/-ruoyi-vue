@@ -34,6 +34,7 @@
       </el-col>
     </el-row>
     <div
+      v-hasPermi="['system:permission:assign-role-menu-data-scope']"
       class="footer absolute left-0 bottom-0 w-full flex items-center justify-center py-20px bg-[var(--el-bg-color)] z-10"
     >
       <el-button type="primary" @click="handleOk" :loading="loading">{{

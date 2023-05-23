@@ -43,7 +43,7 @@ const props = defineProps({
 const modelVisible = ref(false) // 是否显示弹出层
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const treeData = ref<any[]>([])
-const defaultCheckedKeys = ref([])
+const defaultCheckedKeys = ref<string[] | number[]>([])
 
 const onTreeCheck = (node, list) => {
   if (props.mode === 'single') {
@@ -56,7 +56,7 @@ const init = async () => {
   treeData.value = handleTree(result)
 }
 // 打开弹窗
-const openModal = async (data) => {
+const openModal = async (data?: string[] | number[]) => {
   if (data && data.length > 0) defaultCheckedKeys.value = data
   await init()
   modelVisible.value = true
