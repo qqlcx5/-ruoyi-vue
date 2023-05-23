@@ -19,8 +19,8 @@
                 value: 'component'
               }"
               check-strictly
-              :render-after-expand="false"
               placeholder="请选择部门"
+              :render-after-expand="false"
             />
           </el-form-item>
         </el-col>
@@ -78,7 +78,6 @@ import { crudConfig } from './member.data'
 import { listSimplePostsApi } from '@/api/system/post/type'
 import { getDictLabel, DICT_TYPE } from '@/utils/dict'
 import { getSimpleOrganizationList } from '@/api/system/organization'
-import { CommonStatusEnum } from '@/utils/constants'
 import { handleTree } from '@/utils/tree'
 const { t } = useI18n() // 国际化
 const props = defineProps({
@@ -117,7 +116,7 @@ const [
   // mouseConfig: { selected: true },
   border: true,
   height: 606,
-  toolBar: false
+  toolbarConfig: { slots: { buttons: 'toolbar_buttons' } }
 })
 // 查询重置
 const onSearchReset = () => {
@@ -155,7 +154,7 @@ const submitForm = async () => {
 
 // 初始化
 const init = async () => {
-  const result = await getSimpleOrganizationList({ status: CommonStatusEnum.ENABLE })
+  const result = await getSimpleOrganizationList({})
   treeData.value = handleTree(result)
   postOptions.value = await listSimplePostsApi()
 }

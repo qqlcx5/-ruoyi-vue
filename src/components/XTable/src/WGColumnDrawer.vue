@@ -43,7 +43,6 @@ watch(
   () => props.columns,
   (data) => {
     if (state.columnSet.length === 0) {
-      console.log(data)
       state.columnSet = cloneDeep(data.filter((item) => !firstColumnType.includes(item.type)))
     }
   },

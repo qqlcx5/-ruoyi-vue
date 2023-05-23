@@ -19,7 +19,7 @@ const emit = defineEmits(['toolClick'])
 const defaultTools = ref<WGVxeTools[]>([
   // { key: 'export', show: true, disable: false },
   { key: 'fullScreen', show: true, disable: false },
-  { key: 'print', show: true, disable: false },
+  // { key: 'print', show: true, disable: false },
   { key: 'refresh', show: true, disable: false },
   { key: 'custom', show: true, disable: false }
 ])

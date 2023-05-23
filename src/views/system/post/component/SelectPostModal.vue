@@ -90,7 +90,7 @@ const [
   radioConfig: { reserve: true, trigger: 'row' },
   border: true,
   height: 606,
-  toolBar: false
+  toolbarConfig: { slots: { buttons: 'toolbar_buttons' } }
 })
 // 查询重置
 const onPostInfoSearchReset = () => {
