@@ -557,10 +557,4 @@ const submitDataForm = async () => {
 }
 </script>
 
-<style lang="scss" scoped>
-.container {
-  > &.el-card {
-    border: none;
-  }
-}
-</style>
+<style lang="scss" scoped></style>
