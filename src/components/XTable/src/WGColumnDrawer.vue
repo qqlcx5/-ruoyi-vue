@@ -7,6 +7,7 @@ import { useTableColumnStoreWithOut } from '@/store/modules/tableColumn'
 import { cloneDeep } from 'lodash-es'
 
 const attrs = useAttrs()
+const firstColumnType = ['id', 'seq', 'radio', 'checkbox', 'expand', 'html', null]
 
 const tableColumnStore = useTableColumnStoreWithOut()
 
@@ -42,7 +43,8 @@ watch(
   () => props.columns,
   (data) => {
     if (state.columnSet.length === 0) {
-      state.columnSet = cloneDeep(data.filter((column) => !column.fixed))
+      console.log(data)
+      state.columnSet = cloneDeep(data.filter((item) => !firstColumnType.includes(item.type)))
     }
   },
   { immediate: true }
@@ -58,7 +60,9 @@ watch(
       if (columnConfig) {
         state.columnSet = columnConfig
       } else {
-        state.columnSet = cloneDeep(props.columns.filter((column) => !column.fixed))
+        state.columnSet = cloneDeep(
+          props.columns.filter((item) => !firstColumnType.includes(item.type))
+        )
       }
     }
   },
@@ -81,6 +85,11 @@ const handleCheckAllChange = (val: boolean) => {
     .forEach((item) => {
       item.check = val
     })
+}
+
+const onMove = (e) => {
+  if (e.relatedContext.element.disabled || e.relatedContext.element.fixed) return false
+  return true
 }
 
 const reset = () => {
@@ -114,12 +123,15 @@ const confirm = () => {
         item-key="field"
         filter=".forbid"
         animation="300"
+        :move="onMove"
       >
         <template #item="{ element }">
-          <div class="flex justify-between items-center">
+          <div
+            class="flex justify-between items-center"
+            :class="{ forbid: element?.disabled || element?.fixed }"
+          >
             <el-checkbox
               class="mb-4px"
-              :class="{ forbid: element?.disabled }"
               v-model="element.check"
               @click.stop
               :disabled="element?.disabled"

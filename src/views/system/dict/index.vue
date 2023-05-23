@@ -22,8 +22,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="字典类型">
-                <el-input v-model="typeSearchForm.type" placeholder="请输入字典类型" />
+              <el-form-item label="字典编码">
+                <el-input v-model="typeSearchForm.type" placeholder="请输入字典编码" />
               </el-form-item>
             </el-col>
 

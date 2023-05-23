@@ -17,21 +17,24 @@
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label-width="70px" label="岗位类型">
-                <el-input v-model="postTypeSearchForm.name" placeholder="请输入岗位类型或编码" />
+                <el-input
+                  v-model="postTypeSearchForm.nameOrCode"
+                  placeholder="请输入岗位类型或编码"
+                />
               </el-form-item>
             </el-col>
-            <el-col :span="8">
-              <el-form-item label="状态">
-                <el-select class="w-full" v-model="postTypeSearchForm.status" placeholder="请选择">
-                  <el-option
-                    v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
+            <!--            <el-col :span="8">-->
+            <!--              <el-form-item label="状态">-->
+            <!--                <el-select class="w-full" v-model="postTypeSearchForm.status" placeholder="请选择">-->
+            <!--                  <el-option-->
+            <!--                    v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
+            <!--                    :key="item.value"-->
+            <!--                    :label="item.label"-->
+            <!--                    :value="item.value"-->
+            <!--                  />-->
+            <!--                </el-select>-->
+            <!--              </el-form-item>-->
+            <!--            </el-col>-->
 
             <el-col :span="8" class="!flex flex-column justify-between">
               <div>
@@ -148,7 +151,7 @@
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
                 v-hasPermi="['system:post:create']"
-                @click="openModal('create', 'info')"
+                @click="openModal('create', 'info', postParent.code)"
               />
               <!--              <XButton-->
               <!--                type="primary"-->
@@ -290,7 +293,7 @@ const [
     getCheckboxRecords: getInfoCheckboxRecords
   }
 ] = useXTable({
-  tableKey: 'post-Info-table',
+  tableKey: 'post-info-table',
   allSchemas: infoAllSchemas, // 列表配置
   params: postInfoSearchForm,
   getListApi: PostInfoApi.getPostPageApi, // 加载列表的 API
@@ -307,7 +310,7 @@ const onPostInfoSearchReset = () => {
 }
 // 删除
 const onPostDel = async (row, type: string) => {
-  if (+row.postCount) {
+  if (type === 'type' ? +row.postCount : +row.userCount) {
     ElMessageBox.confirm(
       type === 'type'
         ? h('span', [
@@ -325,7 +328,8 @@ const onPostDel = async (row, type: string) => {
         confirmButtonText: t('common.toOperate'),
         cancelButtonText: t('common.cancel'),
         type: 'warning',
-        lockScroll: false
+        lockScroll: false,
+        autofocus: false
       }
     )
       .then(async () => {})
@@ -385,7 +389,8 @@ const postInfoStatusChange = async (row) => {
       confirmButtonText: t('common.ok'),
       cancelButtonText: t('common.cancel'),
       type: 'warning',
-      lockScroll: false
+      lockScroll: false,
+      autofocus: false
     }
   )
     .then(async () => {

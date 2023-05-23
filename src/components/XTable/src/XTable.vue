@@ -563,7 +563,7 @@ const columnInit = () => {
       if (columnConfig) {
         handleColumnChange(columnConfig)
       } else {
-        // handleReset()
+        handleReset()
       }
     }
   })

@@ -347,6 +347,32 @@ const filterDescriptionsSchema = (crudSchema: VxeCrudSchema): DescriptionsSchema
 const filterColumnSchema = (crudSchema: VxeCrudSchema): any[] => {
   const { t } = useI18n()
   const columnSchema: TableColumnStorage[] = []
+  // 第一列
+  if (crudSchema.firstColumn) {
+    const tableSchemaItem = {
+      type: crudSchema.firstColumn,
+      width: '50px'
+    }
+    columnSchema.push(tableSchemaItem)
+  }
+  // 主键ID
+  if (crudSchema.primaryKey && crudSchema.primaryType) {
+    const primaryTitle = crudSchema.primaryTitle ? crudSchema.primaryTitle : ''
+    const primaryWidth = primaryTitle.length ? primaryTitle.length * 30 + 'px' : '40px'
+
+    let tableSchemaItem: { [x: string]: any } = {
+      title: primaryTitle,
+      field: crudSchema.primaryKey,
+      width: primaryWidth
+    }
+    if (crudSchema.primaryType != 'id') {
+      tableSchemaItem = {
+        ...tableSchemaItem,
+        type: crudSchema.primaryType
+      }
+    }
+    columnSchema.push(tableSchemaItem)
+  }
 
   eachTree(crudSchema.columns, (schemaItem: VxeCrudColumns) => {
     // 判断是否显示

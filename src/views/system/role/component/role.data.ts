@@ -20,8 +20,8 @@ const crudSchemas = reactive<VxeCrudSchema>({
       field: 'name'
     },
     {
-      title: '岗位编码',
-      field: 'id'
+      title: '角色编码',
+      field: 'code'
     }
   ]
 })
