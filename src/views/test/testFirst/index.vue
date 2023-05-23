@@ -207,7 +207,7 @@
             placeholder="请选择上级目录"
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
+            treeNodeFilterProp="name"
           />
         </a-form-item>
 

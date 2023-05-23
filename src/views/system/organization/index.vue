@@ -201,7 +201,7 @@
             placeholder="请选择上级机构"
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
+            treeNodeFilterProp="name"
           />
         </a-form-item>
 
@@ -237,17 +237,21 @@
         <a-form-item
           :label="`机构编码`"
           name="code"
-          :rules="[{ required: true, message: `机构编码不能为空` }]"
+          :rules="[{ required: true, message: `机构编码不能为空` }, { validator: enNumValidator }]"
         >
           <a-input
             v-model:value="state.formState.code"
             show-count
-            :maxlength="20"
+            :maxlength="50"
             placeholder="请输入机构编码"
           />
         </a-form-item>
 
-        <a-form-item :label="`机构简称`" name="abbreviate">
+        <a-form-item
+          :label="`机构简称`"
+          name="abbreviate"
+          :rules="[{ validator: chineseValidator }]"
+        >
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -999,6 +1003,38 @@ const legalMobileValidator = (rule, value) => {
     if (value) {
       if (!isValidPhoneNumber(value)) {
         reject('请输入正确的手机号码')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//英文数字
+const enNumValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[a-zA-Z0-9]+$/
+      if (!regExp.test(value)) {
+        reject('只能输入字母跟数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制中文
+const chineseValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[\u4e00-\u9fa5]*$/
+      if (!regExp.test(value)) {
+        reject('请输入中文')
       } else {
         resolve()
       }

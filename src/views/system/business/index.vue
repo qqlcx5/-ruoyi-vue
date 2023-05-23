@@ -188,13 +188,13 @@
             placeholder="请选择上级目录"
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
+            treeNodeFilterProp="name"
           />
         </a-form-item>
         <a-form-item
           :label="`主体编码`"
           name="code"
-          :rules="[{ required: true, message: `主体编码不能为空` }]"
+          :rules="[{ required: true, message: `主体编码不能为空` }, { validator: codeValidator }]"
         >
           <a-input
             v-model:value="state.formState.code"
@@ -207,7 +207,10 @@
         <a-form-item
           :label="`主体名称`"
           name="name"
-          :rules="[{ required: true, message: `主体名称不能为空` }]"
+          :rules="[
+            { required: true, message: `主体名称不能为空` },
+            { validator: chineseValidator }
+          ]"
         >
           <a-input
             v-model:value="state.formState.name"
@@ -217,7 +220,11 @@
           />
         </a-form-item>
 
-        <a-form-item :label="`主体简称`" name="abbreviate">
+        <a-form-item
+          :label="`主体简称`"
+          name="abbreviate"
+          :rules="[{ validator: chineseValidator }]"
+        >
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -229,7 +236,10 @@
         <a-form-item
           :label="`系统名称`"
           name="systemName"
-          :rules="[{ required: true, message: `系统名称不能为空` }]"
+          :rules="[
+            { required: true, message: `系统名称不能为空` },
+            { validator: chineseEnValidator }
+          ]"
         >
           <div class="flex-content">
             <a-input
@@ -286,7 +296,7 @@
         </a-form-item>
 
         <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
-          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入主体编码" />
+          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />
           <div class="phone-text"> 主要用于重要功能的安全验证，请确保填写正确 </div>
         </a-form-item>
 
@@ -349,7 +359,11 @@
         </a-form-item>
 
         <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
-        <a-form-item :label="`统一社会信用代码`" name="creditCode">
+        <a-form-item
+          :label="`统一社会信用代码`"
+          name="creditCode"
+          :rules="[{ validator: codeValidator }]"
+        >
           <a-input
             v-model:value="state.formState.creditCode"
             placeholder="请输入统一社会信用代码"
@@ -891,6 +905,54 @@ const legalMobileValidator = (rule, value) => {
     if (value) {
       if (!isValidPhoneNumber(value)) {
         reject('请输入正确的手机号码')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//主体编码英文数字
+const codeValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[a-zA-Z0-9]+$/
+      if (!regExp.test(value)) {
+        reject('只能输入字母跟数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制中文
+const chineseValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[\u4e00-\u9fa5]*$/
+      if (!regExp.test(value)) {
+        reject('请输入中文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//中英文
+const chineseEnValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[a-zA-Z\u4e00-\u9fa5]+$/
+      if (!regExp.test(value)) {
+        reject('只能输入中英文')
       } else {
         resolve()
       }
@@ -1592,6 +1654,9 @@ const PermissionOk = async () => {
     tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
     status: 0
   }
+  if (state.permissionRecord?.packageId === null) {
+    state.PermissionType = 'add'
+  }
   if (state.PermissionType === 'add') {
     await addTenantPackage(params)
     message.success('新增成功')
@@ -1605,6 +1670,7 @@ const PermissionOk = async () => {
 }
 
 const assignPermission = async (record) => {
+  console.log('record', record)
   state.permissionRecord = record
   state.PermissionType = 'edit'
   if (record.packageId) {

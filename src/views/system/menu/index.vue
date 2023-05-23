@@ -101,7 +101,7 @@
             <Icon icon="ep:caret-right" :size="12" />
           </div>
         </span>
-        <span v-else style="margin-right: 29px"></span>
+        <span v-else style="margin-right: 21px"></span>
       </template>
       <!--  单元格插槽  -->
       <template #bodyCell="{ column, record }">
@@ -219,7 +219,7 @@
             treeDefaultExpandAll
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
+            treeNodeFilterProp="name"
           />
         </a-form-item>
 
@@ -565,19 +565,21 @@
         class="employees-info-card"
       >
         <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
-        <div v-html="item.post" class="post-style"></div>
+        <template v-for="(childrenItem, childrenIndex) in item.postInfo">
+          <div v-html="childrenItem.post" class="post-style"></div>
 
-        <div class="employees-name-content">
-          <template
-            v-for="(childrenItem, childrenIndex) in item.allInfo"
-            :key="`employees${index}-${childrenIndex}`"
-          >
-            <div
-              v-html="childrenItem.name"
-              :class="['employees-name', { 'border-red': childrenItem.needBorder }]"
-            ></div>
-          </template>
-        </div>
+          <div class="employees-name-content">
+            <template
+              v-for="(childrenNameItem, childrenNameIndex) in childrenItem.allInfo"
+              :key="`employees${index}-${childrenNameIndex}`"
+            >
+              <div
+                v-html="childrenNameItem.name"
+                :class="['employees-name', { 'border-red': childrenNameItem.needBorder }]"
+              ></div>
+            </template>
+          </div>
+        </template>
       </div>
       <!--      <div class="employees-name-content">-->
       <!--        <template v-for="item in state.testArr">-->
@@ -802,31 +804,55 @@ const state = reactive({
   employeesInfo: [
     {
       role: '角色：销售顾问 - 仅看本部门及以下',
-      post: '销售顾问（3）：',
-      allInfo: [
+      // post: '销售顾问（3）：',
+      postInfo: [
         {
-          name: '张三'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         },
         {
-          name: '李四'
-        },
-        {
-          name: '王四四'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         }
       ]
     },
     {
       role: '角色：普通角色 - 看所有人',
-      post: '前端（3）：',
-      allInfo: [
+      // post: '前端（3）：',
+      postInfo: [
         {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
+          post: '前端（3）：',
+          allInfo: [
+            {
+              name: '张1'
+            },
+            {
+              name: '李2'
+            },
+            {
+              name: '王3'
+            }
+          ]
         }
       ]
     }
@@ -834,31 +860,55 @@ const state = reactive({
   testArr: [
     {
       role: '角色：销售顾问 - 仅看本部门及以下',
-      post: '销售顾问（3）：',
-      allInfo: [
+      // post: '销售顾问（3）：',
+      postInfo: [
         {
-          name: '张三'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         },
         {
-          name: '李四'
-        },
-        {
-          name: '王四四'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         }
       ]
     },
     {
       role: '角色：普通角色 - 看所有人',
-      post: '前端（3）：',
-      allInfo: [
+      // post: '前端（3）：',
+      postInfo: [
         {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
+          post: '前端（3）：',
+          allInfo: [
+            {
+              name: '张1'
+            },
+            {
+              name: '李2'
+            },
+            {
+              name: '王3'
+            }
+          ]
         }
       ]
     }
@@ -1473,6 +1523,33 @@ const openDetails = async (record) => {
   state.isShowEmployees = true
 }
 
+const groupBy = (array, f) => {
+  let groups = {}
+  array.forEach(function (o) {
+    var group = JSON.stringify(f(o))
+    groups[group] = groups[group] || []
+    groups[group].push(o)
+  })
+  return Object.keys(groups).map(function (group) {
+    return groups[group]
+  })
+}
+
+const arrayGroupBy = (list, groupId) => {
+  let sorted = groupBy(list, function (item) {
+    return [item[groupId]]
+  })
+  const tempObj = {
+    needItem: sorted[0][0],
+    needArr: sorted[0]
+  }
+  console.log('tempObj', tempObj)
+
+  // return sorted
+
+  return tempObj
+}
+
 //员工数 高亮搜索
 const search = async () => {
   const res = await getMemberNumList({
@@ -1481,9 +1558,72 @@ const search = async () => {
     postIds: state.postList,
     roleIds: state.configureRoles
   })
-  console.log('员工数res ', res )
-  console.log('state.configureRoles', state.configureRoles)
-  console.log('state.memberName', state.memberName)
+
+  console.log('res===>', res)
+  res.map((item) => {})
+
+  // const map = res.reduce((acc, item) => {
+  //   // 判断当前 id 在 map 对象是否已新建数组，如果没有，则新建一个空数组
+  //   if (!acc.has(item.roleId)) {
+  //     acc.set(item.roleId, [])
+  //   }
+  //   // 将当前元素推入对应的数组
+  //   acc.get(item.roleId).push(item)
+  //   return acc
+  // }, new Map())
+  //
+  // console.log('map', map)
+  const roleRes = arrayGroupBy(res, 'roleId')
+  console.log('roleRes', roleRes)
+  const tempArr = []
+  roleRes.map((item) => {
+    console.log('item', item)
+    const tempPostList = arrayGroupBy(item, 'postId')
+    console.log('tempPostList', tempPostList)
+    // tempArr.push(tempPostList)
+  })
+  console.log('Res', roleRes)
+  console.log('tempArr ', tempArr)
+  const tempArrList = []
+  // tempArr.map((item) => {
+  //   const tempObj = {}
+  //   const tempArr1 = []
+  //   item.map((childrenItem) => {
+  //     const tempArr = []
+  //     const tempObj1 = {}
+  //     childrenItem.map((nameItem) => {
+  //       tempObj1 = nameItem
+  //       tempArr.push({ name: nameItem.nickname })
+  //     })
+  //
+  //     tempArr.push({
+  //       allInfo: tempArr,
+  //       post: tempObj1.postName
+  //     })
+  //
+  //     tempArr1 = tempArr
+  //   })
+  //
+  //   tempArrList.push({
+  //     role:tempObj1.allInfo[0].roleName,
+  //     postInfo:tempArr
+  //   })
+  // })
+
+  // tempArr.map((item) => {
+  //   item.map((childrenItem) => {
+  //     childrenItem.map((nameItem) => {
+  //       console.log('nameItem', nameItem)
+  //       tempArr.push({ name: nameItem.nickname })
+  //     })
+  //   })
+  // })
+
+  // console.log('tempArrList', tempArrList)
+
+  // console.log('员工数res ', res)
+  // console.log('state.configureRoles', state.configureRoles)
+  // console.log('state.memberName', state.memberName)
 
   //角色
   const selectRolesList = state.configureRolesOptions.filter((roleItem) => {
@@ -1505,12 +1645,21 @@ const search = async () => {
     // //岗位
     // item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
     //姓名
-    item.allInfo.map((childrenItem) => {
-      childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
-      if (state.memberName && childrenItem.name.match(pattern)) {
-        childrenItem.needBorder = true
-      }
+    item.postInfo.map((childrenPostItem) => {
+      childrenPostItem.allInfo.map((childrenItem) => {
+        childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
+        if (state.memberName && childrenItem.name.match(pattern)) {
+          childrenItem.needBorder = true
+        }
+      })
     })
+
+    // item.allInfo.map((childrenItem) => {
+    //   childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
+    //   if (state.memberName && childrenItem.name.match(pattern)) {
+    //     childrenItem.needBorder = true
+    //   }
+    // })
   })
 
   //角色
@@ -1521,11 +1670,21 @@ const search = async () => {
     })
   })
 
+  // //岗位
+  // selectPostList.map((roleItem) => {
+  //   const patternRole = new RegExp(roleItem.label, 'gi')
+  //   state.testArr.map((item) => {
+  //     item.post = item.post.replace(patternRole, `<span class="highlight">$&</span>`)
+  //   })
+  // })
+
   //岗位
   selectPostList.map((roleItem) => {
     const patternRole = new RegExp(roleItem.label, 'gi')
     state.testArr.map((item) => {
-      item.post = item.post.replace(patternRole, `<span class="highlight">$&</span>`)
+      item.postInfo.map((postItem) => {
+        postItem.post = postItem.post.replace(patternRole, `<span class="highlight">$&</span>`)
+      })
     })
   })
   console.log('state.testArr', state.testArr)
@@ -1543,60 +1702,112 @@ const employeesReset = () => {
 const closeEmployees = () => {
   state.employeesInfo = [
     {
-      post: '销售顾问（3）：',
-      allInfo: [
+      role: '角色：销售顾问 - 仅看本部门及以下',
+      // post: '销售顾问（3）：',
+      postInfo: [
         {
-          name: '张三'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         },
         {
-          name: '李四'
-        },
-        {
-          name: '王四四'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         }
       ]
     },
     {
-      post: '前端（3）：',
-      allInfo: [
+      role: '角色：普通角色 - 看所有人',
+      // post: '前端（3）：',
+      postInfo: [
         {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
+          post: '前端（3）：',
+          allInfo: [
+            {
+              name: '张1'
+            },
+            {
+              name: '李2'
+            },
+            {
+              name: '王3'
+            }
+          ]
         }
       ]
     }
   ]
   state.testArr = [
     {
-      post: '销售顾问（3）：',
-      allInfo: [
+      role: '角色：销售顾问 - 仅看本部门及以下',
+      // post: '销售顾问（3）：',
+      postInfo: [
         {
-          name: '张三'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         },
         {
-          name: '李四'
-        },
-        {
-          name: '王四四'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         }
       ]
     },
     {
-      post: '前端（3）：',
-      allInfo: [
+      role: '角色：普通角色 - 看所有人',
+      // post: '前端（3）：',
+      postInfo: [
         {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
+          post: '前端（3）：',
+          allInfo: [
+            {
+              name: '张1'
+            },
+            {
+              name: '李2'
+            },
+            {
+              name: '王3'
+            }
+          ]
         }
       ]
     }
@@ -1666,6 +1877,7 @@ watch(
 //名称
 .name-content {
   display: flex;
+  align-items: center;
 }
 //员工数
 .employees-Number {
