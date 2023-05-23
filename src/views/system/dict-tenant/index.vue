@@ -176,23 +176,34 @@
             <el-tag>{{ dictTypeValue }}</el-tag>
           </template>
           <template v-else>
-            <el-input v-model="dictTypeValue" />
+            <el-input v-model="dictTypeValue" placeholder="请输入字典编码" />
           </template>
         </template>
       </Form>
       <Form
-        v-if="
-          ['dataCreate', 'dataUpdate', 'dataLevel3Create', 'dataLevel3Update'].includes(actionType)
-        "
+        v-if="['dataCreate', 'dataUpdate'].includes(actionType)"
         :schema="DictDataSchemas.allSchemas.formSchema"
         :rules="DictDataSchemas.dictDataRules"
         ref="dataFormRef"
       >
         <template #value="row">
-          <template v-if="['dataUpdate', 'dataLevel3Update'].includes(actionType)">
+          <template v-if="['dataUpdate'].includes(actionType)">
             <div>{{ row.value }}</div>
           </template>
-          <template v-else><el-input v-model="row.value" /> </template>
+          <template v-else><el-input v-model="row.value" placeholder="请输入数据键值" /> </template>
+        </template>
+      </Form>
+      <Form
+        v-if="['dataLevel3Create', 'dataLevel3Update'].includes(actionType)"
+        :schema="DictDataLevel3Schemas.allSchemas.formSchema"
+        :rules="DictDataLevel3Schemas.dictDataRules"
+        ref="dataFormRef"
+      >
+        <template #value="row">
+          <template v-if="['dataLevel3Update'].includes(actionType)">
+            <div>{{ row.value }}</div>
+          </template>
+          <template v-else><el-input v-model="row.value" placeholder="请输入子项键值" /> </template>
         </template>
       </Form>
       <!-- 操作按钮 -->
@@ -515,24 +526,31 @@ const submitDataForm = async () => {
         }
         if (actionType.value === 'dataCreate') {
           data.dictType = parent.value.type
-          await DictDataApi.createDictDataApi(data)
-          message.success(t('common.createSuccess'))
+          await DictDataApi.createDictDataApi(data).then(() => {
+            message.success(t('common.createSuccess'))
+            dataGetList()
+            typeGetList()
+          })
         } else if (actionType.value === 'dataUpdate') {
-          await DictDataApi.updateDictDataApi(data)
-          message.success(t('common.updateSuccess'))
+          await DictDataApi.updateDictDataApi(data).then(() => {
+            message.success(t('common.updateSuccess'))
+            dataGetList()
+          })
         } else if (actionType.value === 'dataLevel3Create') {
-          await DictDataApi.createDictDataApi(data)
-          message.success(t('common.createSuccess'))
-          dataLevel3GetList()
+          await DictDataApi.createDictDataApi(data).then(() => {
+            message.success(t('common.createSuccess'))
+            dataLevel3GetList()
+            dataGetList()
+          })
         } else if (actionType.value === 'dataLevel3Update') {
-          await DictDataApi.updateDictDataApi(data)
-          message.success(t('common.updateSuccess'))
-          dataLevel3GetList()
+          await DictDataApi.updateDictDataApi(data).then(() => {
+            message.success(t('common.updateSuccess'))
+            dataLevel3GetList()
+          })
         }
         dialogVisible.value = false
       } finally {
         actionLoading.value = false
-        dataGetList()
       }
     }
   })

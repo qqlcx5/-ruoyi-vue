@@ -34,7 +34,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       }
     },
     {
-      title: '成员',
+      title: '在职成员',
       field: 'userCount',
       table: {
         slots: {

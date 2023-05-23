@@ -6,7 +6,7 @@
           <el-form-item label-width="70px" label="角色名称">
             <el-input
               v-model="searchForm.keyword"
-              placeholder="请输入角色名称"
+              placeholder="请输入角色名称或编码"
               @keyup.enter="reload"
             />
           </el-form-item>
@@ -299,10 +299,10 @@ const submitForm = async () => {
 const openConfigModal = (row) => {
   router.push(`/system/role-config?id=${row.id}`)
 }
-const goto = ({ code }) => {
+const goto = ({ id }) => {
   router.push({
     name: 'Member',
-    state: { roleCode: code }
+    query: { roleId: id }
   })
 }
 

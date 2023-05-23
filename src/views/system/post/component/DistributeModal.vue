@@ -9,14 +9,14 @@
     >
       <el-form-item label="岗位" required>
         <div
-          class="flex justify-between w-full min-h-32px leading-none border-1px rounded-4px p-10px cursor-pointer"
+          class="input-box flex justify-between w-full min-h-32px leading-none border-1px rounded-4px p-10px cursor-pointer"
           @click="openSelectPostModal"
         >
           <div class="flex flex-wrap -mb-8px">
             <div
               v-for="item in post"
               :key="item.id"
-              class="flex items-center px-8px py-5px mr-8px mb-8px border-1px rounded-4px"
+              class="input-box flex items-center px-8px py-5px mr-8px mb-8px border-1px rounded-4px"
             >
               {{ item.name }}
               <i
@@ -31,14 +31,14 @@
       </el-form-item>
       <el-form-item label="分配角色" required>
         <div
-          class="flex justify-between w-full min-h-32px leading-none border-1px rounded-4px p-10px cursor-pointer"
+          class="input-box flex justify-between w-full min-h-32px leading-none border-1px rounded-4px p-10px cursor-pointer"
           @click="openSelectRoleModal"
         >
           <div class="flex flex-wrap -mb-8px">
             <div
               v-for="item in role"
               :key="item.roleId"
-              class="flex items-center px-8px py-5px mr-8px mb-8px border-1px rounded-4px"
+              class="input-box flex items-center px-8px py-5px mr-8px mb-8px border-1px rounded-4px"
             >
               {{ item.roleName }}
               <i
@@ -157,4 +157,8 @@ const submitForm = async () => {
   modelVisible.value = false
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.input-box {
+  border-color: $divider-color;
+}
+</style>

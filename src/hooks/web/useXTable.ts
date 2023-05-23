@@ -5,7 +5,7 @@ export interface tableMethod {
   refreshColumn: () => void // 刷新列
   setProps: (props: XTableProps) => void
   deleteData: (id: string | number, msg?: string | VNode | (() => VNode)) => void // 删除数据
-  deleteReq: (id: string | number) => void // 删除请求
+  deleteReq: (id: string | number) => any // 删除请求
   deleteBatch: () => void // 批量删除
   exportList: (fileName?: string) => void // 导出列表
   getCurrentColumn: () => void // 获取当前列

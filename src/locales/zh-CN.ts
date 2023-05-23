@@ -292,6 +292,7 @@ export default {
     del: '删除',
     delete: '删除',
     edit: '编辑',
+    modify: '修改',
     update: '编辑',
     preview: '预览',
     more: '更多',
