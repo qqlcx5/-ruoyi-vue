@@ -62,13 +62,13 @@ const openModal = async (member: any[]) => {
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 
 const openOrgModal = () => {
-  selectOrgModalRef.value.openModal()
+  selectOrgModalRef.value.openModal([organization.value.id])
 }
 const onSelectOrgConfirm = (data) => {
   organization.value = data
 }
 const openPostModal = () => {
-  selectPostModalRef.value.openModal()
+  selectPostModalRef.value.openModal({ id: post.value.id })
 }
 const onSelectPostConfirm = (data) => {
   post.value = data
@@ -92,4 +92,8 @@ const submitForm = async () => {
   }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.input-box {
+  border-color: $divider-color;
+}
+</style>

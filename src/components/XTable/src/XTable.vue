@@ -520,7 +520,7 @@ const getRadioRecord = () => {
   if (!g) {
     return
   }
-  return g.getRadioRecord()
+  return g.getRadioRecord() || g.getRadioReserveRecord()
 }
 
 // 获取当前选中列，checkbox
@@ -563,7 +563,7 @@ const columnInit = () => {
       if (columnConfig) {
         handleColumnChange(columnConfig)
       } else {
-        handleReset()
+        // handleReset()
       }
     }
   })

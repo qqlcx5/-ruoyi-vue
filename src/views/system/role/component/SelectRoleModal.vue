@@ -55,7 +55,7 @@ const [
   allSchemas: allSchemas, // 列表配置
   params: postInfoSearchForm,
   getListApi: RoleApi.getRolePageApi, // 加载列表的 API
-  checkboxConfig: { reserve: true },
+  checkboxConfig: { reserve: true, trigger: 'row' },
   border: true,
   height: 606
 })
@@ -68,11 +68,10 @@ const onPostInfoSearchReset = () => {
 }
 
 // 打开弹窗
-const openModal = async (defaultSelectRow) => {
+const openModal = async (defaultSelectRow?: any[]) => {
   modelVisible.value = true
   if (defaultSelectRow) {
     await nextTick()
-    console.log(defaultSelectRow)
     setCheckboxRow(defaultSelectRow)
   }
 }

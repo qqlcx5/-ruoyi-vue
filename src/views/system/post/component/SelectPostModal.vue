@@ -64,13 +64,21 @@ const postInfoSearchForm = ref({
 // 列表相关的变量
 const [
   registerPostInfo,
-  { reload: postInfoGet, getCheckboxRecords: getCheckboxRecords, getRadioRecord: getRadioRecord }
+  {
+    reload: postInfoGet,
+    getCheckboxRecords: getCheckboxRecords,
+    getRadioRecord: getRadioRecord,
+    setCheckboxRow,
+    setRadioRow
+  }
 ] = useXTable({
   allSchemas: allSchemas, // 列表配置
   params: postInfoSearchForm,
   getListApi: PostInfoApi.getPostPageApi, // 加载列表的 API
   deleteApi: PostInfoApi.deletePostApi, // 删除数据的 API
   exportListApi: PostInfoApi.exportPostApi, // 导出数据的 API
+  checkboxConfig: { reserve: true, trigger: 'row' },
+  radioConfig: { reserve: true, trigger: 'row' },
   border: true,
   height: 606,
   toolBar: false
@@ -86,9 +94,14 @@ const onPostInfoSearchReset = () => {
 }
 
 // 打开弹窗
-const openModal = async (code) => {
+const openModal = async (defaultSelectRow?: any[], code?) => {
   if (code) postInfoSearchForm.value.typeCode = code
   modelVisible.value = true
+  if (defaultSelectRow) {
+    await nextTick()
+    console.log(defaultSelectRow)
+    props.mode === 'single' ? setRadioRow(defaultSelectRow) : setCheckboxRow(defaultSelectRow)
+  }
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 

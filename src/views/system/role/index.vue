@@ -67,7 +67,7 @@
         <!-- 操作：权限配置 -->
         <XTextButton
           title="权限配置"
-          v-hasPermi="['system:permission:assign-role-menu']"
+          v-hasPermi="['system:permission:role-menu-data-scope']"
           @click="openConfigModal(row)"
         />
         <!-- 操作：详情 -->

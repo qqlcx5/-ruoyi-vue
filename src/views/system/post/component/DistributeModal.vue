@@ -107,10 +107,10 @@ const onRoleConfirm = (data) => {
 const selectPostModalRef = ref()
 const openSelectPostModal = () => {
   if (operateMode.value === 'single') return
-  selectPostModalRef.value.openModal(operateTypeCode.value)
+  selectPostModalRef.value.openModal(post.value, operateTypeCode.value)
 }
 
-// 打开岗位弹窗
+// 打开角色弹窗
 const selectRoleModalRef = ref()
 const openSelectRoleModal = () => {
   selectRoleModalRef.value.openModal(
