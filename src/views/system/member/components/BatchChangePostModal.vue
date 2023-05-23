@@ -41,8 +41,9 @@
 import { batchPostAdjustment } from '@/api/system/member'
 import SelectOrgModal from '../../organization/components/SelectOrgModal.vue'
 import SelectPostModal from '../../post/component/SelectPostModal.vue'
-import { message } from 'ant-design-vue'
+
 const { t } = useI18n() // 国际化
+const message = useMessage()
 
 // 弹窗相关的变量
 const modelVisible = ref(false) // 是否显示弹出层
@@ -55,7 +56,6 @@ const selectPostModalRef = ref()
 
 // 打开弹窗
 const openModal = async (member: any[]) => {
-  console.log(member)
   memberList.value = member
   modelVisible.value = true
 }
@@ -77,7 +77,7 @@ const onSelectPostConfirm = (data) => {
 // 提交新增/修改的表单
 const emit = defineEmits(['success']) // 定义 success 事件，用于操作成功后的回调
 const submitForm = async () => {
-  if (!organization.value || !post.value) return message.warning('请填写完整内容')
+  if (!organization.value.id || !post.value.id) return message.warning('请填写完整内容')
   loading.value = true
   let params = {
     organizationId: organization.value.id,

@@ -61,7 +61,8 @@ const [
   getListApi: RoleApi.getRolePageApi, // 加载列表的 API
   checkboxConfig: { reserve: true, trigger: 'row' },
   border: true,
-  height: 606
+  height: 606,
+  toolbarConfig: { slots: { buttons: 'toolbar_buttons' } }
 })
 // 查询重置
 const onPostInfoSearchReset = () => {
