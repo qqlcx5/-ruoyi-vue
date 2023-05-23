@@ -47,6 +47,17 @@
     margin-top: 32px;
   }
 }
+.wg-message-operate-confirm {
+  &.el-message-box {
+    padding: 20px;
+  }
+  .el-message-box__header, .el-message-box__content, .el-message-box__btns {
+    padding: 0;
+  }
+  .el-message-box__btns {
+    margin-top: 24px;
+  }
+}
 
 $messageMap: (
   (type: 'success', color: #ffffff, bgColor: #52C41A, fill: #F0F9EC, fillColor: #67C33A),

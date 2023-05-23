@@ -119,7 +119,6 @@ import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from './component/ConfigDetailDrawer.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
-import { ElMessageBox } from 'element-plus'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -178,20 +177,20 @@ const handleDetail = async (rowId) => {
 const onRoleDel = async (row) => {
   const activeUserCount = await RoleApi.getActiveUsersCount(row.id) // 请求在职员工数
   if (activeUserCount > 0) {
-    ElMessageBox.confirm(
-      h('span', [
-        h('span', '系统校验到该岗位类型底下还存在 '),
-        h('span', { style: { color: 'red' } }, activeUserCount),
-        h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
-      ]),
-      `提示`,
-      {
-        confirmButtonText: t('common.toOperate'),
-        cancelButtonText: t('common.cancel'),
-        type: 'warning',
-        lockScroll: false
-      }
-    )
+    message
+      .wgOperateConfirm(
+        h('span', [
+          h('span', '系统校验到该岗位类型底下还存在 '),
+          h('span', { style: { color: 'red' } }, activeUserCount),
+          h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
+        ]),
+        `提示`,
+        {
+          confirmButtonText: t('common.toOperate'),
+          cancelButtonText: t('common.cancel'),
+          lockScroll: false
+        }
+      )
       .then(async () => {})
       .catch(() => {})
   } else {
@@ -220,20 +219,20 @@ const roleStatusChange = async (row) => {
   if (row.status === CommonStatusEnum.DISABLE) {
     const activeUserCount = await RoleApi.getActiveUsersCount(row.id) // 请求在职员工数
     if (activeUserCount > 0) {
-      return ElMessageBox.confirm(
-        h('span', [
-          h('span', '系统校验到该机构底下还存在 '),
-          h('span', { style: { color: 'red' } }, activeUserCount),
-          h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
-        ]),
-        `提示`,
-        {
-          confirmButtonText: t('common.toOperate'),
-          cancelButtonText: t('common.cancel'),
-          type: 'warning',
-          lockScroll: false
-        }
-      )
+      return message
+        .wgOperateConfirm(
+          h('span', [
+            h('span', '系统校验到该机构底下还存在 '),
+            h('span', { style: { color: 'red' } }, activeUserCount),
+            h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
+          ]),
+          `提示`,
+          {
+            confirmButtonText: t('common.toOperate'),
+            cancelButtonText: t('common.cancel'),
+            lockScroll: false
+          }
+        )
         .then(async () => {})
         .catch(() => {})
         .finally(() => reload())
