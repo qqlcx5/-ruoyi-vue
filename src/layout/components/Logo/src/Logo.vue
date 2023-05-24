@@ -14,6 +14,8 @@ const show = ref(true)
 
 const title = computed(() => appStore.getTitle)
 
+const logoUrl = computed(() => appStore.logoUrl)
+
 const layout = computed(() => appStore.getLayout)
 
 const collapse = computed(() => appStore.getCollapse)
@@ -72,7 +74,7 @@ const editUserInfo = () => {
     >
       <!-- 头像  title  -->
       <img
-        :src="userImg"
+        :src="logoUrl || userImg"
         alt=""
         class="w-[calc(var(--logo-height)-30px)] rounded-[50%]"
         @error="
@@ -84,7 +86,7 @@ const editUserInfo = () => {
       <div
         v-if="show"
         :class="[
-          'w-100px ml-8px text-16px font-700 text-[var(--left-menu-text-color)] overflow-hidden overflow-ellipsis whitespace-nowrap',
+          'w-100px ml-8px text-16px font-700 text-[var(--left-menu-text-color)] overflow-hidden overflow-ellipsis whitespace-nowrap'
           // {
           //   'text-[var(--left-menu-text-color)]': layout === 'classic',
           //   'text-[var(--left-menu-text-color)]':

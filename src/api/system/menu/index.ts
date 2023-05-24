@@ -30,7 +30,12 @@ export const getMenuList = (params) => {
 
 // 通过菜单查询员工数量
 export const getMemberNumList = (params) => {
-  return request.get({ url: '/system/tenant-menu/get/user/extra', params })
+  return request.get({ url: '/system/tenant-menu/get/user/extra/post', params })
+}
+
+// 通过菜单查询员工数量 角色
+export const getMemberNumRoleList = (params) => {
+  return request.get({ url: '/system/tenant-menu/get/user/extra/role', params })
 }
 
 // 获取菜单详情

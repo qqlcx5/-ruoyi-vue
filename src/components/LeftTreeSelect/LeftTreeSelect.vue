@@ -200,6 +200,9 @@ watch(
     if (val[0]) {
       //选中的值向上发送
       emit('sendCurrentSelect', val[0])
+    } else {
+      //选中的值向上发送
+      emit('sendCurrentSelect', '')
     }
   },
   {

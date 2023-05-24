@@ -1,5 +1,10 @@
 <template>
-  <VxeGrid v-bind="getProps" ref="xGrid" :class="`${prefixCls}`" class="xtable-scrollbar">
+  <VxeGrid
+    v-bind="getProps"
+    ref="xGrid"
+    :class="`${prefixCls} ${themeCLass}`"
+    class="xtable-scrollbar"
+  >
     <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
       <slot :name="item" v-bind="data || {}"></slot>
     </template>
@@ -43,13 +48,15 @@ const prefixCls = getPrefixCls('x-vxe-table')
 const attrs = useAttrs()
 const emit = defineEmits(['register'])
 
+let themeCLass = ref<String>('light')
+
 watch(
   () => appStore.getIsDark,
   () => {
     if (appStore.getIsDark == true) {
-      import(`./style/dark.scss`)
+      themeCLass.value = 'dark'
     } else {
-      import(`./style/light.scss`)
+      themeCLass.value = 'light'
     }
   },
   { immediate: true }

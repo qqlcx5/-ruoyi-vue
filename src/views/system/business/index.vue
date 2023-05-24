@@ -1,3 +1,4 @@
+<!--  主体管理  -->
 <template>
   <!-- 搜索工作栏 -->
 
@@ -25,7 +26,7 @@
           :options="state.statusOptions"
         />
       </a-form-item>
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
       <a-button @click="resetQuery">重置</a-button>
     </a-form>
   </ContentWrap>
@@ -49,7 +50,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -90,6 +91,7 @@
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
       :defaultExpandAllRows="state.isExpandAll"
       @resizeColumn="handleResizeColumn"
+      :expandIconColumnIndex="state.treeIconIndex"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -123,7 +125,7 @@
       <template #bodyCell="{ column, record }">
         <!--  可用名额   -->
         <template v-if="column?.key === 'usableAmount'">
-          <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
+          <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
         </template>
         <!--  有效期   -->
         <template v-if="column?.key === 'validityPeriod'">
@@ -177,6 +179,7 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
         <a-form-item :label="`上级主体`" name="belongTenantId">
@@ -188,13 +191,14 @@
             placeholder="请选择上级目录"
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
+            treeNodeFilterProp="name"
+            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
         <a-form-item
           :label="`主体编码`"
           name="code"
-          :rules="[{ required: true, message: `主体编码不能为空` }]"
+          :rules="[{ required: true, message: `主体编码不能为空` }, { validator: codeValidator }]"
         >
           <a-input
             v-model:value="state.formState.code"
@@ -207,7 +211,10 @@
         <a-form-item
           :label="`主体名称`"
           name="name"
-          :rules="[{ required: true, message: `主体名称不能为空` }]"
+          :rules="[
+            { required: true, message: `主体名称不能为空` },
+            { validator: chineseValidator }
+          ]"
         >
           <a-input
             v-model:value="state.formState.name"
@@ -217,7 +224,11 @@
           />
         </a-form-item>
 
-        <a-form-item :label="`主体简称`" name="abbreviate">
+        <a-form-item
+          :label="`主体简称`"
+          name="abbreviate"
+          :rules="[{ validator: chineseValidator }]"
+        >
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -229,7 +240,10 @@
         <a-form-item
           :label="`系统名称`"
           name="systemName"
-          :rules="[{ required: true, message: `系统名称不能为空` }]"
+          :rules="[
+            { required: true, message: `系统名称不能为空` },
+            { validator: chineseEnValidator }
+          ]"
         >
           <div class="flex-content">
             <a-input
@@ -286,7 +300,7 @@
         </a-form-item>
 
         <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
-          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入主体编码" />
+          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />
           <div class="phone-text"> 主要用于重要功能的安全验证，请确保填写正确 </div>
         </a-form-item>
 
@@ -300,6 +314,7 @@
               v-model:value="state.formState.effectiveStartEndTime"
               format="YYYY/MM/DD"
               :placeholder="['开始时间', '结束时间']"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
             <!--            <div>-->
             <!--              <a-form-item-rest>-->
@@ -349,7 +364,11 @@
         </a-form-item>
 
         <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
-        <a-form-item :label="`统一社会信用代码`" name="creditCode">
+        <a-form-item
+          :label="`统一社会信用代码`"
+          name="creditCode"
+          :rules="[{ validator: codeValidator }]"
+        >
           <a-input
             v-model:value="state.formState.creditCode"
             placeholder="请输入统一社会信用代码"
@@ -380,6 +399,7 @@
             v-model:value="state.formState.establishDate"
             format="YYYY/MM/DD"
             placeholder="请选择时间"
+            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
 
@@ -425,6 +445,7 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
+                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -474,7 +495,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >确定</a-button
+        >下一步</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -499,8 +520,8 @@
             tabBarGutter="40px"
             :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
           >
-            <a-tab-pane key="frontDesk" tab="前台" force-render>前台</a-tab-pane>
-            <a-tab-pane key="backstage" tab="后台">
+            <a-tab-pane key="frontDesk" tab="成员端" force-render>成员端</a-tab-pane>
+            <a-tab-pane key="backstage" tab="服务端">
               <div class="tab-search-content">
                 <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
                 <a-checkbox v-model:checked="state.isExpandAllTab" @change="expandAllFN"
@@ -527,10 +548,12 @@
                 </a-tree>
               </div>
             </a-tab-pane>
+            <a-tab-pane key="frontDesk" tab="client" force-render>客户端</a-tab-pane>
           </a-tabs>
         </div>
         <div class="right-content">
-          <div>
+          <div v-if="state.isShowRightTree">
+            <div v-if="state.isShowRightTree">已选信息：</div>
             <a-tree
               v-if="state.isShowRightTree"
               defaultExpandAll
@@ -543,6 +566,7 @@
               <!--                    <template v-else>{{ title }}</template>-->
               <!--                  </template>-->
             </a-tree>
+            <div v-if="state.selectTree?.length===0" class="select-tip">请选择左侧要配置的菜单</div>
           </div>
         </div>
       </div>
@@ -550,7 +574,7 @@
 
     <template #footer>
       <a-button type="primary" html-type="submit" @click="PermissionOk">确定选择</a-button>
-      <a-button @click="closePermissionModal">取消</a-button>
+      <a-button @click="closePermissionModal">暂不设置</a-button>
     </template>
   </a-modal>
 
@@ -652,6 +676,7 @@
     wrapClassName="details-modal"
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
+    :footer="null"
   >
     <div class="details-edit" @click="edit(state.record, true)"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
@@ -813,6 +838,7 @@ import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
+import { cloneDeep } from 'lodash-es'
 
 const { wsCache } = useCache()
 
@@ -900,6 +926,54 @@ const legalMobileValidator = (rule, value) => {
   })
 }
 
+//主体编码英文数字
+const codeValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[a-zA-Z0-9]+$/
+      if (!regExp.test(value)) {
+        reject('只能输入字母跟数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制中文
+const chineseValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[\u4e00-\u9fa5]*$/
+      if (!regExp.test(value)) {
+        reject('请输入中文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//中英文
+const chineseEnValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[a-zA-Z\u4e00-\u9fa5]+$/
+      if (!regExp.test(value)) {
+        reject('只能输入中英文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -933,6 +1007,7 @@ const state = reactive({
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
+  treeIconIndex: 0,
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
@@ -1211,8 +1286,8 @@ const getList = async (isRefresh = false) => {
     })
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
-
     state.total = res.total
+    console.log(' state.tableDataList', state.tableDataList)
 
     if (isRefresh) {
       message.success('刷新成功')
@@ -1226,6 +1301,7 @@ const getList = async (isRefresh = false) => {
   //不要展示按钮 默认按钮全选 后端处理
   const tempArr = menuList.filter((item) => item.type !== 3)
   state.menuTreeList = handleTree(tempArr)
+  console.log('menuList', menuList)
 
   // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
   state.parentCheckedKeys = []
@@ -1543,7 +1619,8 @@ const addMajorIndividualFN = async () => {
     if (state.modalType === 'add') {
       res = await addMajorIndividual(params)
       state.addSuccessId = res
-      message.success('新增成功')
+      // message.success('新增成功')
+      message.success('主体已建立成功！主体用户名和密码已发送到负责人手机号中，请注意查收！')
       //配置权限
       openPermissionModal()
     } else {
@@ -1571,6 +1648,7 @@ const closePermissionModal = () => {
   state.addSuccessId = undefined
   state.selectTree = []
   state.checkedKeys = []
+  console.log('state.selectTree ', state.selectTree)
 }
 
 //开启功能配置 modal
@@ -1592,6 +1670,9 @@ const PermissionOk = async () => {
     tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
     status: 0
   }
+  if (state.permissionRecord?.packageId === null) {
+    state.PermissionType = 'add'
+  }
   if (state.PermissionType === 'add') {
     await addTenantPackage(params)
     message.success('新增成功')
@@ -1604,16 +1685,40 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
+const findParent = (childrenId, arr, path) => {
+  if (path === undefined) {
+    path = []
+  }
+  for (let i = 0; i < arr.length; i++) {
+    let tmpPath = path.concat()
+    tmpPath.push(arr[i].id)
+    if (childrenId == arr[i].id) {
+      return tmpPath
+    }
+    if (arr[i].children) {
+      let findResult = findParent(childrenId, arr[i].children, tmpPath)
+      if (findResult) {
+        return findResult
+      }
+    }
+  }
+}
+
 const assignPermission = async (record) => {
+  console.log('record', record)
   state.permissionRecord = record
   state.PermissionType = 'edit'
-  if (record.packageId) {
+  if (record.packageId != null) {
     const res = await getTenantPackage({ id: record.packageId })
     //... res 可能为null
-    const { menuIds = [], id } = res || []
+    const { menuIds = [], dirIds = [], id } = res || []
     state.editPermissionID = id
     state.checkedKeys = menuIds
-    state.selectTree = filterTree(state.menuTreeList, menuIds)
+    nextTick(() => {
+      state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
+    })
+    console.log('state.selectTree', state.selectTree)
+    console.log('配置的res', res)
   }
   //右侧展开显示 左侧选中的数据
   state.isShowRightTree = false
@@ -1999,12 +2104,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {
@@ -2143,8 +2250,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -2174,6 +2281,8 @@ state.columns = getColumns(state, PageKeyObj.business, allColumns, state.default
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
   () => {
+    console.log('state.checkedKeys)', state.checkedKeys)
+    console.log('checkedKeysBack.value', checkedKeysBack.value)
     state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
     state.selectTree = filterTree(state.menuTreeList, state.idArr)
     state.isShowRightTree = false
@@ -2181,6 +2290,22 @@ watch(
     nextTick(() => {
       state.isShowRightTree = true
     })
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
+
+watch(
+  () => state.columns,
+  (columns) => {
+    const needItem = columns.find((item) => item.key === 'name')
+    state.treeIconIndex = needItem.sort - 1
+  },
+  {
+    immediate: true,
+    deep: true
   }
 )
 </script>
@@ -2593,6 +2718,14 @@ watch(
 }
 .adress-input {
   width: 530px;
+}
+.select-tip {
+  width: 100%;
+  height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(179, 179, 179);
 }
 </style>
 

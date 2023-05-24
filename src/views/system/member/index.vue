@@ -21,7 +21,7 @@
                 <a-input
                   class="width-100"
                   v-model:value="queryParams.memberName"
-                  @pressEnter="getList"
+                  @pressEnter="getList(1)"
                   placeholder="请输入成员姓名或工号"
                 />
               </div>
@@ -142,7 +142,7 @@
           </div>
 
           <div class="search-btn-content">
-            <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+            <a-button type="primary" html-type="submit" @click="getList(1)">查询</a-button>
             <a-button @click="resetQuery">重置</a-button>
           </div>
         </div>
@@ -221,7 +221,7 @@
           :defaultExpandAllRows="state.isExpandAll"
           @resizeColumn="handleResizeColumn"
           :pagination="{
-            pageSizeOptions: ['20', '30', '60', '100'],
+            pageSizeOptions: ['20', '30', '60', '100', '200', '500', '1000'],
             showSizeChanger: true,
             showQuickJumper: true,
             pageSize: queryParams.pageSize,
@@ -274,7 +274,7 @@
             <template v-if="column?.key === 'departmentPost'">
               <div v-for="item in record?.departmentPostList" class="phone-div-content">
                 <div class="phone-div">{{ item.department }}/{{ item.post }}</div>
-                <div :class="item.type === '1' ? 'principal-tag' : 'part-tag'"
+                <div :class="item.type === 'main_post' ? 'principal-tag' : 'part-tag'"
                   >{{ item.typeText }}
                 </div>
               </div>
@@ -351,13 +351,14 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
         <div class="form-content">
           <a-form-item
             :label="`成员工号`"
             name="memberNum"
-            :rules="[{ required: true, message: `成员编码不能为空` }]"
+            :rules="[{ required: true, message: `成员工号不能为空` }, { validator: numValidator }]"
             class="width-50"
           >
             <a-input
@@ -400,7 +401,12 @@
             :rules="[{ required: true, message: `入职时间不能为空` }]"
             class="width-50"
           >
-            <a-date-picker placeholder="请选择时间" v-model:value="formState.entryTime" />
+            <a-date-picker
+              placeholder="请选择时间"
+              v-model:value="formState.entryTime"
+              class="width-100"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
+            />
           </a-form-item>
 
           <a-form-item
@@ -428,6 +434,22 @@
                 item.label
               }}</a-radio>
             </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            v-if="formState.isOnJob === '1'"
+            :label="`离职日期`"
+            name="departureTime"
+            class="width-50"
+            :rules="[{ required: true, message: `离职时间不能为空` }]"
+          >
+            <a-date-picker
+              placeholder="请选择离职日期"
+              v-model:value="formState.departureTime"
+              :disabled-date="disabledDate"
+              class="width-100"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
+            />
           </a-form-item>
 
           <a-form-item
@@ -466,8 +488,13 @@
                 </template>
 
                 <template v-if="column.key === 'phoneNum'">
-                  <div>
-                    <a-input v-model:value="record.phoneNum" placeholder="请输入号码" />
+                  <div class="phone-style">
+                    <a-form-item
+                      :rules="[{ required: true, message: `电话不能为空` }]"
+                      class="phone-form-style"
+                    >
+                      <a-input v-model:value="record.phoneNum" placeholder="请输入号码" />
+                    </a-form-item>
                   </div>
                 </template>
 
@@ -568,9 +595,11 @@
                   <a-tree-select
                     v-model:value="record.post"
                     style="width: 100%"
+                    show-search
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
                     :tree-data="state.postListOptions"
+                    treeNodeFilterProp="label"
                   />
                 </div>
               </template>
@@ -629,6 +658,8 @@
               placeholder="请选择时间"
               v-model:value="formState.birthDay"
               :disabled-date="disabledDate"
+              class="width-100"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -641,7 +672,12 @@
             />
           </a-form-item>
 
-          <a-form-item :label="`电子邮箱`" class="width-50" :rules="state.contactMailRules">
+          <a-form-item
+            name="email"
+            :label="`电子邮箱`"
+            class="width-50"
+            :rules="state.contactMailRules"
+          >
             <a-input v-model:value="formState.email" placeholder="请输入电子邮箱" />
           </a-form-item>
 
@@ -659,6 +695,7 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
+                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -703,7 +740,10 @@
 
       <div
         class="message-text assign-roles-tip"
-        v-if="state.permissionRecord?.roleVOList?.length === 0"
+        v-if="
+          state.permissionRecord?.roleVOList?.length === 0 ||
+          state.permissionRecord?.roleVOList === null
+        "
       >
         <img :src="warningImg" alt="" class="tip-img message-img waring-img" />
         <div class="roles-text">
@@ -1026,6 +1066,7 @@ import BatchChangePostModal from './components/BatchChangePostModal.vue'
 import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
 import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer.vue'
+import { cloneDeep } from 'lodash-es'
 
 const { wsCache } = useCache()
 
@@ -1116,6 +1157,43 @@ const memberNameValidator = (rule, value) => {
       const regExp = /^[\u4e00-\u9fa5]*$/
       if (!regExp.test(value)) {
         reject('请输入中文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制数字
+const numValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[0-9]*$/
+      if (!regExp.test(value)) {
+        reject('只能输入数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//邮箱正则校验
+const isValidMail = (email) => {
+  const regExp = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
+  return regExp.test(email)
+}
+
+//邮箱校验
+const contactMailRulesValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      if (!isValidMail(value)) {
+        reject('请输入正确的邮箱')
       } else {
         resolve()
       }
@@ -1220,6 +1298,7 @@ const state = reactive({
   organizationList: [], //左侧组织机构 List 用于过滤查找 当前选中的子级id
   selectedKeys: [], //左侧 机构选中的
   testArr: [1, 2, 3, 4],
+  contactMailRules: [{ validator: contactMailRulesValidator }],
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1479,8 +1558,12 @@ const allColumns = [
 ]
 
 /** 查询列表 */
-const getList = async () => {
+const getList = async (page) => {
   state.loading = true
+
+  if (page) {
+    queryParams.current = page
+  }
 
   let tempConfigureRoles = []
   let roleExist = null
@@ -1505,11 +1588,12 @@ const getList = async () => {
     organizationIds: queryParams.organization, //机构 左侧tree arr
     nameOrNumber: queryParams.memberName, //姓名or工号
     phone: queryParams.memberPhone, //联系电话
+    encryptPhone: queryParams.memberPhone, //联系电话 后端说多传一个
     postTypeCode: queryParams.postType, //岗位类型
     // postName: queryParams.post, //岗位名称
     postId: queryParams.post,
     postType: queryParams.partPost === '2' ? null : queryParams.partPost, //是否兼岗
-    roleId: tempConfigureRoles, //配置角色
+    roleIds: tempConfigureRoles, //配置角色
     userType: queryParams.memberType === 'all' ? null : queryParams.memberType, //人员类型
     status: queryParams.userType === 'all' ? null : queryParams.userType, //账号状态
     userStatus: queryParams.isOnJob === 'all' ? null : queryParams.isOnJob, //在职状态
@@ -1541,7 +1625,8 @@ const getList = async () => {
       //部门、岗位
       item?.postVOList?.map((postItem) => {
         let tempText = '主岗'
-        if (postItem.type === '1') {
+        //main_post主岗 secondary_post兼岗
+        if (postItem.type === 'secondary_post') {
           tempText = '兼岗'
         }
         tempDepartmentPost.push({
@@ -1599,22 +1684,22 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  state.queryParams = {
-    current: 1, //当前页码
-    pageSize: 10, //显示条数
-    organization: null, //机构 左侧tree
-    memberName: null, //成员姓名
-    memberPhone: null, //联系电话
-    postType: null, //岗位类型
-    partPost: null, //是否有兼岗 主岗 兼岗
-    post: null, //岗位
-    department: null, //部门
-    configureRoles: [], //配置角色
-    memberType: null, //人员类型
-    postStatus: null, //岗位状态
-    isOnJob: null, //在职状态
-    userType: null //账号类型
-  }
+  queryParams.current = 1 //当前页码
+  queryParams.pageSize = 10 //显示条数
+  //重置不包括左侧部门
+  // queryParams.organization = null //机构 左侧tree
+  queryParams.memberName = null //成员姓名
+  queryParams.memberPhone = null //联系电话
+  queryParams.postType = null //岗位类型
+  queryParams.partPost = null //是否有兼岗 主岗 兼岗
+  queryParams.post = null //岗位
+  queryParams.department = null //部门
+  queryParams.configureRoles = [] //配置角色
+  queryParams.memberType = null //人员类型
+  queryParams.postStatus = null //岗位状态
+  queryParams.isOnJob = null //在职状态
+  queryParams.userType = null //账号类型
+
   handleQuery()
 }
 
@@ -1661,6 +1746,7 @@ const closeModal = () => {
   formState.memberType = 'trial_members' //人员类型
   formState.isOnJob = '0' //在职(人员)状态
   formState.birthDay = null //出生日期
+  formState.departureTime = null //离职日期
   formState.qqNum = null //QQ
   formState.email = null //电子邮箱
   formState.wechat = null //微信号
@@ -1794,6 +1880,7 @@ const edit = async (record, isCloseDetails = false) => {
   addDataSource.addEditTableData = tempPhoneList //联系电话
   addPostDataSource.addEditTableData = tempPostList //岗位信息
   formState.birthDay = record.birthDay ? dayjs(record.birthDay) : dayjs() //出生日期
+  formState.departureTime = res.departureTime ? dayjs(res.departureTime) : null //离职日期
   formState.qqNum = record.qq //QQ
   formState.email = record.email //电子邮箱
   formState.wechat = record.wechat //微信号
@@ -1992,6 +2079,8 @@ const addMajorIndividualFN = async () => {
       openPermissionModal()
     } else {
       params['id'] = formState.id
+      params['departureTime'] = formState.departureTime?.format('YYYY-MM-DD')
+      console.log('params===>', params)
       res = await updateMember(params)
       message.success('修改成员成功')
     }
@@ -2052,7 +2141,6 @@ const assignPermission = async (record) => {
 //表格状态改变 确认modal... 然后才开短信 modal
 //打开 状态开始关闭 确认modal
 const openStatusModal = () => {
-  message.success('账号状态修改成功')
   state.isShowStatus = true
 }
 //关闭 状态开始关闭 确认modal
@@ -2258,12 +2346,14 @@ const detailsInfo = async (record) => {
   ]
   let tableData = []
   let tablePostData = []
+  console.log('res.sex', res.sex)
+  console.log('res.sexres.sex', typeof res.sex)
   switch (res.sex) {
     case 1:
-      sexText = '女'
+      sexText = '男'
       break
     case 2:
-      sexText = '男'
+      sexText = '女'
   }
 
   switch (res.userStatus) {
@@ -2314,8 +2404,8 @@ const detailsInfo = async (record) => {
     const temp1 = JSON.parse(item.beforeData)
     const temp2 = JSON.parse(item.afterData)
     let tempItem = {
-      date: dayjs(temp1?.createTime)?.format('YYYY-MM-DD'),
-      time: dayjs(temp1?.createTime)?.format('HH:mm:ss')
+      date: dayjs(item?.createTime)?.format('YYYY-MM-DD'),
+      time: dayjs(item?.createTime)?.format('HH:mm:ss')
       // type: '离职',
       // beforeChange: '变更前：在职状态-在职',
       // afterChange: '变更后：在职状态-离职、离职时间-2023-05-15',
@@ -2381,6 +2471,8 @@ const detailsInfo = async (record) => {
 
     changeRecord.push(tempItem)
   })
+
+  changeRecord?.reverse()
 
   let tableColumns = [
     {
@@ -2691,12 +2783,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {
@@ -2835,8 +2929,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -2866,7 +2960,6 @@ function filterOne(dataList, value, type) {
 }
 
 const sendCurrentSelect = (currentKey) => {
-  // console.log('currentKey==================>', currentKey)
   // console.log('typeof currentKey', typeof currentKey)
   // const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
   // console.log('organizationList', organizationList)
@@ -2893,7 +2986,7 @@ const sendCurrentSelect = (currentKey) => {
     // console.log('tempArr222222222222222222222222222222', tempArr)
   }
   // console.log('queryParams.organization', queryParams.organization)
-  getList()
+  getList(1)
 }
 
 interface DataItem {
@@ -2922,7 +3015,6 @@ interface DataItem {
 const getOrganizationListFN = async () => {
   const res = await getSimpleOrganizationList()
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
-  console.log('res', res)
   // console.log('organization', organizationList)
 
   state.organizationList = res
@@ -2938,10 +3030,6 @@ const getOrganizationListFN = async () => {
   //...TODO:这里有空再换 冗余了 本来是用 component 后面又换成id了
   state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
-  // console.log('组织机构List', state.organizationList)
-  console.log('组织机构tempArr', state.organizationOptions)
-  // console.log('组织机构取ID', state.organizationIDOptions)
-  console.log('组织机构Liststate.organizationList', state.organizationList)
   return res
 }
 
@@ -4011,6 +4099,11 @@ onMounted(async () => {
   display: flex;
   align-items: center;
 }
+.phone-style {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
 </style>
 
 <style lang="scss">
@@ -4044,6 +4137,9 @@ onMounted(async () => {
 
 //新增 编辑 modal
 .add-edit-modal {
+  .phone-form-style {
+    margin: 0 !important;
+  }
   //日期选择器清除icon 应该是被全局哪里影响到了
   .ant-picker-clear {
     background-color: transparent !important;

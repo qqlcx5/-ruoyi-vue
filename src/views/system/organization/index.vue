@@ -11,7 +11,7 @@
       <a-form-item :label="`机构类型`" name="organizationType">
         <a-select
           v-model:value="queryParams.organizationType"
-          placeholder="请选择状态"
+          placeholder="请选择机构类型"
           style="width: 200px"
           :options="state.organizationTypeOptions"
         />
@@ -25,7 +25,7 @@
           :options="state.statusOptions"
         />
       </a-form-item>
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
       <a-button @click="resetQuery">重置</a-button>
     </a-form>
   </ContentWrap>
@@ -49,7 +49,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -90,6 +90,7 @@
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
       :defaultExpandAllRows="state.isExpandAll"
       @resizeColumn="handleResizeColumn"
+      :expandIconColumnIndex="state.treeIconIndex"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -146,10 +147,22 @@
         <template v-if="column?.key === 'operation'">
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-            <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
             <div
-              class="text-color margin-right-5"
-              @click="assignPermission(record)"
+              :class="[
+                'text-color',
+                'margin-right-5',
+                { 'disable-color': record?.statusSwitch === false }
+              ]"
+              @click="openModal(record, record?.statusSwitch === false)"
+              >新增子项</div
+            >
+            <div
+              :class="[
+                'text-color',
+                'margin-right-5',
+                { 'disable-color': record?.statusSwitch === false }
+              ]"
+              @click="assignPermission(record, false, record?.statusSwitch === false)"
               v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
               >设置属性</div
             >
@@ -183,7 +196,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :bodyStyle="{ maxHeight: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
+    :bodyStyle="{ height: '520px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
       <a-form
@@ -191,6 +204,7 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <a-form-item :label="`上级机构`" name="parentId">
           <a-tree-select
@@ -201,7 +215,7 @@
             placeholder="请选择上级机构"
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
+            treeNodeFilterProp="name"
           />
         </a-form-item>
 
@@ -237,17 +251,21 @@
         <a-form-item
           :label="`机构编码`"
           name="code"
-          :rules="[{ required: true, message: `机构编码不能为空` }]"
+          :rules="[{ required: true, message: `机构编码不能为空` }, { validator: enNumValidator }]"
         >
           <a-input
             v-model:value="state.formState.code"
             show-count
-            :maxlength="20"
+            :maxlength="50"
             placeholder="请输入机构编码"
           />
         </a-form-item>
 
-        <a-form-item :label="`机构简称`" name="abbreviate">
+        <a-form-item
+          :label="`机构简称`"
+          name="abbreviate"
+          :rules="[{ validator: chineseValidator }]"
+        >
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -264,18 +282,26 @@
         <!--          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />-->
         <!--        </a-form-item>-->
 
-        <a-form-item
-          :label="`负责人`"
-          name="contactName"
-          :rules="[{ required: true, message: `负责人不能为空` }]"
-        >
-          <a-select
+        <a-form-item :label="`负责人`" name="contactName">
+          <!--          <a-select-->
+          <!--            v-model:value="state.formState.contactName"-->
+          <!--            class="width-100"-->
+          <!--            show-search-->
+          <!--            :options="state.memberOptions"-->
+          <!--            placeholder="请选择负责人"-->
+          <!--            optionFilterProp="label"-->
+          <!--            :getPopupContainer="(triggerNode) => triggerNode.parentElement"-->
+          <!--            @change="getPhoneList"-->
+          <!--          />-->
+
+          <a-tree-select
             v-model:value="state.formState.contactName"
-            class="width-100"
-            :options="state.memberOptions"
+            show-search
+            style="width: 100%"
+            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
             placeholder="请选择负责人"
-            optionFilterProp="label"
-            :getPopupContainer="(triggerNode) => triggerNode.parentElement"
+            :tree-data="state.memberOptions"
+            treeNodeFilterProp="label"
             @change="getPhoneList"
           />
         </a-form-item>
@@ -343,6 +369,7 @@
         ref="formAttributeRef"
         v-bind="layout1"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本属性 </div>
 
@@ -363,24 +390,39 @@
 
         <a-form-item
           label="分公司类型"
+          :rules="[{ required: true, message: `分公司类型不能为空` }]"
           v-if="
             state.currentType === '2' ||
             state.currentType === '分公司' ||
             state.detailsRecord?.type === '2'
           "
         >
-          <a-checkbox-group v-model:value="state.formAttributeState.type">
-            <a-checkbox
-              v-for="(item, index) in state.branchCompanyTypeOptions"
+          <!--          <a-checkbox-group v-model:value="state.formAttributeState.type">-->
+          <!--            <a-checkbox-->
+          <!--              v-for="(item, index) in state.branchCompanyTypeOptions"-->
+          <!--              :value="item.value"-->
+          <!--              :key="`type${index}`"-->
+          <!--              name="type"-->
+          <!--              :rules="[{ required: true, message: '分公司类型不能为空!' }]"-->
+          <!--              >{{ item.label }}</a-checkbox-->
+          <!--            >-->
+          <!--          </a-checkbox-group>-->
+
+          <a-radio-group v-model:value="state.formAttributeState.type">
+            <a-radio
               :value="item.value"
               :key="`type${index}`"
               name="type"
-              :rules="[{ required: true, message: '分公司类型不能为空!' }]"
-              >{{ item.label }}</a-checkbox
+              v-for="(item, index) in state.branchCompanyTypeOptions"
+              >{{ item.label }}</a-radio
             >
-          </a-checkbox-group>
+          </a-radio-group>
         </a-form-item>
-        <a-form-item label="门店类型" v-else>
+        <a-form-item
+          label="门店类型"
+          :rules="[{ required: true, message: `门店类型不能为空` }]"
+          v-else
+        >
           <a-checkbox-group v-model:value="state.formAttributeState.type">
             <a-checkbox
               v-for="(item, index) in state.storeTypeOptions"
@@ -467,6 +509,7 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
+                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -489,9 +532,13 @@
               placeholder="请选择联系方式"
               style="width: 200px"
               :options="state.contactInformationOptions"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
-          <a-form-item :name="['contactInformationArr', index, 'mobile']">
+          <a-form-item
+            :name="['contactInformationArr', index, 'mobile']"
+            :rules="[{ validator: numValidator }]"
+          >
             <a-input
               v-model:value="item.mobile"
               placeholder="请输入联系电话"
@@ -504,6 +551,13 @@
             class="add-circle"
             :size="20"
             @click="addContactInformation()"
+          />
+          <Icon
+            v-if="state.formAttributeState.contactInformationArr?.length > 1"
+            icon="svg-icon:reduce-circle"
+            class="add-circle"
+            :size="20"
+            @click="removeContactInformation(item)"
           />
 
           <!--  <MinusCircleOutlined @click="addContactInformation()" />-->
@@ -651,7 +705,8 @@
       overflow: 'auto'
     }"
   >
-    <div class="status-content" v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0">
+    <!--      v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"    -->
+    <div class="status-content" v-if="state.tableStatusChangeInfo.record.statusSwitch">
       <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="status-text-content">
         <div class="status-text">
@@ -685,7 +740,7 @@
             系统校验到该机构底下还存在<span class="status-span">{{
               state.tableStatusChangeInfo?.ctiveEmployeesNumber
             }}</span
-            >个账户状态开启的员工，请先关闭或转移所有员工再操作{{
+            >个在职状态开启的员工，请先关闭或转移所有员工再操作{{
               state.tableStatusChangeInfo?.operation
             }}哦~
           </div>
@@ -693,15 +748,22 @@
       </div>
     </div>
 
+    <!--    state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0  -->
     <template #footer>
       <a-button
         type="primary"
         html-type="submit"
         @click="tableStatusConfirm"
-        v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"
+        v-if="state.tableStatusChangeInfo.record.statusSwitch"
         >{{ state.tableStatusChangeInfo.statusBtnText }}</a-button
       >
-      <a-button v-else type="primary" html-type="submit">去操作</a-button>
+      <a-button
+        v-else
+        type="primary"
+        html-type="submit"
+        @click="jumpToMember(state.tableStatusChangeInfo.record)"
+        >去操作</a-button
+      >
       <a-button @click="closeStatusModal">取消</a-button>
     </template>
   </a-modal>
@@ -749,7 +811,13 @@
       </div>
     </div>
     <!--  机构属性  -->
-    <div class="details-content">
+    <div
+      class="details-content"
+      v-if="
+        state.detailsRecord.organizationType === '门店' ||
+        state.detailsRecord.organizationType === '分公司'
+      "
+    >
       <div class="flex-space">
         <div class="title-content"><div class="blue-line"></div>机构属性</div>
         <div class="details-edit" @click="assignPermission(state.detailsRecord, true)"
@@ -758,7 +826,13 @@
       </div>
     </div>
 
-    <a-tabs v-model:activeKey="state.activeKey">
+    <a-tabs
+      v-model:activeKey="state.activeKey"
+      v-if="
+        state.detailsRecord.organizationType === '门店' ||
+        state.detailsRecord.organizationType === '分公司'
+      "
+    >
       <a-tab-pane key="baseKey" tab="基本属性">
         <div
           v-for="(item, index) in state.detailsInfoSecond"
@@ -1008,6 +1082,54 @@ const legalMobileValidator = (rule, value) => {
   })
 }
 
+//英文数字
+const enNumValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[a-zA-Z0-9]+$/
+      if (!regExp.test(value)) {
+        reject('只能输入字母跟数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制中文
+const chineseValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[\u4e00-\u9fa5]*$/
+      if (!regExp.test(value)) {
+        reject('请输入中文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制数字
+const numValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[0-9]*$/
+      if (!regExp.test(value)) {
+        reject('只能输入数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -1045,6 +1167,7 @@ const state = reactive({
   storeTypeOptions: [], //门店类型
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
+  treeIconIndex: 0,
   tableDataList: [], //表格数据
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
@@ -1388,7 +1511,10 @@ const fullScreen = () => {
 }
 
 //打开Modal
-const openModal = async (record = {}) => {
+const openModal = async (record = {}, disabled = false) => {
+  if (disabled) {
+    return
+  }
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     state.formState.parentId = record.id
@@ -1620,6 +1746,15 @@ const PermissionOk = async () => {
   const valid = await formAttributeRef.value.validate()
   state.addEditLoading = true
 
+  console.log('state.formAttributeState.type', state.formAttributeState.type)
+  if (state.formAttributeState.type?.length === 0 || !state.formAttributeState.type) {
+    return message.warning('类型不能为空')
+  }
+  //判断是否是分公司的单选 分公司单选的话 是 string
+  if (typeof state.formAttributeState.type === 'string') {
+    state.formAttributeState.type = [state.formAttributeState.type]
+  }
+
   const params = {
     organizationId: state.detailsRecord.id || state.addSuccessId,
     type: state.formAttributeState.type, //分公司类型
@@ -1676,7 +1811,11 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
-const assignPermission = async (record, isCloseDetails = false) => {
+const assignPermission = async (record, isCloseDetails = false, disabled = false) => {
+  if (disabled) {
+    return
+  }
+  console.log('设置属性record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1690,11 +1829,17 @@ const assignPermission = async (record, isCloseDetails = false) => {
     const res = await getOrganizationDetails({ id: record.id })
     //... res 可能为null
     state.detailsRecord = res
-
+    let tempType = [] || ''
+    console.log('设置属性详情res', res)
+    if (record.organizationType == '分公司') {
+      tempType = res.relVO?.type[0]
+    } else {
+      tempType = res.relVO?.type
+    }
     //赋值 回显
     state.formAttributeState = {
       organizationId: record.id, //机构id
-      type: res.relVO?.type, //分公司类型
+      type: tempType, //分公司类型
       startRating: res.relVO?.startRating, //星级
       detailedAddress: res.relVO?.address, //地址 详细地址
       contactInformationArr: res.relVO?.contact, //联系方式 设置属性
@@ -1802,7 +1947,8 @@ const closeStatusModal = () => {
 const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
   const res = await getActiveEmployeesNumber({ id: record.id })
   // const res = 25
-
+  console.log('res------', res)
+  console.log('record', record)
   if (res === 0) {
     nextTick(() => {
       state.tableStatusChangeInfo['ctiveEmployeesNumber'] = 0
@@ -2142,12 +2288,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {
@@ -2318,8 +2466,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -2372,6 +2520,18 @@ const jumpToMember = (record) => {
     }
   })
 }
+
+watch(
+  () => state.columns,
+  (columns) => {
+    const needItem = columns.find((item) => item.key === 'name')
+    state.treeIconIndex = needItem.sort - 1
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
 </script>
 
 <style lang="scss" scoped>
@@ -2809,6 +2969,10 @@ const jumpToMember = (record) => {
 .employees-Number {
   color: rgba(0, 129, 255, 100);
   cursor: pointer;
+}
+.disable-color {
+  color: gray;
+  cursor: not-allowed;
 }
 </style>
 

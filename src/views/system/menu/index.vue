@@ -2,7 +2,7 @@
 <template>
   <!-- 搜索工作栏 -->
   <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
+    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
       <a-form-item :label="`菜单名称`" name="name">
         <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
       </a-form-item>
@@ -47,7 +47,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -74,6 +74,8 @@
       :defaultExpandAllRows="state.isExpandAll"
       v-if="state.refreshTable"
       @resizeColumn="handleResizeColumn"
+      :expandIconColumnIndex="state.treeIconIndex"
+      :pagination="false"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -101,7 +103,7 @@
             <Icon icon="ep:caret-right" :size="12" />
           </div>
         </span>
-        <span v-else style="margin-right: 29px"></span>
+        <span v-else style="margin-right: 21px"></span>
       </template>
       <!--  单元格插槽  -->
       <template #bodyCell="{ column, record }">
@@ -165,7 +167,7 @@
     :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
   >
     <div class="base_info_content">
-      <a-form :model="state.formState" ref="formRef" v-bind="layout">
+      <a-form :model="state.formState" ref="formRef" v-bind="layout" autocomplete="off">
         <a-form-item
           :label="`${state.currentMenu}名称`"
           name="name"
@@ -219,7 +221,8 @@
             treeDefaultExpandAll
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
-            treeNodeFilterProp="label"
+            treeNodeFilterProp="name"
+            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
 
@@ -546,6 +549,7 @@
             <a-input
               class="width-100"
               v-model:value="state.memberName"
+              @pressEnter="search"
               placeholder="请输入员工名称搜索"
             />
           </div>
@@ -558,32 +562,29 @@
       </div>
     </div>
 
-    <div class="employees-content">
-      <div
-        v-for="(item, index) in state.testArr"
-        :key="`employees${index}`"
-        class="employees-info-card"
-      >
+    <div
+      class="employees-content"
+      v-for="(item, index) in state.testArr"
+      :key="`employees${index}`"
+    >
+      <div class="employees-info-card">
         <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
-        <div v-html="item.post" class="post-style"></div>
+        <template v-for="(childrenItem, childrenIndex) in item.postInfo">
+          <div v-html="childrenItem.post" class="post-style"></div>
 
-        <div class="employees-name-content">
-          <template
-            v-for="(childrenItem, childrenIndex) in item.allInfo"
-            :key="`employees${index}-${childrenIndex}`"
-          >
-            <div
-              v-html="childrenItem.name"
-              :class="['employees-name', { 'border-red': childrenItem.needBorder }]"
-            ></div>
-          </template>
-        </div>
+          <div class="employees-name-content">
+            <template
+              v-for="(childrenNameItem, childrenNameIndex) in childrenItem.allInfo"
+              :key="`employees${index}-${childrenNameIndex}`"
+            >
+              <div
+                v-html="childrenNameItem.name"
+                :class="['employees-name', { 'border-red': childrenNameItem.needBorder }]"
+              ></div>
+            </template>
+          </div>
+        </template>
       </div>
-      <!--      <div class="employees-name-content">-->
-      <!--        <template v-for="item in state.testArr">-->
-      <!--          <div v-html="item.name" class="employees-name"></div>-->
-      <!--        </template>-->
-      <!--      </div>-->
     </div>
   </a-modal>
 
@@ -620,7 +621,7 @@ import dayjs from 'dayjs'
 import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
 import { getPostList, getRolesList } from '@/api/system/member'
-import { getMemberNumList } from '@/api/system/menu'
+import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 
 const queryParams = reactive({
   name: undefined,
@@ -759,6 +760,7 @@ const state = reactive({
   currentRecord: {}, //当前点击的table item
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
+  treeIconIndex: 0,
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false,
@@ -802,67 +804,60 @@ const state = reactive({
   employeesInfo: [
     {
       role: '角色：销售顾问 - 仅看本部门及以下',
-      post: '销售顾问（3）：',
-      allInfo: [
+      // post: '销售顾问（3）：',
+      postInfo: [
         {
-          name: '张三'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         },
         {
-          name: '李四'
-        },
-        {
-          name: '王四四'
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
         }
       ]
     },
     {
       role: '角色：普通角色 - 看所有人',
-      post: '前端（3）：',
-      allInfo: [
+      // post: '前端（3）：',
+      postInfo: [
         {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
+          post: '前端（3）：',
+          allInfo: [
+            {
+              name: '张1'
+            },
+            {
+              name: '李2'
+            },
+            {
+              name: '王3'
+            }
+          ]
         }
       ]
     }
   ],
-  testArr: [
-    {
-      role: '角色：销售顾问 - 仅看本部门及以下',
-      post: '销售顾问（3）：',
-      allInfo: [
-        {
-          name: '张三'
-        },
-        {
-          name: '李四'
-        },
-        {
-          name: '王四四'
-        }
-      ]
-    },
-    {
-      role: '角色：普通角色 - 看所有人',
-      post: '前端（3）：',
-      allInfo: [
-        {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
-        }
-      ]
-    }
-  ],
+  testArr: [],
   memberName: '', //员工数 modal 姓名
   post: '', //岗位 modal 姓名
   employeesModalInfo: {
@@ -896,7 +891,6 @@ const getList = async (isRefresh = false) => {
     })
     state.menuArr = res
     list.value = handleTree(res)
-    console.log('list.value', list.value)
     if (isRefresh) {
       message.success('刷新成功')
     }
@@ -1241,7 +1235,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1280,7 +1274,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1339,7 +1333,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '按钮类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1374,8 +1368,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -1415,7 +1409,6 @@ const addEditStatusChange = (checked: boolean, event: Event) => {
 
 //员工数打开 弹窗
 const openDetails = async (record) => {
-  console.log('员工数record', record)
   state.currentRecord = record
   // 1 目录 2菜单 3按钮
   switch (record.type) {
@@ -1434,7 +1427,6 @@ const openDetails = async (record) => {
     case 2:
       //菜单
       const dirItem = state.menuArr.find((item) => item.id === record.parentId)
-      console.log('dirItem', dirItem)
       state.employeesModalInfo = {
         width: '940px',
         typeText: '菜单',
@@ -1471,19 +1463,95 @@ const openDetails = async (record) => {
   state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
   state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
   state.isShowEmployees = true
+  search()
 }
 
 //员工数 高亮搜索
 const search = async () => {
-  const res = await getMemberNumList({
-    menuId: state.currentRecord.id,
-    nickname: state.memberName,
-    postIds: state.postList,
-    roleIds: state.configureRoles
-  })
-  console.log('员工数res ', res )
-  console.log('state.configureRoles', state.configureRoles)
-  console.log('state.memberName', state.memberName)
+  switch (state.currentRecord.type) {
+    case 2:
+      //菜单 需要角色 搜索
+      // 角色
+      const res = await getMemberNumRoleList({
+        menuId: state.currentRecord.id,
+        nickname: state.memberName,
+        postIds: state.postList,
+        roleIds: state.configureRoles
+      })
+
+      const tempTestArr = []
+      //角色
+      res.map((item) => {
+        let tempObj = {}
+        let tempPostInfo = []
+        item.userExtraPostVOS.map((childrenPostItem) => {
+          let tempObj1 = {}
+          let tempAllInfo = []
+          childrenPostItem.userExtraVOS.map((nameItem) => {
+            let tempObj = {
+              name: nameItem.nickname
+            }
+
+            tempAllInfo.push(tempObj)
+          })
+
+          tempObj1 = {
+            post: childrenPostItem.postName,
+            allInfo: tempAllInfo
+          }
+          tempPostInfo.push(tempObj1)
+        })
+
+        tempObj = {
+          role: `角色：${item.roleName}`,
+          postInfo: tempPostInfo
+        }
+        tempTestArr.push(tempObj)
+      })
+
+      state.testArr = tempTestArr
+
+      break
+    default:
+      //目录 按钮 无需角色 搜索
+      const resPost = await getMemberNumList({
+        menuId: state.currentRecord.id,
+        nickname: state.memberName,
+        postIds: state.postList,
+        roleIds: state.configureRoles
+      })
+
+      let tempPostInfo = []
+      resPost.map((item) => {
+        let tempObj1 = {}
+        let tempAllInfo = []
+        item.userExtraVOS.map((nameItem) => {
+          let tempObj = {
+            name: nameItem.nickname
+          }
+
+          tempAllInfo.push(tempObj)
+        })
+
+        tempObj1 = {
+          post: item.postName,
+          allInfo: tempAllInfo
+        }
+        tempPostInfo.push(tempObj1)
+      })
+
+      if (tempPostInfo.length > 0) {
+        const tempArr1 = [
+          {
+            role: '',
+            postInfo: tempPostInfo
+          }
+        ]
+        state.testArr = tempArr1
+      } else {
+        message.warning('暂无数据')
+      }
+  }
 
   //角色
   const selectRolesList = state.configureRolesOptions.filter((roleItem) => {
@@ -1493,23 +1561,20 @@ const search = async () => {
   const selectPostList = state.postListOptions.filter((roleItem) => {
     return state.postList.some((item) => roleItem?.value === item)
   })
-  console.log('selectRolesList ', selectRolesList)
 
-  state.testArr = cloneDeep(state.employeesInfo)
   const pattern = new RegExp(state.memberName, 'gi')
-  // state.testArr.map((item) => {
-  //   item.name = item.name.replace(pattern, `<span class="highlight">$&</span>`)
-  // })
-  const patternPost = new RegExp(state.post, 'gi')
+
   state.testArr.map((item) => {
     // //岗位
     // item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
     //姓名
-    item.allInfo.map((childrenItem) => {
-      childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
-      if (state.memberName && childrenItem.name.match(pattern)) {
-        childrenItem.needBorder = true
-      }
+    item.postInfo.map((childrenPostItem) => {
+      childrenPostItem.allInfo.map((childrenItem) => {
+        childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
+        if (state.memberName && childrenItem.name.match(pattern)) {
+          childrenItem.needBorder = true
+        }
+      })
     })
   })
 
@@ -1525,10 +1590,11 @@ const search = async () => {
   selectPostList.map((roleItem) => {
     const patternRole = new RegExp(roleItem.label, 'gi')
     state.testArr.map((item) => {
-      item.post = item.post.replace(patternRole, `<span class="highlight">$&</span>`)
+      item.postInfo.map((postItem) => {
+        postItem.post = postItem.post.replace(patternRole, `<span class="highlight">$&</span>`)
+      })
     })
   })
-  console.log('state.testArr', state.testArr)
 }
 //员工数 modal 重置
 const employeesReset = () => {
@@ -1541,66 +1607,8 @@ const employeesReset = () => {
 
 //员工数modal
 const closeEmployees = () => {
-  state.employeesInfo = [
-    {
-      post: '销售顾问（3）：',
-      allInfo: [
-        {
-          name: '张三'
-        },
-        {
-          name: '李四'
-        },
-        {
-          name: '王四四'
-        }
-      ]
-    },
-    {
-      post: '前端（3）：',
-      allInfo: [
-        {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
-        }
-      ]
-    }
-  ]
-  state.testArr = [
-    {
-      post: '销售顾问（3）：',
-      allInfo: [
-        {
-          name: '张三'
-        },
-        {
-          name: '李四'
-        },
-        {
-          name: '王四四'
-        }
-      ]
-    },
-    {
-      post: '前端（3）：',
-      allInfo: [
-        {
-          name: '张1'
-        },
-        {
-          name: '李2'
-        },
-        {
-          name: '王3'
-        }
-      ]
-    }
-  ]
+  state.employeesInfo = []
+  state.testArr = []
   state.memberName = '' //员工数 modal 姓名
   state.configureRoles = [] //角色
   state.postList = [] //岗位
@@ -1616,6 +1624,18 @@ watch(
   },
   {
     immediate: true
+  }
+)
+
+watch(
+  () => state.columns,
+  (columns) => {
+    const needItem = columns.find((item) => item.key === 'name')
+    state.treeIconIndex = needItem.sort - 1
+  },
+  {
+    immediate: true,
+    deep: true
   }
 )
 </script>
@@ -1666,6 +1686,7 @@ watch(
 //名称
 .name-content {
   display: flex;
+  align-items: center;
 }
 //员工数
 .employees-Number {
