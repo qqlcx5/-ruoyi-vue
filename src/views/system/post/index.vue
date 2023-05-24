@@ -478,11 +478,10 @@ const openDistributeModal = (row, mode: string) => {
 }
 
 // 跳转
-const goto = ({ id }, type) => {
+const goto = ({ code, typeCode, id }, type) => {
   push({
     name: 'Member',
-    query:
-      type === 'postType' ? { postTypeId: id } : { postId: id, postTypeId: postParent.value.id }
+    query: type === 'postType' ? { postTypeId: code } : { postId: id, postTypeId: typeCode }
   })
 }
 </script>

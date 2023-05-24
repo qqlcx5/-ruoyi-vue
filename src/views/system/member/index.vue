@@ -22,7 +22,8 @@
                   class="width-100"
                   v-model:value="queryParams.memberName"
                   @pressEnter="getList(1)"
-                  placeholder="请输入成员姓名或工号"
+                  placeholder="请输入姓名或工号"
+                  allowClear
                 />
               </div>
             </div>
@@ -35,6 +36,7 @@
                   v-model:value="queryParams.memberPhone"
                   @pressEnter="getList"
                   placeholder="请输入联系电话"
+                  allowClear
                 />
               </div>
             </div>
@@ -47,6 +49,7 @@
                   @change="postTypeChange"
                   class="width-100"
                   placeholder="请选择"
+                  allowClear
                 />
               </div>
             </div>
@@ -59,6 +62,7 @@
                   :options="state.postTypeSpecifyOptions"
                   class="width-100"
                   placeholder="请选择"
+                  allowClear
                 />
               </div>
             </div>
@@ -89,6 +93,7 @@
                   class="width-100"
                   :options="state.partPostOptions"
                   placeholder="请选择"
+                  allowClear
                 />
               </div>
             </div>
@@ -103,6 +108,7 @@
                   mode="multiple"
                   placeholder="请选择"
                   optionFilterProp="label"
+                  allowClear
                 />
               </div>
             </div>
@@ -114,6 +120,7 @@
                   class="width-100"
                   :options="state.memberTypeOptions"
                   placeholder="请选择"
+                  allowClear
                 />
               </div>
             </div>
@@ -125,6 +132,7 @@
                   class="width-100"
                   :options="state.onJobOptions"
                   placeholder="请选择"
+                  allowClear
                 />
               </div>
             </div>
@@ -136,6 +144,7 @@
                   class="width-100"
                   :options="state.userTypeOptions"
                   placeholder="请选择"
+                  allowClear
                 />
               </div>
             </div>
@@ -1700,6 +1709,9 @@ const resetQuery = () => {
   queryParams.isOnJob = null //在职状态
   queryParams.userType = null //账号类型
 
+  state.postTypeSpecifyOptions = []
+  postTypeChange(null)
+
   handleQuery()
 }
 
@@ -3092,7 +3104,7 @@ const getAllType = async () => {
     state.barnOptions = tempBarnOptions
   })
   //
-  // console.log('岗位类型', res)
+  console.log('岗位类型', res)
   // console.log('岗位类型D', state.postTypeOptions)
   // console.log('配置角色', rolesRes)
   // console.log('配置角色D', state.configureRolesOptions)
@@ -3102,6 +3114,7 @@ const getAllType = async () => {
   // console.log('岗位列表D', state.postListOptions)
   // console.log('岗位类型主岗/兼岗', tempPostType)
   // console.log('所属品牌', tempBarnOptions)
+  postTypeChange(null)
 }
 
 getAllType()
@@ -3339,6 +3352,10 @@ const disabledDate = (current) => {
 
 //岗位类型 获取岗位列表
 const postTypeChange = async (value) => {
+  if (!value) {
+    state.postTypeSpecifyOptions = cloneDeep(state.postListOptions)
+    return
+  }
   const postListRes = await getTypePostList({ typeCode: value })
   queryParams.post = null
   const needReplacePartPostKey = [
@@ -3392,6 +3409,17 @@ onMounted(async () => {
     })
   } else if ($router.options.history.state?.back === '/system/post') {
     //岗位管理 页面跳转进来
+    const { isOnJob = '0', postId = null, postTypeId = null } = $route?.query || {}
+    queryParams.isOnJob = isOnJob
+    queryParams.postType = postTypeId
+    await postTypeChange(postTypeId)
+    console.log('postId============>', postId)
+    queryParams.post = Number(postId)
+  } else if ($router.options.history.state?.back === '/system/role') {
+    //角色管理 页面跳转进来
+    const { isOnJob = '0', roleId = null } = $route?.query || {}
+    queryParams.isOnJob = isOnJob
+    queryParams.configureRoles = [Number(roleId)]
   }
 
   sendCurrentSelect(organizationId)
