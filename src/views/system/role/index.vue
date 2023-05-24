@@ -94,6 +94,13 @@
         :rules="rules"
         ref="formRef"
       >
+        <template #code="form">
+          <el-input
+            v-model="form.code"
+            placeholder="请输入角色编码"
+            @input="(val) => (form.code = val.replace(/[^a-zA-Z0-9]/g, ''))"
+          />
+        </template>
         <template #status="form">
           <el-switch
             v-model="form.status"

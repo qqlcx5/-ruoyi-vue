@@ -5,7 +5,11 @@
     <el-table v-if="postTableType === 'type'" class="form-table" :data="postTypeTableData" border>
       <el-table-column label="岗位类型编码">
         <template #default="{ row }">
-          <el-input v-model="row.code" placeholder="请输入岗位类型编码" />
+          <el-input
+            v-model="row.code"
+            placeholder="请输入岗位类型编码"
+            @input="(val) => (row.code = val.replace(/[^a-zA-Z0-9]/g, ''))"
+          />
         </template>
       </el-table-column>
       <el-table-column label="岗位类型">
@@ -29,7 +33,11 @@
     >
       <el-table-column label="岗位编码">
         <template #default="{ row }">
-          <el-input v-model="row.code" placeholder="请输入岗位编码" />
+          <el-input
+            v-model="row.code"
+            placeholder="请输入岗位编码"
+            @input="(val) => (row.code = val.replace(/[^a-zA-Z0-9]/g, ''))"
+          />
         </template>
       </el-table-column>
       <el-table-column label="岗位名称">

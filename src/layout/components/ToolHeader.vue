@@ -1,7 +1,6 @@
 <script lang="tsx">
 import { defineComponent, computed } from 'vue'
 import { Message } from '@/layout/components//Message'
-import { Collapse } from '@/layout/components/Collapse'
 import { UserInfo } from '@/layout/components/UserInfo'
 import { Screenfull } from '@/layout/components/Screenfull'
 import { Breadcrumb } from '@/layout/components/Breadcrumb'
@@ -27,8 +26,8 @@ const appStore = useAppStore()
 // 面包屑
 const breadcrumb = computed(() => appStore.getBreadcrumb)
 
-// 折叠图标
-const hamburger = computed(() => appStore.getHamburger)
+// // 折叠图标
+// const hamburger = computed(() => appStore.getHamburger)
 
 // 全屏图标
 const screenfull = computed(() => appStore.getScreenfull)
@@ -59,12 +58,6 @@ export default defineComponent({
       >
         {layout.value !== 'top' ? (
           <div class="h-full flex items-center">
-            {hamburger.value ? (
-              <Collapse
-                class="collapse"
-                color="var(--top-header-text-color)"
-              ></Collapse>
-            ) : undefined}
             {breadcrumb.value ? <Breadcrumb class="<md:hidden"></Breadcrumb> : undefined}
           </div>
         ) : undefined}
@@ -124,17 +117,16 @@ $prefix-cls: #{$namespace}-tool-header;
     color: $header-text-color;
   }
   .el-icon {
-    color: var(--top-header-text-color);;
+    color: var(--top-header-text-color);
   }
   .company {
     color: var(--top-header-text-color);
     margin-right: 4px;
   }
-
 }
 
 .hover-trigger {
-  color: #8291A9;
+  color: #8291a9;
 }
 
 .collapse {

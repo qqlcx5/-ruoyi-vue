@@ -198,7 +198,11 @@
             <el-tag>{{ dictTypeValue }}</el-tag>
           </template>
           <template v-else
-            ><el-input v-model="dictTypeValue" placeholder="请输入字典编码" />
+            ><el-input
+              v-model="dictTypeValue"
+              placeholder="请输入字典编码"
+              @input="(val) => (dictTypeValue = val.replace(/[^a-zA-Z0-9]/g, ''))"
+            />
           </template>
         </template>
       </Form>
@@ -212,7 +216,13 @@
           <template v-if="['dataUpdate'].includes(actionType)">
             <div>{{ row.value }}</div>
           </template>
-          <template v-else><el-input v-model="row.value" placeholder="请输入数据键值" /> </template>
+          <template v-else
+            ><el-input
+              v-model="row.value"
+              placeholder="请输入数据键值"
+              @input="(val) => (row.value = val.replace(/[^a-zA-Z0-9]/g, ''))"
+            />
+          </template>
         </template>
       </Form>
       <Form
@@ -225,7 +235,13 @@
           <template v-if="['dataLevel3Update'].includes(actionType)">
             <div>{{ row.value }}</div>
           </template>
-          <template v-else><el-input v-model="row.value" placeholder="请输入子项键值" /> </template>
+          <template v-else
+            ><el-input
+              v-model="row.value"
+              placeholder="请输入子项键值"
+              @input="(val) => (row.value = val.replace(/[^a-zA-Z0-9]/g, ''))"
+            />
+          </template>
         </template>
       </Form>
       <!-- 操作按钮 -->
