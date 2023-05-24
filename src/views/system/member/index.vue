@@ -1034,6 +1034,7 @@ import BatchChangePostModal from './components/BatchChangePostModal.vue'
 import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
 import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer.vue'
+import { cloneDeep } from 'lodash-es'
 
 const { wsCache } = useCache()
 
@@ -1626,7 +1627,8 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryParams.current = 1 //当前页码
   queryParams.pageSize = 10 //显示条数
-  queryParams.organization = null //机构 左侧tree
+  //重置不包括左侧部门
+  // queryParams.organization = null //机构 左侧tree
   queryParams.memberName = null //成员姓名
   queryParams.memberPhone = null //联系电话
   queryParams.postType = null //岗位类型
@@ -2862,8 +2864,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -2893,7 +2895,6 @@ function filterOne(dataList, value, type) {
 }
 
 const sendCurrentSelect = (currentKey) => {
-  console.log('currentKey==================>', currentKey)
   // console.log('typeof currentKey', typeof currentKey)
   // const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
   // console.log('organizationList', organizationList)
@@ -2949,7 +2950,6 @@ interface DataItem {
 const getOrganizationListFN = async () => {
   const res = await getSimpleOrganizationList()
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
-  console.log('res', res)
   // console.log('organization', organizationList)
 
   state.organizationList = res
@@ -2965,10 +2965,6 @@ const getOrganizationListFN = async () => {
   //...TODO:这里有空再换 冗余了 本来是用 component 后面又换成id了
   state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
-  // console.log('组织机构List', state.organizationList)
-  console.log('组织机构tempArr', state.organizationOptions)
-  // console.log('组织机构取ID', state.organizationIDOptions)
-  console.log('组织机构Liststate.organizationList', state.organizationList)
   return res
 }
 

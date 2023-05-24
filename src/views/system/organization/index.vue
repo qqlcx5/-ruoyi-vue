@@ -90,6 +90,7 @@
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
       :defaultExpandAllRows="state.isExpandAll"
       @resizeColumn="handleResizeColumn"
+      :expandIconColumnIndex="state.treeIconIndex"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -1118,6 +1119,7 @@ const state = reactive({
   storeTypeOptions: [], //门店类型
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
+  treeIconIndex: 0,
   tableDataList: [], //表格数据
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
@@ -2409,8 +2411,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -2463,6 +2465,18 @@ const jumpToMember = (record) => {
     }
   })
 }
+
+watch(
+  () => state.columns,
+  (columns) => {
+    const needItem = columns.find((item) => item.key === 'name')
+    state.treeIconIndex = needItem.sort - 1
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
 </script>
 
 <style lang="scss" scoped>

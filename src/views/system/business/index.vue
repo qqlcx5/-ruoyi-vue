@@ -91,6 +91,7 @@
       :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
       :defaultExpandAllRows="state.isExpandAll"
       @resizeColumn="handleResizeColumn"
+      :expandIconColumnIndex="state.treeIconIndex"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -830,6 +831,7 @@ import successImg from '@/assets/imgs/system/successImg.png'
 import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
+import { cloneDeep } from 'lodash-es'
 
 const { wsCache } = useCache()
 
@@ -998,6 +1000,7 @@ const state = reactive({
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
+  treeIconIndex: 0,
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
@@ -1276,8 +1279,8 @@ const getList = async (isRefresh = false) => {
     })
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
-
     state.total = res.total
+    console.log(' state.tableDataList',  state.tableDataList)
 
     if (isRefresh) {
       message.success('刷新成功')
@@ -2240,8 +2243,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -2280,6 +2283,18 @@ watch(
     nextTick(() => {
       state.isShowRightTree = true
     })
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
+
+watch(
+  () => state.columns,
+  (columns) => {
+    const needItem = columns.find((item) => item.key === 'name')
+    state.treeIconIndex = needItem.sort - 1
   },
   {
     immediate: true,

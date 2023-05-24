@@ -73,6 +73,7 @@
       :defaultExpandAllRows="state.isExpandAll"
       v-if="state.refreshTable"
       @resizeColumn="handleResizeColumn"
+      :expandIconColumnIndex="state.treeIconIndex"
       :pagination="false"
     >
       <!--  自定义展开折叠图标  -->
@@ -613,6 +614,7 @@ import dayjs from 'dayjs'
 import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
 import { getPostList, getRolesList } from '@/api/system/member'
 import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
+import { cloneDeep } from 'lodash-es'
 
 const queryParams = reactive({
   name: undefined,
@@ -748,6 +750,7 @@ const allColumns = [
 const state = reactive({
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
+  treeIconIndex: 0,
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false,
@@ -1353,8 +1356,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -1591,6 +1594,18 @@ const closeEmployees = () => {
   state.configureRoles = [] //角色
   state.postList = [] //岗位
 }
+
+watch(
+  () => state.columns,
+  (columns) => {
+    const needItem = columns.find((item) => item.key === 'name')
+    state.treeIconIndex = needItem.sort - 1
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
 </script>
 
 <style lang="scss" scoped>

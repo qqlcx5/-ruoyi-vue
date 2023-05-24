@@ -74,6 +74,7 @@
       :defaultExpandAllRows="state.isExpandAll"
       v-if="state.refreshTable"
       @resizeColumn="handleResizeColumn"
+      :expandIconColumnIndex="state.treeIconIndex"
       :pagination="false"
     >
       <!--  自定义展开折叠图标  -->
@@ -758,6 +759,7 @@ const state = reactive({
   currentRecord: {}, //当前点击的table item
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
+  treeIconIndex: 0,
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false,
@@ -1365,8 +1367,8 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     state.isShowCustomColumnModal = false
     return
   }
-  state.columns = columnsObj.currentColumns
-  state.changedColumnsObj = columnsObj
+  state.columns = cloneDeep(columnsObj.currentColumns)
+  state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
 }
@@ -1621,6 +1623,18 @@ watch(
   },
   {
     immediate: true
+  }
+)
+
+watch(
+  () => state.columns,
+  (columns) => {
+    const needItem = columns.find((item) => item.key === 'name')
+    state.treeIconIndex = needItem.sort - 1
+  },
+  {
+    immediate: true,
+    deep: true
   }
 )
 </script>
