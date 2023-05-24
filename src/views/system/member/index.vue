@@ -436,6 +436,21 @@
           </a-form-item>
 
           <a-form-item
+            v-if="formState.isOnJob === '1'"
+            :label="`离职日期`"
+            name="departureTime"
+            class="width-50"
+            :rules="[{ required: true, message: `离职时间不能为空` }]"
+          >
+            <a-date-picker
+              placeholder="请选择离职日期"
+              v-model:value="formState.departureTime"
+              :disabled-date="disabledDate"
+              class="width-100"
+            />
+          </a-form-item>
+
+          <a-form-item
             v-if="state.modalType === 'add'"
             label="账号状态"
             name="status"
@@ -1687,6 +1702,7 @@ const closeModal = () => {
   formState.memberType = 'trial_members' //人员类型
   formState.isOnJob = '0' //在职(人员)状态
   formState.birthDay = null //出生日期
+  formState.departureTime = null //离职日期
   formState.qqNum = null //QQ
   formState.email = null //电子邮箱
   formState.wechat = null //微信号
@@ -1820,6 +1836,7 @@ const edit = async (record, isCloseDetails = false) => {
   addDataSource.addEditTableData = tempPhoneList //联系电话
   addPostDataSource.addEditTableData = tempPostList //岗位信息
   formState.birthDay = record.birthDay ? dayjs(record.birthDay) : dayjs() //出生日期
+  formState.departureTime = res.departureTime ? dayjs(res.departureTime) : null //离职日期
   formState.qqNum = record.qq //QQ
   formState.email = record.email //电子邮箱
   formState.wechat = record.wechat //微信号
@@ -2018,6 +2035,8 @@ const addMajorIndividualFN = async () => {
       openPermissionModal()
     } else {
       params['id'] = formState.id
+      params['departureTime'] = formState.departureTime?.format('YYYY-MM-DD')
+      console.log('params===>', params)
       res = await updateMember(params)
       message.success('修改成员成功')
     }
@@ -2341,8 +2360,8 @@ const detailsInfo = async (record) => {
     const temp1 = JSON.parse(item.beforeData)
     const temp2 = JSON.parse(item.afterData)
     let tempItem = {
-      date: dayjs(temp1?.createTime)?.format('YYYY-MM-DD'),
-      time: dayjs(temp1?.createTime)?.format('HH:mm:ss')
+      date: dayjs(item?.createTime)?.format('YYYY-MM-DD'),
+      time: dayjs(item?.createTime)?.format('HH:mm:ss')
       // type: '离职',
       // beforeChange: '变更前：在职状态-在职',
       // afterChange: '变更后：在职状态-离职、离职时间-2023-05-15',
@@ -2408,6 +2427,8 @@ const detailsInfo = async (record) => {
 
     changeRecord.push(tempItem)
   })
+
+  changeRecord?.reverse()
 
   let tableColumns = [
     {

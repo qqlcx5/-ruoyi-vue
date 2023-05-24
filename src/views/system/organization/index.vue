@@ -147,10 +147,22 @@
         <template v-if="column?.key === 'operation'">
           <div class="operation-content">
             <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-            <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
             <div
-              class="text-color margin-right-5"
-              @click="assignPermission(record)"
+              :class="[
+                'text-color',
+                'margin-right-5',
+                { 'disable-color': record?.statusSwitch === false }
+              ]"
+              @click="openModal(record, record?.statusSwitch === false)"
+              >新增子项</div
+            >
+            <div
+              :class="[
+                'text-color',
+                'margin-right-5',
+                { 'disable-color': record?.statusSwitch === false }
+              ]"
+              @click="assignPermission(record, false, record?.statusSwitch === false)"
               v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
               >设置属性</div
             >
@@ -521,7 +533,10 @@
               :options="state.contactInformationOptions"
             />
           </a-form-item>
-          <a-form-item :name="['contactInformationArr', index, 'mobile']">
+          <a-form-item
+            :name="['contactInformationArr', index, 'mobile']"
+            :rules="[{ validator: numValidator }]"
+          >
             <a-input
               v-model:value="item.mobile"
               placeholder="请输入联系电话"
@@ -731,7 +746,13 @@
         v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"
         >{{ state.tableStatusChangeInfo.statusBtnText }}</a-button
       >
-      <a-button v-else type="primary" html-type="submit">去操作</a-button>
+      <a-button
+        v-else
+        type="primary"
+        html-type="submit"
+        @click="jumpToMember(state.tableStatusChangeInfo.record)"
+        >去操作</a-button
+      >
       <a-button @click="closeStatusModal">取消</a-button>
     </template>
   </a-modal>
@@ -1073,6 +1094,22 @@ const chineseValidator = (rule, value) => {
       const regExp = /^[\u4e00-\u9fa5]*$/
       if (!regExp.test(value)) {
         reject('请输入中文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制数字
+const numValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[0-9]*$/
+      if (!regExp.test(value)) {
+        reject('只能输入数字')
       } else {
         resolve()
       }
@@ -1463,7 +1500,10 @@ const fullScreen = () => {
 }
 
 //打开Modal
-const openModal = async (record = {}) => {
+const openModal = async (record = {}, disabled = false) => {
+  if (disabled) {
+    return
+  }
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     state.formState.parentId = record.id
@@ -1760,7 +1800,10 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
-const assignPermission = async (record, isCloseDetails = false) => {
+const assignPermission = async (record, isCloseDetails = false, disabled = false) => {
+  if (disabled) {
+    return
+  }
   console.log('设置属性record', record)
   if (isCloseDetails) {
     //关闭详情moal
@@ -2914,6 +2957,10 @@ watch(
 .employees-Number {
   color: rgba(0, 129, 255, 100);
   cursor: pointer;
+}
+.disable-color {
+  color: gray;
+  cursor: not-allowed;
 }
 </style>
 

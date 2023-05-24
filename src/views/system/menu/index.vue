@@ -167,7 +167,7 @@
     :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
   >
     <div class="base_info_content">
-      <a-form :model="state.formState" ref="formRef" v-bind="layout">
+      <a-form :model="state.formState" ref="formRef" v-bind="layout" autocomplete="off">
         <a-form-item
           :label="`${state.currentMenu}名称`"
           name="name"

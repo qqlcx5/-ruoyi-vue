@@ -1280,7 +1280,7 @@ const getList = async (isRefresh = false) => {
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
     state.total = res.total
-    console.log(' state.tableDataList',  state.tableDataList)
+    console.log(' state.tableDataList', state.tableDataList)
 
     if (isRefresh) {
       message.success('刷新成功')
@@ -1701,7 +1701,7 @@ const assignPermission = async (record) => {
   console.log('record', record)
   state.permissionRecord = record
   state.PermissionType = 'edit'
-  if (record.packageId) {
+  if (record.packageId != null) {
     const res = await getTenantPackage({ id: record.packageId })
     //... res 可能为null
     const { menuIds = [], dirIds = [], id } = res || []
