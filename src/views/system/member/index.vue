@@ -175,13 +175,11 @@
               展开收起
             </a-button>
             <a-button
-              type="primary"
               :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
               @click="batchChangePost()"
               >批量转岗</a-button
             >
             <a-button
-              type="primary"
               :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
               @click="batchAssignUserRole()"
               >批量设角色</a-button
