@@ -167,16 +167,17 @@ const getPermissions = computed(() => {
     ? btnPermissionsOptions.value.filter((item) => item.parentId === currentNode.value.id)
     : []
 }) // 操作权限选项
-// watch(
-//   () => currentNode.value,
-//   (data) => {
-//     if (data.dataScope || (data.operations && data.operations.length)) {
-//       console.log(data.id)
-//       treeRef.value!.setCheckedKeys(data.id)
-//     }
-//   },
-//   { deep: true }
-// )
+watch(
+  () => currentNode.value,
+  (data) => {
+    if (data.dataScope || (data.operations && data.operations.length)) {
+      treeRef.value!.setCheckedKeys([...treeRef.value!.getCheckedKeys(), data.id])
+    } else {
+      treeRef.value!.setChecked(data.id, false, true)
+    }
+  },
+  { deep: true }
+)
 const selectedPermissions = computed({
   get() {
     return currentNode.value.type === 2 ? currentNode.value.operations.map((item) => item.id) : []

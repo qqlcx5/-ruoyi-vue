@@ -236,8 +236,10 @@ const onRoleDel = async (row) => {
 }
 
 const formRoleStatusChange = () => {
-  const res = unref(formRef)?.formModel
-  if (res) roleStatusChange(res, 'form')
+  if (actionType.value === 'update') {
+    const res = unref(formRef)?.formModel
+    if (res) roleStatusChange(res, 'form')
+  }
 }
 // 状态变更
 const roleStatusChange = async (row, trigger) => {
@@ -262,6 +264,7 @@ const roleStatusChange = async (row, trigger) => {
         )
         .then(async () => {
           goto(row)
+          if (trigger === 'form') dialogVisible.value = false
         })
         .catch(() => {})
         .finally(() => {
