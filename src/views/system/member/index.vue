@@ -755,8 +755,11 @@
         <img :src="warningImg" alt="" class="tip-img message-img waring-img" />
         <div class="roles-text">
           系统校验到您设置的岗位
-          <span v-for="item in state.permissionRecord?.postVOList">
-            【{{ item.postName }}】、
+          <span
+            v-for="(item, index) in state.permissionRecord?.postVOListDeal"
+            :key="`postVOListDeal-${index}`"
+          >
+            【{{ item.postName }}】
           </span>
           已有分配以下角色，您可修改或增加
         </div>
@@ -1062,6 +1065,7 @@ import {
   getMemberList,
   getPostList,
   getPostTypeList,
+  getRolePostList,
   getRolesList,
   getTypePostList,
   updateMember,
@@ -2136,10 +2140,32 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
+//数组对象去重
+const uniqueFunc = (arr, uniId) => {
+  const res = new Map()
+  return arr.filter((item) => !res.has(item[uniId]) && res.set(item[uniId], 1))
+}
+
 const assignPermission = async (record) => {
   console.log('分配角色record=》', record)
+  const { postVOList = [], roleVOList = [] } = record
+  const tempArr = uniqueFunc(postVOList, 'postId')
+  record.postVOListDeal = tempArr
+  console.log('tempArr', tempArr)
+  let postIdArr = []
+  console.log('postVOList', postVOList)
+  tempArr.map((item) => {
+    postIdArr.push(item.postId)
+  })
+  console.log('roleVOList', roleVOList)
+  if (roleVOList?.length === 0 || roleVOList === null) {
+    const tempRes = await getRolePostList({
+      postIds: postIdArr
+    })
+    state.roleId = tempRes
+    console.log('默认角色岗位tempRes', tempRes)
+  }
   state.permissionRecord = record
-  const { roleVOList = [] } = record
   //回显 已分配的角色
   state.roleId = []
   roleVOList?.map((item) => {

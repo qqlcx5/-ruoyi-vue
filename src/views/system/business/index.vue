@@ -632,6 +632,7 @@
   <a-modal
     v-model:visible="state.isShowStatus"
     :closable="false"
+    wrapClassName="status-change-modal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -2777,6 +2778,13 @@ watch(
   //可用名额
   .ant-input-number {
     width: 200px;
+  }
+}
+
+//状态变更
+.status-change-modal {
+  .ant-modal-footer {
+    border-width: 0;
   }
 }
 </style>

@@ -1855,7 +1855,7 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
       legalMobile: res.relVO?.legalMobile //法人联系电话
     }
 
-    if (res.relVO?.contact === null) {
+    if (res.relVO?.contact === null || res?.relVO === null) {
       state.formAttributeState.contactInformationArr = [
         {
           contactType: null,
