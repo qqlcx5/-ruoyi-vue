@@ -46,7 +46,9 @@
         />
       </template>
       <template #staff_count="{ row }">
-        <el-link type="primary" @click="goto(row, 'postType')">{{ row.staffCount }}</el-link>
+        <el-link type="primary" @click="handleDetail(row.id, 'staff')">
+          {{ row.staffCount }}
+        </el-link>
       </template>
       <template #status_default="{ row }">
         <el-switch
@@ -62,7 +64,7 @@
         <XTextButton
           :title="t('action.edit')"
           v-hasPermi="['system:role:update']"
-          @click="handleUpdate(row.id)"
+          @click="handleUpdate(row)"
         />
         <!-- 操作：权限配置 -->
         <XTextButton
@@ -91,7 +93,17 @@
         :schema="allSchemas.formSchema"
         :rules="rules"
         ref="formRef"
-      />
+      >
+        <template #status="form">
+          <el-switch
+            v-model="form.status"
+            :active-value="0"
+            :inactive-value="1"
+            @click.stop
+            @change="formRoleStatusChange"
+          />
+        </template>
+      </Form>
       <!-- 操作按钮 -->
       <template #footer>
         <XButton
@@ -160,17 +172,17 @@ const handleCreate = () => {
 }
 
 // 修改操作
-const handleUpdate = async (rowId: number) => {
+const handleUpdate = async (row) => {
   setDialogTile('update')
   // 设置数据
-  const res = await RoleApi.getRoleApi(rowId)
-  unref(formRef)?.setValues(res)
+  await nextTick()
+  unref(formRef)?.setValues(JSON.parse(JSON.stringify(row)))
 }
 
 // 详情操作
-const handleDetail = async (rowId) => {
+const handleDetail = async (rowId, trigger) => {
   const res = await RoleApi.getRoleApi(rowId)
-  configDetailDrawerRef.value.openDrawer(res)
+  configDetailDrawerRef.value.openDrawer(res, trigger)
 }
 
 // 删除操作
@@ -213,11 +225,17 @@ const onRoleDel = async (row) => {
       .catch(() => {})
   }
 }
+
+const formRoleStatusChange = () => {
+  const res = unref(formRef)?.formModel
+  if (res) roleStatusChange(res, 'form')
+}
 // 状态变更
-const roleStatusChange = async (row) => {
+const roleStatusChange = async (row, trigger) => {
   const text = row.status === CommonStatusEnum.ENABLE ? '开启' : '关闭'
   if (row.status === CommonStatusEnum.DISABLE) {
     const activeUserCount = await RoleApi.getActiveUsersCount(row.id) // 请求在职员工数
+    if (activeUserCount === null) return message.error('系统异常')
     if (activeUserCount > 0) {
       return message
         .wgOperateConfirm(
@@ -235,9 +253,24 @@ const roleStatusChange = async (row) => {
         )
         .then(async () => {})
         .catch(() => {})
-        .finally(() => reload())
+        .finally(() => {
+          if (trigger !== 'form') {
+            row.status =
+              row.status === CommonStatusEnum.ENABLE
+                ? CommonStatusEnum.DISABLE
+                : CommonStatusEnum.ENABLE
+          } else {
+            unref(formRef)?.setValues({
+              status:
+                row.status === CommonStatusEnum.ENABLE
+                  ? CommonStatusEnum.DISABLE
+                  : CommonStatusEnum.ENABLE
+            })
+          }
+        })
     }
   }
+  if (trigger === 'form') return
   message
     .wgConfirm(
       h('span', [
@@ -297,12 +330,6 @@ const submitForm = async () => {
 // ========== 权限配置 ==========
 const openConfigModal = (row) => {
   router.push(`/system/role-config?id=${row.id}`)
-}
-const goto = ({ id }) => {
-  router.push({
-    name: 'Member',
-    query: { roleId: id }
-  })
 }
 
 // ========== 初始化 ==========

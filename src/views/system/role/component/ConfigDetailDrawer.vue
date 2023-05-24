@@ -51,7 +51,7 @@
           <div class="card-gary-bg mt-16px p-16px">
             <div v-if="staff && staff.length > 0">
               <div class="flex flex-row-reverse text-title">共{{ personnelCount }}人</div>
-              <div v-for="(item, index) in staff" :key="index">
+              <div v-for="(item, index) in staff" :key="index" class="mb-24px">
                 <div class="text-title">
                   <span v-html="hightLightText(item.postName)"></span>
                   <span class="text-tip"> ({{ item.personsInfos.length }})</span>
@@ -131,7 +131,8 @@ const hightLightText = (text) => {
 }
 
 // 打开弹窗
-const openDrawer = async (row) => {
+const openDrawer = async (row, trigger?) => {
+  if (trigger) tabsActive.value = trigger
   roleInfo.value = row
   drawerVisible.value = true
 }
