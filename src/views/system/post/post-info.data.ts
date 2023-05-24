@@ -61,6 +61,32 @@ const crudSchemas = reactive<VxeCrudSchema>({
           default: 'status_default'
         }
       }
+    },
+    {
+      title: t('common.creater'),
+      field: 'creatorName',
+      isForm: false,
+      defaultShow: false
+    },
+    {
+      title: t('common.createTime'),
+      field: 'createTime',
+      formatter: 'formatDate',
+      isForm: false,
+      defaultShow: false
+    },
+    {
+      title: t('common.operator'),
+      field: 'updater',
+      isForm: false,
+      defaultShow: false
+    },
+    {
+      title: t('common.operationTime'),
+      field: 'updaterName',
+      formatter: 'formatDate',
+      isForm: false,
+      defaultShow: false
     }
   ]
 })
