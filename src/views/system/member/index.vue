@@ -2162,7 +2162,10 @@ const assignPermission = async (record) => {
     const tempRes = await getRolePostList({
       postIds: postIdArr
     })
-    state.roleId = tempRes
+    nextTick(() => {
+      state.roleId = tempRes
+    })
+    console.log('state.configureRolesNewOptions======>', state.configureRolesNewOptions)
     console.log('默认角色岗位tempRes', tempRes)
   }
   state.permissionRecord = record
