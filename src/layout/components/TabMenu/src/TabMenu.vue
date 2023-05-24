@@ -34,9 +34,9 @@ export default defineComponent({
 
     const tabRouters = computed(() => unref(routers).filter((v) => !v?.meta?.hidden))
 
-    // const setCollapse = () => {
-    //   appStore.setCollapse(!unref(collapse))
-    // }
+    const setCollapse = () => {
+      appStore.setCollapse(!unref(collapse))
+    }
 
     onMounted(() => {
       if (unref(fixedMenu)) {
@@ -144,10 +144,7 @@ export default defineComponent({
     return () => (
       <div
         id={`${variables.namespace}-menu`}
-        class={[
-          prefixCls,
-          'relative bg-[var(--left-menu-bg-color)] flex-shrink-0 flex',
-        ]}
+        class={[prefixCls, 'relative bg-[var(--left-menu-bg-color)] flex-shrink-0 flex']}
         // onMouseleave={mouseleave}
       >
         <div
@@ -155,9 +152,9 @@ export default defineComponent({
             prefixCls,
             'relative bg-[var(--left-menu-bg-color)] flex-shrink-0',
             {
-              'collapse': !unref(collapse),
+              collapse: !unref(collapse),
               'w-[var(--tab-menu-max-width)]': !unref(collapse),
-              'w-[var(--tab-menu-min-width)]': unref(collapse),
+              'w-[var(--tab-menu-min-width)]': unref(collapse)
             }
           ]}
         >
@@ -169,9 +166,9 @@ export default defineComponent({
                     v.meta?.alwaysShow || (v?.children?.length && v?.children?.length > 1)
                       ? v
                       : {
-                        ...(v?.children && v?.children[0]),
-                        path: pathResolve(v.path, (v?.children && v?.children[0])?.path as string)
-                      }
+                          ...(v?.children && v?.children[0]),
+                          path: pathResolve(v.path, (v?.children && v?.children[0])?.path as string)
+                        }
                   ) as AppRouteRecordRaw
                   return (
                     <div
@@ -182,18 +179,22 @@ export default defineComponent({
                           'no-children': v?.children?.length === 1,
                           'is-active': isActive(v.path),
                           '!pl-16px': !unref(collapse),
-                          'px-[var(--el-menu-base-level-padding)] justify-center': unref(collapse),
-                        },
+                          'px-[var(--el-menu-base-level-padding)] justify-center': unref(collapse)
+                        }
                       ]}
                       onClick={() => {
                         tabClick(item)
                       }}
                     >
-                      <div class={[ `flex items-center justify-center`, { 'pr-8px': !unref(collapse) } ]}>
+                      <div
+                        class={[`flex items-center justify-center`, { 'pr-8px': !unref(collapse) }]}
+                      >
                         <Icon class="icon" icon={item?.meta?.icon}></Icon>
                       </div>
                       {unref(collapse) ? undefined : (
-                        <p class="break-words py-0 m-0 overflow-hidden overflow-ellipsis whitespace-nowrap">{t(item.meta?.title)}</p>
+                        <p class="break-words py-0 m-0 overflow-hidden overflow-ellipsis whitespace-nowrap">
+                          {t(item.meta?.title)}
+                        </p>
                       )}
                     </div>
                   )
@@ -201,6 +202,28 @@ export default defineComponent({
               }}
             </div>
           </ElScrollbar>
+          <div
+            class={[
+              `${prefixCls}--collapse`,
+              'absolute bottom-24px flex items-center text-center justify-center text-[var(--left-menu-text-color)] bg-[var(--left-menu-bg-light-color)] h-[var(--tab-menu-collapse-height)] leading-[var(--tab-menu-collapse-height)] cursor-pointer',
+              {
+                'left-18px right-18px': !unref(collapse),
+                'left-10px right-10px': unref(collapse)
+              }
+            ]}
+            onClick={setCollapse}
+          >
+            <i
+              class={[
+                'iconfont cursor-pointer !text-18px',
+                {
+                  'icon-shouqicaidan': unref(collapse),
+                  'icon-zhankaicaidan mr-4px': !unref(collapse)
+                }
+              ]}
+            ></i>
+            {unref(collapse) ? undefined : <span class="whitespace-nowrap">收起菜单</span>}
+          </div>
         </div>
 
         <Menu
@@ -283,7 +306,7 @@ $prefix-cls: #{$namespace}-tab-menu;
   .collapse {
     .is-active {
       &:before {
-        content: "";
+        content: '';
         position: absolute;
         left: 0;
         top: 0;
@@ -300,7 +323,9 @@ $prefix-cls: #{$namespace}-tab-menu;
         .el-scrollbar__view {
           .el-menu {
             background-color: var(--el-bg-color);
-            .el-sub-menu, .el-menu-item, .el-sub-menu.is-opened {
+            .el-sub-menu,
+            .el-menu-item,
+            .el-sub-menu.is-opened {
               color: var(--el-text-color-regular) !important;
               background-color: var(--el-bg-color) !important;
             }
@@ -308,14 +333,14 @@ $prefix-cls: #{$namespace}-tab-menu;
             .el-sub-menu .el-menu-item,
             .el-menu-item,
             .el-sub-menu.is-opened .el-sub-menu__title,
-            .el-sub-menu.is-active .el-sub-menu__title,
-            {
+            .el-sub-menu.is-active .el-sub-menu__title {
               padding-left: 26px !important;
             }
-            .el-sub-menu.is-opened, .el-sub-menu.is-active {
+            .el-sub-menu.is-opened,
+            .el-sub-menu.is-active {
               padding-left: 0 !important;
 
-              .el-sub-menu__title{
+              .el-sub-menu__title {
                 &::before {
                   //left: 0 !important;
                   display: none;
@@ -330,8 +355,8 @@ $prefix-cls: #{$namespace}-tab-menu;
               background-color: var(--el-bg-color) !important;
 
               &::after {
-                content: "\e68f";
-                font-family: "iconfont";
+                content: '\e68f';
+                font-family: 'iconfont';
                 font-style: normal;
                 font-size: 14px;
                 position: absolute;
@@ -341,27 +366,27 @@ $prefix-cls: #{$namespace}-tab-menu;
             }
             /*close menu*/
             .el-sub-menu > .el-sub-menu__title::after {
-              transition: transform .3s;//cancel move animation
+              transition: transform 0.3s; //cancel move animation
             }
             /*open menu*/
             .el-sub-menu.is-opened > .el-sub-menu__title::after {
               -webkit-transform: rotateZ(180deg);
               transform: rotateZ(180deg);
-              transition: transform .3s;
+              transition: transform 0.3s;
             }
 
             // 设置子菜单悬停的高亮和背景色
             .el-sub-menu__title,
             .el-menu-item {
               height: calc(var(--left-menu-item-height) - 10px) !important;
-              &:hover{
+              &:hover {
                 color: var(--el-color-primary) !important;
               }
               &.is-active {
                 color: var(--el-color-primary) !important;
-                background-color: #EDF4FB !important;
+                background-color: #edf4fb !important;
                 &:before {
-                  content: "";
+                  content: '';
                   position: absolute;
                   left: 0;
                   top: 0;

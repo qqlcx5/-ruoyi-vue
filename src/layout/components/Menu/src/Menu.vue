@@ -1,5 +1,5 @@
 <script lang="tsx">
-import {computed, PropType} from 'vue'
+import { computed, PropType } from 'vue'
 import { ElMenu, ElScrollbar } from 'element-plus'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
@@ -8,7 +8,7 @@ import { isUrl } from '@/utils/is'
 import { useDesign } from '@/hooks/web/useDesign'
 import { LayoutType } from '@/types/layout'
 import { Icon } from '@/components/Icon'
-import {useScrollTo} from "@/hooks/event/useScrollTo";
+import { useScrollTo } from '@/hooks/event/useScrollTo'
 
 const { getPrefixCls } = useDesign()
 
@@ -59,6 +59,10 @@ export default defineComponent({
       return path
     })
 
+    const setCollapse = () => {
+      appStore.setCollapse(!unref(collapse))
+    }
+
     const menuSelect = (index: string) => {
       if (props.menuSelect) {
         props.menuSelect(index)
@@ -80,7 +84,7 @@ export default defineComponent({
       const { start } = useScrollTo({
         el: wrap$!,
         position: 'scrollLeft',
-        to: direction === 'right' ? (unref(scrollLeftNumber)+150) : (unref(scrollLeftNumber)-150),
+        to: direction === 'right' ? unref(scrollLeftNumber) + 150 : unref(scrollLeftNumber) - 150,
         duration: 300
       })
       start()
@@ -99,7 +103,10 @@ export default defineComponent({
           <div class="flex relative">
             <div
               onClick={() => menuScroll('left')}
-              class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] px-8px hover-trigger sticky left-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
+              class={
+                'flex items-center justify-center w-20px h-[var(--top-tool-height)] px-8px hover-trigger sticky left-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1'
+              }
+            >
               <Icon
                 icon="svg-icon:arrow-left"
                 size={16}
@@ -112,7 +119,10 @@ export default defineComponent({
 
             <div
               onClick={() => menuScroll('right')}
-              class={"flex items-center justify-center w-20px h-[var(--top-tool-height)] px-8px hover-trigger sticky right-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1"}>
+              class={
+                'flex items-center justify-center w-20px h-[var(--top-tool-height)] px-8px hover-trigger sticky right-0 top-0 bottom-0 text-[var(--top-header-text-color)] bg-[var(--left-menu-bg-color)] z-1'
+              }
+            >
               <Icon
                 icon="svg-icon:arrow-right"
                 size={16}
@@ -123,7 +133,11 @@ export default defineComponent({
         )
       } else {
         // return <ElScrollbar class="wg-scroll-bar">{renderMenu()}</ElScrollbar>
-        return <ElScrollbar class={unref(collapse) ? 'collapse-menu' : 'wg-scroll-bar'}>{renderMenu()}</ElScrollbar>
+        return (
+          <ElScrollbar class={unref(collapse) ? 'collapse-menu' : 'wg-scroll-bar'}>
+            {renderMenu()}
+          </ElScrollbar>
+        )
       }
     }
 
@@ -158,7 +172,7 @@ export default defineComponent({
         id={prefixCls}
         class={[
           `${prefixCls} ${prefixCls}__${unref(menuMode)}`,
-          'h-[100%] overflow-hidden flex-col bg-[var(--left-menu-bg-color)]',
+          'relative h-[100%] overflow-hidden flex-col bg-[var(--left-menu-bg-color)]',
           {
             'w-[var(--left-menu-min-width)]': unref(collapse) && unref(layout) !== 'cutMenu',
             'w-[var(--left-menu-max-width)]': !unref(collapse) && unref(layout) !== 'cutMenu'
@@ -166,6 +180,30 @@ export default defineComponent({
         ]}
       >
         {renderMenuWrap()}
+        {unref(layout) === 'classic' ? (
+          <div
+            class={[
+              `${prefixCls}--collapse`,
+              'absolute bottom-24px flex items-center text-center justify-center text-[var(--left-menu-text-color)] bg-[var(--left-menu-bg-light-color)] h-[var(--tab-menu-collapse-height)] leading-[var(--tab-menu-collapse-height)] cursor-pointer',
+              {
+                'left-18px right-18px': !unref(collapse),
+                'left-10px right-10px': unref(collapse)
+              }
+            ]}
+            onClick={setCollapse}
+          >
+            <i
+              class={[
+                'iconfont cursor-pointer !text-18px',
+                {
+                  'icon-shouqicaidan': unref(collapse),
+                  'icon-zhankaicaidan mr-4px': !unref(collapse)
+                }
+              ]}
+            ></i>
+            {unref(collapse) ? undefined : <span class="whitespace-nowrap">收起菜单</span>}
+          </div>
+        ) : undefined}
       </div>
     )
   }
@@ -322,21 +360,20 @@ $prefix-cls: #{$namespace}-menu;
 
 .wg-scroll-bar {
   :deep(.#{$elNamespace}-scrollbar__wrap) {
-    >.#{$elNamespace}-scrollbar__view {
-      >.#{$elNamespace}-menu {
+    > .#{$elNamespace}-scrollbar__view {
+      > .#{$elNamespace}-menu {
         > .#{$elNamespace}-sub-menu__title,
         > .#{$elNamespace}-menu-item,
-        > .#{$elNamespace}-sub-menu,
-        {
+        > .#{$elNamespace}-sub-menu {
           &.is-opened {
             position: relative;
             //background-color: var(--left-menu-bg-light-color) !important;
             .#{$elNamespace}-sub-menu__title,
             .#{$elNamespace}-menu-item,
-            .#{$elNamespace}-sub-menu, {
+            .#{$elNamespace}-sub-menu {
               //background-color: var(--left-menu-bg-light-color) !important;
             }
-            >.#{$elNamespace}-sub-menu__title, {
+            > .#{$elNamespace}-sub-menu__title {
               &:before {
                 position: absolute;
                 top: 0;
@@ -352,20 +389,21 @@ $prefix-cls: #{$namespace}-menu;
             }
           }
           padding-left: 18px !important;
-          >.el-menu {
-            >.el-menu-item {
+          > .el-menu {
+            > .el-menu-item {
               //padding-left: 0 !important;
               @extend .hide-icon;
             }
-            >.el-sub-menu__title {
+            > .el-sub-menu__title {
               padding-left: 0 !important;
             }
             > .#{$elNamespace}-sub-menu {
-              >.el-sub-menu__title {
+              > .el-sub-menu__title {
                 //padding-left: 0 !important;
               }
             }
-            .el-menu-item, .el-sub-menu__title {
+            .el-menu-item,
+            .el-sub-menu__title {
               padding-left: 26px !important;
               .v-icon {
                 width: 14px;
@@ -373,9 +411,9 @@ $prefix-cls: #{$namespace}-menu;
               }
             }
           }
-          >.el-sub-menu__title {
+          > .el-sub-menu__title {
             padding-left: 0 !important;
-            >.el-icon {
+            > .el-icon {
               //margin-right: 0 !important;
               span {
                 font-size: 16px !important;
@@ -385,13 +423,12 @@ $prefix-cls: #{$namespace}-menu;
           > .#{$elNamespace}-sub-menu {
             padding-left: 0 !important;
           }
-          >.el-icon {
+          > .el-icon {
             span {
               font-size: 16px !important;
             }
           }
         }
-
       }
     }
   }
@@ -403,13 +440,10 @@ $prefix-cls: #{$namespace}-menu;
   }
 }
 
-
 .collapse-menu {
   :deep(.#{$elNamespace}-menu) {
-
     .#{$elNamespace}-menu-item,
-    .#{$elNamespace}-sub-menu__title,
-    {
+    .#{$elNamespace}-sub-menu__title {
       display: flex;
       align-items: center;
       height: var(--el-menu-item-height);
@@ -420,7 +454,8 @@ $prefix-cls: #{$namespace}-menu;
       list-style: none;
       cursor: pointer;
       position: relative;
-      transition: border-color var(--el-transition-duration),background-color var(--el-transition-duration),color var(--el-transition-duration);
+      transition: border-color var(--el-transition-duration),
+        background-color var(--el-transition-duration), color var(--el-transition-duration);
       box-sizing: border-box;
       white-space: nowrap;
     }
@@ -446,7 +481,8 @@ $prefix-cls: #{$namespace}-menu-popper;
   content: '';
 }
 
-.wg-menu__arrow, .el-sub-menu__title .el-sub-menu__icon-arrow {
+.wg-menu__arrow,
+.el-sub-menu__title .el-sub-menu__icon-arrow {
   svg {
     display: none;
   }
@@ -460,19 +496,19 @@ $prefix-cls: #{$namespace}-menu-popper;
 }
 /*close menu*/
 .el-sub-menu > .el-sub-menu__title .el-sub-menu__icon-arrow {
-  transition: transform .3s;//cancel move animation
+  transition: transform 0.3s; //cancel move animation
 }
 /*open menu*/
 .el-sub-menu.is-opened > .el-sub-menu__title .el-sub-menu__icon-arrow {
   -webkit-transform: rotateZ(180deg);
   transform: rotateZ(180deg);
-  transition: transform .3s;
+  transition: transform 0.3s;
 }
 
 .el-sub-menu__title .el-sub-menu__icon-arrow {
   &:after {
-    content: "\e68f";
-    font-family: "iconfont";
+    content: '\e68f';
+    font-family: 'iconfont';
     font-style: normal;
     font-size: 14px;
   }
@@ -524,7 +560,8 @@ $prefix-cls: #{$namespace}-menu-popper;
   }
 }
 
-.el-menu .el-menu-item:not(.is-disabled):focus, .el-menu .el-menu-item:not(.is-disabled):hover {
+.el-menu .el-menu-item:not(.is-disabled):focus,
+.el-menu .el-menu-item:not(.is-disabled):hover {
   background-color: unset !important;
 }
 </style>

@@ -98,10 +98,8 @@
           <span v-show="postParent?.name">{{ `${postParent?.name}-` }}</span>
           岗位信息
         </p>
-        <div v-if="!postTypeSelect" class="text-20px text-tip text-center mt-248px">
-          请从左侧选择
-        </div>
-        <div v-else>
+        <!--        <div v-if="!postParent" class="text-20px text-tip text-center mt-248px"> 请从左侧选择 </div>-->
+        <div>
           <el-form
             class="query-form w-full"
             ref="elFormRef"
@@ -151,7 +149,7 @@
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
                 v-hasPermi="['system:post:create']"
-                @click="openModal('create', 'info', postParent.code)"
+                @click="openModal('create', 'info', postParent?.code)"
               />
               <!--              <XButton-->
               <!--                type="primary"-->
@@ -259,9 +257,7 @@ const [registerPostType, { reload: postTypeGet, deleteReq }] = useXTable({
 })
 // 字典分类点击行事件
 const postParent = ref()
-const postTypeSelect = ref(false)
 const cellClickEvent: VxeTableEvents.CellClick = async ({ row }) => {
-  postTypeSelect.value = true
   postParent.value = row
   postInfoSearchForm.value.typeCode = row.code
   await nextTick()
