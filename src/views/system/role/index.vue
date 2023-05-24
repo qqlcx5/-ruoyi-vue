@@ -210,7 +210,9 @@ const onRoleDel = async (row) => {
           lockScroll: false
         }
       )
-      .then(async () => {})
+      .then(async () => {
+        goto(row)
+      })
       .catch(() => {})
   } else {
     message
@@ -258,7 +260,9 @@ const roleStatusChange = async (row, trigger) => {
             lockScroll: false
           }
         )
-        .then(async () => {})
+        .then(async () => {
+          goto(row)
+        })
         .catch(() => {})
         .finally(() => {
           if (trigger !== 'form') {
@@ -331,6 +335,13 @@ const submitForm = async () => {
         await reload()
       }
     }
+  })
+}
+
+const goto = ({ id }) => {
+  router.push({
+    name: 'Member',
+    query: { roleId: id }
   })
 }
 

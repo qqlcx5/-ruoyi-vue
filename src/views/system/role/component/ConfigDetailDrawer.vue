@@ -32,12 +32,20 @@
             <el-row :gutter="12">
               <el-col :span="8">
                 <el-form-item label-width="70px" label="岗位">
-                  <el-input v-model="searchForm.postName" placeholder="请输入岗位名称" />
+                  <el-input
+                    v-model="searchForm.postName"
+                    placeholder="请输入岗位名称"
+                    @keyup.enter="getPersons"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="8">
                 <el-form-item label-width="70px" label="员工">
-                  <el-input v-model="searchForm.nickname" placeholder="请输入员工姓名" />
+                  <el-input
+                    v-model="searchForm.nickname"
+                    placeholder="请输入员工姓名"
+                    @keyup.enter="getPersons"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="8" class="!flex flex-column justify-between">

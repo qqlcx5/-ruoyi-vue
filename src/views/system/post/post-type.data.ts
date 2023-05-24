@@ -50,7 +50,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
     },
     {
       title: t('common.operator'),
-      field: 'updater',
+      field: 'updaterName',
       isForm: false,
       defaultShow: false
     },
