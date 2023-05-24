@@ -488,8 +488,13 @@
                 </template>
 
                 <template v-if="column.key === 'phoneNum'">
-                  <div>
-                    <a-input v-model:value="record.phoneNum" placeholder="请输入号码" />
+                  <div class="phone-style">
+                    <a-form-item
+                      :rules="[{ required: true, message: `电话不能为空` }]"
+                      class="phone-form-style"
+                    >
+                      <a-input v-model:value="record.phoneNum" placeholder="请输入号码" />
+                    </a-form-item>
                   </div>
                 </template>
 
@@ -581,7 +586,6 @@
                       label: 'title',
                       value: 'key'
                     }"
-                    :getPopupContainer="(triggerNode) => triggerNode.parentNode"
                   />
                 </div>
               </template>
@@ -596,7 +600,6 @@
                     placeholder="请选择"
                     :tree-data="state.postListOptions"
                     treeNodeFilterProp="label"
-                    :getPopupContainer="(triggerNode) => triggerNode.parentNode"
                   />
                 </div>
               </template>
@@ -609,7 +612,6 @@
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
                     :tree-data="state.barnOptions"
-                    :getPopupContainer="(triggerNode) => triggerNode.parentNode"
                   />
                 </div>
               </template>
@@ -670,7 +672,12 @@
             />
           </a-form-item>
 
-          <a-form-item :label="`电子邮箱`" class="width-50" :rules="state.contactMailRules">
+          <a-form-item
+            name="email"
+            :label="`电子邮箱`"
+            class="width-50"
+            :rules="state.contactMailRules"
+          >
             <a-input v-model:value="formState.email" placeholder="请输入电子邮箱" />
           </a-form-item>
 
@@ -733,7 +740,10 @@
 
       <div
         class="message-text assign-roles-tip"
-        v-if="state.permissionRecord?.roleVOList?.length === 0"
+        v-if="
+          state.permissionRecord?.roleVOList?.length === 0 ||
+          state.permissionRecord?.roleVOList === null
+        "
       >
         <img :src="warningImg" alt="" class="tip-img message-img waring-img" />
         <div class="roles-text">
@@ -1578,6 +1588,7 @@ const getList = async (page) => {
     organizationIds: queryParams.organization, //机构 左侧tree arr
     nameOrNumber: queryParams.memberName, //姓名or工号
     phone: queryParams.memberPhone, //联系电话
+    encryptPhone: queryParams.memberPhone, //联系电话 后端说多传一个
     postTypeCode: queryParams.postType, //岗位类型
     // postName: queryParams.post, //岗位名称
     postId: queryParams.post,
@@ -4088,6 +4099,11 @@ onMounted(async () => {
   display: flex;
   align-items: center;
 }
+.phone-style {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
 </style>
 
 <style lang="scss">
@@ -4121,6 +4137,9 @@ onMounted(async () => {
 
 //新增 编辑 modal
 .add-edit-modal {
+  .phone-form-style {
+    margin: 0 !important;
+  }
   //日期选择器清除icon 应该是被全局哪里影响到了
   .ant-picker-clear {
     background-color: transparent !important;

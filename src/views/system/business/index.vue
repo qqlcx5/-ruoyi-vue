@@ -495,7 +495,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >确定</a-button
+        >下一步</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -574,7 +574,7 @@
 
     <template #footer>
       <a-button type="primary" html-type="submit" @click="PermissionOk">确定选择</a-button>
-      <a-button @click="closePermissionModal">取消</a-button>
+      <a-button @click="closePermissionModal">暂不设置</a-button>
     </template>
   </a-modal>
 

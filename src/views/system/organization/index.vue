@@ -705,7 +705,8 @@
       overflow: 'auto'
     }"
   >
-    <div class="status-content" v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0">
+    <!--      v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"    -->
+    <div class="status-content" v-if="state.tableStatusChangeInfo.record.statusSwitch">
       <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="status-text-content">
         <div class="status-text">
@@ -747,12 +748,13 @@
       </div>
     </div>
 
+    <!--    state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0  -->
     <template #footer>
       <a-button
         type="primary"
         html-type="submit"
         @click="tableStatusConfirm"
-        v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"
+        v-if="state.tableStatusChangeInfo.record.statusSwitch"
         >{{ state.tableStatusChangeInfo.statusBtnText }}</a-button
       >
       <a-button
@@ -1945,7 +1947,8 @@ const closeStatusModal = () => {
 const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
   const res = await getActiveEmployeesNumber({ id: record.id })
   // const res = 25
-
+  console.log('res------', res)
+  console.log('record', record)
   if (res === 0) {
     nextTick(() => {
       state.tableStatusChangeInfo['ctiveEmployeesNumber'] = 0

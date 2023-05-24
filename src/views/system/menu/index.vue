@@ -222,6 +222,7 @@
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
+            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
 
