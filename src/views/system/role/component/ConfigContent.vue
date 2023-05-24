@@ -203,10 +203,10 @@ const handleCheckChange = (node) => {
 const selectOrgModalRef = ref()
 const selectMemberModalRef = ref()
 const openDepartModal = () => {
-  selectOrgModalRef.value.openModal(currentNode.value.dataScopeDepts)
+  selectOrgModalRef.value.openModal(currentNode.value.dataScopeDepts.map((item) => item.id))
 }
 const onSelectOrgConfirm = (data) => {
-  currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
+  currentNode.value.dataScopeDeptIds = data
   currentNode.value.dataScopeDepts = data.map((item) => {
     return {
       id: item.id,
