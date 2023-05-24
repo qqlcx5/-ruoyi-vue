@@ -10,12 +10,20 @@
       <el-row :gutter="12">
         <el-col :span="4">
           <el-form-item label="参数名称">
-            <el-input v-model="searchParams.name" placeholder="请输入参数名称" />
+            <el-input
+              v-model="searchParams.name"
+              placeholder="请输入参数名称"
+              @keyup.enter="onSubmit"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="4">
           <el-form-item label="参数键名">
-            <el-input v-model="searchParams.key" placeholder="请输入参数键名" />
+            <el-input
+              v-model="searchParams.key"
+              placeholder="请输入参数键名"
+              @keyup.enter="onSubmit"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="4">

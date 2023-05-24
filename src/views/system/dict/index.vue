@@ -18,12 +18,20 @@
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label="字典名称">
-                <el-input v-model="typeSearchForm.name" placeholder="请输入字典名称" />
+                <el-input
+                  v-model="typeSearchForm.name"
+                  placeholder="请输入字典名称"
+                  @keyup.enter="onTypeSearchSubmit"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="字典编码">
-                <el-input v-model="typeSearchForm.type" placeholder="请输入字典编码" />
+                <el-input
+                  v-model="typeSearchForm.type"
+                  placeholder="请输入字典编码"
+                  @keyup.enter="onTypeSearchSubmit"
+                />
               </el-form-item>
             </el-col>
 
@@ -129,7 +137,11 @@
             <el-row :gutter="12">
               <el-col :span="8">
                 <el-form-item label="数据标签">
-                  <el-input v-model="queryParams.label" placeholder="请输入数据标签" />
+                  <el-input
+                    v-model="queryParams.label"
+                    placeholder="请输入数据标签"
+                    @keyup.enter="onDataSearchSubmit"
+                  />
                 </el-form-item>
               </el-col>
               <el-col :span="8" class="!flex flex-column justify-between">

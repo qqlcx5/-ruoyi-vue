@@ -19,7 +19,7 @@
       </el-table-column>
       <el-table-column v-if="actionType !== 'update'" label="操作" width="180">
         <template #default="scope">
-          <XTextButton :title="t('action.create')" @click="addPostTypeLine" />
+          <XTextButton :title="t('action.create')" @click="addPostTypeLine(scope.$index)" />
           <XTextButton :title="t('action.del')" @click="delPostTypeLine(scope.$index)" />
         </template>
       </el-table-column>
@@ -64,7 +64,7 @@
       </el-table-column>
       <el-table-column v-if="actionType !== 'update'" label="操作">
         <template #default="scope">
-          <XTextButton :title="t('action.create')" @click="addPostTypeLine" />
+          <XTextButton :title="t('action.create')" @click="addPostTypeLine(scope.$index)" />
           <XTextButton :title="t('action.del')" @click="delPostTypeLine(scope.$index)" />
         </template>
       </el-table-column>
@@ -154,8 +154,13 @@ const getPostTypeOptions = async () => {
 const postTypeTableData = ref<PostApi.PostVO[] | PostInfoVO[]>([
   { code: '', name: '', status: 0, typeCode: '' }
 ])
-const addPostTypeLine = (): void => {
-  postTypeTableData.value.push({ code: '', name: '', status: 0, typeCode: defaultTypeCode.value })
+const addPostTypeLine = (index): void => {
+  postTypeTableData.value.splice(index + 1, 0, {
+    code: '',
+    name: '',
+    status: 0,
+    typeCode: defaultTypeCode.value
+  })
 }
 const delPostTypeLine = (index: number): void => {
   if (postTypeTableData.value.length === 1)

@@ -20,6 +20,7 @@
                 <el-input
                   v-model="postTypeSearchForm.nameOrCode"
                   placeholder="请输入岗位类型或编码"
+                  @keyup.enter="postTypeGet"
                 />
               </el-form-item>
             </el-col>
@@ -115,6 +116,7 @@
                   <el-input
                     v-model="postInfoSearchForm.nameOrCode"
                     placeholder="请输入岗位名称或编码"
+                    @keyup.enter="postInfoGet"
                   />
                 </el-form-item>
               </el-col>
@@ -124,6 +126,7 @@
                     class="w-full"
                     v-model="postInfoSearchForm.status"
                     placeholder="请选择"
+                    clearable
                   >
                     <el-option
                       v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
@@ -180,7 +183,10 @@
             </template>
             <template #role_list="{ row }">
               <div v-for="item in row.roleList" :key="item.roleId">
-                <el-tag>{{ item.roleName }}</el-tag>
+                <el-tag :type="item.roleDeleted ? 'danger' : item.roleStatus ? 'info' : ''"
+                  >{{ item.roleName }}<span v-if="item.roleDeleted">(删除)</span
+                  ><span v-if="item.roleStatus">(关闭)</span></el-tag
+                >
               </div>
             </template>
             <template #status_default="{ row }">
