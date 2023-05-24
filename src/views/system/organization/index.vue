@@ -347,7 +347,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >确定</a-button
+        >下一步</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -706,7 +706,13 @@
     }"
   >
     <!--      v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"    -->
-    <div class="status-content" v-if="state.tableStatusChangeInfo.record.statusSwitch">
+    <div
+      class="status-content"
+      v-if="
+        state.tableStatusChangeInfo.record.statusSwitch &&
+        state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0
+      "
+    >
       <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="status-text-content">
         <div class="status-text">

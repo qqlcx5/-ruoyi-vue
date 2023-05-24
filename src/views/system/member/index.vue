@@ -1414,6 +1414,7 @@ const state = reactive({
     'memberPhone',
     'departmentPost',
     'configureRoles',
+    'isOnJob',
     'memberType',
     'statusSwitch',
     'operation'

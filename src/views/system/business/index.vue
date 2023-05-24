@@ -548,7 +548,7 @@
                 </a-tree>
               </div>
             </a-tab-pane>
-            <a-tab-pane key="frontDesk" tab="client" force-render>客户端</a-tab-pane>
+            <a-tab-pane key="frontDesk" tab="客户端" force-render>客户端</a-tab-pane>
           </a-tabs>
         </div>
         <div class="right-content">
@@ -566,7 +566,9 @@
               <!--                    <template v-else>{{ title }}</template>-->
               <!--                  </template>-->
             </a-tree>
-            <div v-if="state.selectTree?.length===0" class="select-tip">请选择左侧要配置的菜单</div>
+            <div v-if="state.selectTree?.length === 0" class="select-tip"
+              >请选择左侧要配置的菜单</div
+            >
           </div>
         </div>
       </div>
