@@ -44,6 +44,11 @@ export const listSimplePostsApi = async () => {
   return await request.get({ url: '/system/post/list-all-simple' })
 }
 
+// 根据岗位类型获取岗位精简信息列表
+export const listSimplePostsByTypeCodeApi = async (params?) => {
+  return await request.get({ url: '/system/post/list-all-simple/code', params })
+}
+
 // 查询岗位详情
 export const getPostApi = async (id: number | string) => {
   return await request.get({ url: '/system/post/get?id=' + id })
