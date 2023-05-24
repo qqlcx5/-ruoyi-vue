@@ -97,7 +97,9 @@
         <p class="text-18px font-500">
           <span v-show="postParent?.name">{{ `${postParent?.name}-` }}</span>
           岗位信息
-          <el-button type="primary" text bg @click="removePostType">清除</el-button>
+          <el-button v-if="postParent?.id" type="primary" text bg @click="removePostType"
+            >清除</el-button
+          >
         </p>
         <!--        <div v-if="!postParent" class="text-20px text-tip text-center mt-248px"> 请从左侧选择 </div>-->
         <div>

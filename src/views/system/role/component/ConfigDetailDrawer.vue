@@ -71,7 +71,7 @@
                     class="text-12px leading-normal py-4px px-8px mt-10px mr-10px border-1px rounded-4px bg-[var(--el-color-white)]"
                     :class="[{ 'height-light': user.nickname === searchForm.nickname }]"
                   >
-                    {{ `${user.nickname}` }}
+                    {{ user.nickname }}-{{ user.postName }}-{{ user.username }}
                     <span v-if="user.status === 1">(停用)</span>
                     <span v-if="user.userStatus === 1">(离职)</span>
                   </div>

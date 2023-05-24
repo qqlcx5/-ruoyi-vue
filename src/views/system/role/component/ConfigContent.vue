@@ -169,11 +169,14 @@ const getPermissions = computed(() => {
 }) // 操作权限选项
 watch(
   () => currentNode.value,
-  (data) => {
-    if (data.dataScope || (data.operations && data.operations.length)) {
-      treeRef.value!.setCheckedKeys([...treeRef.value!.getCheckedKeys(), data.id])
-    } else {
-      treeRef.value!.setChecked(data.id, false, true)
+  (data, oldData) => {
+    if (data.id === oldData.id) {
+      if (data.dataScope || (data.operations && data.operations.length)) {
+        console.log(data)
+        treeRef.value!.setCheckedKeys([...treeRef.value!.getCheckedKeys(), data.id])
+      } else {
+        treeRef.value!.setChecked(data.id, false, true)
+      }
     }
   },
   { deep: true }
@@ -206,7 +209,7 @@ const openDepartModal = () => {
   selectOrgModalRef.value.openModal(currentNode.value.dataScopeDepts.map((item) => item.id))
 }
 const onSelectOrgConfirm = (data) => {
-  currentNode.value.dataScopeDeptIds = data
+  currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
   currentNode.value.dataScopeDepts = data.map((item) => {
     return {
       id: item.id,
