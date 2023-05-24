@@ -48,7 +48,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       dictType: DICT_TYPE.COMMON_STATUS,
       dictClass: 'number',
       form: {
-        // value: 0,
+        value: 0,
         // component: 'Switch',
         // componentProps: {
         //   activeValue: 0,
