@@ -56,7 +56,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
     },
     {
       title: t('common.operationTime'),
-      field: 'updaterTime',
+      field: 'updateTime',
       formatter: 'formatDate',
       isForm: false,
       defaultShow: false
