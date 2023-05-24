@@ -142,7 +142,7 @@
           </div>
 
           <div class="search-btn-content">
-            <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+            <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
             <a-button @click="resetQuery">重置</a-button>
           </div>
         </div>
@@ -221,7 +221,7 @@
           :defaultExpandAllRows="state.isExpandAll"
           @resizeColumn="handleResizeColumn"
           :pagination="{
-            pageSizeOptions: ['20', '30', '60', '100'],
+            pageSizeOptions: ['20', '30', '60', '100', '200', '500', '1000'],
             showSizeChanger: true,
             showQuickJumper: true,
             pageSize: queryParams.pageSize,
@@ -274,7 +274,7 @@
             <template v-if="column?.key === 'departmentPost'">
               <div v-for="item in record?.departmentPostList" class="phone-div-content">
                 <div class="phone-div">{{ item.department }}/{{ item.post }}</div>
-                <div :class="item.type === '1' ? 'principal-tag' : 'part-tag'"
+                <div :class="item.type === 'main_post' ? 'principal-tag' : 'part-tag'"
                   >{{ item.typeText }}
                 </div>
               </div>
@@ -351,13 +351,14 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
         <div class="form-content">
           <a-form-item
             :label="`成员工号`"
             name="memberNum"
-            :rules="[{ required: true, message: `成员编码不能为空` }]"
+            :rules="[{ required: true, message: `成员工号不能为空` }, { validator: numValidator }]"
             class="width-50"
           >
             <a-input
@@ -400,7 +401,11 @@
             :rules="[{ required: true, message: `入职时间不能为空` }]"
             class="width-50"
           >
-            <a-date-picker placeholder="请选择时间" v-model:value="formState.entryTime" />
+            <a-date-picker
+              placeholder="请选择时间"
+              v-model:value="formState.entryTime"
+              class="width-100"
+            />
           </a-form-item>
 
           <a-form-item
@@ -568,9 +573,11 @@
                   <a-tree-select
                     v-model:value="record.post"
                     style="width: 100%"
+                    show-search
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
                     :tree-data="state.postListOptions"
+                    treeNodeFilterProp="label"
                   />
                 </div>
               </template>
@@ -629,6 +636,7 @@
               placeholder="请选择时间"
               v-model:value="formState.birthDay"
               :disabled-date="disabledDate"
+              class="width-100"
             />
           </a-form-item>
 
@@ -1125,6 +1133,22 @@ const memberNameValidator = (rule, value) => {
   })
 }
 
+//限制数字
+const numValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[0-9]*$/
+      if (!regExp.test(value)) {
+        reject('只能输入数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -1509,7 +1533,7 @@ const getList = async () => {
     // postName: queryParams.post, //岗位名称
     postId: queryParams.post,
     postType: queryParams.partPost === '2' ? null : queryParams.partPost, //是否兼岗
-    roleId: tempConfigureRoles, //配置角色
+    roleIds: tempConfigureRoles, //配置角色
     userType: queryParams.memberType === 'all' ? null : queryParams.memberType, //人员类型
     status: queryParams.userType === 'all' ? null : queryParams.userType, //账号状态
     userStatus: queryParams.isOnJob === 'all' ? null : queryParams.isOnJob, //在职状态
@@ -1541,7 +1565,8 @@ const getList = async () => {
       //部门、岗位
       item?.postVOList?.map((postItem) => {
         let tempText = '主岗'
-        if (postItem.type === '1') {
+        //main_post主岗 secondary_post兼岗
+        if (postItem.type === 'secondary_post') {
           tempText = '兼岗'
         }
         tempDepartmentPost.push({
@@ -1599,22 +1624,21 @@ const handleQuery = () => {
 
 /** 重置按钮操作 */
 const resetQuery = () => {
-  state.queryParams = {
-    current: 1, //当前页码
-    pageSize: 10, //显示条数
-    organization: null, //机构 左侧tree
-    memberName: null, //成员姓名
-    memberPhone: null, //联系电话
-    postType: null, //岗位类型
-    partPost: null, //是否有兼岗 主岗 兼岗
-    post: null, //岗位
-    department: null, //部门
-    configureRoles: [], //配置角色
-    memberType: null, //人员类型
-    postStatus: null, //岗位状态
-    isOnJob: null, //在职状态
-    userType: null //账号类型
-  }
+  queryParams.current = 1 //当前页码
+  queryParams.pageSize = 10 //显示条数
+  queryParams.organization = null //机构 左侧tree
+  queryParams.memberName = null //成员姓名
+  queryParams.memberPhone = null //联系电话
+  queryParams.postType = null //岗位类型
+  queryParams.partPost = null //是否有兼岗 主岗 兼岗
+  queryParams.post = null //岗位
+  queryParams.department = null //部门
+  queryParams.configureRoles = [] //配置角色
+  queryParams.memberType = null //人员类型
+  queryParams.postStatus = null //岗位状态
+  queryParams.isOnJob = null //在职状态
+  queryParams.userType = null //账号类型
+
   handleQuery()
 }
 
@@ -2052,7 +2076,6 @@ const assignPermission = async (record) => {
 //表格状态改变 确认modal... 然后才开短信 modal
 //打开 状态开始关闭 确认modal
 const openStatusModal = () => {
-  message.success('账号状态修改成功')
   state.isShowStatus = true
 }
 //关闭 状态开始关闭 确认modal
@@ -2258,12 +2281,14 @@ const detailsInfo = async (record) => {
   ]
   let tableData = []
   let tablePostData = []
+  console.log('res.sex', res.sex)
+  console.log('res.sexres.sex', typeof res.sex)
   switch (res.sex) {
     case 1:
-      sexText = '女'
+      sexText = '男'
       break
     case 2:
-      sexText = '男'
+      sexText = '女'
   }
 
   switch (res.userStatus) {
@@ -2691,12 +2716,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {
@@ -2866,7 +2893,7 @@ function filterOne(dataList, value, type) {
 }
 
 const sendCurrentSelect = (currentKey) => {
-  // console.log('currentKey==================>', currentKey)
+  console.log('currentKey==================>', currentKey)
   // console.log('typeof currentKey', typeof currentKey)
   // const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
   // console.log('organizationList', organizationList)

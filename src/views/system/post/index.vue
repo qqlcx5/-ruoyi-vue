@@ -17,21 +17,24 @@
           <el-row :gutter="12">
             <el-col :span="8">
               <el-form-item label-width="70px" label="岗位类型">
-                <el-input v-model="postTypeSearchForm.name" placeholder="请输入岗位类型或编码" />
+                <el-input
+                  v-model="postTypeSearchForm.nameOrCode"
+                  placeholder="请输入岗位类型或编码"
+                />
               </el-form-item>
             </el-col>
-            <el-col :span="8">
-              <el-form-item label="状态">
-                <el-select class="w-full" v-model="postTypeSearchForm.status" placeholder="请选择">
-                  <el-option
-                    v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
+            <!--            <el-col :span="8">-->
+            <!--              <el-form-item label="状态">-->
+            <!--                <el-select class="w-full" v-model="postTypeSearchForm.status" placeholder="请选择">-->
+            <!--                  <el-option-->
+            <!--                    v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
+            <!--                    :key="item.value"-->
+            <!--                    :label="item.label"-->
+            <!--                    :value="item.value"-->
+            <!--                  />-->
+            <!--                </el-select>-->
+            <!--              </el-form-item>-->
+            <!--            </el-col>-->
 
             <el-col :span="8" class="!flex flex-column justify-between">
               <div>
@@ -148,7 +151,7 @@
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
                 v-hasPermi="['system:post:create']"
-                @click="openModal('create', 'info')"
+                @click="openModal('create', 'info', postParent.code)"
               />
               <!--              <XButton-->
               <!--                type="primary"-->
@@ -232,7 +235,6 @@ import PostForm from './form.vue'
 import DistributeModal from './component/DistributeModal.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
-import { ElMessageBox } from 'element-plus'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -290,7 +292,7 @@ const [
     getCheckboxRecords: getInfoCheckboxRecords
   }
 ] = useXTable({
-  tableKey: 'post-Info-table',
+  tableKey: 'post-info-table',
   allSchemas: infoAllSchemas, // 列表配置
   params: postInfoSearchForm,
   getListApi: PostInfoApi.getPostPageApi, // 加载列表的 API
@@ -307,27 +309,28 @@ const onPostInfoSearchReset = () => {
 }
 // 删除
 const onPostDel = async (row, type: string) => {
-  if (+row.postCount) {
-    ElMessageBox.confirm(
-      type === 'type'
-        ? h('span', [
-            h('span', '系统校验到该岗位类型底下还存在 '),
-            h('span', { style: { color: 'red' } }, row.postCount),
-            h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
-          ])
-        : h('span', [
-            h('span', '系统校验到该岗位类型底下还存在 '),
-            h('span', { style: { color: 'red' } }, row.userCount),
-            h('span', ' 个在职员工，请先关闭或转移所有员工再操作删除哦~')
-          ]),
-      `提示`,
-      {
-        confirmButtonText: t('common.toOperate'),
-        cancelButtonText: t('common.cancel'),
-        type: 'warning',
-        lockScroll: false
-      }
-    )
+  if (type === 'type' ? +row.postCount : +row.userCount) {
+    message
+      .wgOperateConfirm(
+        type === 'type'
+          ? h('span', [
+              h('span', '系统校验到该岗位类型底下还存在 '),
+              h('span', { style: { color: 'red' } }, row.postCount),
+              h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
+            ])
+          : h('span', [
+              h('span', '系统校验到该岗位类型底下还存在 '),
+              h('span', { style: { color: 'red' } }, row.userCount),
+              h('span', ' 个在职员工，请先关闭或转移所有员工再操作删除哦~')
+            ]),
+        `提示`,
+        {
+          confirmButtonText: t('common.toOperate'),
+          cancelButtonText: t('common.cancel'),
+          lockScroll: false,
+          autofocus: false
+        }
+      )
       .then(async () => {})
       .catch(() => {})
   } else {
@@ -367,27 +370,28 @@ const onPostDel = async (row, type: string) => {
 }
 // 更新岗位状态
 const postInfoStatusChange = async (row) => {
-  const text = row.status === CommonStatusEnum.ENABLE ? '启用' : '停用'
-  ElMessageBox.confirm(
-    row.status === CommonStatusEnum.ENABLE
-      ? h('span', [
-          h('span', `${text}后，${row.name}底下的 `),
-          h('span', { style: { color: 'red' } }, '0'),
-          h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
-        ])
-      : h('span', [
-          h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
-          h('span', { style: { color: 'red' } }, '0'),
-          h('span', '个员工也将同步关闭该岗位，请谨慎操作。')
-        ]),
-    `确定${text} ${row.name} 吗？`,
-    {
-      confirmButtonText: t('common.ok'),
-      cancelButtonText: t('common.cancel'),
-      type: 'warning',
-      lockScroll: false
-    }
-  )
+  const text = row.status === CommonStatusEnum.ENABLE ? '开启' : '关闭'
+  message
+    .wgConfirm(
+      row.status === CommonStatusEnum.ENABLE
+        ? h('span', [
+            h('span', `${text}后，${row.name}底下的 `),
+            h('span', { style: { color: 'red' } }, '0'),
+            h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
+          ])
+        : h('span', [
+            h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
+            h('span', { style: { color: 'red' } }, row.userCount),
+            h('span', ' 个员工也将同步关闭该岗位，请谨慎操作。')
+          ]),
+      `确定${text} ${row.name} 吗？`,
+      {
+        confirmButtonText: t('common.ok'),
+        cancelButtonText: t('common.cancel'),
+        lockScroll: false,
+        autofocus: false
+      }
+    )
     .then(async () => {
       const updateStatus = await PostInfoApi.updatePostApi({ ...row })
       await postTypeGet()

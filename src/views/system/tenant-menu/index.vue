@@ -23,13 +23,13 @@
         />
       </a-form-item>
       <!-- TODO:权限-->
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
       <a-button @click="resetQuery">重置</a-button>
     </a-form>
   </ContentWrap>
 
   <!--  表格  -->
-  <a-card :bordered="false" style="width: 1650px" id="card-content">
+  <a-card :bordered="false" style="min-width: 1650px" id="card-content">
     <!--  <ContentWrap>-->
     <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
     <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -47,7 +47,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -73,6 +73,7 @@
       :defaultExpandAllRows="state.isExpandAll"
       v-if="state.refreshTable"
       @resizeColumn="handleResizeColumn"
+      :pagination="false"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -119,15 +120,21 @@
         </template>
         <!--  员工数   -->
         <template v-if="column.key === 'employeesNumber'">
-          <div class="employees-Number">{{ record?.userCount }}</div>
+          <div class="employees-Number" @click="openDetails(record)">{{ record?.userCount }}</div>
         </template>
         <!--  状态   -->
+        <!--  菜单状态   -->
         <template v-if="column.key === 'status'">
-          <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
-          <!-- <div class="employees-Number">{{ record.status }}</div>-->
           <a-switch
             v-model:checked="record.statusSwitch"
             @change="(value) => tableStatusChange(value, record)"
+          />
+        </template>
+        <!--  显示状态   -->
+        <template v-if="column.key === 'visible'">
+          <a-switch
+            v-model:checked="record.visible"
+            @change="(value) => tableVisibleChange(value, record)"
           />
         </template>
         <!--  操作   -->
@@ -466,6 +473,113 @@
     </div>
   </a-modal>
 
+  <!-- 员工数modal  -->
+  <a-modal
+    v-model:visible="state.isShowEmployees"
+    wrapClassName="details-modal"
+    title="员工数"
+    :width="state.employeesModalInfo.width"
+    :bodyStyle="{
+      margin: '0',
+      padding: '14px 25px',
+      overflow: 'auto'
+    }"
+    :footer="null"
+    @cancel="closeEmployees"
+  >
+    <div class="role-style">
+      {{ state.employeesModalInfo.typeText }}： {{ state.employeesModalInfo?.dirText
+      }}{{ state.employeesModalInfo?.menuText }}{{ state.employeesModalInfo?.btnText }} （共配置{{
+        state.employeesModalInfo?.employeesNum
+      }}个员工）
+    </div>
+    <div class="total-search-content">
+      <div class="search-content" v-if="state.employeesModalInfo?.needRole">
+        <div class="search-item">
+          <div class="item-label">角色：</div>
+          <div class="item-condition">
+            <a-select
+              v-model:value="state.configureRoles"
+              class="width-100"
+              :options="state.configureRolesOptions"
+              mode="multiple"
+              optionFilterProp="label"
+              show-search
+              placeholder="请选择"
+              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="search-content">
+        <div class="search-item">
+          <div class="item-label">岗位：</div>
+          <div class="item-condition">
+            <a-select
+              v-model:value="state.postList"
+              class="width-100"
+              :options="state.postListOptions"
+              mode="multiple"
+              optionFilterProp="label"
+              show-search
+              placeholder="请选择"
+              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
+            />
+            <!--            <a-input-->
+            <!--              class="width-100"-->
+            <!--              v-model:value="state.post"-->
+            <!--              placeholder="请输入岗位名称搜索"-->
+            <!--            />-->
+          </div>
+        </div>
+      </div>
+      <div class="search-content">
+        <div class="search-item">
+          <div class="item-label">姓名：</div>
+          <div class="item-condition">
+            <a-input
+              class="width-100"
+              v-model:value="state.memberName"
+              @pressEnter="search"
+              placeholder="请输入员工名称搜索"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="search-btn-content">
+        <a-button type="primary" html-type="submit" @click="search">搜索</a-button>
+        <a-button @click="employeesReset">重置</a-button>
+      </div>
+    </div>
+
+    <div
+      class="employees-content"
+      v-for="(item, index) in state.testArr"
+      :key="`employees${index}`"
+    >
+      <div class="employees-info-card">
+        <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
+        <template v-for="(childrenItem, childrenIndex) in item.postInfo">
+          <div v-html="childrenItem.post" class="post-style"></div>
+
+          <div class="employees-name-content">
+            <template
+              v-for="(childrenNameItem, childrenNameIndex) in childrenItem.allInfo"
+              :key="`employees${index}-${childrenNameIndex}`"
+            >
+              <div
+                v-html="childrenNameItem.name"
+                :class="['employees-name', { 'border-red': childrenNameItem.needBorder }]"
+              ></div>
+            </template>
+          </div>
+        </template>
+      </div>
+    </div>
+  </a-modal>
+
   <!--  定制列  -->
   <CustomColumn
     v-if="state.isShowCustomColumnModal"
@@ -493,10 +607,12 @@ import {
   getSimpleTenantList,
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
-import { updateMenuStatus } from '@/api/system/TenantMenu'
+import { updateMenuStatus } from '@/api/system/tenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns } from '@/utils/utils'
+import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
+import { getPostList, getRolesList } from '@/api/system/member'
+import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 
 const queryParams = reactive({
   name: undefined,
@@ -565,7 +681,7 @@ const allColumns = [
     sort: 4
   },
   {
-    title: '状态',
+    title: '菜单状态',
     width: 100,
     dataIndex: 'status',
     key: 'status',
@@ -574,13 +690,22 @@ const allColumns = [
     sort: 5
   },
   {
-    title: '创建人',
-    dataIndex: 'creator',
+    title: '显示状态',
     width: 100,
-    key: 'creator',
+    dataIndex: 'visible',
+    key: 'visible',
     resizable: true,
     ellipsis: true,
     sort: 6
+  },
+  {
+    title: '创建人',
+    dataIndex: 'creatorName',
+    width: 100,
+    key: 'creatorName',
+    resizable: true,
+    ellipsis: true,
+    sort: 7
   },
   {
     title: '创建时间',
@@ -589,16 +714,16 @@ const allColumns = [
     key: 'createTime',
     resizable: true,
     ellipsis: true,
-    sort: 7
+    sort: 8
   },
   {
     title: '最近操作人',
     width: 100,
-    dataIndex: 'updater',
-    key: 'updater',
+    dataIndex: 'updaterName',
+    key: 'updaterName',
     resizable: true,
     ellipsis: true,
-    sort: 8
+    sort: 9
   },
   {
     title: '最近操作时间',
@@ -607,7 +732,7 @@ const allColumns = [
     key: 'updateTime',
     resizable: true,
     ellipsis: true,
-    sort: 9
+    sort: 10
   },
   {
     title: '操作',
@@ -616,7 +741,7 @@ const allColumns = [
     key: 'operation',
     resizable: true,
     ellipsis: true,
-    sort: 10
+    sort: 11
   }
 ]
 
@@ -627,6 +752,7 @@ const state = reactive({
   isFullScreen: false, //全屏
   isShow: false,
   isShowDetails: false, //详情modal
+  isShowEmployees: false, //员工数modal
   currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
   isShowStatus: false, //table 状态开启关闭 modal
@@ -656,8 +782,80 @@ const state = reactive({
   modalBtnLoading: false,
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [],
-  defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'operation'], //定制列默认的keys
-  changedColumnsObj: {} //定制列组件接收到的当前列信息
+  defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'visible', 'operation'], //定制列默认的keys
+  changedColumnsObj: {}, //定制列组件接收到的当前列信息
+  configureRolesOptions: [], //角色 Options tree  员工数 modal
+  postListOptions: [], //岗位 Options tree  员工数 modal
+  postList: [], //岗位  选中  员工数 modal
+  configureRoles: [], //角色 选中  员工数 modal
+  employeesInfo: [
+    {
+      role: '角色：销售顾问 - 仅看本部门及以下',
+      // post: '销售顾问（3）：',
+      postInfo: [
+        {
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
+        },
+        {
+          post: '销售顾问（3）：',
+          allInfo: [
+            {
+              name: '张三'
+            },
+            {
+              name: '李四'
+            },
+            {
+              name: '王四四'
+            }
+          ]
+        }
+      ]
+    },
+    {
+      role: '角色：普通角色 - 看所有人',
+      // post: '前端（3）：',
+      postInfo: [
+        {
+          post: '前端（3）：',
+          allInfo: [
+            {
+              name: '张1'
+            },
+            {
+              name: '李2'
+            },
+            {
+              name: '王3'
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  testArr: [],
+  memberName: '', //员工数 modal 姓名
+  post: '', //岗位 modal 姓名
+  employeesModalInfo: {
+    width: '940px',
+    typeText: '目录',
+    dirText: '',
+    menuText: '',
+    btnText: '',
+    employeesNum: 0,
+    needRole: false
+  } //员工数modal配置信息
 })
 
 const layout = {
@@ -922,6 +1120,9 @@ const okDelete = () => {
 //table 状态开启关闭
 //表格状态开关
 const tableStatusChange = (value, record) => {
+  //菜单状态与显示状态同步开关
+  record.visible = value
+
   state.tableStatusChangeInfo = {
     value,
     record
@@ -931,12 +1132,41 @@ const tableStatusChange = (value, record) => {
     state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
+    state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
   }
   state.isShowStatus = true
+}
+
+//显示状态
+const tableVisibleChange = async (value, record) => {
+  if (record.statusSwitch === false) {
+    record.visible = !record.visible
+    return message.warning('菜单状态未开启，不允许开启显示状态')
+  }
+
+  const params = {
+    id: record.id,
+    name: record.name,
+    parentId: record.parentId,
+    sort: record.sort,
+    status: record.statusSwitch === true ? 0 : 1,
+    type: record.type,
+    visible: record.visible
+  }
+
+  try {
+    await MenuApi.updateMenuStatus(params)
+    message.success('修改显示状态成功')
+    // 清空，从而触发刷新
+    wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    await getList()
+  } finally {
+  }
 }
 
 //关闭 状态开始关闭 确认modal
@@ -990,7 +1220,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1029,7 +1259,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1088,7 +1318,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '按钮类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1154,6 +1384,213 @@ state.columns = getColumns(state, PageKeyObj.tenant, allColumns, state.defaultKe
 const handleResizeColumn = (w, col) => {
   col.width = w
 }
+
+//员工数打开 弹窗
+const openDetails = async (record) => {
+  state.currentRecord = record
+  // 1 目录 2菜单 3按钮
+  switch (record.type) {
+    case 1:
+      //目录
+      state.employeesModalInfo = {
+        width: '763px',
+        typeText: '目录',
+        dirText: record.name,
+        menuText: '',
+        btnText: '',
+        employeesNum: record.userCount,
+        needRole: false
+      } //员工数modal配置信息
+      break
+    case 2:
+      //菜单
+      const dirItem = state.menuArr.find((item) => item.id === record.parentId)
+      state.employeesModalInfo = {
+        width: '940px',
+        typeText: '菜单',
+        dirText: dirItem.name,
+        menuText: `-${record.name}`,
+        btnText: '',
+        employeesNum: record.userCount,
+        needRole: true
+      } //员工数modal配置信息
+      break
+    case 3:
+      const menuItem = state.menuArr.find((item) => item.id === record.parentId)
+      const dirItemNew = state.menuArr.find((item) => item.id === menuItem.parentId)
+      //按钮
+      state.employeesModalInfo = {
+        width: '763px',
+        typeText: '按钮',
+        dirText: dirItemNew.name,
+        menuText: `-${menuItem.name}`,
+        btnText: `-${record.name}`,
+        employeesNum: record.userCount,
+        needRole: false
+      } //员工数modal配置信息
+      break
+  }
+  //角色信息
+  const rolesRes = await getRolesList()
+  //岗位列表
+  const postList = await getPostList()
+  const needReplacePartPostKey = [
+    ['label', 'name'],
+    ['value', 'id']
+  ]
+  state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
+  state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
+  state.isShowEmployees = true
+  search()
+}
+
+//员工数 高亮搜索
+const search = async () => {
+  switch (state.currentRecord.type) {
+    case 2:
+      //菜单 需要角色 搜索
+      // 角色
+      const res = await getMemberNumRoleList({
+        menuId: state.currentRecord.id,
+        nickname: state.memberName,
+        postIds: state.postList,
+        roleIds: state.configureRoles
+      })
+
+      const tempTestArr = []
+      //角色
+      res.map((item) => {
+        let tempObj = {}
+        let tempPostInfo = []
+        item.userExtraPostVOS.map((childrenPostItem) => {
+          let tempObj1 = {}
+          let tempAllInfo = []
+          childrenPostItem.userExtraVOS.map((nameItem) => {
+            let tempObj = {
+              name: nameItem.nickname
+            }
+
+            tempAllInfo.push(tempObj)
+          })
+
+          tempObj1 = {
+            post: childrenPostItem.postName,
+            allInfo: tempAllInfo
+          }
+          tempPostInfo.push(tempObj1)
+        })
+
+        tempObj = {
+          role: `角色：${item.roleName}`,
+          postInfo: tempPostInfo
+        }
+        tempTestArr.push(tempObj)
+      })
+
+      state.testArr = tempTestArr
+
+      break
+    default:
+      //目录 按钮 无需角色 搜索
+      const resPost = await getMemberNumList({
+        menuId: state.currentRecord.id,
+        nickname: state.memberName,
+        postIds: state.postList,
+        roleIds: state.configureRoles
+      })
+
+      let tempPostInfo = []
+      resPost.map((item) => {
+        let tempObj1 = {}
+        let tempAllInfo = []
+        item.userExtraVOS.map((nameItem) => {
+          let tempObj = {
+            name: nameItem.nickname
+          }
+
+          tempAllInfo.push(tempObj)
+        })
+
+        tempObj1 = {
+          post: item.postName,
+          allInfo: tempAllInfo
+        }
+        tempPostInfo.push(tempObj1)
+      })
+
+      if (tempPostInfo.length > 0) {
+        const tempArr1 = [
+          {
+            role: '',
+            postInfo: tempPostInfo
+          }
+        ]
+        state.testArr = tempArr1
+      } else {
+        message.warning('暂无数据')
+      }
+  }
+
+  //角色
+  const selectRolesList = state.configureRolesOptions.filter((roleItem) => {
+    return state.configureRoles.some((item) => roleItem?.value === item)
+  })
+  //岗位
+  const selectPostList = state.postListOptions.filter((roleItem) => {
+    return state.postList.some((item) => roleItem?.value === item)
+  })
+
+  const pattern = new RegExp(state.memberName, 'gi')
+
+  state.testArr.map((item) => {
+    // //岗位
+    // item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
+    //姓名
+    item.postInfo.map((childrenPostItem) => {
+      childrenPostItem.allInfo.map((childrenItem) => {
+        childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
+        if (state.memberName && childrenItem.name.match(pattern)) {
+          childrenItem.needBorder = true
+        }
+      })
+    })
+  })
+
+  //角色
+  selectRolesList.map((roleItem) => {
+    const patternRole = new RegExp(roleItem.label, 'gi')
+    state.testArr.map((item) => {
+      item.role = item.role.replace(patternRole, `<span class="highlight">$&</span>`)
+    })
+  })
+
+  //岗位
+  selectPostList.map((roleItem) => {
+    const patternRole = new RegExp(roleItem.label, 'gi')
+    state.testArr.map((item) => {
+      item.postInfo.map((postItem) => {
+        postItem.post = postItem.post.replace(patternRole, `<span class="highlight">$&</span>`)
+      })
+    })
+  })
+}
+//员工数 modal 重置
+const employeesReset = () => {
+  state.configureRoles = []
+  state.postList = []
+  state.memberName = ''
+  state.post = ''
+  search()
+}
+
+//员工数modal
+const closeEmployees = () => {
+  state.employeesInfo = []
+  state.testArr = []
+  state.memberName = '' //员工数 modal 姓名
+  state.configureRoles = [] //角色
+  state.postList = [] //岗位
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1202,10 +1639,12 @@ const handleResizeColumn = (w, col) => {
 //名称
 .name-content {
   display: flex;
+  align-items: center;
 }
 //员工数
 .employees-Number {
   color: rgba(0, 129, 255, 100);
+  cursor: pointer;
 }
 :deep(.ant-table-cell-with-append) {
   display: flex;
@@ -1380,6 +1819,80 @@ const handleResizeColumn = (w, col) => {
 .icon-tip {
   margin-left: 8px;
 }
+//========================== 员工数 modal search start ==================================
+.total-search-content {
+  display: flex;
+  //justify-content: space-between;
+}
+
+.search-content {
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  //flex: 1 3 auto;
+}
+
+.search-btn-content {
+  width: 200px;
+  margin-top: 10px;
+  display: flex;
+  //justify-content: space-between;
+  //background: skyblue;
+  //flex: 1 1 auto;
+}
+
+.search-item {
+  display: flex;
+  //flex: 1;
+  margin-top: 10px;
+}
+
+.item-label {
+  width: 45px;
+  //margin-left: 10px;
+  display: flex;
+  //justify-content: flex-start;
+  //justify-content: flex-end;
+  align-items: center;
+}
+
+.item-condition {
+  width: 180px;
+}
+
+.flex-style {
+  display: flex;
+}
+
+.select-input {
+  width: 270px;
+}
+
+.width-70 {
+  width: 70px;
+}
+
+.width-180 {
+  width: 180px;
+  flex: 1;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+//========================== 员工数 modal search end ==================================
+.employees-content {
+  margin-top: 40px;
+  width: 100%;
+  min-height: 200px;
+  background-color: rgba(244, 246, 247, 1);
+}
+
+:deep(.ant-table-tbody) {
+  min-height: 520px;
+}
 </style>
 
 <style lang="scss">
@@ -1417,6 +1930,44 @@ const handleResizeColumn = (w, col) => {
   }
   .ant-modal-body {
     flex: 1;
+  }
+  //员工姓名高亮
+  .highlight {
+    color: red;
+  }
+  .border-red {
+    border-color: red !important;
+  }
+  .role-style {
+    color: rgba(51, 51, 51, 1);
+    font-size: 16px;
+    font-weight: bold;
+    font-family: PingFangSC-Medium;
+  }
+  .post-style {
+    font-size: 14px;
+    font-family: PingFangSC-Regular;
+  }
+  .employees-name-content {
+    display: flex;
+  }
+  .employees-info-card {
+    padding: 15px;
+  }
+  .employees-name {
+    margin-right: 10px;
+    margin-top: 19px;
+    padding: 4px 8px;
+    text-align: center;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 1);
+    border: 1px solid rgba(221, 223, 229, 1);
+    color: rgba(102, 102, 102, 1);
+    font-family: PingFangSC-Regular;
+  }
+  .ant-select-multiple .ant-select-selection-item-remove {
+    display: flex;
+    align-items: center;
   }
 }
 </style>

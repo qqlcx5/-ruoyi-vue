@@ -1,16 +1,16 @@
 <template>
   <!-- 弹窗 -->
-  <XModal :title="modelTitle" :loading="modelLoading" v-model="modelVisible" width="624px">
+  <XModal :title="modelTitle" :loading="modelLoading" v-model="modelVisible" width="664px">
     <!-- 表单：添加/修改 -->
     <el-table v-if="postTableType === 'type'" class="form-table" :data="postTypeTableData" border>
       <el-table-column label="岗位类型编码">
         <template #default="{ row }">
-          <el-input v-model="row.code" />
+          <el-input v-model="row.code" placeholder="请输入岗位类型编码" />
         </template>
       </el-table-column>
       <el-table-column label="岗位类型">
         <template #default="{ row }">
-          <el-input v-model="row.name" />
+          <el-input v-model="row.name" placeholder="请输入岗位类型" />
         </template>
       </el-table-column>
       <el-table-column v-if="actionType !== 'update'" label="操作" width="180">
@@ -27,19 +27,19 @@
       :data="postTypeTableData"
       border
     >
-      <el-table-column label="岗位名称">
-        <template #default="{ row }">
-          <el-input v-model="row.name" />
-        </template>
-      </el-table-column>
       <el-table-column label="岗位编码">
         <template #default="{ row }">
-          <el-input v-model="row.code" />
+          <el-input v-model="row.code" placeholder="请输入岗位编码" />
+        </template>
+      </el-table-column>
+      <el-table-column label="岗位名称">
+        <template #default="{ row }">
+          <el-input v-model="row.name" placeholder="请输入岗位名称" />
         </template>
       </el-table-column>
       <el-table-column label="岗位类型">
         <template #default="{ row }">
-          <el-select v-model="row.typeCode">
+          <el-select v-model="row.typeCode" placeholder="请选择岗位类型">
             <el-option
               v-for="item in postTypeOptions"
               :key="item.code"
@@ -90,9 +90,10 @@ const actionType = ref('') // 操作按钮的类型
 const actionLoading = ref(false) // 按钮 Loading
 const postTableType = ref('') // 表格类型
 const postTypeOptions = ref([]) // 岗位类型列表
+const defaultTypeCode = ref()
 
 // 打开弹窗
-const openModal = async (type: string, tableType: string, id?: number) => {
+const openModal = async (type: string, tableType: string, id?: number | string) => {
   modelVisible.value = true
   modelLoading.value = true
   modelTitle.value = t('action.' + type)
@@ -117,19 +118,18 @@ const openModal = async (type: string, tableType: string, id?: number) => {
     }
   } else if (postTableType.value === 'info') {
     getPostTypeOptions()
-    if (id) {
+    if (id && type === 'update') {
       const res = await PostInfoApi.getPostApi(id)
       if (!res) {
         message.warning('信息查询异常！')
         modelLoading.value = false
         return
       }
-      if (type === 'update') {
-        const { id, code, name, status, typeCode } = res
-        postTypeTableData.value = [{ id, code, name, status, typeCode }]
-      }
+      const { code, name, status, typeCode } = res
+      postTypeTableData.value = [{ id: res.id, code, name, status, typeCode }]
     } else {
-      postTypeTableData.value = [{ code: '', name: '', status: 0, typeCode: '' }]
+      defaultTypeCode.value = id
+      postTypeTableData.value = [{ code: '', name: '', status: 0, typeCode: defaultTypeCode.value }]
     }
   }
   modelLoading.value = false
@@ -147,7 +147,7 @@ const postTypeTableData = ref<PostApi.PostVO[] | PostInfoVO[]>([
   { code: '', name: '', status: 0, typeCode: '' }
 ])
 const addPostTypeLine = (): void => {
-  postTypeTableData.value.push({ code: '', name: '', status: 0, typeCode: '' })
+  postTypeTableData.value.push({ code: '', name: '', status: 0, typeCode: defaultTypeCode.value })
 }
 const delPostTypeLine = (index: number): void => {
   if (postTypeTableData.value.length === 1)

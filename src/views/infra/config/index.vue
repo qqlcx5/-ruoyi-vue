@@ -86,11 +86,7 @@
           @click="handleUpdate(row.id)"
         />
         <!-- 操作：详情 -->
-        <XTextButton
-          :title="t('action.detail')"
-          v-hasPermi="['infra:config:query']"
-          @click="handleDetail(row)"
-        />
+        <XTextButton :title="t('action.detail')" @click="handleDetail(row)" />
         <!-- 操作：删除 -->
         <XTextButton
           v-if="row.type !== 1"
@@ -207,7 +203,7 @@ const handleCreate = () => {
 const handleStatusChange = (row) => {
   const text = row.visible ? '可见' : '不可见'
   message
-    .confirm(`是否确认设置参数名称"${row.name}"为${text}?`, t('common.reminder'))
+    .wgOperateConfirm(`是否确认设置参数名称"${row.name}"为${text}?`, '提示')
     .then(async () => {
       let updateStatus = await ConfigApi.updateConfigApi({ ...row })
       if (updateStatus) {

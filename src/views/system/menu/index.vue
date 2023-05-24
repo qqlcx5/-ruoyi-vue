@@ -2,7 +2,7 @@
 <template>
   <!-- 搜索工作栏 -->
   <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
+    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
       <a-form-item :label="`菜单名称`" name="name">
         <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
       </a-form-item>
@@ -47,7 +47,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -74,6 +74,7 @@
       :defaultExpandAllRows="state.isExpandAll"
       v-if="state.refreshTable"
       @resizeColumn="handleResizeColumn"
+      :pagination="false"
     >
       <!--  自定义展开折叠图标  -->
       <template #expandIcon="props">
@@ -546,6 +547,7 @@
             <a-input
               class="width-100"
               v-model:value="state.memberName"
+              @pressEnter="search"
               placeholder="请输入员工名称搜索"
             />
           </div>
@@ -558,12 +560,12 @@
       </div>
     </div>
 
-    <div class="employees-content">
-      <div
-        v-for="(item, index) in state.testArr"
-        :key="`employees${index}`"
-        class="employees-info-card"
-      >
+    <div
+      class="employees-content"
+      v-for="(item, index) in state.testArr"
+      :key="`employees${index}`"
+    >
+      <div class="employees-info-card">
         <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
         <template v-for="(childrenItem, childrenIndex) in item.postInfo">
           <div v-html="childrenItem.post" class="post-style"></div>
@@ -886,7 +888,6 @@ const getList = async (isRefresh = false) => {
     })
     state.menuArr = res
     list.value = handleTree(res)
-    console.log('list.value', list.value)
     if (isRefresh) {
       message.success('刷新成功')
     }
@@ -1231,7 +1232,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1270,7 +1271,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '目录类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1329,7 +1330,7 @@ const detailsInfo = async (record) => {
           text: record?.name
         },
         {
-          textSpan: '按钮类型：',
+          textSpan: '菜单类型：',
           text: typeText
         },
         {
@@ -1405,7 +1406,6 @@ const addEditStatusChange = (checked: boolean, event: Event) => {
 
 //员工数打开 弹窗
 const openDetails = async (record) => {
-  console.log('员工数record', record)
   state.currentRecord = record
   // 1 目录 2菜单 3按钮
   switch (record.type) {
@@ -1424,7 +1424,6 @@ const openDetails = async (record) => {
     case 2:
       //菜单
       const dirItem = state.menuArr.find((item) => item.id === record.parentId)
-      console.log('dirItem', dirItem)
       state.employeesModalInfo = {
         width: '940px',
         typeText: '菜单',
@@ -1461,81 +1460,14 @@ const openDetails = async (record) => {
   state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
   state.postListOptions = reconstructionArrayObject(postList, needReplacePartPostKey)
   state.isShowEmployees = true
-}
-
-const groupBy = (array, f) => {
-  let groups = {}
-  array.forEach(function (o) {
-    var group = JSON.stringify(f(o))
-    groups[group] = groups[group] || []
-    groups[group].push(o)
-  })
-  return Object.keys(groups).map(function (group) {
-    return groups[group]
-  })
-}
-
-const arrayGroupBy = (list, groupId) => {
-  let sorted = groupBy(list, function (item) {
-    return [item[groupId]]
-  })
-  const tempObj = {
-    needItem: sorted[0][0],
-    needArr: sorted[0]
-  }
-  console.log('tempObj', tempObj)
-
-  // return sorted
-
-  return tempObj
+  search()
 }
 
 //员工数 高亮搜索
 const search = async () => {
-  console.log('state.currentRecord', state.currentRecord)
-
   switch (state.currentRecord.type) {
     case 2:
-      const resPost = await getMemberNumList({
-        menuId: state.currentRecord.id,
-        nickname: state.memberName,
-        postIds: state.postList,
-        roleIds: state.configureRoles
-      })
-
-      console.log('岗位res', resPost)
-      let tempPostInfo = []
-      resPost.map((item) => {
-        let tempObj1 = {}
-        let tempAllInfo = []
-        item.userExtraVOS.map((nameItem) => {
-          let tempObj = {
-            name: nameItem.nickname
-          }
-
-          tempAllInfo.push(tempObj)
-        })
-        console.log('tempAllInfo', tempAllInfo)
-
-        tempObj1 = {
-          post: item.postName,
-          allInfo: tempAllInfo
-        }
-        tempPostInfo.push(tempObj1)
-      })
-
-      const tempArr1 = [
-        {
-          role: '',
-          postInfo: tempPostInfo
-        }
-      ]
-      state.testArr = tempArr1
-      console.log('tempPostInfo', tempPostInfo)
       //菜单 需要角色 搜索
-      break
-    default:
-      //目录 按钮 无需角色 搜索
       // 角色
       const res = await getMemberNumRoleList({
         menuId: state.currentRecord.id,
@@ -1544,7 +1476,6 @@ const search = async () => {
         roleIds: state.configureRoles
       })
 
-      console.log('res===>', res)
       const tempTestArr = []
       //角色
       res.map((item) => {
@@ -1561,24 +1492,62 @@ const search = async () => {
             tempAllInfo.push(tempObj)
           })
 
-          console.log('tempAllInfo', tempAllInfo)
           tempObj1 = {
             post: childrenPostItem.postName,
             allInfo: tempAllInfo
           }
           tempPostInfo.push(tempObj1)
         })
-        console.log('tempPostInfo', tempPostInfo)
+
         tempObj = {
-          role: item.roleName,
+          role: `角色：${item.roleName}`,
           postInfo: tempPostInfo
         }
         tempTestArr.push(tempObj)
       })
 
-        state.testArr = tempTestArr
+      state.testArr = tempTestArr
 
-      console.log('tempTestArr', tempTestArr)
+      break
+    default:
+      //目录 按钮 无需角色 搜索
+      const resPost = await getMemberNumList({
+        menuId: state.currentRecord.id,
+        nickname: state.memberName,
+        postIds: state.postList,
+        roleIds: state.configureRoles
+      })
+
+      let tempPostInfo = []
+      resPost.map((item) => {
+        let tempObj1 = {}
+        let tempAllInfo = []
+        item.userExtraVOS.map((nameItem) => {
+          let tempObj = {
+            name: nameItem.nickname
+          }
+
+          tempAllInfo.push(tempObj)
+        })
+
+        tempObj1 = {
+          post: item.postName,
+          allInfo: tempAllInfo
+        }
+        tempPostInfo.push(tempObj1)
+      })
+
+      if (tempPostInfo.length > 0) {
+        const tempArr1 = [
+          {
+            role: '',
+            postInfo: tempPostInfo
+          }
+        ]
+        state.testArr = tempArr1
+      } else {
+        message.warning('暂无数据')
+      }
   }
 
   //角色
@@ -1589,14 +1558,9 @@ const search = async () => {
   const selectPostList = state.postListOptions.filter((roleItem) => {
     return state.postList.some((item) => roleItem?.value === item)
   })
-  console.log('selectRolesList ', selectRolesList)
 
-  // state.testArr = cloneDeep(state.employeesInfo)
   const pattern = new RegExp(state.memberName, 'gi')
-  // state.testArr.map((item) => {
-  //   item.name = item.name.replace(pattern, `<span class="highlight">$&</span>`)
-  // })
-  // const patternPost = new RegExp(state.post, 'gi')
+
   state.testArr.map((item) => {
     // //岗位
     // item.post = item.post.replace(patternPost, `<span class="highlight">$&</span>`)
@@ -1609,13 +1573,6 @@ const search = async () => {
         }
       })
     })
-
-    // item.allInfo.map((childrenItem) => {
-    //   childrenItem.name = childrenItem.name.replace(pattern, `<span class="highlight">$&</span>`)
-    //   if (state.memberName && childrenItem.name.match(pattern)) {
-    //     childrenItem.needBorder = true
-    //   }
-    // })
   })
 
   //角色
@@ -1623,17 +1580,8 @@ const search = async () => {
     const patternRole = new RegExp(roleItem.label, 'gi')
     state.testArr.map((item) => {
       item.role = item.role.replace(patternRole, `<span class="highlight">$&</span>`)
-      console.log('item.role', item.role)
     })
   })
-
-  // //岗位
-  // selectPostList.map((roleItem) => {
-  //   const patternRole = new RegExp(roleItem.label, 'gi')
-  //   state.testArr.map((item) => {
-  //     item.post = item.post.replace(patternRole, `<span class="highlight">$&</span>`)
-  //   })
-  // })
 
   //岗位
   selectPostList.map((roleItem) => {
@@ -1644,7 +1592,6 @@ const search = async () => {
       })
     })
   })
-  console.log('state.testArr', state.testArr)
 }
 //员工数 modal 重置
 const employeesReset = () => {

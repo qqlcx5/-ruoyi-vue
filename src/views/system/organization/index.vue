@@ -11,7 +11,7 @@
       <a-form-item :label="`机构类型`" name="organizationType">
         <a-select
           v-model:value="queryParams.organizationType"
-          placeholder="请选择状态"
+          placeholder="请选择机构类型"
           style="width: 200px"
           :options="state.organizationTypeOptions"
         />
@@ -25,7 +25,7 @@
           :options="state.statusOptions"
         />
       </a-form-item>
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
       <a-button @click="resetQuery">重置</a-button>
     </a-form>
   </ContentWrap>
@@ -49,7 +49,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -183,7 +183,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :bodyStyle="{ maxHeight: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
+    :bodyStyle="{ height: '520px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
       <a-form
@@ -191,6 +191,7 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <a-form-item :label="`上级机构`" name="parentId">
           <a-tree-select
@@ -268,18 +269,26 @@
         <!--          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />-->
         <!--        </a-form-item>-->
 
-        <a-form-item
-          :label="`负责人`"
-          name="contactName"
-          :rules="[{ required: true, message: `负责人不能为空` }]"
-        >
-          <a-select
+        <a-form-item :label="`负责人`" name="contactName">
+          <!--          <a-select-->
+          <!--            v-model:value="state.formState.contactName"-->
+          <!--            class="width-100"-->
+          <!--            show-search-->
+          <!--            :options="state.memberOptions"-->
+          <!--            placeholder="请选择负责人"-->
+          <!--            optionFilterProp="label"-->
+          <!--            :getPopupContainer="(triggerNode) => triggerNode.parentElement"-->
+          <!--            @change="getPhoneList"-->
+          <!--          />-->
+
+          <a-tree-select
             v-model:value="state.formState.contactName"
-            class="width-100"
-            :options="state.memberOptions"
+            show-search
+            style="width: 100%"
+            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
             placeholder="请选择负责人"
-            optionFilterProp="label"
-            :getPopupContainer="(triggerNode) => triggerNode.parentElement"
+            :tree-data="state.memberOptions"
+            treeNodeFilterProp="label"
             @change="getPhoneList"
           />
         </a-form-item>
@@ -347,6 +356,7 @@
         ref="formAttributeRef"
         v-bind="layout1"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本属性 </div>
 
@@ -367,24 +377,39 @@
 
         <a-form-item
           label="分公司类型"
+          :rules="[{ required: true, message: `分公司类型不能为空` }]"
           v-if="
             state.currentType === '2' ||
             state.currentType === '分公司' ||
             state.detailsRecord?.type === '2'
           "
         >
-          <a-checkbox-group v-model:value="state.formAttributeState.type">
-            <a-checkbox
-              v-for="(item, index) in state.branchCompanyTypeOptions"
+          <!--          <a-checkbox-group v-model:value="state.formAttributeState.type">-->
+          <!--            <a-checkbox-->
+          <!--              v-for="(item, index) in state.branchCompanyTypeOptions"-->
+          <!--              :value="item.value"-->
+          <!--              :key="`type${index}`"-->
+          <!--              name="type"-->
+          <!--              :rules="[{ required: true, message: '分公司类型不能为空!' }]"-->
+          <!--              >{{ item.label }}</a-checkbox-->
+          <!--            >-->
+          <!--          </a-checkbox-group>-->
+
+          <a-radio-group v-model:value="state.formAttributeState.type">
+            <a-radio
               :value="item.value"
               :key="`type${index}`"
               name="type"
-              :rules="[{ required: true, message: '分公司类型不能为空!' }]"
-              >{{ item.label }}</a-checkbox
+              v-for="(item, index) in state.branchCompanyTypeOptions"
+              >{{ item.label }}</a-radio
             >
-          </a-checkbox-group>
+          </a-radio-group>
         </a-form-item>
-        <a-form-item label="门店类型" v-else>
+        <a-form-item
+          label="门店类型"
+          :rules="[{ required: true, message: `门店类型不能为空` }]"
+          v-else
+        >
           <a-checkbox-group v-model:value="state.formAttributeState.type">
             <a-checkbox
               v-for="(item, index) in state.storeTypeOptions"
@@ -753,7 +778,13 @@
       </div>
     </div>
     <!--  机构属性  -->
-    <div class="details-content">
+    <div
+      class="details-content"
+      v-if="
+        state.detailsRecord.organizationType === '门店' ||
+        state.detailsRecord.organizationType === '分公司'
+      "
+    >
       <div class="flex-space">
         <div class="title-content"><div class="blue-line"></div>机构属性</div>
         <div class="details-edit" @click="assignPermission(state.detailsRecord, true)"
@@ -762,7 +793,13 @@
       </div>
     </div>
 
-    <a-tabs v-model:activeKey="state.activeKey">
+    <a-tabs
+      v-model:activeKey="state.activeKey"
+      v-if="
+        state.detailsRecord.organizationType === '门店' ||
+        state.detailsRecord.organizationType === '分公司'
+      "
+    >
       <a-tab-pane key="baseKey" tab="基本属性">
         <div
           v-for="(item, index) in state.detailsInfoSecond"
@@ -1656,6 +1693,15 @@ const PermissionOk = async () => {
   const valid = await formAttributeRef.value.validate()
   state.addEditLoading = true
 
+  console.log('state.formAttributeState.type', state.formAttributeState.type)
+  if (state.formAttributeState.type?.length === 0 || !state.formAttributeState.type) {
+    return message.warning('类型不能为空')
+  }
+  //判断是否是分公司的单选 分公司单选的话 是 string
+  if (typeof state.formAttributeState.type === 'string') {
+    state.formAttributeState.type = [state.formAttributeState.type]
+  }
+
   const params = {
     organizationId: state.detailsRecord.id || state.addSuccessId,
     type: state.formAttributeState.type, //分公司类型
@@ -1713,6 +1759,7 @@ const PermissionOk = async () => {
 }
 
 const assignPermission = async (record, isCloseDetails = false) => {
+  console.log('设置属性record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1726,11 +1773,17 @@ const assignPermission = async (record, isCloseDetails = false) => {
     const res = await getOrganizationDetails({ id: record.id })
     //... res 可能为null
     state.detailsRecord = res
-
+    let tempType = [] || ''
+    console.log('设置属性详情res', res)
+    if (record.organizationType == '分公司') {
+      tempType = res.relVO?.type[0]
+    } else {
+      tempType = res.relVO?.type
+    }
     //赋值 回显
     state.formAttributeState = {
       organizationId: record.id, //机构id
-      type: res.relVO?.type, //分公司类型
+      type: tempType, //分公司类型
       startRating: res.relVO?.startRating, //星级
       detailedAddress: res.relVO?.address, //地址 详细地址
       contactInformationArr: res.relVO?.contact, //联系方式 设置属性
@@ -2178,12 +2231,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {

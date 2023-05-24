@@ -53,7 +53,7 @@
     </el-form>
     <template #footer>
       <!-- 按钮：确认 -->
-      <XButton type="primary" :title="t('action.save')" @click="submitForm()" />
+      <XButton type="primary" :title="t('action.save')" @click="submitForm()" :loading="loading" />
       <!-- 按钮：取消 -->
       <XButton :title="t('common.cancel')" @click="modelVisible = false" />
     </template>
@@ -79,6 +79,7 @@ interface Role {
 
 // 弹窗相关的变量
 const operateMode = ref()
+const loading = ref(false)
 const operateTypeCode = ref('')
 const modelVisible = ref(false) // 是否显示弹出层
 const modelTitle = ref('') // 是否显示弹出层
@@ -146,13 +147,19 @@ const emit = defineEmits(['success']) // 定义 success 事件，用于操作成
 const submitForm = async () => {
   if (post.value.length === 0 || role.value.length === 0)
     return message.warning('请完善分配角色内容')
+  loading.value = true
   let params = {
     postIds: post.value.map((i) => i.id),
     roleIds: role.value.map((i) => i.roleId),
     status: 0
   }
-  const result = await PostInfoApi.batchPostRoleApi(params)
-  console.log(result)
+  await PostInfoApi.batchPostRoleApi(params)
+    .then((res) => {
+      res ? message.success('分配成功') : message.error('分配失败')
+    })
+    .finally(() => {
+      loading.value = false
+    })
   emit('success')
   modelVisible.value = false
 }

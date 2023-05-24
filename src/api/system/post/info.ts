@@ -4,7 +4,7 @@ export interface PostInfoVO {
   id?: number
   name: string
   code: string
-  typeCode?: string
+  typeCode?: number | string
   status?: number
   remark?: string
   sort?: number
@@ -45,7 +45,7 @@ export const listSimplePostsApi = async () => {
 }
 
 // 查询岗位详情
-export const getPostApi = async (id: number) => {
+export const getPostApi = async (id: number | string) => {
   return await request.get({ url: '/system/post/get?id=' + id })
 }
 

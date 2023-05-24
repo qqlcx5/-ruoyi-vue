@@ -32,6 +32,10 @@
   border-bottom: 1px solid var(--el-border-color);
 }
 
+.el-button.el-button--primary.is-link:not(.is-disabled):focus {
+  color: var(--el-color-primary) !important;
+}
+
 .wg-message-confirm {
   &.el-message-box {
     padding: 32px 20px 20px;
@@ -41,6 +45,17 @@
   }
   .el-message-box__btns {
     margin-top: 32px;
+  }
+}
+.wg-message-operate-confirm {
+  &.el-message-box {
+    padding: 20px;
+  }
+  .el-message-box__header, .el-message-box__content, .el-message-box__btns {
+    padding: 0;
+  }
+  .el-message-box__btns {
+    margin-top: 24px;
   }
 }
 

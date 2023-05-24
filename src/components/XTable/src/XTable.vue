@@ -415,12 +415,21 @@ const deleteData = async (id: string | number, msg?: string | VNode | (() => VNo
     return
   }
   return new Promise(async () => {
-    message.delConfirm(msg).then(async () => {
-      await (options?.deleteApi && options?.deleteApi(id))
-      message.success(t('common.delSuccess'))
-      // 刷新列表
-      reload()
-    })
+    if (msg) {
+      message.wgOperateConfirm(msg, '提示').then(async () => {
+        await (options?.deleteApi && options?.deleteApi(id))
+        message.success(t('common.delSuccess'))
+        // 刷新列表
+        reload()
+      })
+    } else {
+      message.delConfirm(msg).then(async () => {
+        await (options?.deleteApi && options?.deleteApi(id))
+        message.success(t('common.delSuccess'))
+        // 刷新列表
+        reload()
+      })
+    }
   })
 }
 
@@ -570,7 +579,7 @@ const columnInit = () => {
       if (columnConfig) {
         handleColumnChange(columnConfig)
       } else {
-        // handleReset()
+        handleReset()
       }
     }
   })

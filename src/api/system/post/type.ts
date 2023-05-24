@@ -37,7 +37,7 @@ export const listSimplePostsApi = async () => {
 }
 
 // 查询岗位详情
-export const getPostApi = async (id: number) => {
+export const getPostApi = async (id: number | string) => {
   return await request.get({ url: '/system/post-type/get?id=' + id })
 }
 

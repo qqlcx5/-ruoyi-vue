@@ -10,7 +10,11 @@
       <el-row :gutter="12">
         <el-col :span="8">
           <el-form-item label="角色名称">
-            <el-input v-model="postInfoSearchForm.name" placeholder="请输入岗位名称" />
+            <el-input
+              v-model="postInfoSearchForm.keyword"
+              placeholder="请输入角色名称或编码"
+              @keyup.enter="postInfoGet"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="8" class="!flex flex-column justify-between">
@@ -45,7 +49,7 @@ const modelVisible = ref(false) // 是否显示弹出层
 
 /* 岗位信息 */
 const postInfoSearchForm = ref({
-  name: ''
+  keyword: ''
 })
 // 列表相关的变量
 const [
@@ -57,12 +61,13 @@ const [
   getListApi: RoleApi.getRolePageApi, // 加载列表的 API
   checkboxConfig: { reserve: true, trigger: 'row' },
   border: true,
-  height: 606
+  height: 606,
+  toolbarConfig: { slots: { buttons: 'toolbar_buttons' } }
 })
 // 查询重置
 const onPostInfoSearchReset = () => {
   postInfoSearchForm.value = {
-    name: ''
+    keyword: ''
   }
   postInfoGet()
 }

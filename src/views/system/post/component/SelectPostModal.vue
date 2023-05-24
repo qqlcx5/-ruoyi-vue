@@ -9,13 +9,20 @@
     >
       <el-row :gutter="12">
         <el-col :span="8">
-          <el-form-item label="岗位类型">
-            <el-input v-model="postInfoSearchForm.name" placeholder="请输入岗位名称" />
+          <el-form-item label="岗位名称">
+            <el-input v-model="postInfoSearchForm.nameOrCode" placeholder="请输入岗位名称或编码" />
           </el-form-item>
         </el-col>
-        <el-col :span="8">
-          <el-form-item label="岗位名称">
-            <el-input v-model="postInfoSearchForm.name" placeholder="请输入岗位名称" />
+        <el-col v-if="!defaultPostType" :span="8">
+          <el-form-item label="岗位类型">
+            <el-select v-model="postInfoSearchForm.typeCode" placeholder="请选择岗位类型">
+              <el-option
+                v-for="item in postTypeOptions"
+                :key="item.code"
+                :label="item.name"
+                :value="item.code"
+              />
+            </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8" class="!flex flex-column justify-between">
@@ -43,6 +50,7 @@
 <script setup lang="ts">
 import * as PostInfoApi from '@/api/system/post/info'
 import { crudConfig } from './post.data'
+import { listSimplePostsApi } from '@/api/system/post/type'
 const { t } = useI18n() // 国际化
 const props = defineProps({
   mode: {
@@ -54,11 +62,12 @@ const props = defineProps({
 // 弹窗相关的变量
 const modelVisible = ref(false) // 是否显示弹出层
 const { allSchemas } = crudConfig(props.mode === 'single' ? 'radio' : 'checkbox')
+const postTypeOptions = ref<any[]>([])
+const defaultPostType = ref()
 
 /* 岗位信息 */
 const postInfoSearchForm = ref({
-  name: '',
-  status: '',
+  nameOrCode: '',
   typeCode: ''
 })
 // 列表相关的变量
@@ -81,25 +90,28 @@ const [
   radioConfig: { reserve: true, trigger: 'row' },
   border: true,
   height: 606,
-  toolBar: false
+  toolbarConfig: { slots: { buttons: 'toolbar_buttons' } }
 })
 // 查询重置
 const onPostInfoSearchReset = () => {
   postInfoSearchForm.value = {
-    name: '',
-    status: '',
-    typeCode: ''
+    nameOrCode: '',
+    typeCode: defaultPostType.value ? postInfoSearchForm.value.typeCode : ''
   }
   postInfoGet()
 }
 
 // 打开弹窗
 const openModal = async (defaultSelectRow?: any[], code?) => {
-  if (code) postInfoSearchForm.value.typeCode = code
+  if (code) {
+    defaultPostType.value = code
+    postInfoSearchForm.value.typeCode = code
+  } else {
+    postTypeOptions.value = await listSimplePostsApi()
+  }
   modelVisible.value = true
   if (defaultSelectRow) {
     await nextTick()
-    console.log(defaultSelectRow)
     props.mode === 'single' ? setRadioRow(defaultSelectRow) : setCheckboxRow(defaultSelectRow)
   }
 }

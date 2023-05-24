@@ -1,3 +1,4 @@
+<!--  主体管理  -->
 <template>
   <!-- 搜索工作栏 -->
 
@@ -25,7 +26,7 @@
           :options="state.statusOptions"
         />
       </a-form-item>
-      <a-button type="primary" html-type="submit" @click="getList">查询</a-button>
+      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
       <a-button @click="resetQuery">重置</a-button>
     </a-form>
   </ContentWrap>
@@ -49,7 +50,7 @@
             <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
             <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
           </template>
-          展开收起
+          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
         </a-button>
       </div>
       <!--  右侧操作  -->
@@ -123,7 +124,7 @@
       <template #bodyCell="{ column, record }">
         <!--  可用名额   -->
         <template v-if="column?.key === 'usableAmount'">
-          <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
+          <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
         </template>
         <!--  有效期   -->
         <template v-if="column?.key === 'validityPeriod'">
@@ -177,6 +178,7 @@
         ref="formRef"
         v-bind="layout"
         :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
         <a-form-item :label="`上级主体`" name="belongTenantId">
@@ -666,6 +668,7 @@
     wrapClassName="details-modal"
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
+    :footer="null"
   >
     <div class="details-edit" @click="edit(state.record, true)"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
@@ -1606,7 +1609,8 @@ const addMajorIndividualFN = async () => {
     if (state.modalType === 'add') {
       res = await addMajorIndividual(params)
       state.addSuccessId = res
-      message.success('新增成功')
+      // message.success('新增成功')
+      message.success('主体已建立成功！主体用户名和密码已发送到负责人手机号中，请注意查收！')
       //配置权限
       openPermissionModal()
     } else {
@@ -2090,12 +2094,14 @@ const checkImageWH = (file, width, height) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
-        if (width && this.width > width) {
-          message.error('请上传宽小于' + width + 'px的图片')
+        if (width && this.width != width) {
+          // message.error('请上传宽小于' + width + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
-        } else if (height && this.height > height) {
-          message.error('请上传高小于' + height + 'px的图片')
+        } else if (height && this.height != height) {
+          // message.error('请上传高小于' + height + 'px的图片')
+          message.error('请上传' + width + 'px*' + height + 'px的图片')
           resolve(false)
           // reject(false)
         } else {
