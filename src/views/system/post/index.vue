@@ -97,6 +97,7 @@
         <p class="text-18px font-500">
           <span v-show="postParent?.name">{{ `${postParent?.name}-` }}</span>
           岗位信息
+          <el-button type="primary" text bg @click="removePostType">清除</el-button>
         </p>
         <!--        <div v-if="!postParent" class="text-20px text-tip text-center mt-248px"> 请从左侧选择 </div>-->
         <div>
@@ -303,6 +304,13 @@ const onPostInfoSearchReset = () => {
   postInfoSearchForm.value.status = ''
   postInfoGet()
 }
+// 清除
+const removePostType = () => {
+  postParent.value = {}
+  postInfoSearchForm.value.typeCode = ''
+  onPostInfoSearchReset()
+}
+
 // 删除
 const onPostDel = async (row, type: string) => {
   if (type === 'type' ? +row.postCount : +row.userCount) {
@@ -327,7 +335,9 @@ const onPostDel = async (row, type: string) => {
           autofocus: false
         }
       )
-      .then(async () => {})
+      .then(async () => {
+        goto(row, type === 'type' ? 'postType' : 'post')
+      })
       .catch(() => {})
   } else {
     if (type === 'type') {
@@ -366,41 +376,71 @@ const onPostDel = async (row, type: string) => {
 }
 // 更新岗位状态
 const postInfoStatusChange = async (row) => {
-  const text = row.status === CommonStatusEnum.ENABLE ? '开启' : '关闭'
-  message
-    .wgConfirm(
-      row.status === CommonStatusEnum.ENABLE
-        ? h('span', [
-            h('span', `${text}后，${row.name}底下的 `),
-            h('span', { style: { color: 'red' } }, '0'),
-            h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
-          ])
-        : h('span', [
-            h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
-            h('span', { style: { color: 'red' } }, row.userCount),
-            h('span', ' 个员工也将同步关闭该岗位，请谨慎操作。')
-          ]),
-      `确定${text} ${row.name} 吗？`,
-      {
-        confirmButtonText: t('common.ok'),
-        cancelButtonText: t('common.cancel'),
-        lockScroll: false,
-        autofocus: false
-      }
-    )
-    .then(async () => {
-      const updateStatus = await PostInfoApi.updatePostApi({ ...row })
-      await postTypeGet()
-      if (updateStatus) {
-        message.success(text + '成功')
-      } else {
-        message.warning(t('sys.api.operationFailed'))
-      }
-    })
-    .catch(() => {
-      row.status =
-        row.status === CommonStatusEnum.ENABLE ? CommonStatusEnum.DISABLE : CommonStatusEnum.ENABLE
-    })
+  const text = row.status === CommonStatusEnum.DISABLE ? '开启' : '关闭'
+  if (+row.userCount && row.status === CommonStatusEnum.DISABLE) {
+    message
+      .wgOperateConfirm(
+        h('span', [
+          h('span', '系统校验到该岗位底下还存在 '),
+          h('span', { style: { color: 'red' } }, row.userCount),
+          h('span', ' 个在职员工，请先关闭或转移所有员工再操作关闭哦~')
+        ]),
+        `提示`,
+        {
+          confirmButtonText: t('common.toOperate'),
+          cancelButtonText: t('common.cancel'),
+          lockScroll: false,
+          autofocus: false
+        }
+      )
+      .then(async () => {
+        goto(row, 'post')
+      })
+      .catch(() => {})
+      .finally(() => {
+        row.status =
+          row.status === CommonStatusEnum.ENABLE
+            ? CommonStatusEnum.DISABLE
+            : CommonStatusEnum.ENABLE
+      })
+  } else {
+    message
+      .wgConfirm(
+        row.status === CommonStatusEnum.ENABLE
+          ? h('span', [
+              h('span', `${text}后，${row.name}底下的 `),
+              h('span', { style: { color: 'red' } }, row.userCount),
+              h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
+            ])
+          : h('span', [
+              h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
+              h('span', { style: { color: 'red' } }, row.userCount),
+              h('span', ' 个员工也将同步关闭该岗位，请谨慎操作。')
+            ]),
+        `确定${text} ${row.name} 吗？`,
+        {
+          confirmButtonText: t('common.ok'),
+          cancelButtonText: t('common.cancel'),
+          lockScroll: false,
+          autofocus: false
+        }
+      )
+      .then(async () => {
+        const updateStatus = await PostInfoApi.updatePostApi({ ...row })
+        await postTypeGet()
+        if (updateStatus) {
+          message.success(text + '成功')
+        } else {
+          message.warning(t('sys.api.operationFailed'))
+        }
+      })
+      .catch(() => {
+        row.status =
+          row.status === CommonStatusEnum.ENABLE
+            ? CommonStatusEnum.DISABLE
+            : CommonStatusEnum.ENABLE
+      })
+  }
 }
 
 const postFormSuccess = (type): void => {
@@ -422,7 +462,7 @@ const openModal = (type: string, tableType: string, id?: number) => {
 const distributeModalRef = ref()
 const openDistributeModal = (row, mode: string) => {
   if (mode === 'single') {
-    distributeModalRef.value.openModal(row, mode, postParent.value.code)
+    distributeModalRef.value.openModal(row, mode, row.typeCode)
   } else if (mode === 'multi') {
     const checkedRow = getInfoCheckboxRecords()
     if (checkedRow && checkedRow.length === 0) {

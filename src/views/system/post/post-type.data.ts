@@ -1,5 +1,7 @@
 import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
 
+const { t } = useI18n() // 国际化
+
 // 表单校验
 export const rules = reactive({
   name: [required],
@@ -32,6 +34,32 @@ const crudSchemas = reactive<VxeCrudSchema>({
           default: 'user_count'
         }
       }
+    },
+    {
+      title: t('common.creater'),
+      field: 'creatorName',
+      isForm: false,
+      defaultShow: false
+    },
+    {
+      title: t('common.createTime'),
+      field: 'createTime',
+      formatter: 'formatDate',
+      isForm: false,
+      defaultShow: false
+    },
+    {
+      title: t('common.operator'),
+      field: 'updater',
+      isForm: false,
+      defaultShow: false
+    },
+    {
+      title: t('common.operationTime'),
+      field: 'updaterName',
+      formatter: 'formatDate',
+      isForm: false,
+      defaultShow: false
     }
   ]
 })
