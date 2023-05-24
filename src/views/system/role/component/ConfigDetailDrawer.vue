@@ -19,7 +19,7 @@
           getDictLabel(DICT_TYPE.COMMON_STATUS, roleInfo.status)
         }}</el-descriptions-item>
       </el-descriptions>
-      <el-tabs v-model="tabsActive" @tab-change="onTabChange">
+      <el-tabs v-model="tabsActive">
         <el-tab-pane label="配置权限" name="permission">
           <ConfigDetail
             origin="detail"
@@ -100,14 +100,16 @@ const personnelCount = computed(() => {
   })
   return count
 })
-const onTabChange = async (tab) => {
-  if (tab === 'staff') {
-    await getPersons()
-  }
-}
 
 // ========== 配置权限 ==========
 const tabsActive = ref('permission')
+
+watch(
+  () => tabsActive.value,
+  (val) => {
+    if (val === 'staff') getPersons()
+  }
+)
 
 // ========== 配置人员 ==========
 const staff = ref([])
