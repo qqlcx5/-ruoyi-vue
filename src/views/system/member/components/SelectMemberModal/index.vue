@@ -58,7 +58,7 @@
   </XModal>
 </template>
 <script setup lang="ts">
-import { getMemberList } from '@/api/system/member'
+import { getAllMemberList } from '@/api/system/member'
 import { crudConfig } from './member.data'
 import { getDictLabel, DICT_TYPE } from '@/utils/dict'
 const { t } = useI18n() // 国际化
@@ -91,7 +91,7 @@ const [
 ] = useXTable({
   allSchemas: allSchemas, // 列表配置
   params: searchForm,
-  getListApi: getMemberList, // 加载列表的 API
+  getListApi: getAllMemberList, // 加载列表的 API
   checkboxConfig: { reserve: true, trigger: 'row' },
   // mouseConfig: { selected: true },
   border: true,

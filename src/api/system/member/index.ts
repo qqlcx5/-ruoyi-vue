@@ -83,3 +83,8 @@ export const batchPostAdjustment = (data) => {
 export const batchAssignUserRole = (data) => {
   return request.post({ url: '/system/permission/assign-user-role/batch', data })
 }
+
+// 无权限成员列表
+export const getAllMemberList = (params) => {
+  return request.get({ url: '/system/user/extra/page/all', params })
+}
