@@ -377,7 +377,7 @@ const handleToolClick = (key): void => {
   if (!g) {
     return
   }
-  g.setCheckboxRow([{ id: 146 }], true)
+  // g.removeCurrentRow()
   switch (key) {
     case 'print':
       exportList()
