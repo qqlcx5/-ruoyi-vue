@@ -21,7 +21,7 @@
                 <a-input
                   class="width-100"
                   v-model:value="queryParams.memberName"
-                  @pressEnter="getList"
+                  @pressEnter="getList(1)"
                   placeholder="请输入成员姓名或工号"
                 />
               </div>
@@ -142,7 +142,7 @@
           </div>
 
           <div class="search-btn-content">
-            <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
+            <a-button type="primary" html-type="submit" @click="getList(1)">查询</a-button>
             <a-button @click="resetQuery">重置</a-button>
           </div>
         </div>
@@ -1519,8 +1519,12 @@ const allColumns = [
 ]
 
 /** 查询列表 */
-const getList = async () => {
+const getList = async (page) => {
   state.loading = true
+
+  if (page) {
+    queryParams.current = page
+  }
 
   let tempConfigureRoles = []
   let roleExist = null
@@ -2942,7 +2946,7 @@ const sendCurrentSelect = (currentKey) => {
     // console.log('tempArr222222222222222222222222222222', tempArr)
   }
   // console.log('queryParams.organization', queryParams.organization)
-  getList()
+  getList(1)
 }
 
 interface DataItem {
