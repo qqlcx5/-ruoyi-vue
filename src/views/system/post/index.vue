@@ -314,12 +314,16 @@ const removePostType = () => {
 // 删除
 const onPostDel = async (row, type: string) => {
   if (type === 'type' ? +row.postCount : +row.userCount) {
+    const { total } = await PostInfoApi.getPostPageApi({
+      typeCode: row.code,
+      status: CommonStatusEnum.ENABLE
+    })
     message
       .wgOperateConfirm(
         type === 'type'
           ? h('span', [
               h('span', '系统校验到该岗位类型底下还存在 '),
-              h('span', { style: { color: 'red' } }, row.postCount),
+              h('span', { style: { color: 'red' } }, total),
               h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
             ])
           : h('span', [

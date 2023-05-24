@@ -25,12 +25,14 @@ export interface batchPostRoleVO {
 export interface PostPageReqVO extends PageParam {
   code?: string
   name?: string
+  typeCode?: number | string
   status?: number
 }
 
 export interface PostExportReqVO {
   code?: string
   name?: string
+  typeCode?: number | string
   status?: number
 }
 
