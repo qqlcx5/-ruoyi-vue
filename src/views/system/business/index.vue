@@ -520,8 +520,8 @@
             tabBarGutter="40px"
             :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
           >
-            <a-tab-pane key="frontDesk" tab="前台" force-render>前台</a-tab-pane>
-            <a-tab-pane key="backstage" tab="后台">
+            <a-tab-pane key="frontDesk" tab="成员端" force-render>成员端</a-tab-pane>
+            <a-tab-pane key="backstage" tab="服务端">
               <div class="tab-search-content">
                 <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
                 <a-checkbox v-model:checked="state.isExpandAllTab" @change="expandAllFN"
@@ -548,10 +548,12 @@
                 </a-tree>
               </div>
             </a-tab-pane>
+            <a-tab-pane key="frontDesk" tab="client" force-render>客户端</a-tab-pane>
           </a-tabs>
         </div>
         <div class="right-content">
-          <div>
+          <div v-if="state.isShowRightTree">
+            <div v-if="state.isShowRightTree">已选信息：</div>
             <a-tree
               v-if="state.isShowRightTree"
               defaultExpandAll
@@ -564,6 +566,7 @@
               <!--                    <template v-else>{{ title }}</template>-->
               <!--                  </template>-->
             </a-tree>
+            <div v-if="state.selectTree?.length===0" class="select-tip">请选择左侧要配置的菜单</div>
           </div>
         </div>
       </div>
@@ -2715,6 +2718,14 @@ watch(
 }
 .adress-input {
   width: 530px;
+}
+.select-tip {
+  width: 100%;
+  height: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(179, 179, 179);
 }
 </style>
 

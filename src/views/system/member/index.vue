@@ -405,6 +405,7 @@
               placeholder="请选择时间"
               v-model:value="formState.entryTime"
               class="width-100"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -447,6 +448,7 @@
               v-model:value="formState.departureTime"
               :disabled-date="disabledDate"
               class="width-100"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -579,6 +581,7 @@
                       label: 'title',
                       value: 'key'
                     }"
+                    :getPopupContainer="(triggerNode) => triggerNode.parentNode"
                   />
                 </div>
               </template>
@@ -593,6 +596,7 @@
                     placeholder="请选择"
                     :tree-data="state.postListOptions"
                     treeNodeFilterProp="label"
+                    :getPopupContainer="(triggerNode) => triggerNode.parentNode"
                   />
                 </div>
               </template>
@@ -605,6 +609,7 @@
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
                     :tree-data="state.barnOptions"
+                    :getPopupContainer="(triggerNode) => triggerNode.parentNode"
                   />
                 </div>
               </template>
@@ -652,6 +657,7 @@
               v-model:value="formState.birthDay"
               :disabled-date="disabledDate"
               class="width-100"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -682,6 +688,7 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
+                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -1165,6 +1172,27 @@ const numValidator = (rule, value) => {
   })
 }
 
+//邮箱正则校验
+const isValidMail = (email) => {
+  const regExp = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
+  return regExp.test(email)
+}
+
+//邮箱校验
+const contactMailRulesValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      if (!isValidMail(value)) {
+        reject('请输入正确的邮箱')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -1260,6 +1288,7 @@ const state = reactive({
   organizationList: [], //左侧组织机构 List 用于过滤查找 当前选中的子级id
   selectedKeys: [], //左侧 机构选中的
   testArr: [1, 2, 3, 4],
+  contactMailRules: [{ validator: contactMailRulesValidator }],
 
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号

@@ -509,6 +509,7 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
+                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -531,6 +532,7 @@
               placeholder="请选择联系方式"
               style="width: 200px"
               :options="state.contactInformationOptions"
+              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
           <a-form-item
@@ -549,6 +551,13 @@
             class="add-circle"
             :size="20"
             @click="addContactInformation()"
+          />
+          <Icon
+            v-if="state.formAttributeState.contactInformationArr?.length > 1"
+            icon="svg-icon:reduce-circle"
+            class="add-circle"
+            :size="20"
+            @click="removeContactInformation(item)"
           />
 
           <!--  <MinusCircleOutlined @click="addContactInformation()" />-->
@@ -730,7 +739,7 @@
             系统校验到该机构底下还存在<span class="status-span">{{
               state.tableStatusChangeInfo?.ctiveEmployeesNumber
             }}</span
-            >个账户状态开启的员工，请先关闭或转移所有员工再操作{{
+            >个在职状态开启的员工，请先关闭或转移所有员工再操作{{
               state.tableStatusChangeInfo?.operation
             }}哦~
           </div>
