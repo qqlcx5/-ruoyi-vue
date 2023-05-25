@@ -13,7 +13,8 @@
             <el-input
               v-model="searchParams.name"
               placeholder="请输入参数名称"
-              @keyup.enter="onSubmit"
+              @keyup.enter="search"
+              clearable
             />
           </el-form-item>
         </el-col>
@@ -22,13 +23,14 @@
             <el-input
               v-model="searchParams.key"
               placeholder="请输入参数键名"
-              @keyup.enter="onSubmit"
+              @keyup.enter="search"
+              clearable
             />
           </el-form-item>
         </el-col>
         <el-col :span="4">
           <el-form-item label="系统内置">
-            <el-select v-model="searchParams.type" placeholder="请选择">
+            <el-select v-model="searchParams.type" placeholder="请选择" clearable>
               <el-option
                 v-for="dict in getIntDictOptions(DICT_TYPE.INFRA_CONFIG_TYPE)"
                 :key="dict.value"
@@ -46,11 +48,12 @@
               value-format="YYYY-MM-DD HH:mm:ss"
               start-placeholder="开始时间"
               end-placeholder="结束时间"
+              clearable
             />
           </el-form-item>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="onSubmit">查询</el-button>
+          <el-button type="primary" @click="search">查询</el-button>
           <el-button @click="onReset">重置</el-button>
         </el-col>
       </el-row>
@@ -165,7 +168,7 @@ const searchParams = ref({
   createTime: []
 })
 // 列表相关的变量
-const [registerTable, { reload, deleteData }] = useXTable({
+const [registerTable, { reload, deleteData, search }] = useXTable({
   tableKey: 'wg-infra-config',
   allSchemas: allSchemas,
   params: searchParams,
@@ -173,10 +176,6 @@ const [registerTable, { reload, deleteData }] = useXTable({
   deleteApi: ConfigApi.deleteConfigApi,
   border: true
 })
-
-const onSubmit = async () => {
-  await reload()
-}
 
 const onReset = async () => {
   searchParams.value = {
