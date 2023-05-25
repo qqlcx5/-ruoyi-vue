@@ -375,7 +375,6 @@ const [registerType, { reload: typeGetList, deleteData: typeDeleteData, search: 
     getListApi: DictTypeApi.getDictTypePageApi,
     deleteApi: DictTypeApi.deleteDictTypeApi,
     border: true,
-    pagerConfig: { border: false, background: false, perfect: false, pagerCount: 4 },
     height: 660
   })
 
