@@ -13,148 +13,154 @@
     <div class="right-card-content">
       <!--  搜索  -->
       <a-card :bodyStyle="{ marginBottom: '10px' }">
-        <div class="total-search-content">
-          <div class="search-content">
-            <div class="search-item">
-              <div class="item-label">成员姓名：</div>
-              <div class="item-condition">
-                <a-input
-                  class="width-100"
-                  v-model:value="queryParams.memberName"
-                  @pressEnter="getList(1)"
-                  placeholder="请输入姓名或工号"
-                  allowClear
-                />
+        <!--  本来是不上表单的  非要校验联系电话  -->
+        <a-form :model="queryParams" :noStyle="true" class="search-form-style">
+          <div class="total-search-content">
+            <div class="search-content">
+              <div class="search-item">
+                <div class="item-label">成员姓名：</div>
+                <div class="item-condition">
+                  <a-input
+                    class="width-100"
+                    v-model:value="queryParams.memberName"
+                    @pressEnter="getList(1)"
+                    placeholder="请输入姓名或工号"
+                    allowClear
+                  />
+                </div>
               </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">联系电话：</div>
+              <div class="search-item">
+                <div class="item-label">联系电话：</div>
+                <div class="item-condition">
+                  <!-- <a-form-item name="memberPhone" :rules="[{ validator: numValidator }]">-->
+                  <a-input
+                    class="width-100"
+                    v-model:value="queryParams.memberPhone"
+                    @pressEnter="getList"
+                    @change="limitInput"
+                    maxlength="4"
+                    placeholder="请输入4位数字查询"
+                    allowClear
+                  />
+                  <!-- </a-form-item>-->
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">岗位类型：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.postType"
+                    :options="state.postTypeOptions"
+                    @change="postTypeChange"
+                    class="width-100"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
 
-              <div class="item-condition">
-                <a-input
-                  class="width-100"
-                  v-model:value="queryParams.memberPhone"
-                  @pressEnter="getList"
-                  placeholder="请输入联系电话"
-                  allowClear
-                />
+              <div class="search-item">
+                <div class="item-label">岗位：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.post"
+                    :options="state.postTypeSpecifyOptions"
+                    class="width-100"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
               </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">岗位类型：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.postType"
-                  :options="state.postTypeOptions"
-                  @change="postTypeChange"
-                  class="width-100"
-                  placeholder="请选择"
-                  allowClear
-                />
+
+              <!--            <div class="search-item">-->
+              <!--              <div class="item-label">岗位：</div>-->
+              <!--              <div class="item-condition flex-style">-->
+              <!--                <a-select-->
+              <!--                  v-model:value="queryParams.post"-->
+              <!--                  :options="state.postTypeSpecifyOptions"-->
+              <!--                  class="width-100"-->
+              <!--                  placeholder="请选择"-->
+              <!--                />-->
+              <!--                &lt;!&ndash;                <a-input&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  class="width-100"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  v-model:value="queryParams.post"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  @pressEnter="getList"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  placeholder="输入岗位名称搜索"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                />&ndash;&gt;-->
+              <!--              </div>-->
+              <!--            </div>-->
+
+              <div class="search-item">
+                <div class="item-label">是否兼岗：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.partPost"
+                    class="width-100"
+                    :options="state.partPostOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
+
+              <div class="search-item">
+                <div class="item-label">配置角色：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.configureRoles"
+                    class="width-100"
+                    :options="state.configureRolesOptions"
+                    mode="multiple"
+                    placeholder="请选择"
+                    optionFilterProp="label"
+                    allowClear
+                  />
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">人员类型：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.memberType"
+                    class="width-100"
+                    :options="state.memberTypeOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">在职状态：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.isOnJob"
+                    class="width-100"
+                    :options="state.onJobOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">帐号状态：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.userType"
+                    class="width-100"
+                    :options="state.userTypeOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
               </div>
             </div>
 
-            <div class="search-item">
-              <div class="item-label">岗位：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.post"
-                  :options="state.postTypeSpecifyOptions"
-                  class="width-100"
-                  placeholder="请选择"
-                  allowClear
-                />
-              </div>
-            </div>
-
-            <!--            <div class="search-item">-->
-            <!--              <div class="item-label">岗位：</div>-->
-            <!--              <div class="item-condition flex-style">-->
-            <!--                <a-select-->
-            <!--                  v-model:value="queryParams.post"-->
-            <!--                  :options="state.postTypeSpecifyOptions"-->
-            <!--                  class="width-100"-->
-            <!--                  placeholder="请选择"-->
-            <!--                />-->
-            <!--                &lt;!&ndash;                <a-input&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  class="width-100"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  v-model:value="queryParams.post"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  @pressEnter="getList"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  placeholder="输入岗位名称搜索"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                />&ndash;&gt;-->
-            <!--              </div>-->
-            <!--            </div>-->
-
-            <div class="search-item">
-              <div class="item-label">是否兼岗：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.partPost"
-                  class="width-100"
-                  :options="state.partPostOptions"
-                  placeholder="请选择"
-                  allowClear
-                />
-              </div>
-            </div>
-
-            <div class="search-item">
-              <div class="item-label">配置角色：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.configureRoles"
-                  class="width-100"
-                  :options="state.configureRolesOptions"
-                  mode="multiple"
-                  placeholder="请选择"
-                  optionFilterProp="label"
-                  allowClear
-                />
-              </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">人员类型：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.memberType"
-                  class="width-100"
-                  :options="state.memberTypeOptions"
-                  placeholder="请选择"
-                  allowClear
-                />
-              </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">在职状态：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.isOnJob"
-                  class="width-100"
-                  :options="state.onJobOptions"
-                  placeholder="请选择"
-                  allowClear
-                />
-              </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">帐号状态：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.userType"
-                  class="width-100"
-                  :options="state.userTypeOptions"
-                  placeholder="请选择"
-                  allowClear
-                />
-              </div>
+            <div class="search-btn-content">
+              <a-button type="primary" html-type="submit" @click="getList(1)">查询</a-button>
+              <a-button @click="resetQuery">重置</a-button>
             </div>
           </div>
-
-          <div class="search-btn-content">
-            <a-button type="primary" html-type="submit" @click="getList(1)">查询</a-button>
-            <a-button @click="resetQuery">重置</a-button>
-          </div>
-        </div>
+        </a-form>
       </a-card>
 
       <!--  表格  -->
@@ -2091,7 +2097,7 @@ const addMajorIndividualFN = async () => {
       console.log('新增成员res', res)
       message.success('新建成员成功')
       //分配角色
-      openPermissionModal()
+      openPermissionModal(true)
     } else {
       params['id'] = formState.id
       params['departureTime'] = formState.departureTime?.format('YYYY-MM-DD')
@@ -2125,8 +2131,9 @@ const openPermissionModal = async (isAdd = false) => {
     const res = await getMemberDetails({ id: state.addSuccessId })
     state.permissionRecord = res
     console.log('新增后获取res', res)
+    assignPermission(res)
   }
-  state.isShowPermission = true
+  // state.isShowPermission = true
 }
 
 //分配角色 Modal 确认
@@ -2175,7 +2182,9 @@ const assignPermission = async (record) => {
     state.roleId.push(item.roleId)
   })
   state.PermissionType = 'edit'
-  openPermissionModal()
+  // openPermissionModal()
+  //开启分配角色 modal
+  state.isShowPermission = true
 }
 
 //表格状态改变 确认modal... 然后才开短信 modal
@@ -3395,6 +3404,14 @@ const postTypeChange = async (value) => {
   console.log('岗位列表postListRes', postListRes)
 }
 
+const limitInput = (value) => {
+  const regExp = /^[0-9]*$/
+  if (!regExp.test(value.data)) {
+    queryParams.memberPhone = null
+    message.warning('联系电话只能输入4位数字')
+  }
+}
+
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
@@ -3456,6 +3473,11 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 //========================== search start ==================================
+.search-form-style {
+  :deep(.ant-form-item) {
+    margin: 0;
+  }
+}
 .total-search-content {
   display: flex;
   justify-content: space-between;

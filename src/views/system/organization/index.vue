@@ -1838,22 +1838,34 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
     let tempType = [] || ''
     console.log('设置属性详情res', res)
     if (record.organizationType == '分公司') {
-      tempType = res.relVO?.type[0]
+      tempType = res?.relVO?.type[0]
     } else {
-      tempType = res.relVO?.type
+      tempType = res?.relVO?.type
     }
     //赋值 回显
     state.formAttributeState = {
       organizationId: record.id, //机构id
       type: tempType, //分公司类型
-      startRating: res.relVO?.startRating, //星级
-      detailedAddress: res.relVO?.address, //地址 详细地址
-      contactInformationArr: res.relVO?.contact, //联系方式 设置属性
-      creditCode: res.relVO?.creditCode, //统一社会信用代码
+      startRating: res?.relVO?.startRating, //星级
+      detailedAddress: res?.relVO?.address, //地址 详细地址
+      // contactInformationArr: res.relVO?.contact, //联系方式 设置属性
+      creditCode: res?.relVO?.creditCode, //统一社会信用代码
       // organizationCode: res.relVO?.organizationCode, //组织机构代码
-      legalRepresentative: res.relVO?.legalRepresentative, //法定代表人
-      legalMobile: res.relVO?.legalMobile //法人联系电话
+      legalRepresentative: res?.relVO?.legalRepresentative, //法定代表人
+      legalMobile: res?.relVO?.legalMobile //法人联系电话
     }
+
+    const tempArr = []
+    if (res?.relVO?.contact) {
+      res?.relVO?.contact.map((item) => {
+        tempArr.push({
+          contactType: item.contactType === '' ? null : item.contactType,
+          mobile: item.mobile
+        })
+      })
+    }
+
+    state.formAttributeState.contactInformationArr = tempArr
 
     if (res.relVO?.contact === null || res?.relVO === null) {
       state.formAttributeState.contactInformationArr = [
@@ -1865,48 +1877,48 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
       ] //联系方式 设置属性
     }
 
-    if (res.relVO?.logoUrl) {
+    if (res?.relVO?.logoUrl) {
       state.logoListUrl = [
         {
-          url: res.relVO?.logoUrl //系统logo
+          url: res?.relVO?.logoUrl //系统logo
         }
       ]
-      state.logoUrlSuccess = res.relVO?.logoUrl
+      state.logoUrlSuccess = res?.relVO?.logoUrl
     }
 
-    if (res.relVO?.legalIdentityUrl) {
+    if (res?.relVO?.legalIdentityUrl) {
       state.legalPersonListUrl = [
         {
-          url: res.relVO?.legalIdentityUrl //法人身份证
+          url: res?.relVO?.legalIdentityUrl //法人身份证
         }
       ]
-      state.legalPersonUrlSuccess = res.relVO?.legalIdentityUrl
+      state.legalPersonUrlSuccess = res?.relVO?.legalIdentityUrl
     }
 
-    if (res.relVO?.businessLicenseUrl) {
+    if (res?.relVO?.businessLicenseUrl) {
       state.businessLicenseListUrl = [
         {
-          url: res.relVO?.businessLicenseUrl //营业执照
+          url: res?.relVO?.businessLicenseUrl //营业执照
         }
       ]
-      state.businessLicenseSuccess = res.relVO?.businessLicenseUrl
+      state.businessLicenseSuccess = res?.relVO?.businessLicenseUrl
     }
 
-    if (res.relVO?.environmentUrl) {
+    if (res?.relVO?.environmentUrl) {
       state.environmentUrl = [
         {
-          url: res.relVO?.environmentUrl //环境图片
+          url: res?.relVO?.environmentUrl //环境图片
         }
       ]
-      state.environmentSuccess = res.relVO?.environmentUrl
+      state.environmentSuccess = res?.relVO?.environmentUrl
     }
 
-    if (res.relVO?.establishDate) {
-      state.formAttributeState['establishDate'] = dayjs(res.relVO?.establishDate) //成立日期
+    if (res?.relVO?.establishDate) {
+      state.formAttributeState['establishDate'] = dayjs(res?.relVO?.establishDate) //成立日期
     }
 
     //状态0 开启 1关闭
-    state.formAttributeState.status = res.status === 0
+    state.formAttributeState.status = res?.status === 0
 
     //省市区
     state.formAttributeState.companyAddress = []
