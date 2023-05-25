@@ -352,7 +352,6 @@ const [registerType, { reload: typeGetList, search: typeSearch }] = useXTable({
   getListApi: DictTypeApi.getDictTypePageApi,
   deleteApi: DictTypeApi.deleteDictTypeApi,
   border: true,
-  pagerConfig: { border: false, background: false, perfect: false, pagerCount: 4 },
   height: 660
 })
 
