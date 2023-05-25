@@ -332,6 +332,7 @@
               <a-switch
                 v-model:checked="record.statusSwitch"
                 @change="(value) => setTableStatusChangeInfo(value, record)"
+                :disabled="record.userStatus === 1"
               />
             </template>
             <!--  操作   -->
@@ -1723,8 +1724,8 @@ const getList = async (page) => {
         roleStatusText = roleItem.roleDeleted === 0 ? roleStatusText : '(删除)'
         tempRoleVOList.push({
           roleName: `${roleItem.roleName}${roleStatusText}`,
-          roleStatus: roleItem.postStatus === 1, //0开启 1关闭 岗位开启/关闭
-          roleDelete: roleItem.postDeleted === 1 //0未删除 1删除 岗位未删除/删除
+          roleStatus: roleItem.roleStatus === 1, //0开启 1关闭 岗位开启/关闭
+          roleDelete: roleItem.roleDeleted === 1 //0未删除 1删除 岗位未删除/删除
         })
       })
 
@@ -2562,7 +2563,7 @@ const detailsInfo = async (record) => {
           tempItem.afterChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
         })
 
-        tempItem.operator = `操作人：${item.createName}`
+        tempItem.operator = `${item.createName}`
         break
       case 'entry':
         //入职
