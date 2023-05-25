@@ -347,7 +347,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >下一步</a-button
+        >{{ state.modalType === 'add' ? '下一步' : '确认' }}</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>

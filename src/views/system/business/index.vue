@@ -283,7 +283,7 @@
               }
             "
           >
-            <div v-if="state.logoListUrl.length < 1">
+            <div v-show="state.logoListUrl.length < 1">
               <Icon icon="svg-icon:add-upload" :size="15" />
               <div style="margin-top: 8px">上传logo</div>
             </div>
@@ -495,7 +495,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >下一步</a-button
+        >{{ state.modalType === 'add' ? '下一步' : '确认' }}</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -548,7 +548,7 @@
                 </a-tree>
               </div>
             </a-tab-pane>
-            <a-tab-pane key="frontDesk" tab="客户端" force-render>客户端</a-tab-pane>
+            <a-tab-pane key="client" tab="客户端" force-render>客户端</a-tab-pane>
           </a-tabs>
         </div>
         <div class="right-content">
@@ -1363,13 +1363,13 @@ const openModal = async (record = {}) => {
   }
   const res = await getSimpleTenantList()
 
-  let menuTree = []
+  // let menuTree = []
   // let menu = {}
-  let menu: Tree = { id: 0, name: '顶层主体', children: [] }
-  menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
-  menuTree.push(menu)
+  // let menu: Tree = { id: 0, name: '顶层主体', children: [] }
+  // menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
+  // menuTree.push(menu)
 
-  state.optionalMenuTree = menuTree
+  state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
 
   state.isShow = true
 }
@@ -1722,6 +1722,8 @@ const assignPermission = async (record) => {
     })
     console.log('state.selectTree', state.selectTree)
     console.log('配置的res', res)
+  } else {
+    state.selectTree = []
   }
   //右侧展开显示 左侧选中的数据
   state.isShowRightTree = false
