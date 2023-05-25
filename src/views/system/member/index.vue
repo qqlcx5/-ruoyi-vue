@@ -37,8 +37,8 @@
                     class="width-100"
                     v-model:value="queryParams.memberPhone"
                     @pressEnter="getList"
-                    @change="limitInput"
-                    maxlength="4"
+                    @change="() => limitInput(queryParams.memberPhone)"
+                    maxlength="11"
                     placeholder="请输入4位数字查询"
                     allowClear
                   />
@@ -355,7 +355,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'900px'"
+    :width="'930px'"
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
@@ -494,8 +494,8 @@
                 <template v-if="column.key === 'phoneType'">
                   <div>
                     <a-radio-group v-model:value="record.phoneType" name="radioPhoneTypeGroup">
-                      <a-radio value="1">手机</a-radio>
-                      <a-radio value="2">座机</a-radio>
+                      <a-radio-button value="1" style="margin-right: 5px">手机</a-radio-button>
+                      <a-radio-button value="2">座机</a-radio-button>
                     </a-radio-group>
                   </div>
                 </template>
@@ -506,7 +506,12 @@
                       :rules="[{ required: true, message: `电话不能为空` }]"
                       class="phone-form-style"
                     >
-                      <a-input v-model:value="record.phoneNum" placeholder="请输入号码" />
+                      <a-input
+                        v-model:value="record.phoneNum"
+                        @change="() => limitInput(record.phoneNum, record)"
+                        placeholder="请输入号码"
+                        :maxlength="record.phoneType === '1' ? 11 : 12"
+                      />
                     </a-form-item>
                   </div>
                 </template>
@@ -514,31 +519,36 @@
                 <template v-if="column.key === 'useType'">
                   <div>
                     <a-radio-group v-model:value="record.useType" name="radioUseTypeGroup">
-                      <a-radio value="1">私人</a-radio>
-                      <a-radio value="2">公司</a-radio>
+                      <a-radio-button value="1" style="margin-right: 5px">私人</a-radio-button>
+                      <a-radio-button value="2">公司</a-radio-button>
                     </a-radio-group>
                   </div>
                 </template>
 
                 <template v-if="column.key === 'isService'">
                   <div>
-                    <a-radio-group v-model:value="record.isService" name="radioIsServiceGroup">
-                      <a-radio value="0">是</a-radio>
-                      <a-radio value="1">否</a-radio>
-                    </a-radio-group>
+                    <!--                    <a-radio-group v-model:value="record.isService" name="radioIsServiceGroup">-->
+                    <!--                      <a-radio value="0">是</a-radio>-->
+                    <!--                      <a-radio value="1">否</a-radio>-->
+                    <!--                    </a-radio-group>-->
+                    <a-switch
+                      v-model:checked="record.isService"
+                      checked-children="开启"
+                      un-checked-children="关闭"
+                    />
                   </div>
                 </template>
 
                 <!--  操作   -->
                 <template v-if="column?.key === 'operation'">
                   <div class="operation-content">
+                    <div class="text-color margin-right-5" @click="addColumns(index)">新增</div>
                     <div
                       class="text-color margin-right-5"
                       @click="deleteColumns(index)"
-                      v-if="index !== 0"
+                      v-if="addDataSource.addEditTableData?.length > 1"
                       >删除</div
                     >
-                    <div class="text-color margin-right-5" @click="addColumns(record)">新增</div>
                   </div>
                 </template>
               </template>
@@ -585,6 +595,23 @@
             :pagination="false"
             @resizeColumn="handleResizeColumn"
           >
+            <template #headerCell="{ column }">
+              <!--  自定义表头  -->
+              <template v-if="column.key === 'department'">
+                <div class="table_heard">
+                  <span style="color: red">* </span>
+                  <span>所属部门</span>
+                </div>
+              </template>
+
+              <template v-if="column.key === 'post'">
+                <div class="table_heard">
+                  <span style="color: red">* </span>
+                  <span>岗位</span>
+                </div>
+              </template>
+            </template>
+
             <template #bodyCell="{ column, text, record, index }">
               <template v-if="column.key === 'department'">
                 <div>
@@ -624,6 +651,7 @@
                     style="width: 100%"
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
+                    multiple
                     :tree-data="state.barnOptions"
                   />
                 </div>
@@ -650,13 +678,13 @@
               <!--  操作   -->
               <template v-if="column?.key === 'operation'">
                 <div class="operation-content">
+                  <div class="text-color margin-right-5" @click="addPostColumns(index)">新增</div>
                   <div
                     class="text-color margin-right-5"
                     @click="deletePostColumns(index)"
                     v-if="index !== 0"
                     >删除</div
                   >
-                  <div class="text-color margin-right-5" @click="addPostColumns(record)">新增</div>
                 </div>
               </template>
             </template>
@@ -1787,7 +1815,7 @@ const closeModal = () => {
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: '0'
+      isService: true
     }
   ]
 
@@ -1796,7 +1824,7 @@ const closeModal = () => {
       index: 0,
       department: null,
       post: null,
-      brand: null,
+      brand: [],
       isMainPost: null,
       isMainPostKey: 'main_post',
       isMainPostText: '主岗',
@@ -1848,18 +1876,20 @@ const edit = async (record, isCloseDetails = false) => {
       phoneType: item.phoneCategory,
       phoneNum: item.phone,
       useType: item.usageType,
-      isService: item.recordEnable ? '0' : '1'
+      isService: item.recordEnable
     })
   })
 
   // addPostDataSource.addEditTableData.map((item) => {
   record?.postVOList?.map((item, index) => {
+    const tempBrand = item.brands.split(',')
+    console.log('tempBrand', tempBrand)
     tempPostList.push({
       index: index,
       id: item.id,
       department: item.organizationId,
       post: item.postId,
-      brand: item.brands,
+      brand: tempBrand,
       isMainPost: item.type,
       isMainPostKey: item.type,
       isMainPostText: item.type === 'main_post' ? '主岗' : '兼岗',
@@ -1873,7 +1903,7 @@ const edit = async (record, isCloseDetails = false) => {
       phoneType: '',
       phoneNum: '',
       useType: '',
-      isService: ''
+      isService: true
     })
   }
 
@@ -1882,7 +1912,7 @@ const edit = async (record, isCloseDetails = false) => {
       index: 0,
       department: null,
       post: null,
-      brand: null,
+      brand: [],
       isMainPost: null,
       isMainPostKey: 'main_post',
       isMainPostText: '主岗',
@@ -1988,7 +2018,7 @@ const addMajorIndividualFN = async () => {
         phoneCategory: item.phoneType, //号码类别
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
-        recordEnable: item.isService === '0', //是否开通云录音
+        recordEnable: item.isService, //是否开通云录音
         userId: formState.id,
         id: item.id
       })
@@ -1997,7 +2027,7 @@ const addMajorIndividualFN = async () => {
         phoneCategory: item.phoneType, //号码类别
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
-        recordEnable: item.isService === '0' //是否开通云录音
+        recordEnable: item.isService //是否开通云录音
       })
     }
 
@@ -2011,12 +2041,18 @@ const addMajorIndividualFN = async () => {
   }
 
   addPostDataSource.addEditTableData.map((item) => {
+    let tempBrandString = ''
+    console.log('item.brand', item.brand)
+
+    tempBrandString = item.brand.join()
+
+    console.log('tempBrandString', tempBrandString)
     //修改时
     if (formState.id) {
       tempPostList.push({
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
-        brands: item.brand, //所属品牌
+        brands: tempBrandString, //所属品牌
         type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow, //是否显示
         userId: formState.id,
@@ -2026,7 +2062,7 @@ const addMajorIndividualFN = async () => {
       tempPostList.push({
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
-        brands: item.brand, //所属品牌
+        brands: tempBrandString, //所属品牌
         type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow //是否显示
       })
@@ -3171,7 +3207,7 @@ const addEditColumns = [
   },
   {
     title: '号码类别',
-    width: 130,
+    width: 145,
     dataIndex: 'phoneType',
     key: 'phoneType',
     resizable: true,
@@ -3181,7 +3217,7 @@ const addEditColumns = [
   },
   {
     title: '号码',
-    width: 110,
+    width: 130,
     dataIndex: 'phoneNum',
     key: 'phoneNum',
     resizable: true,
@@ -3191,7 +3227,7 @@ const addEditColumns = [
   },
   {
     title: '使用类型',
-    width: 130,
+    width: 145,
     dataIndex: 'useType',
     key: 'useType',
     resizable: true,
@@ -3211,7 +3247,7 @@ const addEditColumns = [
   },
   {
     title: '操作',
-    width: 100,
+    width: 80,
     dataIndex: 'operation',
     key: 'operation',
     resizable: true,
@@ -3227,19 +3263,30 @@ const addDataSource = reactive({
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: '0'
+      isService: true
     }
   ]
 })
 
 //新增编辑 联系电话 add
-const addColumns = () => {
-  addDataSource.addEditTableData.push({
+const addColumns = (index) => {
+  // addDataSource.addEditTableData.push({
+  //   phoneType: '1',
+  //   phoneNum: '',
+  //   useType: '1',
+  //   isService: true
+  // })
+
+  const tempObj = {
     phoneType: '1',
     phoneNum: '',
     useType: '1',
-    isService: '0'
-  })
+    isService: true
+  }
+
+  console.log('index', index)
+
+  addDataSource.addEditTableData.splice(index + 1, 0, tempObj)
 
   addDataSource.addEditTableData.map((item, index) => {
     item.index = index
@@ -3248,13 +3295,14 @@ const addColumns = () => {
 
 //新增编辑 联系电话 delete
 const deleteColumns = (index) => {
+  console.log('index', index)
   addDataSource.addEditTableData = addDataSource.addEditTableData.filter(
     (item) => item.index !== index
   )
 
   console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
   addDataSource.addEditTableData.map((item, index) => {
-    item.index = index + 1
+    item.index = index
   })
 }
 
@@ -3272,7 +3320,7 @@ const addEditPostColumns = [
   },
   {
     title: '岗位',
-    width: 140,
+    width: 170,
     dataIndex: 'post',
     key: 'post',
     resizable: true,
@@ -3282,7 +3330,7 @@ const addEditPostColumns = [
   },
   {
     title: '所属品牌',
-    width: 130,
+    width: 150,
     dataIndex: 'brand',
     key: 'brand',
     resizable: true,
@@ -3302,7 +3350,7 @@ const addEditPostColumns = [
   },
   {
     title: '是否显示',
-    width: 120,
+    width: 100,
     dataIndex: 'isShow',
     key: 'isShow',
     resizable: true,
@@ -3312,7 +3360,7 @@ const addEditPostColumns = [
   },
   {
     title: '操作',
-    width: 100,
+    width: 80,
     dataIndex: 'operation',
     key: 'operation',
     resizable: true,
@@ -3327,7 +3375,7 @@ const addPostDataSource = reactive({
       index: 0,
       department: null,
       post: null,
-      brand: null,
+      brand: [],
       isMainPost: null,
       isMainPostKey: 'main_post',
       isMainPostText: '主岗',
@@ -3337,16 +3385,30 @@ const addPostDataSource = reactive({
 })
 
 //新增编辑 岗位信息 add
-const addPostColumns = () => {
-  addPostDataSource.addEditTableData.push({
+const addPostColumns = (index) => {
+  // addPostDataSource.addEditTableData.push({
+  //   department: null,
+  //   post: null,
+  //   brand: [],
+  //   isMainPost: null,
+  //   isMainPostKey: 'secondary_post',
+  //   isMainPostText: '兼岗',
+  //   isShow: true
+  // })
+
+  const tempObj = {
     department: null,
     post: null,
-    brand: null,
+    brand: [],
     isMainPost: null,
     isMainPostKey: 'secondary_post',
     isMainPostText: '兼岗',
-    isShow: false
-  })
+    isShow: true
+  }
+
+  console.log('index', index)
+
+  addPostDataSource.addEditTableData.splice(index + 1, 0, tempObj)
 
   addPostDataSource.addEditTableData.map((item, index) => {
     item.index = index
@@ -3362,11 +3424,11 @@ const deletePostColumns = (index) => {
   )
 
   console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
-  nextTick(() => {
-    addPostDataSource.addEditTableData.map((item, index) => {
-      item.index = index
-    })
+  // nextTick(() => {
+  addPostDataSource.addEditTableData.map((item, index) => {
+    item.index = index
   })
+  // })
 }
 
 const rolesChange = (rolesID) => {
@@ -3404,11 +3466,19 @@ const postTypeChange = async (value) => {
   console.log('岗位列表postListRes', postListRes)
 }
 
-const limitInput = (value) => {
+const limitInput = (value, currentValue) => {
+  console.log('value', value)
+  if (!value) {
+    return
+  }
   const regExp = /^[0-9]*$/
-  if (!regExp.test(value.data)) {
-    queryParams.memberPhone = null
-    message.warning('联系电话只能输入4位数字')
+  if (!regExp.test(value)) {
+    if (currentValue) {
+      currentValue.phoneNum = null
+    } else {
+      queryParams.memberPhone = null
+    }
+    message.warning('联系电话只能输入数字')
   }
 }
 
