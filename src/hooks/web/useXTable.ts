@@ -2,6 +2,7 @@ import { XTableProps } from '@/components/XTable/src/type'
 
 export interface tableMethod {
   reload: () => void // 刷新表格
+  search: () => void // 查询表格
   refreshColumn: () => void // 刷新列
   setProps: (props: XTableProps) => void
   deleteData: (id: string | number, msg?: string | VNode | (() => VNode)) => void // 删除数据
@@ -31,6 +32,7 @@ export const useXTable = (props: XTableProps): [Function, tableMethod] => {
   }
   const methods: tableMethod = {
     reload: () => getInstance().reload(),
+    search: () => getInstance().search(),
     refreshColumn: () => getInstance().refreshColumn(),
     setProps: (props) => getInstance().setProps(props),
     deleteData: (id: string | number, msg?: string | VNode | (() => VNode)) =>

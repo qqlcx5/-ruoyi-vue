@@ -139,7 +139,6 @@ import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from './component/ConfigDetailDrawer.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
-import { cloneDeep } from 'lodash-es'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -148,7 +147,7 @@ const router = useRouter() // 路由
 // 列表相关的变量
 const searchForm = ref()
 const queryParams = ref({ keyword: '', status: '' })
-const [registerTable, { reload, deleteReq }] = useXTable({
+const [registerTable, { reload, deleteReq, search }] = useXTable({
   tableKey: 'role-table',
   allSchemas: allSchemas,
   params: searchForm,
@@ -156,8 +155,8 @@ const [registerTable, { reload, deleteReq }] = useXTable({
   deleteApi: RoleApi.deleteRoleApi
 })
 const getRoleList = () => {
-  searchForm.value = cloneDeep(queryParams.value)
-  reload()
+  searchForm.value = { ...queryParams.value }
+  search()
 }
 // 查询重置
 const onRoleSearchReset = () => {

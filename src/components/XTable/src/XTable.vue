@@ -402,6 +402,15 @@ const reload = () => {
   g.commitProxy('query')
 }
 
+// 刷新列表
+const search = () => {
+  const g = unref(xGrid)
+  if (!g) {
+    return
+  }
+  g.commitProxy('reload')
+}
+
 // 删除
 const deleteData = async (id: string | number, msg?: string | VNode | (() => VNode)) => {
   const g = unref(xGrid)
@@ -600,6 +609,7 @@ defineExpose({
 })
 emit('register', {
   reload,
+  search,
   getSearchData,
   setProps,
   deleteData,
