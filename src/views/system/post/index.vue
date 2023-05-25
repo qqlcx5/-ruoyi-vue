@@ -182,11 +182,16 @@
               />
             </template>
             <template #role_list="{ row }">
-              <div v-for="item in row.roleList" :key="item.roleId">
-                <el-tag :type="item.roleDeleted ? 'danger' : item.roleStatus ? 'info' : ''"
-                  >{{ item.roleName }}<span v-if="item.roleDeleted">(删除)</span
-                  ><span v-if="item.roleStatus">(关闭)</span></el-tag
+              <div v-for="item in row.roleList" :key="item.roleId" class="role-tag-box">
+                <div
+                  v-if="item.roleName"
+                  class="role-tag"
+                  :class="{ delete: item.roleDeleted, close: item.roleStatus }"
                 >
+                  {{ item.roleName }}
+                  <span v-if="item.roleStatus">(关闭)</span>
+                  <span v-if="item.roleDeleted">(删除)</span>
+                </div>
               </div>
             </template>
             <template #status_default="{ row }">
@@ -502,6 +507,29 @@ const goto = ({ id }, type) => {
   :deep(.el-card__header) {
     border: none;
     box-shadow: 0 2px 4px 0 rgba(218, 218, 218, 0.5);
+  }
+  .role-tag-box:not(:last-child) {
+    margin-bottom: 2px;
+  }
+  .role-tag {
+    width: fit-content;
+    font-size: 12px;
+    padding: 4px 8px;
+    line-height: 1;
+    color: $wg-primary-color;
+    background-color: #f0f8ff;
+    border: 1px solid $wg-primary-color;
+    border-radius: 4px;
+    &.close {
+      color: #71b9ff;
+      background-color: #f0f8ff;
+      border: 1px solid #71b9ff;
+    }
+    &.delete {
+      color: #b5b7bd;
+      background-color: #eaebef;
+      border: none;
+    }
   }
 }
 </style>
