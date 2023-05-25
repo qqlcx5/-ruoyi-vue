@@ -283,6 +283,15 @@ const getParams = () => {
     item['menuId'] = item.id
     item['menuParentId'] = item.parentId
     delete item.children
+    if (item.dataScope === 2) {
+      // 部门清空指定人
+      item.dataScopeUserIds = []
+      item.dataScopeUsers = []
+    } else if (item.dataScope === 6) {
+      // 指定人清空部门
+      item.dataScopeDeptIds = []
+      item.dataScopeDepts = []
+    }
     return item
   })
 }

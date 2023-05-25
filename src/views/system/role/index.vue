@@ -5,15 +5,16 @@
         <el-col :span="6">
           <el-form-item label-width="70px" label="角色名称">
             <el-input
-              v-model="searchForm.keyword"
+              v-model="queryParams.keyword"
               placeholder="请输入角色名称或编码"
-              @keyup.enter="reload"
+              @keyup.enter="getRoleList"
+              clearable
             />
           </el-form-item>
         </el-col>
         <el-col :span="6">
           <el-form-item label="状态">
-            <el-select class="w-full" v-model="searchForm.status" placeholder="请选择">
+            <el-select class="w-full" v-model="queryParams.status" placeholder="请选择" clearable>
               <el-option
                 v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
                 :key="item.value"
@@ -25,7 +26,7 @@
         </el-col>
         <el-col :span="6" class="!flex flex-column justify-between">
           <div>
-            <el-button type="primary" @click="reload">查询</el-button>
+            <el-button type="primary" @click="getRoleList">查询</el-button>
             <el-button @click="onRoleSearchReset">重置</el-button>
           </div>
         </el-col>
@@ -138,13 +139,15 @@ import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from './component/ConfigDetailDrawer.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
+import { cloneDeep } from 'lodash-es'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 const router = useRouter() // 路由
 
 // 列表相关的变量
-const searchForm = ref({ keyword: '', status: '' })
+const searchForm = ref()
+const queryParams = ref({ keyword: '', status: '' })
 const [registerTable, { reload, deleteReq }] = useXTable({
   tableKey: 'role-table',
   allSchemas: allSchemas,
@@ -152,10 +155,14 @@ const [registerTable, { reload, deleteReq }] = useXTable({
   getListApi: RoleApi.getRolePageApi,
   deleteApi: RoleApi.deleteRoleApi
 })
+const getRoleList = () => {
+  searchForm.value = cloneDeep(queryParams.value)
+  reload()
+}
 // 查询重置
 const onRoleSearchReset = () => {
-  searchForm.value = { keyword: '', status: '' }
-  reload()
+  queryParams.value = { keyword: '', status: '' }
+  getRoleList()
 }
 
 // ========== CRUD 相关 ==========
