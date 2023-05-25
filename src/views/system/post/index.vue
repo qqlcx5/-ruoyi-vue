@@ -395,7 +395,7 @@ const onPostDel = async (row, type: string) => {
 }
 // 更新岗位状态
 const postInfoStatusChange = async (row) => {
-  const text = row.status === CommonStatusEnum.DISABLE ? '开启' : '关闭'
+  const text = row.status === CommonStatusEnum.ENABLE ? '开启' : '关闭'
   if (+row.userCount && row.status === CommonStatusEnum.DISABLE) {
     message
       .wgOperateConfirm(
@@ -425,16 +425,16 @@ const postInfoStatusChange = async (row) => {
   } else {
     message
       .wgConfirm(
-        row.status === CommonStatusEnum.ENABLE
+        row.status === CommonStatusEnum.DISABLE
           ? h('span', [
-              h('span', `${text}后，${row.name}底下的 `),
-              h('span', { style: { color: 'red' } }, row.userCount),
-              h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
-            ])
-          : h('span', [
               h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
               h('span', { style: { color: 'red' } }, row.userCount),
               h('span', ' 个员工也将同步关闭该岗位，请谨慎操作。')
+            ])
+          : h('span', [
+              h('span', `${text}后，${row.name}底下的 `),
+              h('span', { style: { color: 'red' } }, row.userCount),
+              h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
             ]),
         `确定${text} ${row.name} 吗？`,
         {
