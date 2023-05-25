@@ -3572,16 +3572,24 @@ onMounted(async () => {
   } else if ($router.options.history.state?.back === '/system/post') {
     //岗位管理 页面跳转进来
     const { isOnJob = '0', postId = null, postTypeId = null } = $route?.query || {}
-    queryParams.isOnJob = isOnJob
-    queryParams.postType = postTypeId
+
     await postTypeChange(postTypeId)
     console.log('postId============>', postId)
-    queryParams.post = Number(postId)
+    if (queryParams.postType != null) {
+      queryParams.postType = postTypeId
+      queryParams.isOnJob = isOnJob
+    }
+    if (postId != null) {
+      queryParams.post = Number(postId)
+      queryParams.isOnJob = isOnJob
+    }
   } else if ($router.options.history.state?.back === '/system/role') {
     //角色管理 页面跳转进来
     const { isOnJob = '0', roleId = null } = $route?.query || {}
-    queryParams.isOnJob = isOnJob
-    queryParams.configureRoles = [Number(roleId)]
+    if (roleId != null) {
+      queryParams.isOnJob = isOnJob
+      queryParams.configureRoles = [Number(roleId)]
+    }
   }
 
   sendCurrentSelect(organizationId)
