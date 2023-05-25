@@ -221,7 +221,7 @@ const getProxyConfig = (options: XTableProps) => {
               queryParams.pageNo = page.currentPage
             }
             return new Promise(async (resolve) => {
-              resolve(await getListApi(queryParams))
+              resolve(await getListApi(queryParams).catch(() => {}))
             })
           },
           delete: ({ body }) => {
@@ -318,7 +318,7 @@ const getPageConfig = (options: XTableProps) => {
         pageSize: 10, // 每页大小
         pagerCount: 7, // 显示页码按钮的数量
         autoHidden: false, // 当只有一页时自动隐藏
-        pageSizes: [5, 10, 20, 30, 50, 100], // 每页大小选项列表
+        pageSizes: [5, 10, 20, 30, 50, 100, 200, 300, 500, 1000], // 每页大小选项列表
         // pageSizes: [
         //   { label: '5条/页', value: 5 },
         //   { label: '10条/页', value: 10 },
