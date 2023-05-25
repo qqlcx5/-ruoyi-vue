@@ -46,7 +46,7 @@
           </el-row>
         </el-form>
         <el-divider class="!mt-0 !mb-16px" />
-        <XTable @register="registerPostType" @cell-click="cellClickEvent">
+        <XTable ref="postTypeRef" @register="registerPostType" @cell-click="cellClickEvent">
           <!-- 操作：新增类型 -->
           <template #toolbar_buttons>
             <XButton
@@ -253,6 +253,7 @@ const postTypeSearchForm = ref({
   status: ''
 })
 // 列表相关的变量
+const postTypeRef = ref()
 // const [registerPostType, { reload: postTypeGet, deleteReq, exportList: postTypeExport }] =
 const [registerPostType, { reload: postTypeGet, deleteReq }] = useXTable({
   tableKey: 'post-type-table',
@@ -317,6 +318,7 @@ const removePostType = () => {
   postParent.value = {}
   postInfoSearchForm.value.typeCode = ''
   onPostInfoSearchReset()
+  postTypeRef.value.Ref.clearCurrentRow()
 }
 
 // 删除

@@ -24,7 +24,7 @@
           show-checkbox
           highlight-current
           :default-checked-keys="defaultCheckedKeys"
-          :props="defaultProps"
+          :props="{ ...defaultProps, class: customNodeClass }"
           :data="treeOptions"
           @node-click="handleNodeClick"
           @check-change="handleCheckChange"
@@ -172,7 +172,6 @@ watch(
   (data, oldData) => {
     if (data.id === oldData.id) {
       if (data.dataScope || (data.operations && data.operations.length)) {
-        console.log(data)
         treeRef.value!.setCheckedKeys([...treeRef.value!.getCheckedKeys(), data.id])
       } else {
         treeRef.value!.setChecked(data.id, false, true)
@@ -189,6 +188,13 @@ const selectedPermissions = computed({
     currentNode.value.operations = getPermissions.value.filter((item) => val.includes(item.id))
   }
 }) // 选中select
+
+const customNodeClass = (data) => {
+  if (data.dataScope || (data.operations && data.operations.length)) {
+    return 'custom-highlight'
+  }
+  return null
+}
 
 const handleCheckAllChange = (val: boolean) => {
   currentNode.value.operations = val ? getPermissions.value : []
@@ -315,7 +321,7 @@ defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
       transform: translateY(-50%);
     }
   }
-  :deep(.el-tree .el-tree-node.is-checked) {
+  :deep(.el-tree .el-tree-node.custom-highlight > .el-tree-node__content) {
     color: var(--el-color-primary);
     background-color: #ebf5ff;
   }

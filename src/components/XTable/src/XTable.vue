@@ -377,7 +377,6 @@ const handleToolClick = (key): void => {
   if (!g) {
     return
   }
-  // g.removeCurrentRow()
   switch (key) {
     case 'print':
       exportList()
