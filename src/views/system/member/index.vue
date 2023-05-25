@@ -286,7 +286,19 @@
             <!--  部门/岗位   -->
             <template v-if="column?.key === 'departmentPost'">
               <div v-for="item in record?.departmentPostList" class="phone-div-content">
-                <div class="phone-div">{{ item.department }}/{{ item.post }}</div>
+                <div class="phone-div"
+                  ><span
+                    :class="[{ 'close-style': item.depStatus }, { 'delete-style': item.depDelete }]"
+                    >{{ item.department }}</span
+                  >/
+                  <span
+                    :class="[
+                      { 'close-style': item.postStatus },
+                      { 'delete-style': item.postDelete }
+                    ]"
+                    >{{ item.post }}</span
+                  >
+                </div>
                 <div :class="item.type === 'main_post' ? 'principal-tag' : 'part-tag'"
                   >{{ item.typeText }}
                 </div>
@@ -300,10 +312,16 @@
               <!--                :color="item.type === '1' ? '#0081FF' : '#0081FF'"-->
               <!--                >{{ item.roleName }}</a-tag-->
               <!--              >-->
+              <!--              :class="item.type === '1' ? 'role-tag' : 'role-close-tag'"-->
               <div class="phone-div-content">
+                <!--  催命似的催  这里直接暴力上判断了  -->
                 <div
-                  :class="item.type === '1' ? 'role-tag' : 'role-close-tag'"
-                  v-for="item in record?.roleVOList"
+                  :class="[
+                    { 'role-tag': !item.roleStatus && !item.roleDelete },
+                    { 'role-close-tag': !item.roleDelete && item.roleStatus },
+                    { 'role-delete-tag': item.roleDelete }
+                  ]"
+                  v-for="item in record?.roleVOListDeal"
                   >{{ item.roleName }}
                 </div>
               </div>
@@ -1654,6 +1672,7 @@ const getList = async (page) => {
     state.tableDataList.map((item) => {
       const tempPhoneList = []
       const tempDepartmentPost = []
+      const tempRoleVOList = []
       //联系电话
       item?.phoneVOList?.map((phoneItem) => {
         // '0'公司 '1'私人
@@ -1675,11 +1694,37 @@ const getList = async (page) => {
         if (postItem.type === 'secondary_post') {
           tempText = '兼岗'
         }
+        //0开启 1关闭
+        let depStatusText = postItem.organizationStatus === 0 ? '' : '(关闭)'
+        //0未删除 1删除  删除显示优先级高于关闭
+        depStatusText = postItem.organizationDeleted === 0 ? depStatusText : '(删除)'
+
+        //0开启 1关闭
+        let postStatusText = postItem.postStatus === 0 ? '' : '(关闭)'
+        //0未删除 1删除  删除显示优先级高于关闭
+        postStatusText = postItem.postDeleted === 0 ? postStatusText : '(删除)'
         tempDepartmentPost.push({
-          department: postItem.componentName, //部门
-          post: postItem.postName, //岗位
+          department: `${postItem.componentName}${depStatusText}`, //部门
+          depStatus: postItem.organizationStatus === 1, //0开启 1关闭 部门开启/关闭
+          depDelete: postItem.organizationDeleted === 1, //0未删除 1删除 部门未删除/删除
+          postStatus: postItem.postStatus === 1, //0开启 1关闭 岗位开启/关闭
+          postDelete: postItem.postDeleted === 1, //0未删除 1删除 岗位未删除/删除
+          post: `${postItem.postName}${postStatusText}`, //岗位
           type: postItem.type, //主岗0 兼岗1
           typeText: tempText
+        })
+      })
+
+      //配置角色
+      item?.roleVOList?.map((roleItem) => {
+        //0开启 1关闭
+        let roleStatusText = roleItem.roleStatus === 0 ? '' : '(关闭)'
+        //0未删除 1删除  删除显示优先级高于关闭
+        roleStatusText = roleItem.roleDeleted === 0 ? roleStatusText : '(删除)'
+        tempRoleVOList.push({
+          roleName: `${roleItem.roleName}${roleStatusText}`,
+          roleStatus: roleItem.postStatus === 1, //0开启 1关闭 岗位开启/关闭
+          roleDelete: roleItem.postDeleted === 1 //0未删除 1删除 岗位未删除/删除
         })
       })
 
@@ -1697,6 +1742,7 @@ const getList = async (page) => {
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
       item.entryTime = item.onboardingTime //入职时间
+      item.roleVOListDeal = tempRoleVOList
     })
 
     console.log('state.tableDataList', state.tableDataList)
@@ -4243,6 +4289,19 @@ onMounted(async () => {
   border: 0.5px solid rgba(113, 185, 255, 1);
   color: rgba(0, 129, 255, 0.52);
 }
+.role-delete-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+  padding: 8px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(234, 235, 239, 1);
+  color: rgba(181, 183, 189, 1);
+  font-size: 12px;
+  font-family: PingFangSC-Regular;
+}
 :deep(.ant-select-multiple .ant-select-selection-item-remove) {
   display: flex;
   align-items: center;
@@ -4251,6 +4310,18 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+}
+//table 关闭状态颜色
+.close-style {
+  color: rgba(153, 153, 153, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+}
+//table 删除状态颜色
+.delete-style {
+  color: rgba(210, 210, 210, 1) !important;
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
 }
 </style>
 

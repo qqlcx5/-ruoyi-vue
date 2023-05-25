@@ -706,13 +706,30 @@
     }"
   >
     <!--      v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"    -->
+
     <div
-      class="status-content"
+      class="message-content"
       v-if="
-        state.tableStatusChangeInfo.record.statusSwitch &&
-        state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0
+        state.tableStatusChangeInfo.record.statusSwitch === false &&
+        state.tableStatusChangeInfo?.ctiveEmployeesNumber != 0
       "
     >
+      <div class="message-text-content">
+        <div class="message-text">
+          <img :src="warningImg" alt="" class="tip-img message-img" />
+          <div>
+            系统校验到该机构底下还存在<span class="status-span">{{
+              state.tableStatusChangeInfo?.ctiveEmployeesNumber
+            }}</span
+            >个在职状态开启的员工，请先关闭或转移所有员工再操作{{
+              state.tableStatusChangeInfo?.operation
+            }}哦~
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-content" v-else>
       <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="status-text-content">
         <div class="status-text">
@@ -738,38 +755,21 @@
       </div>
     </div>
 
-    <div class="message-content" v-else>
-      <div class="message-text-content">
-        <div class="message-text">
-          <img :src="warningImg" alt="" class="tip-img message-img" />
-          <div>
-            系统校验到该机构底下还存在<span class="status-span">{{
-              state.tableStatusChangeInfo?.ctiveEmployeesNumber
-            }}</span
-            >个在职状态开启的员工，请先关闭或转移所有员工再操作{{
-              state.tableStatusChangeInfo?.operation
-            }}哦~
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!--    state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0  -->
     <template #footer>
       <a-button
-        type="primary"
-        html-type="submit"
-        @click="tableStatusConfirm"
-        v-if="state.tableStatusChangeInfo.record.statusSwitch"
-        >{{ state.tableStatusChangeInfo.statusBtnText }}</a-button
-      >
-      <a-button
-        v-else
+        v-if="
+          state.tableStatusChangeInfo.record.statusSwitch === false &&
+          state.tableStatusChangeInfo?.ctiveEmployeesNumber != 0
+        "
         type="primary"
         html-type="submit"
         @click="jumpToMember(state.tableStatusChangeInfo.record)"
         >去操作</a-button
       >
+      <a-button v-else type="primary" html-type="submit" @click="tableStatusConfirm">{{
+        state.tableStatusChangeInfo.statusBtnText
+      }}</a-button>
       <a-button @click="closeStatusModal">取消</a-button>
     </template>
   </a-modal>
