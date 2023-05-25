@@ -49,7 +49,6 @@ export default defineComponent({
       return breadcrumbList.map((v) => {
         const disabled = v.redirect === 'noredirect'
         const meta = v.meta as RouteMeta
-        console.log(v)
         return (
           <ElBreadcrumbItem to={{ path: disabled ? '' : v.path }} key={v.name}>
             {meta?.icon && breadcrumbIcon.value && v.children ? (
