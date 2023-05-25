@@ -20,7 +20,8 @@
                 <el-input
                   v-model="postTypeSearchForm.nameOrCode"
                   placeholder="请输入岗位类型或编码"
-                  @keyup.enter="postTypeGet"
+                  @keyup.enter="postSearch"
+                  clearable
                 />
               </el-form-item>
             </el-col>
@@ -39,7 +40,7 @@
 
             <el-col :span="8" class="!flex flex-column justify-between">
               <div>
-                <el-button type="primary" @click="postTypeGet">查询</el-button>
+                <el-button type="primary" @click="postSearch">查询</el-button>
                 <el-button @click="onPostTypeSearchReset">重置</el-button>
               </div>
             </el-col>
@@ -116,7 +117,8 @@
                   <el-input
                     v-model="postInfoSearchForm.nameOrCode"
                     placeholder="请输入岗位名称或编码"
-                    @keyup.enter="postInfoGet"
+                    @keyup.enter="postInfoSearch"
+                    clearable
                   />
                 </el-form-item>
               </el-col>
@@ -139,7 +141,7 @@
               </el-col>
               <el-col :span="8" class="!flex flex-column justify-between">
                 <div>
-                  <el-button type="primary" @click="postInfoGet">查询</el-button>
+                  <el-button type="primary" @click="postInfoSearch">查询</el-button>
                   <el-button @click="onPostInfoSearchReset">重置</el-button>
                 </div>
               </el-col>
@@ -260,7 +262,7 @@ const postTypeSearchForm = ref({
 // 列表相关的变量
 const postTypeRef = ref()
 // const [registerPostType, { reload: postTypeGet, deleteReq, exportList: postTypeExport }] =
-const [registerPostType, { reload: postTypeGet, deleteReq }] = useXTable({
+const [registerPostType, { reload: postTypeGet, deleteReq, search: postSearch }] = useXTable({
   tableKey: 'post-type-table',
   allSchemas: typeAllSchemas, // 列表配置
   params: postTypeSearchForm,
@@ -300,7 +302,8 @@ const [
     reload: postInfoGet,
     deleteReq: postInfoDelete,
     // exportList: postInfoExport,
-    getCheckboxRecords: getInfoCheckboxRecords
+    getCheckboxRecords: getInfoCheckboxRecords,
+    search: postInfoSearch
   }
 ] = useXTable({
   tableKey: 'post-info-table',

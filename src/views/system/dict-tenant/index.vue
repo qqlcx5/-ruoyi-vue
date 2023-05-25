@@ -21,7 +21,8 @@
                 <el-input
                   v-model="typeSearchForm.name"
                   placeholder="请输入字典名称"
-                  @keyup.enter="onTypeSearchSubmit"
+                  @keyup.enter="typeSearch"
+                  clearable
                 />
               </el-form-item>
             </el-col>
@@ -30,14 +31,15 @@
                 <el-input
                   v-model="typeSearchForm.type"
                   placeholder="请输入字典编码"
-                  @keyup.enter="onTypeSearchSubmit"
+                  @keyup.enter="typeSearch"
+                  clearable
                 />
               </el-form-item>
             </el-col>
 
             <el-col :span="8" class="!flex flex-column justify-between">
               <div>
-                <el-button type="primary" @click="onTypeSearchSubmit">查询</el-button>
+                <el-button type="primary" @click="typeSearch">查询</el-button>
                 <el-button @click="onTypeSearchReset">重置</el-button>
               </div>
               <el-button class="!px-0" text @click="onTypeSearchToggle">
@@ -118,13 +120,14 @@
                   <el-input
                     v-model="queryParams.label"
                     placeholder="请输入数据标签"
-                    @keyup.enter="onDataSearchSubmit"
+                    @keyup.enter="dataSearch"
+                    clearable
                   />
                 </el-form-item>
               </el-col>
               <el-col :span="8" class="!flex flex-column justify-between">
                 <div>
-                  <el-button type="primary" @click="onDataSearchSubmit">查询</el-button>
+                  <el-button type="primary" @click="dataSearch">查询</el-button>
                   <el-button @click="onDataSearchReset">重置</el-button>
                 </div>
               </el-col>
@@ -268,12 +271,17 @@
         <el-row :gutter="12">
           <el-col :span="8">
             <el-form-item label="子项标签" class="!mb-0">
-              <el-input v-model="dataLevel3queryParams.label" placeholder="请输入子项标签" />
+              <el-input
+                v-model="dataLevel3queryParams.label"
+                placeholder="请输入子项标签"
+                @keyup.enter="dataLevel3Search"
+                clearable
+              />
             </el-form-item>
           </el-col>
           <el-col :span="8" class="!flex flex-column justify-between">
             <div>
-              <el-button type="primary" @click="onDataSearchSubmit('dataLevel3')">查询</el-button>
+              <el-button type="primary" @click="dataLevel3Search">查询</el-button>
               <el-button @click="onDataSearchReset('dataLevel3')">重置</el-button>
             </div>
           </el-col>
@@ -337,7 +345,7 @@ const message = useMessage() // 消息弹窗
 const typeSearchForm = ref({
   createTime: []
 })
-const [registerType, { reload: typeGetList }] = useXTable({
+const [registerType, { reload: typeGetList, search: typeSearch }] = useXTable({
   tableKey: 'dict-tenant-type-table',
   allSchemas: DictTypeSchemas.allSchemas,
   params: typeSearchForm,
@@ -353,29 +361,32 @@ const queryParams = reactive({
   dictType: null,
   label: ''
 })
-const [registerData, { reload: dataGetList, deleteData: dataDeleteData }] = useXTable({
-  tableKey: 'dict-tenant-data-table',
-  allSchemas: DictDataSchemas.allSchemas,
-  params: queryParams,
-  getListApi: DictDataApi.getDictDataPageApi,
-  deleteApi: DictDataApi.deleteDictDataApi,
-  border: true,
-  height: 606
-})
+const [registerData, { reload: dataGetList, deleteData: dataDeleteData, search: dataSearch }] =
+  useXTable({
+    tableKey: 'dict-tenant-data-table',
+    allSchemas: DictDataSchemas.allSchemas,
+    params: queryParams,
+    getListApi: DictDataApi.getDictDataPageApi,
+    deleteApi: DictDataApi.deleteDictDataApi,
+    border: true,
+    height: 606
+  })
 
 const dataLevel3queryParams = reactive({
   parentId: null,
   label: ''
 })
-const [registerDataLevel3, { reload: dataLevel3GetList, deleteData: dataLevel3DeleteData }] =
-  useXTable({
-    tableKey: 'dict-tenant-level3data-table',
-    allSchemas: DictDataLevel3Schemas.allSchemas,
-    params: dataLevel3queryParams,
-    getListApi: DictDataApi.getDictDataPageApi,
-    deleteApi: DictDataApi.deleteDictDataApi,
-    border: true
-  })
+const [
+  registerDataLevel3,
+  { reload: dataLevel3GetList, deleteData: dataLevel3DeleteData, search: dataLevel3Search }
+] = useXTable({
+  tableKey: 'dict-tenant-level3data-table',
+  allSchemas: DictDataLevel3Schemas.allSchemas,
+  params: dataLevel3queryParams,
+  getListApi: DictDataApi.getDictDataPageApi,
+  deleteApi: DictDataApi.deleteDictDataApi,
+  border: true
+})
 
 // ========== 字典分类列表相关 ==========
 const dictTypeValue = ref('')
@@ -391,9 +402,6 @@ const searchFormToggle = ref(false)
 const onTypeSearchToggle = () => {
   searchFormToggle.value = !searchFormToggle.value
 }
-const onTypeSearchSubmit = async () => {
-  await typeGetList()
-}
 const onTypeSearchReset = async () => {
   typeSearchForm.value = {
     createTime: []
@@ -401,14 +409,6 @@ const onTypeSearchReset = async () => {
   await typeGetList()
 }
 
-// data搜索
-const onDataSearchSubmit = async (type) => {
-  if (type === 'dataLevel3') {
-    await dataLevel3GetList()
-  } else {
-    await dataGetList()
-  }
-}
 const onDataSearchReset = async (type) => {
   if (type === 'dataLevel3') {
     dataLevel3queryParams.label = ''
