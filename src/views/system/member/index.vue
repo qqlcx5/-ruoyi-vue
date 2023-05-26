@@ -36,7 +36,7 @@
                   <a-input
                     class="width-100"
                     v-model:value="queryParams.memberPhone"
-                    @pressEnter="getList"
+                    @pressEnter="getList()"
                     @change="() => limitInput(queryParams.memberPhone)"
                     maxlength="11"
                     placeholder="请输入4位数字查询"
@@ -513,7 +513,11 @@
               <template #bodyCell="{ column, text, record, index }">
                 <template v-if="column.key === 'phoneType'">
                   <div>
-                    <a-radio-group v-model:value="record.phoneType" name="radioPhoneTypeGroup">
+                    <a-radio-group
+                      v-model:value="record.phoneType"
+                      name="radioPhoneTypeGroup"
+                      @change="() => clearPhoneNum(record)"
+                    >
                       <a-radio-button value="1" style="margin-right: 5px">手机</a-radio-button>
                       <a-radio-button value="2">座机</a-radio-button>
                     </a-radio-group>
@@ -724,7 +728,12 @@
             />
           </a-form-item>
 
-          <a-form-item :label="`QQ`" class="width-50">
+          <a-form-item
+            :label="`QQ`"
+            name="qqNum"
+            class="width-50"
+            :rules="[{ validator: numValidator }]"
+          >
             <a-input
               v-model:value="formState.qqNum"
               show-count
@@ -803,8 +812,9 @@
       <div
         class="message-text assign-roles-tip"
         v-if="
-          state.permissionRecord?.roleVOList?.length === 0 ||
-          state.permissionRecord?.roleVOList === null
+          (state.permissionRecord?.roleVOList?.length === 0 ||
+            state.permissionRecord?.roleVOList === null) &&
+          state.roleId?.length > 0
         "
       >
         <img :src="warningImg" alt="" class="tip-img message-img waring-img" />
@@ -1847,6 +1857,7 @@ const closeModal = () => {
   formState.entryTime = dayjs() //入职时间
   formState.memberType = 'trial_members' //人员类型
   formState.isOnJob = '0' //在职(人员)状态
+  formState.status = true //账号状态
   formState.birthDay = null //出生日期
   formState.departureTime = null //离职日期
   formState.qqNum = null //QQ
@@ -2136,10 +2147,6 @@ const addMajorIndividualFN = async () => {
   if (markPost) {
     return message.warning('请选择岗位')
   }
-
-  console.log('tempPhoneList==========>', tempPhoneList)
-  console.log('tempPostList===========>', tempPostList)
-  console.log('formState.birthDay===>', formState.birthDay)
 
   let params = {
     username: formState.memberNum, //成员工号
@@ -2484,8 +2491,18 @@ const detailsInfo = async (record) => {
   ]
   let tableData = []
   let tablePostData = []
-  console.log('res.sex', res.sex)
-  console.log('res.sexres.sex', typeof res.sex)
+  const tempRoleVOList = []
+
+  roleVOList?.map((roleItem) => {
+    //0开启 1关闭
+    let roleStatusText = roleItem.roleStatus === 0 ? '' : '(关闭)'
+    //0未删除 1删除  删除显示优先级高于关闭
+    roleStatusText = roleItem.roleDeleted === 0 ? roleStatusText : '(删除)'
+    tempRoleVOList.push({
+      roleName: `${roleItem.roleName}${roleStatusText}`
+    })
+  })
+
   switch (res.sex) {
     case 1:
       sexText = '男'
@@ -2541,7 +2558,6 @@ const detailsInfo = async (record) => {
   userHistoryVOList.map((item) => {
     const temp1 = item.beforeData ? JSON.parse(item.beforeData) : []
     const temp2 = item.afterData ? JSON.parse(item.afterData) : []
-    console.log('temp2======================>', temp2)
     let tempItem = {
       date: dayjs(item?.createTime)?.format('YYYY-MM-DD'),
       time: dayjs(item?.createTime)?.format('HH:mm:ss')
@@ -2551,7 +2567,6 @@ const detailsInfo = async (record) => {
       // operator: '操作人：张三（010005）'
     }
 
-    console.log('时间戳', dayjs(temp1?.createTime))
     console.log('beforeData', temp1)
     console.log('afterData', temp2)
     switch (item?.historyType) {
@@ -2582,7 +2597,6 @@ const detailsInfo = async (record) => {
         //   const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
         //   tempItem.beforeChange += `${item?.updateTime?.year}-${item?.updateTime?.month}-${item?.updateTime?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
         // })
-        console.log('==========>', temp1)
         tempItem.needBeforeChange = temp1.length > 0
         temp1?.map((item) => {
           const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
@@ -2615,8 +2629,6 @@ const detailsInfo = async (record) => {
         //   'YYYY-MM-DD'
         // )}`
         tempItem.needBeforeChange = true
-        console.log('temp2===========>>>>>>>>', temp2)
-        console.log(' temp2.departureTime!!!!!!!!!', temp2.departureTime)
         tempItem.afterChange = `在职状态-离职、离职时间-${temp2[0]?.departureTime}`
         tempItem.operator = `${item.createName}`
         break
@@ -2811,7 +2823,7 @@ const detailsInfo = async (record) => {
     {
       baseTitle: '角色信息',
       isShow: true,
-      infoArr: roleVOList
+      infoArr: tempRoleVOList
     },
     {
       baseTitle: '详细信息',
@@ -3549,6 +3561,10 @@ const limitInput = (value, currentValue) => {
     }
     message.warning('联系电话只能输入数字')
   }
+}
+
+const clearPhoneNum = (record) => {
+  record.phoneNum = ''
 }
 
 //监听  左侧选中数据  更新 右侧展示数据

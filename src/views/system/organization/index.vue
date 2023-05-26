@@ -699,6 +699,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    wrapClassName="status-change-modal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -3059,6 +3060,13 @@ watch(
   [class^='ant-rate-star-'] {
     display: flex;
     align-items: center;
+  }
+}
+
+//状态变更
+.status-change-modal {
+  .ant-modal-footer {
+    border-width: 0;
   }
 }
 </style>

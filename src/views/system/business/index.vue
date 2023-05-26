@@ -330,9 +330,9 @@
         <a-form-item
           :label="`可用名额`"
           name="accountCount"
-          :rules="[{ required: true, message: `可用名额不能为空` }]"
+          :rules="[{ required: true, message: `可用名额不能为空` }, { validator: numValidator }]"
         >
-          <a-input-number
+          <a-input
             id="inputNumber"
             v-model:value="state.formState.accountCount"
             :controls="false"
@@ -977,6 +977,22 @@ const chineseEnValidator = (rule, value) => {
       const regExp = /^[a-zA-Z\u4e00-\u9fa5]+$/
       if (!regExp.test(value)) {
         reject('只能输入中英文')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
+//限制数字
+const numValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[0-9]*$/
+      if (!regExp.test(value)) {
+        reject('只能输入数字')
       } else {
         resolve()
       }
