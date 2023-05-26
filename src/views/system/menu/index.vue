@@ -223,7 +223,6 @@
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
-            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
 
@@ -519,7 +518,6 @@
               optionFilterProp="label"
               show-search
               placeholder="请选择"
-              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
           </div>
         </div>
@@ -537,7 +535,6 @@
               optionFilterProp="label"
               show-search
               placeholder="请选择"
-              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
             <!--            <a-input-->
             <!--              class="width-100"-->

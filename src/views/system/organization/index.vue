@@ -315,7 +315,6 @@
             :options="state.memberPhoneOptions"
             placeholder="请选择负责人电话"
             optionFilterProp="label"
-            :getPopupContainer="(triggerNode) => triggerNode.parentElement"
           />
         </a-form-item>
 
@@ -511,7 +510,6 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
-                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -534,7 +532,6 @@
               placeholder="请选择联系方式"
               style="width: 200px"
               :options="state.contactInformationOptions"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
           <a-form-item

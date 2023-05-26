@@ -438,7 +438,6 @@
               placeholder="请选择时间"
               v-model:value="formState.entryTime"
               class="width-100"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -481,7 +480,6 @@
               v-model:value="formState.departureTime"
               :disabled-date="disabledDate"
               class="width-100"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -724,7 +722,6 @@
               v-model:value="formState.birthDay"
               :disabled-date="disabledDate"
               class="width-100"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -765,7 +762,6 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
-                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input

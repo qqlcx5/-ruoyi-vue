@@ -512,7 +512,6 @@
               optionFilterProp="label"
               show-search
               placeholder="请选择"
-              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
           </div>
         </div>
@@ -530,7 +529,6 @@
               optionFilterProp="label"
               show-search
               placeholder="请选择"
-              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
             <!--            <a-input-->
             <!--              class="width-100"-->

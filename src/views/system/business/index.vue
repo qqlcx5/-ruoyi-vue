@@ -193,7 +193,6 @@
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
-            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
         <a-form-item
@@ -315,7 +314,6 @@
               v-model:value="state.formState.effectiveStartEndTime"
               format="YYYY/MM/DD"
               :placeholder="['开始时间', '结束时间']"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
             <!--            <div>-->
             <!--              <a-form-item-rest>-->
@@ -400,7 +398,6 @@
             v-model:value="state.formState.establishDate"
             format="YYYY/MM/DD"
             placeholder="请选择时间"
-            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
 
@@ -446,7 +443,6 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
-                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
