@@ -77,7 +77,8 @@ const searchForm = ref({
   nameOrNumber: '',
   organizationIds: [],
   postTypeCode: '',
-  postId: ''
+  postId: '',
+  existOrganization: 1 // 组织机构是否存在
 })
 
 const [
@@ -104,7 +105,8 @@ const onSearchReset = () => {
     nameOrNumber: '',
     organizationIds: [],
     postTypeCode: '',
-    postId: ''
+    postId: '',
+    existOrganization: 1 // 组织机构是否存在
   }
   getList()
 }
