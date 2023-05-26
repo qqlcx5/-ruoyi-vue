@@ -191,8 +191,8 @@
                   :class="{ delete: item.roleDeleted, close: item.roleStatus }"
                 >
                   {{ item.roleName }}
-                  <span v-if="item.roleStatus">(关闭)</span>
                   <span v-if="item.roleDeleted">(删除)</span>
+                  <span v-else-if="item.roleStatus">(关闭)</span>
                 </div>
               </div>
             </template>
@@ -510,8 +510,11 @@ const goto = ({ code, typeCode, id }, type) => {
     border: none;
     box-shadow: 0 2px 4px 0 rgba(218, 218, 218, 0.5);
   }
-  .role-tag-box:not(:last-child) {
-    margin-bottom: 2px;
+  .role-tag-box {
+    margin: 4px 0;
+    &:not(:last-child) {
+      margin-bottom: 2px;
+    }
   }
   .role-tag {
     width: fit-content;
