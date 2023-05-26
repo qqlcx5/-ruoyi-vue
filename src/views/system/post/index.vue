@@ -493,7 +493,7 @@ const openDistributeModal = (row, mode: string) => {
     if (checkedRow && checkedRow.length === 0) {
       return message.warning('请勾选要分配的岗位')
     } else {
-      distributeModalRef.value.openModal(checkedRow, mode, postParent.value.code)
+      distributeModalRef.value.openModal(checkedRow, mode, postParent.value?.code)
     }
   }
 }
