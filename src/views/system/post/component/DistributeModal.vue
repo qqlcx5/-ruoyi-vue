@@ -108,7 +108,7 @@ const onRoleConfirm = (data) => {
 const selectPostModalRef = ref()
 const openSelectPostModal = () => {
   if (operateMode.value === 'single') return
-  selectPostModalRef.value.openModal(post.value, operateTypeCode.value)
+  selectPostModalRef.value.openModal(post.value, operateTypeCode?.value)
 }
 
 // 打开角色弹窗
@@ -125,7 +125,7 @@ const openSelectRoleModal = () => {
 
 // 打开弹窗
 const openModal = async (row, mode: string, typeCode) => {
-  operateTypeCode.value = typeCode
+  if (typeCode) operateTypeCode.value = typeCode
   operateMode.value = mode
   if (mode === 'single') {
     modelTitle.value = '分配角色'
