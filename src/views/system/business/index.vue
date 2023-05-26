@@ -283,7 +283,7 @@
               }
             "
           >
-            <div v-show="state.logoListUrl.length < 1">
+            <div v-if="state.logoListUrl.length < 1">
               <Icon icon="svg-icon:add-upload" :size="15" />
               <div style="margin-top: 8px">上传logo</div>
             </div>
