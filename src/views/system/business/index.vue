@@ -3,7 +3,7 @@
   <!-- 搜索工作栏 -->
 
   <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
+    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
       <a-form-item :label="`主体名称`" name="keyword">
         <a-input v-model:value="queryParams.keyword" placeholder="请输入主体名称或者编码" />
       </a-form-item>
@@ -167,6 +167,7 @@
   <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
+    destroyOnClose
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
@@ -504,6 +505,7 @@
   <!-- 配置权限 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
+    destroyOnClose
     title="配置权限"
     @ok="closePermissionModal"
     @cancel="closePermissionModal"
@@ -521,7 +523,7 @@
             :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
           >
             <a-tab-pane key="frontDesk" tab="成员端" force-render>成员端</a-tab-pane>
-            <a-tab-pane key="backstage" tab="服务端">
+            <a-tab-pane key="backstage" tab="管理端">
               <div class="tab-search-content">
                 <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
                 <a-checkbox v-model:checked="state.isExpandAllTab" @change="expandAllFN"
@@ -533,6 +535,7 @@
                   v-if="state.isShowTree"
                   v-model:selectedKeys="state.selectedKeys"
                   v-model:checkedKeys="state.checkedKeys"
+                  :selectable="false"
                   :defaultExpandAll="state.defaultExpandAll"
                   checkable
                   :height="533"
@@ -556,6 +559,7 @@
             <div v-if="state.isShowRightTree">已选信息：</div>
             <a-tree
               v-if="state.isShowRightTree"
+              :selectable="false"
               defaultExpandAll
               :height="533"
               :tree-data="state.selectTree"
@@ -583,6 +587,7 @@
   <!--  状态开始关闭 短信提示Modal  -->
   <a-modal
     v-model:visible="state.isShowMessage"
+    destroyOnClose
     :title="state.messageTitle"
     @ok="statusOk"
     @cancel="statusCancel"
@@ -631,6 +636,7 @@
   <!--  状态开始关闭 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
+    destroyOnClose
     :closable="false"
     wrapClassName="status-change-modal"
     width="424px"
@@ -675,6 +681,7 @@
   <!--  详情  -->
   <a-modal
     v-model:visible="state.isShowDetails"
+    destroyOnClose
     title="详情"
     wrapClassName="details-modal"
     width="763px"
@@ -732,6 +739,7 @@
   <!--  重置密码 Modal  -->
   <a-modal
     v-model:visible="state.isShowResetPassWord"
+    destroyOnClose
     :title="state.resetPasswordTitle"
     :closable="state.closable"
     :footer="null"
@@ -792,6 +800,7 @@
   <!--  上传图片预览  -->
   <a-modal
     :visible="previewVisible"
+    destroyOnClose
     :title="previewTitle"
     :footer="null"
     @cancel="handleCancel"
@@ -1030,7 +1039,7 @@ const state = reactive({
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
   formState: {
-    belongTenantId: 0, //上级主体编号
+    belongTenantId: null, //上级主体编号
     code: '', //主体编码
     name: '', //主体名称
     abbreviate: '', //主体简称
@@ -1357,10 +1366,6 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
-  if (!(Object.keys(record).length === 0)) {
-    //非空对象判断 新增子项时回显
-    state.formState.belongTenantId = record.id
-  }
   const res = await getSimpleTenantList()
 
   // let menuTree = []
@@ -1370,9 +1375,18 @@ const openModal = async (record = {}) => {
   // menuTree.push(menu)
 
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
-
+  console.log('state.optionalMenuTree', state.optionalMenuTree)
+  if (!(Object.keys(record).length === 0)) {
+    //非空对象判断 新增子项时回显
+    state.formState.belongTenantId = record.id
+  } else {
+    state.formState.belongTenantId = state?.optionalMenuTree[0]
+      ? state?.optionalMenuTree[0]?.id
+      : null
+  }
   state.isShow = true
 }
+
 //关闭Modal
 const closeModal = () => {
   state.isShow = false
@@ -1651,6 +1665,9 @@ const closePermissionModal = () => {
   state.addSuccessId = undefined
   state.selectTree = []
   state.checkedKeys = []
+  state.selectAll = false
+  state.isExpandAllTab = false
+  state.isShowTree = false
   console.log('state.selectTree ', state.selectTree)
 }
 
@@ -1729,6 +1746,7 @@ const assignPermission = async (record) => {
   state.isShowRightTree = false
   nextTick(() => {
     state.isShowRightTree = true
+    state.isShowTree = true
   })
   await openPermissionModal()
 }
@@ -2259,6 +2277,7 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
+  state.isShowCustomColumnModal = false
 }
 
 // //TODO:这个方法有空再抽出去
@@ -2289,7 +2308,9 @@ watch(
     console.log('state.checkedKeys)', state.checkedKeys)
     console.log('checkedKeysBack.value', checkedKeysBack.value)
     state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
+    console.log('state.idArr====>', state.idArr)
     state.selectTree = filterTree(state.menuTreeList, state.idArr)
+    console.log('state.selectTree=====>', state.selectTree)
     state.isShowRightTree = false
     //右侧展开显示 左侧选中的数据
     nextTick(() => {

@@ -14,7 +14,7 @@
       <!--  搜索  -->
       <a-card :bodyStyle="{ marginBottom: '10px' }">
         <!--  本来是不上表单的  非要校验联系电话  -->
-        <a-form :model="queryParams" :noStyle="true" class="search-form-style">
+        <a-form :model="queryParams" :noStyle="true" class="search-form-style" autocomplete="off">
           <div class="total-search-content">
             <div class="search-content">
               <div class="search-item">
@@ -371,6 +371,7 @@
   <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
+    destroyOnClose
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
@@ -783,6 +784,7 @@
   <!-- 分配角色 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
+    destroyOnClose
     title="分配角色"
     @cancel="closePermissionModal"
     :width="'665px'"
@@ -841,6 +843,7 @@
   <!--  状态开始关闭  删除 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
+    destroyOnClose
     :closable="false"
     width="424px"
     :bodyStyle="{
@@ -881,6 +884,7 @@
   <!--  详情  -->
   <a-modal
     v-model:visible="state.isShowDetails"
+    destroyOnClose
     title="详情"
     wrapClassName="details-modal"
     width="763px"
@@ -973,7 +977,7 @@
               </div>
             </div>
 
-            <div class="record-tip-content">
+            <div class="record-tip-content" v-if="recorditem.needBeforeChange">
               <div class="width-10"> 变更前: </div>
               <div class="width-90">
                 {{ recorditem.beforeChange }}
@@ -1002,6 +1006,7 @@
   <!--  重置密码 Modal  -->
   <a-modal
     v-model:visible="state.isShowResetPassWord"
+    destroyOnClose
     :title="state.resetPasswordTitle"
     :closable="state.closable"
     :footer="null"
@@ -1057,6 +1062,7 @@
   <!--  上传图片预览  -->
   <a-modal
     :visible="previewVisible"
+    destroyOnClose
     :title="previewTitle"
     :footer="null"
     @cancel="handleCancel"
@@ -1929,7 +1935,7 @@ const edit = async (record, isCloseDetails = false) => {
 
   // addPostDataSource.addEditTableData.map((item) => {
   record?.postVOList?.map((item, index) => {
-    const tempBrand = item.brands.split(',')
+    const tempBrand = item.brands === '' || item.brands === null ? [] : item.brands.split(',')
     console.log('tempBrand', tempBrand)
     tempPostList.push({
       index: index,
@@ -2533,8 +2539,9 @@ const detailsInfo = async (record) => {
   changeRecord = []
   //变更记录
   userHistoryVOList.map((item) => {
-    const temp1 = JSON.parse(item.beforeData)
-    const temp2 = JSON.parse(item.afterData)
+    const temp1 = item.beforeData ? JSON.parse(item.beforeData) : []
+    const temp2 = item.afterData ? JSON.parse(item.afterData) : []
+    console.log('temp2======================>', temp2)
     let tempItem = {
       date: dayjs(item?.createTime)?.format('YYYY-MM-DD'),
       time: dayjs(item?.createTime)?.format('HH:mm:ss')
@@ -2553,6 +2560,7 @@ const detailsInfo = async (record) => {
         tempItem.type = '修改'
         tempItem.beforeChange = '部门/岗位-'
         tempItem.afterChange = `部门/岗位-`
+        tempItem.needBeforeChange = true
         temp1?.map((item) => {
           const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
           tempItem.beforeChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
@@ -2568,22 +2576,31 @@ const detailsInfo = async (record) => {
       case 'entry':
         //入职
         tempItem.type = '入职'
-        // tempItem.beforeChange = '变更前：入职时间-'
-        tempItem.afterChange = `入职时间-`
+        tempItem.beforeChange = `离职时间-${temp1[0]?.departureTime}、`
+        tempItem.afterChange = `入职时间-${temp2[0]?.onboardingTime}、`
         // temp1?.map((item) => {
         //   const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
         //   tempItem.beforeChange += `${item?.updateTime?.year}-${item?.updateTime?.month}-${item?.updateTime?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
         // })
+        console.log('==========>', temp1)
+        tempItem.needBeforeChange = temp1.length > 0
+        temp1?.map((item) => {
+          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+
+          // tempItem.beforeChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+          tempItem.beforeChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+        })
 
         temp2?.map((item) => {
           const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-          console.log('item============>', item)
-          console.log('item.updateTime', item.updateTime)
-          console.log('item.updateTime.date', item.updateTime.date)
-          console.log('item.updateTime.date.year', item.updateTime.date.year)
-          console.log('item?.updateTime?.data?.month', item?.updateTime?.data)
+          // console.log('item============>', item)
+          // console.log('item.updateTime', item.updateTime)
+          // console.log('item.updateTime.date', item.updateTime.date)
+          // console.log('item.updateTime.date.year', item.updateTime.date.year)
+          // console.log('item?.updateTime?.data?.month', item?.updateTime?.data)
 
-          tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+          // tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+          tempItem.afterChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
         })
 
         // tempItem.beforeChange = `变更前：入职时间-${temp1?.updateTime?.year}-${temp1?.updateTime?.month}-${temp1?.updateTime?.day}、部门/岗位-${temp1?.componentName}/ ${temp1?.postName}`
@@ -2594,9 +2611,13 @@ const detailsInfo = async (record) => {
         //离职
         tempItem.type = '离职'
         tempItem.beforeChange = `在职状态-在职`
-        tempItem.afterChange = `在职状态-离职、离职时间-${dayjs(temp1?.createTime)?.format(
-          'YYYY-MM-DD'
-        )}`
+        // tempItem.afterChange = `在职状态-离职、离职时间-${dayjs(temp1?.createTime)?.format(
+        //   'YYYY-MM-DD'
+        // )}`
+        tempItem.needBeforeChange = true
+        console.log('temp2===========>>>>>>>>', temp2)
+        console.log(' temp2.departureTime!!!!!!!!!', temp2.departureTime)
+        tempItem.afterChange = `在职状态-离职、离职时间-${temp2[0]?.departureTime}`
         tempItem.operator = `${item.createName}`
         break
     }
@@ -3065,6 +3086,7 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
+  state.isShowCustomColumnModal = false
 }
 
 //初始化 获取默认的 columns

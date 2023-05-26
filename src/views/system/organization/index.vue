@@ -3,7 +3,7 @@
   <!-- 搜索工作栏 -->
 
   <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
+    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
       <a-form-item :label="`机构名称`" name="keyword">
         <a-input v-model:value="queryParams.keyword" placeholder="请输入机构名称或者编码" />
       </a-form-item>
@@ -193,6 +193,7 @@
   <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
+    destroyOnClose
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
@@ -356,6 +357,7 @@
   <!-- 设置属性 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
+    destroyOnClose
     title="设置属性"
     @ok="closePermissionModal"
     @cancel="closePermissionModal"
@@ -695,6 +697,7 @@
   <!--  状态开始关闭 删除 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
+    destroyOnClose
     :closable="false"
     width="424px"
     :bodyStyle="{
@@ -777,6 +780,7 @@
   <!--  详情  -->
   <a-modal
     v-model:visible="state.isShowDetails"
+    destroyOnClose
     title="详情"
     wrapClassName="details-modal set-attribute-modal"
     width="763px"
@@ -930,6 +934,7 @@
   <!--  上传图片预览  -->
   <a-modal
     :visible="previewVisible"
+    destroyOnClose
     :title="previewTitle"
     :footer="null"
     @cancel="handleCancel"
@@ -2055,9 +2060,11 @@ const detailsInfo = async (record) => {
   let tempArrTypeString = ''
   if (res.organizationType === '2') {
     //分公司
-    const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
+    // const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
+    const tempArrTypeF = state.branchCompanyTypeOptions.filter((topItem) => {
       return relVO?.type.some((item) => topItem.value === item)
     })
+    console.log('tempArrTypeF', tempArrTypeF)
 
     tempArrTypeF.map((item) => {
       if (tempArrTypeString === '') {
@@ -2488,6 +2495,7 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
+  state.isShowCustomColumnModal = false
 }
 
 //初始化 获取默认的 columns
