@@ -7,6 +7,11 @@ export enum LoginStateEnum {
   MOBILE,
   QR_CODE
 }
+export const LoginStateMap = {
+  [LoginStateEnum.LOGIN]: '密码登录',
+  [LoginStateEnum.MOBILE]: '手机登录',
+  [LoginStateEnum.QR_CODE]: '扫码登录'
+}
 
 const currentState = ref(LoginStateEnum.LOGIN)
 

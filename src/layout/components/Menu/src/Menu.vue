@@ -134,7 +134,7 @@ export default defineComponent({
       } else {
         // return <ElScrollbar class="wg-scroll-bar">{renderMenu()}</ElScrollbar>
         return (
-          <ElScrollbar class={unref(collapse) ? 'collapse-menu' : 'wg-scroll-bar'}>
+          <ElScrollbar class={[unref(collapse) ? 'collapse-menu' : 'wg-scroll-bar', 'pb-60px']}>
             {renderMenu()}
           </ElScrollbar>
         )

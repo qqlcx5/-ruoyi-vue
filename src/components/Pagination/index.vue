@@ -4,12 +4,12 @@
     v-show="total > 0"
     v-model:current-page="currentPage"
     v-model:page-size="pageSize"
-    :background="true"
+    :background="false"
     :page-sizes="[10, 20, 30, 50, 100]"
     :pager-count="pagerCount"
     :total="total"
-    class="float-right mt-15px mb-15px"
-    layout="total, sizes, prev, pager, next, jumper"
+    class="custom-pagination float-right mt-15px mb-15px"
+    layout="sizes, total, prev, pager, next, jumper"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
   />
@@ -41,7 +41,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:page', 'update:limit', 'pagination', 'pagination'])
+const emit = defineEmits(['update:page', 'update:limit', 'pagination'])
 const currentPage = computed({
   get() {
     return props.page
@@ -66,10 +66,33 @@ const handleSizeChange = (val) => {
     currentPage.value = 1
   }
   // 触发 pagination 事件，重新加载列表
-  emit('pagination', { page: currentPage.value, limit: val })
+  emit('pagination', { pageNo: currentPage.value, pageSize: val })
 }
 const handleCurrentChange = (val) => {
   // 触发 pagination 事件，重新加载列表
-  emit('pagination', { page: val, limit: pageSize.value })
+  emit('pagination', { pageNo: val, pageSize: pageSize.value })
 }
+
+onMounted(() => {
+  try {
+    document
+      .getElementsByClassName('el-pagination__goto')
+      .forEach((el) => (el.innerHTML = '跳转至'))
+  } catch (e) {
+    console.error(e.message)
+  }
+})
 </script>
+<style lang="scss" scoped>
+.custom-pagination {
+  background-color: #ffffff;
+}
+:deep(.el-pager) {
+  li {
+    border-radius: 50%;
+  }
+  .is-active {
+    background-color: #e8f4ff;
+  }
+}
+</style>
