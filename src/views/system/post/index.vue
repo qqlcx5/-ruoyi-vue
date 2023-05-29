@@ -343,14 +343,14 @@ const onPostDel = async (row, type: string) => {
       .wgOperateConfirm(
         type === 'type'
           ? h('span', [
-              h('span', '系统校验到该岗位类型底下还存在 '),
+              '系统校验到该岗位类型底下还存在 ',
               h('span', { style: { color: 'red' } }, total),
-              h('span', ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~')
+              ' 个状态开启的岗位，请先关闭或转移所有岗位再操作删除哦~'
             ])
           : h('span', [
-              h('span', '系统校验到该岗位类型底下还存在 '),
+              '系统校验到该岗位类型底下还存在 ',
               h('span', { style: { color: 'red' } }, row.userCount),
-              h('span', ' 个在职员工，请先关闭或转移所有员工再操作删除哦~')
+              ' 个在职员工，请先关闭或转移所有员工再操作删除哦~'
             ]),
         `提示`,
         {
@@ -367,14 +367,7 @@ const onPostDel = async (row, type: string) => {
   } else {
     if (type === 'type') {
       message
-        .wgConfirm(
-          h('span', [
-            h('span', `删除后， ${row.name} 底下的 `),
-            h('span', { style: { color: 'red' } }, row.postCount),
-            h('span', ' 个岗位将同步删除，且不可恢复，请谨慎操作。')
-          ]),
-          `确定删除 ${row.name} 该岗位类型吗？`
-        )
+        .wgConfirm('删除后， 数据将不可恢复，请谨慎操作。', `确定删除 ${row.name} 该岗位类型吗？`)
         .then(async () => {
           deleteReq(row.id)
           postParent.value = {}
@@ -383,14 +376,7 @@ const onPostDel = async (row, type: string) => {
         .catch(() => {})
     } else if (type === 'info') {
       message
-        .wgConfirm(
-          h('span', [
-            h('span', `删除后， ${row.name} 底下的 `),
-            h('span', { style: { color: 'red' } }, row.userCount),
-            h('span', ' 个员工岗位将同步删除，且不可恢复，请谨慎操作。')
-          ]),
-          `确定删除 ${row.name} 该岗位类型吗？`
-        )
+        .wgConfirm('删除后， 数据将不可恢复，请谨慎操作。', `确定删除 ${row.name} 该岗位吗？`)
         .then(async () => {
           await postInfoDelete(row.id)
           await postTypeGet()
@@ -406,9 +392,9 @@ const postInfoStatusChange = async (row) => {
     message
       .wgOperateConfirm(
         h('span', [
-          h('span', '系统校验到该岗位底下还存在 '),
+          '系统校验到该岗位底下还存在 ',
           h('span', { style: { color: 'red' } }, row.userCount),
-          h('span', ' 个在职员工，请先关闭或转移所有员工再操作关闭哦~')
+          ' 个在职员工，请先关闭或转移所有员工再操作关闭哦~'
         ]),
         `提示`,
         {
@@ -432,15 +418,11 @@ const postInfoStatusChange = async (row) => {
     message
       .wgConfirm(
         row.status === CommonStatusEnum.DISABLE
-          ? h('span', [
-              h('span', `${text}后，将无法再选择该岗位，且${row.name}底下已配置的 `),
-              h('span', { style: { color: 'red' } }, row.userCount),
-              h('span', ' 个员工也将同步关闭该岗位，请谨慎操作。')
-            ])
+          ? h('span', `${text}后，将无法再选择该岗位，请谨慎操作。`)
           : h('span', [
-              h('span', `${text}后，${row.name}底下的 `),
+              `${text}后，${row.name}底下的 `,
               h('span', { style: { color: 'red' } }, row.userCount),
-              h('span', ' 个员工将同步开启该岗位，请谨慎操作。')
+              ' 个员工将同步开启该岗位，请谨慎操作。'
             ]),
         `确定${text} ${row.name} 吗？`,
         {

@@ -6,6 +6,62 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "35731401",
+      "name": "右",
+      "font_class": "you",
+      "unicode": "e69d",
+      "unicode_decimal": 59037
+    },
+    {
+      "icon_id": "35731402",
+      "name": "左",
+      "font_class": "zuo",
+      "unicode": "e69e",
+      "unicode_decimal": 59038
+    },
+    {
+      "icon_id": "35712992",
+      "name": "账号登录",
+      "font_class": "zhanghaodenglu",
+      "unicode": "e69c",
+      "unicode_decimal": 59036
+    },
+    {
+      "icon_id": "35709204",
+      "name": "密码",
+      "font_class": "mima",
+      "unicode": "e697",
+      "unicode_decimal": 59031
+    },
+    {
+      "icon_id": "35709205",
+      "name": "公司",
+      "font_class": "gongsi",
+      "unicode": "e698",
+      "unicode_decimal": 59032
+    },
+    {
+      "icon_id": "35709206",
+      "name": "账户",
+      "font_class": "zhanghu",
+      "unicode": "e699",
+      "unicode_decimal": 59033
+    },
+    {
+      "icon_id": "35709207",
+      "name": "安全",
+      "font_class": "anquan",
+      "unicode": "e69a",
+      "unicode_decimal": 59034
+    },
+    {
+      "icon_id": "35709208",
+      "name": "二维码",
+      "font_class": "erweima",
+      "unicode": "e69b",
+      "unicode_decimal": 59035
+    },
+    {
       "icon_id": "35471899",
       "name": "成功",
       "font_class": "chenggong",

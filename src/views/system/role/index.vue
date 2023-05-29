@@ -205,9 +205,9 @@ const onRoleDel = async (row) => {
     message
       .wgOperateConfirm(
         h('span', [
-          h('span', '系统校验到该岗位类型底下还存在 '),
+          '系统校验到该岗位类型底下还存在 ',
           h('span', { style: { color: 'red' } }, activeUserCount),
-          h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
+          ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~'
         ]),
         `提示`,
         {
@@ -222,18 +222,10 @@ const onRoleDel = async (row) => {
       .catch(() => {})
   } else {
     message
-      .wgConfirm(
-        h('span', [
-          h('span', `删除后， ${row.name} 底下的 `),
-          h('span', { style: { color: 'red' } }, row.staffCount),
-          h('span', ` 个员工的角色将同步删除，且不可恢复，请谨慎操作。`)
-        ]),
-        `确定删除 ${row.name} 角色吗？`,
-        {
-          confirmButtonText: t('common.confirmDel'),
-          cancelButtonText: t('common.cancel')
-        }
-      )
+      .wgConfirm('删除后， 数据将不可恢复，请谨慎操作。', `确定删除 ${row.name} 角色吗？`, {
+        confirmButtonText: t('common.confirmDel'),
+        cancelButtonText: t('common.cancel')
+      })
       .then(async () => {
         await deleteReq(row.id)
       })
@@ -257,9 +249,9 @@ const roleStatusChange = async (row, trigger) => {
       return message
         .wgOperateConfirm(
           h('span', [
-            h('span', '系统校验到该机构底下还存在 '),
+            '系统校验到该机构底下还存在 ',
             h('span', { style: { color: 'red' } }, activeUserCount),
-            h('span', ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~')
+            ' 个在职状态开启的员工，请先关闭或转移所有员工再操作关闭哦~'
           ]),
           `提示`,
           {
@@ -293,11 +285,13 @@ const roleStatusChange = async (row, trigger) => {
   if (trigger === 'form') return
   message
     .wgConfirm(
-      h('span', [
-        h('span', `${text}后， ${row.name} 底下的 `),
-        h('span', { style: { color: 'red' } }, row.staffCount),
-        h('span', ` 个员工将同步${text}该角色，请谨慎操作。`)
-      ]),
+      row.status === CommonStatusEnum.ENABLE
+        ? h('span', [
+            `${text}后， ${row.name} 底下的 `,
+            h('span', { style: { color: 'red' } }, row.staffCount),
+            ` 个员工将同步${text}该角色，请谨慎操作。`
+          ])
+        : `${text}后， 将无法再选择该角色，请谨慎操作。`,
       `确定${text} ${row.name} 吗？`,
       {
         confirmButtonText: t(
