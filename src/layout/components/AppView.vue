@@ -3,7 +3,9 @@ import { useTagsViewStore } from '@/store/modules/tagsView'
 import { useAppStore } from '@/store/modules/app'
 import { Footer } from '@/layout/components/Footer'
 import { TagsView } from '@/layout/components/TagsView'
-import {computed} from "vue";
+import { computed } from 'vue'
+
+import EditUserInfo from '@/components/EditUerInfo/EditUserInfo.vue'
 
 const appStore = useAppStore()
 
@@ -22,6 +24,19 @@ const tagsViewStore = useTagsViewStore()
 const getCaches = computed((): string[] => {
   return tagsViewStore.getCachedViews
 })
+
+const state = reactive({
+  isShow: false
+})
+watch(
+  () => appStore.getIsShowEditUserInfo,
+  (val) => {
+    nextTick(() => {
+      state.isShow = val
+    })
+    console.log('val===>', val)
+  }
+)
 </script>
 
 <template>
@@ -49,9 +64,10 @@ const getCaches = computed((): string[] => {
     <TagsView
       v-if="layout === 'cutMenu'"
       :class="[
-        '!w-[calc(100%+30px)] -mx-15px -mt-10px mb-10px border-bottom-1 border-top-1 border-solid border-[var(--tags-view-border-color)] dark:border-[var(--el-border-color)]',
+        '!w-[calc(100%+30px)] -mx-15px -mt-10px mb-10px border-bottom-1 border-top-1 border-solid border-[var(--tags-view-border-color)] dark:border-[var(--el-border-color)]'
       ]"
-      :style="{transition: 'width var(--transition-time-02), left var(--transition-time-02)'}" ></TagsView>
+      :style="{ transition: 'width var(--transition-time-02), left var(--transition-time-02)' }"
+    ></TagsView>
     <router-view>
       <template #default="{ Component, route }">
         <keep-alive :include="getCaches">
@@ -61,11 +77,12 @@ const getCaches = computed((): string[] => {
     </router-view>
   </section>
   <Footer v-if="footer" />
+  <EditUserInfo v-if="state.isShow"></EditUserInfo>
 </template>
 
 <style lang="scss" scoped>
 .wg-section {
-  >:deep(.#{$elNamespace}-card) {
+  > :deep(.#{$elNamespace}-card) {
     border: none;
     margin-bottom: 12px !important;
   }

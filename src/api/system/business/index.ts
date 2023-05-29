@@ -11,6 +11,11 @@ export interface MajorIndividual {
   expireTime?: Date
 }
 
+// 修改主体 系统名称 - - 系统logo
+export const putUserNameLogo = (data) => {
+  return request.put({ url: '/system/tenant/update-system', data })
+}
+
 // 查询主体列表
 export const getMajorIndividualList = (params: MajorIndividual) => {
   return request.get({ url: '/system/tenant/list', params })

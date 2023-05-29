@@ -578,34 +578,36 @@
           </a-form-item>
 
           <a-form-item label="成员头像" name="legalIdentityUrl" class="width-100">
-            <a-upload
-              v-model:file-list="state.legalPersonListUrl"
-              :action="updateUrl + '?updateSupport=' + updateSupport"
-              list-type="picture-card"
-              @preview="handlePreview"
-              accept=".jpg, .png, .gif"
-              class="avatar-uploader"
-              :show-upload-list="true"
-              :headers="uploadHeaders"
-              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-              @change="
-                (file, fileList) => {
-                  handleChange(file, fileList, 'legalPerson')
-                }
-              "
-              @remove="
-                (file) => {
-                  removeImg(file, 'legalPerson')
-                }
-              "
-            >
-              <div v-if="state.legalPersonListUrl.length < 1">
-                <Icon icon="svg-icon:add-upload" :size="15" />
-                <div style="margin-top: 8px">上传照片</div>
-              </div>
-            </a-upload>
+            <div style="height: 131px">
+              <a-upload
+                v-model:file-list="state.legalPersonListUrl"
+                :action="updateUrl + '?updateSupport=' + updateSupport"
+                list-type="picture-card"
+                @preview="handlePreview"
+                accept=".jpg, .png, .gif"
+                class="avatar-uploader"
+                :show-upload-list="true"
+                :headers="uploadHeaders"
+                :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+                @change="
+                  (file, fileList) => {
+                    handleChange(file, fileList, 'legalPerson')
+                  }
+                "
+                @remove="
+                  (file) => {
+                    removeImg(file, 'legalPerson')
+                  }
+                "
+              >
+                <div v-if="state.legalPersonListUrl.length < 1">
+                  <Icon icon="svg-icon:add-upload" :size="15" />
+                  <div style="margin-top: 8px">上传照片</div>
+                </div>
+              </a-upload>
 
-            <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。 </div>
+              <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。 </div>
+            </div>
           </a-form-item>
         </div>
 
@@ -3038,6 +3040,17 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
     message.success('上传成功')
   }
   if (info.file.status === 'error') {
+    switch (type) {
+      case 'logo':
+        state.logoListUrl = []
+        break
+      case 'legalPerson':
+        state.legalPersonListUrl = []
+        break
+      case 'businessLicense':
+        state.businessLicenseListUrl = []
+        break
+    }
     loading.value = false
     message.error('上传失败')
   }
@@ -3592,6 +3605,8 @@ const batchAssignUserRole = (): void => {
 // 批量设角色
 
 onMounted(async () => {
+  console.log('$router', $router)
+  console.log('$route', $route)
   state.organizationList = await getOrganizationListFN()
   let organizationId = ''
   //机构管理 员工数跳转进来
