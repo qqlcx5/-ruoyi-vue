@@ -15,12 +15,15 @@
       <div class="flex justify-between items-center mb-22px mt-70px">
         <div class="text-20px font-bold form-title">{{ LoginFormTitle }}</div>
         <div class="qrcode-box flex items-center">
-          <div class="qrcode-tip relative flex items-center h-30px text-12px px-8px rounded-2px">
+          <div
+            v-show="getShow"
+            class="qrcode-tip relative flex items-center h-30px text-12px px-8px rounded-2px"
+          >
             <i class="iconfont icon-anquan mr-4px !text-14px"></i>
             扫码登录更安全
           </div>
           <img
-            src="@/assets/imgs/login-qrcode.png"
+            :src="getShow ? qrCodeImage : formImage"
             alt="qrcode"
             class="w-50px inline-block cursor-pointer"
             @click="
@@ -63,15 +66,24 @@
         </el-col>
         <el-col :span="24">
           <el-form-item prop="tenantName">
-            <el-select v-model="loginData.loginForm.tenantName" placeholder="请选择" class="w-full">
+            <el-input
+              type="text"
+              v-model="loginData.loginForm.tenantName"
+              :placeholder="t('login.tenantNamePlaceholder')"
+            >
               <template #prefix>
                 <i class="iconfont icon-gongsi !text-18px"></i>
               </template>
-              <el-option
-                :label="loginData.loginForm.tenantName"
-                :value="loginData.loginForm.tenantName"
-              />
-            </el-select>
+            </el-input>
+            <!--            <el-select v-model="loginData.loginForm.tenantName" placeholder="请选择" class="w-full">-->
+            <!--              <template #prefix>-->
+            <!--                <i class="iconfont icon-gongsi !text-18px"></i>-->
+            <!--              </template>-->
+            <!--              <el-option-->
+            <!--                :label="loginData.loginForm.tenantName"-->
+            <!--                :value="loginData.loginForm.tenantName"-->
+            <!--              />-->
+            <!--            </el-select>-->
           </el-form-item>
         </el-col>
         <el-col :span="24">
@@ -121,6 +133,9 @@ import * as authUtil from '@/utils/auth'
 import { usePermissionStore } from '@/store/modules/permission'
 import * as LoginApi from '@/api/login'
 import { LoginStateEnum, LoginStateMap, useLoginState, useFormValid } from './useLogin'
+
+import qrCodeImage from '@/assets/imgs/login-qrcode.png'
+import formImage from '@/assets/imgs/login-form.png'
 
 const { t } = useI18n()
 const formLogin = ref()
