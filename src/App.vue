@@ -24,7 +24,7 @@ const setDefaultTheme = () => {
 setDefaultTheme()
 
 const getPopupContainer = () => {
-  return document.getElementById('card-content')
+  return document.getElementById('card-content') || document.body
 }
 
 watchEffect(() => {

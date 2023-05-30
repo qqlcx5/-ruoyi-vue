@@ -3,7 +3,7 @@
   <!-- 搜索工作栏 -->
 
   <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
+    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
       <a-form-item :label="`机构名称`" name="keyword">
         <a-input v-model:value="queryParams.keyword" placeholder="请输入机构名称或者编码" />
       </a-form-item>
@@ -193,6 +193,7 @@
   <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
+    destroyOnClose
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
@@ -314,7 +315,6 @@
             :options="state.memberPhoneOptions"
             placeholder="请选择负责人电话"
             optionFilterProp="label"
-            :getPopupContainer="(triggerNode) => triggerNode.parentElement"
           />
         </a-form-item>
 
@@ -347,7 +347,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >确定</a-button
+        >{{ state.modalType === 'add' ? '下一步' : '确认' }}</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -356,6 +356,7 @@
   <!-- 设置属性 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
+    destroyOnClose
     title="设置属性"
     @ok="closePermissionModal"
     @cancel="closePermissionModal"
@@ -435,69 +436,176 @@
           </a-checkbox-group>
         </a-form-item>
 
+        <div class="form-content">
+          <a-form-item
+            label="是否有销售"
+            name="isSale"
+            class="width-50"
+            :rules="[{ required: true, message: `是否有销售不能为空` }]"
+          >
+            <a-radio-group v-model:value="state.formAttributeState.isSale">
+              <a-radio-button
+                v-for="(item, index) in state.barndOptions"
+                :key="`isSale-${index}`"
+                :value="item.value"
+                >{{ item.label }}</a-radio-button
+              >
+            </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            label="销售品牌"
+            name="isSale"
+            class="width-50"
+            :rules="[{ required: true, message: `销售品牌不能为空` }]"
+            v-if="state.formAttributeState.isSale === 0"
+          >
+            <a-tree-select
+              v-model:value="state.formAttributeState.saleBrand"
+              style="width: 100%"
+              :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+              placeholder="请选择销售品牌"
+              multiple
+              :tree-data="state.saleBrandOptions"
+            />
+          </a-form-item>
+        </div>
+        <div class="form-content">
+          <a-form-item
+            label="是否提供救援"
+            name="isRescue"
+            class="width-50"
+            :rules="[{ required: true, message: `是否提供救援不能为空` }]"
+          >
+            <a-radio-group v-model:value="state.formAttributeState.isRescue">
+              <a-radio-button
+                v-for="(item, index) in state.barndOptions"
+                :key="`isRescue-${index}`"
+                :value="item.value"
+                >{{ item.label }}</a-radio-button
+              >
+            </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            label="救援品牌"
+            name="rescueBrand"
+            class="width-50"
+            :rules="[{ required: true, message: `救援品牌不能为空` }]"
+            v-if="state.formAttributeState.isRescue === 0"
+          >
+            <a-tree-select
+              v-model:value="state.formAttributeState.rescueBrand"
+              style="width: 100%"
+              :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+              placeholder="请选择救援品牌"
+              multiple
+              :tree-data="state.rescueBrandOptions"
+            />
+          </a-form-item>
+        </div>
+        <div class="form-content">
+          <a-form-item
+            label="是否提供维保"
+            name="isMaintenance"
+            class="width-50"
+            :rules="[{ required: true, message: `是否提供维保不能为空` }]"
+          >
+            <a-radio-group v-model:value="state.formAttributeState.isMaintenance">
+              <a-radio-button
+                v-for="(item, index) in state.barndOptions"
+                :key="`isMaintenance-${index}`"
+                :value="item.value"
+                >{{ item.label }}</a-radio-button
+              >
+            </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            label="维保品牌"
+            name="maintenanceBrand"
+            class="width-50"
+            :rules="[{ required: true, message: `维保品牌不能为空` }]"
+            v-if="state.formAttributeState.isMaintenance === 0"
+          >
+            <a-tree-select
+              v-model:value="state.formAttributeState.maintenanceBrand"
+              style="width: 100%"
+              :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+              placeholder="请选择维保品牌"
+              multiple
+              :tree-data="state.maintenanceBrandOptions"
+            />
+          </a-form-item>
+        </div>
+
         <a-form-item :label="`星级`" name="startRating">
           <a-rate v-model:value="state.formAttributeState.startRating" allow-half />
         </a-form-item>
 
         <a-form-item label="系统logo" name="logoUrl">
-          <a-upload
-            v-model:file-list="state.logoListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'logo')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'logo')
-              }
-            "
-          >
-            <div v-if="state.logoListUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传logo</div>
-            </div>
-          </a-upload>
-          <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
+          <div style="height: 131px">
+            <a-upload
+              v-model:file-list="state.logoListUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'logo')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'logo')
+                }
+              "
+            >
+              <div v-if="state.logoListUrl.length < 1">
+                <Icon icon="svg-icon:add-upload" :size="15" />
+                <div style="margin-top: 8px">上传logo</div>
+              </div>
+            </a-upload>
+            <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
+          </div>
         </a-form-item>
 
         <a-form-item label="环境图片" name="environmentUrl">
-          <a-upload
-            v-model:file-list="state.environmentUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif , .jpeg"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'environment')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'environment')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'legalPerson')
-              }
-            "
-          >
-            <div v-if="state.environmentUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传环境图片</div>
-            </div>
-          </a-upload>
+          <div style="height: 131px">
+            <a-upload
+              v-model:file-list="state.environmentUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif , .jpeg"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'environment')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'environment')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'legalPerson')
+                }
+              "
+            >
+              <div v-if="state.environmentUrl.length < 1">
+                <Icon icon="svg-icon:add-upload" :size="15" />
+                <div style="margin-top: 8px">上传环境图片</div>
+              </div>
+            </a-upload>
 
-          <div class="upload-text"> 尺寸1125*633px，支持jpg/jpeg/png/gif格式，不超过5M </div>
+            <div class="upload-text"> 尺寸1125*633px，支持jpg/jpeg/png/gif格式，不超过5M </div>
+          </div>
         </a-form-item>
 
         <!--  级联选择器  - -   -->
@@ -509,7 +617,6 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
-                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -532,7 +639,6 @@
               placeholder="请选择联系方式"
               style="width: 200px"
               :options="state.contactInformationOptions"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
           <a-form-item
@@ -615,67 +721,71 @@
         </a-form-item>
 
         <a-form-item label="法人身份证" name="legalIdentityUrl">
-          <a-upload
-            v-model:file-list="state.legalPersonListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'legalPerson')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'legalPerson')
-              }
-            "
-          >
-            <div v-if="state.legalPersonListUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传法人证件</div>
-            </div>
-          </a-upload>
+          <div style="height: 131px">
+            <a-upload
+              v-model:file-list="state.legalPersonListUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'legalPerson')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'legalPerson')
+                }
+              "
+            >
+              <div v-if="state.legalPersonListUrl.length < 1">
+                <Icon icon="svg-icon:add-upload" :size="15" />
+                <div style="margin-top: 8px">上传法人证件</div>
+              </div>
+            </a-upload>
 
-          <div class="upload-text">
-            请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
+            <div class="upload-text">
+              请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
+            </div>
           </div>
         </a-form-item>
 
         <a-form-item label="营业执照" name="businessLicenseUrl">
-          <a-upload
-            v-model:file-list="state.businessLicenseListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'businessLicense')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'businessLicense')
-              }
-            "
-          >
-            <div v-if="state.businessLicenseListUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传营业执照</div>
-            </div>
-          </a-upload>
+          <div style="height: 131px">
+            <a-upload
+              v-model:file-list="state.businessLicenseListUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'businessLicense')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'businessLicense')
+                }
+              "
+            >
+              <div v-if="state.businessLicenseListUrl.length < 1">
+                <Icon icon="svg-icon:add-upload" :size="15" />
+                <div style="margin-top: 8px">上传营业执照</div>
+              </div>
+            </a-upload>
 
-          <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
+            <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
+          </div>
         </a-form-item>
       </a-form>
     </div>
@@ -695,7 +805,9 @@
   <!--  状态开始关闭 删除 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
+    destroyOnClose
     :closable="false"
+    wrapClassName="status-change-modal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -706,7 +818,30 @@
     }"
   >
     <!--      v-if="state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0"    -->
-    <div class="status-content" v-if="state.tableStatusChangeInfo.record.statusSwitch">
+
+    <div
+      class="message-content"
+      v-if="
+        state.tableStatusChangeInfo.record.statusSwitch === false &&
+        state.tableStatusChangeInfo?.ctiveEmployeesNumber != 0
+      "
+    >
+      <div class="message-text-content">
+        <div class="message-text">
+          <img :src="warningImg" alt="" class="tip-img message-img" />
+          <div>
+            系统校验到该机构底下还存在<span class="status-span">{{
+              state.tableStatusChangeInfo?.ctiveEmployeesNumber
+            }}</span
+            >个在职状态开启的员工，请先关闭或转移所有员工再操作{{
+              state.tableStatusChangeInfo?.operation
+            }}哦~
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-content" v-else>
       <!--      <img :src="warningImg" alt="" class="tip-img" />-->
       <div class="status-text-content">
         <div class="status-text">
@@ -732,38 +867,21 @@
       </div>
     </div>
 
-    <div class="message-content" v-else>
-      <div class="message-text-content">
-        <div class="message-text">
-          <img :src="warningImg" alt="" class="tip-img message-img" />
-          <div>
-            系统校验到该机构底下还存在<span class="status-span">{{
-              state.tableStatusChangeInfo?.ctiveEmployeesNumber
-            }}</span
-            >个在职状态开启的员工，请先关闭或转移所有员工再操作{{
-              state.tableStatusChangeInfo?.operation
-            }}哦~
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!--    state.tableStatusChangeInfo?.ctiveEmployeesNumber === 0  -->
     <template #footer>
       <a-button
-        type="primary"
-        html-type="submit"
-        @click="tableStatusConfirm"
-        v-if="state.tableStatusChangeInfo.record.statusSwitch"
-        >{{ state.tableStatusChangeInfo.statusBtnText }}</a-button
-      >
-      <a-button
-        v-else
+        v-if="
+          state.tableStatusChangeInfo.record.statusSwitch === false &&
+          state.tableStatusChangeInfo?.ctiveEmployeesNumber != 0
+        "
         type="primary"
         html-type="submit"
         @click="jumpToMember(state.tableStatusChangeInfo.record)"
         >去操作</a-button
       >
+      <a-button v-else type="primary" html-type="submit" @click="tableStatusConfirm">{{
+        state.tableStatusChangeInfo.statusBtnText
+      }}</a-button>
       <a-button @click="closeStatusModal">取消</a-button>
     </template>
   </a-modal>
@@ -771,6 +889,7 @@
   <!--  详情  -->
   <a-modal
     v-model:visible="state.isShowDetails"
+    destroyOnClose
     title="详情"
     wrapClassName="details-modal set-attribute-modal"
     width="763px"
@@ -924,6 +1043,7 @@
   <!--  上传图片预览  -->
   <a-modal
     :visible="previewVisible"
+    destroyOnClose
     :title="previewTitle"
     :footer="null"
     @cancel="handleCancel"
@@ -1197,6 +1317,12 @@ const state = reactive({
   }, //新增表单
   formAttributeState: {
     type: [], //分公司类型 门店类型
+    isSale: '0', //是否有销售
+    saleBrand: [], //销售品牌
+    isRescue: '0', //是否提供救援
+    rescueBrand: [], //救援品牌
+    isMaintenance: '0', //是否提供维保
+    maintenanceBrand: [], //维保品牌
     startRating: 0, //星级
     logoUrl: '', //系统logo
     environmentUrl: '', //环境图片
@@ -1219,6 +1345,13 @@ const state = reactive({
     establishDate: '', //成立日期
     businessLicenseUrl: '' //营业执照
   }, //新增(设置)属性表单
+  saleBrandOptions: [], //销售品牌List 设置属性
+  rescueBrandOptions: [], //救援品牌List 设置属性
+  maintenanceBrandOptions: [], //销售品牌List 设置属性
+  barndOptions: [
+    { label: '是', value: 0 },
+    { label: '否', value: 1 }
+  ],
   addSuccessId: undefined, //创建机构成功ID 主要是用于创建机构后配置权限
   activeKey: 'baseKey', //详情modal tab
   permissionRecord: {}, //权限配置 操作 时 存的整条数据
@@ -1275,6 +1408,12 @@ const getOrganizationTypeListFN = async () => {
   state.storeTypeOptions = res.filter((item) => item.dictType === 'store_type')
   //联系方式类型
   state.contactInformationOptions = res.filter((item) => item.dictType === 'contact_type')
+  //销售品牌
+  state.saleBrandOptions = res.filter((item) => item.dictType === 'sellingBrand')
+  //救援品牌
+  state.rescueBrandOptions = res.filter((item) => item.dictType === 'rescueBrand')
+  //维保品牌
+  state.maintenanceBrandOptions = res.filter((item) => item.dictType === 'maintenanceBrand')
   //获取成员列表(不分页) 新增编辑 modal内的负责人list
   // const memberRes = await getMemberList()
   const memberRes = await getMemberAllList()
@@ -1696,6 +1835,12 @@ const closePermissionModal = () => {
   state.formAttributeState.companyAddress = []
   state.formAttributeState = {
     type: '', //分公司类型
+    isSale: '0', //是否有销售
+    saleBrand: [], //销售品牌
+    isRescue: '0', //是否提供救援
+    rescueBrand: [], //救援品牌
+    isMaintenance: '0', //是否提供维保
+    maintenanceBrand: [], //维保品牌
     startRating: 0, //星级
     logoUrl: '', //系统logo
     environmentUrl: '', //环境图片
@@ -1758,6 +1903,14 @@ const PermissionOk = async () => {
   const params = {
     organizationId: state.detailsRecord.id || state.addSuccessId,
     type: state.formAttributeState.type, //分公司类型
+    isSale: state.formAttributeState.isSale, //是否有销售
+    saleBrand: state.formAttributeState.isSale === 0 ? state.formAttributeState.saleBrand : [], //销售品牌
+    isRescue: state.formAttributeState.isRescue, //是否提供救援
+    rescueBrand:
+      state.formAttributeState.isRescue === 0 ? state.formAttributeState.rescueBrand : [], //救援品牌
+    isMaintenance: state.formAttributeState.isMaintenance, //是否提供维保
+    maintenanceBrand:
+      state.formAttributeState.isMaintenance === 0 ? state.formAttributeState.maintenanceBrand : [], //维保品牌
     startRating: state.formAttributeState.startRating, //星级
     logoUrl: state.logoUrlSuccess, //系统logo
     environmentUrl: state.environmentSuccess, //环境图片
@@ -1832,24 +1985,42 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
     let tempType = [] || ''
     console.log('设置属性详情res', res)
     if (record.organizationType == '分公司') {
-      tempType = res.relVO?.type[0]
+      tempType = res?.relVO?.type[0]
     } else {
-      tempType = res.relVO?.type
+      tempType = res?.relVO?.type
     }
     //赋值 回显
     state.formAttributeState = {
       organizationId: record.id, //机构id
       type: tempType, //分公司类型
-      startRating: res.relVO?.startRating, //星级
-      detailedAddress: res.relVO?.address, //地址 详细地址
-      contactInformationArr: res.relVO?.contact, //联系方式 设置属性
-      creditCode: res.relVO?.creditCode, //统一社会信用代码
+      isSale: res?.relVO?.isSale, //是否有销售
+      saleBrand: res?.relVO?.saleBrand, //销售品牌
+      isRescue: res?.relVO?.isRescue, //是否提供救援
+      rescueBrand: res?.relVO?.rescueBrand, //救援品牌
+      isMaintenance: res?.relVO?.isMaintenance, //是否提供维保
+      maintenanceBrand: res?.relVO?.maintenanceBrand, //维保品牌
+      startRating: res?.relVO?.startRating, //星级
+      detailedAddress: res?.relVO?.address, //地址 详细地址
+      // contactInformationArr: res.relVO?.contact, //联系方式 设置属性
+      creditCode: res?.relVO?.creditCode, //统一社会信用代码
       // organizationCode: res.relVO?.organizationCode, //组织机构代码
-      legalRepresentative: res.relVO?.legalRepresentative, //法定代表人
-      legalMobile: res.relVO?.legalMobile //法人联系电话
+      legalRepresentative: res?.relVO?.legalRepresentative, //法定代表人
+      legalMobile: res?.relVO?.legalMobile //法人联系电话
     }
 
-    if (res.relVO?.contact === null) {
+    const tempArr = []
+    if (res?.relVO?.contact) {
+      res?.relVO?.contact.map((item) => {
+        tempArr.push({
+          contactType: item.contactType === '' ? null : item.contactType,
+          mobile: item.mobile
+        })
+      })
+    }
+
+    state.formAttributeState.contactInformationArr = tempArr
+
+    if (res.relVO?.contact === null || res?.relVO === null) {
       state.formAttributeState.contactInformationArr = [
         {
           contactType: null,
@@ -1859,48 +2030,48 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
       ] //联系方式 设置属性
     }
 
-    if (res.relVO?.logoUrl) {
+    if (res?.relVO?.logoUrl) {
       state.logoListUrl = [
         {
-          url: res.relVO?.logoUrl //系统logo
+          url: res?.relVO?.logoUrl //系统logo
         }
       ]
-      state.logoUrlSuccess = res.relVO?.logoUrl
+      state.logoUrlSuccess = res?.relVO?.logoUrl
     }
 
-    if (res.relVO?.legalIdentityUrl) {
+    if (res?.relVO?.legalIdentityUrl) {
       state.legalPersonListUrl = [
         {
-          url: res.relVO?.legalIdentityUrl //法人身份证
+          url: res?.relVO?.legalIdentityUrl //法人身份证
         }
       ]
-      state.legalPersonUrlSuccess = res.relVO?.legalIdentityUrl
+      state.legalPersonUrlSuccess = res?.relVO?.legalIdentityUrl
     }
 
-    if (res.relVO?.businessLicenseUrl) {
+    if (res?.relVO?.businessLicenseUrl) {
       state.businessLicenseListUrl = [
         {
-          url: res.relVO?.businessLicenseUrl //营业执照
+          url: res?.relVO?.businessLicenseUrl //营业执照
         }
       ]
-      state.businessLicenseSuccess = res.relVO?.businessLicenseUrl
+      state.businessLicenseSuccess = res?.relVO?.businessLicenseUrl
     }
 
-    if (res.relVO?.environmentUrl) {
+    if (res?.relVO?.environmentUrl) {
       state.environmentUrl = [
         {
-          url: res.relVO?.environmentUrl //环境图片
+          url: res?.relVO?.environmentUrl //环境图片
         }
       ]
-      state.environmentSuccess = res.relVO?.environmentUrl
+      state.environmentSuccess = res?.relVO?.environmentUrl
     }
 
-    if (res.relVO?.establishDate) {
-      state.formAttributeState['establishDate'] = dayjs(res.relVO?.establishDate) //成立日期
+    if (res?.relVO?.establishDate) {
+      state.formAttributeState['establishDate'] = dayjs(res?.relVO?.establishDate) //成立日期
     }
 
     //状态0 开启 1关闭
-    state.formAttributeState.status = res.status === 0
+    state.formAttributeState.status = res?.status === 0
 
     //省市区
     state.formAttributeState.companyAddress = []
@@ -2024,6 +2195,8 @@ const detailsInfo = async (record) => {
   //获取机构详情
   const res = await getOrganizationDetails({ id: record.id })
   const { relVO = {} } = res
+  console.log('详情record', record)
+  console.log('详情res', res)
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
@@ -2037,9 +2210,11 @@ const detailsInfo = async (record) => {
   let tempArrTypeString = ''
   if (res.organizationType === '2') {
     //分公司
-    const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
+    // const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
+    const tempArrTypeF = state.branchCompanyTypeOptions.filter((topItem) => {
       return relVO?.type.some((item) => topItem.value === item)
     })
+    console.log('tempArrTypeF', tempArrTypeF)
 
     tempArrTypeF.map((item) => {
       if (tempArrTypeString === '') {
@@ -2064,6 +2239,51 @@ const detailsInfo = async (record) => {
       }
     })
   }
+
+  //销售品牌
+  let tempSaleString = ''
+  const tempSaleArr = state.saleBrandOptions.filter((topItem) => {
+    return relVO?.saleBrand.some((item) => topItem.value === item)
+  })
+
+  tempSaleArr.map((item) => {
+    if (tempSaleString === '') {
+      //避免开头多拼一个 、
+      tempSaleString = item.label
+    } else {
+      tempSaleString = tempSaleString + '、' + item.label
+    }
+  })
+
+  //救援品牌
+  let tempRescueString = ''
+  const tempRescueArr = state.rescueBrandOptions.filter((topItem) => {
+    return relVO?.rescueBrand.some((item) => topItem.value === item)
+  })
+
+  tempRescueArr.map((item) => {
+    if (tempRescueString === '') {
+      //避免开头多拼一个 、
+      tempRescueString = item.label
+    } else {
+      tempRescueString = tempRescueString + '、' + item.label
+    }
+  })
+
+  //维保品牌
+  let tempMaintenanceString = ''
+  const tempMaintenanceArr = state.maintenanceBrandOptions.filter((topItem) => {
+    return relVO?.saleBrand.some((item) => topItem.value === item)
+  })
+
+  tempMaintenanceArr.map((item) => {
+    if (tempMaintenanceString === '') {
+      //避免开头多拼一个 、
+      tempMaintenanceString = item.label
+    } else {
+      tempMaintenanceString = tempMaintenanceString + '、' + item.label
+    }
+  })
 
   //地址
   let companyAddress = ''
@@ -2150,27 +2370,27 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '是否有销售：',
-          text: ''
+          text: relVO?.isSale === 0 ? '是' : '否'
         },
         {
           textSpan: '销售品牌：',
-          text: ''
+          text: tempSaleString
         },
         {
           textSpan: '是否提供救援：',
-          text: ''
+          text: relVO?.isSale === 0 ? '是' : '否'
         },
         {
           textSpan: '救援品牌：',
-          text: ''
+          text: tempRescueString
         },
         {
           textSpan: '是否提供维保：',
-          text: ''
+          text: relVO?.isMaintenance === 0 ? '是' : '否'
         },
         {
           textSpan: '维保品牌：',
-          text: ''
+          text: tempMaintenanceString
         },
         {
           textSpan: '门店等级：',
@@ -2417,6 +2637,20 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
     message.success('上传成功')
   }
   if (info.file.status === 'error') {
+    switch (type) {
+      case 'logo':
+        state.logoListUrl = []
+        break
+      case 'legalPerson':
+        state.legalPersonListUrl = []
+        break
+      case 'businessLicense':
+        state.businessLicenseListUrl = []
+        break
+      case 'environment':
+        state.environmentUrl = []
+        break
+    }
     loading.value = false
     message.error('上传失败')
   }
@@ -2470,6 +2704,7 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
+  state.isShowCustomColumnModal = false
 }
 
 //初始化 获取默认的 columns
@@ -2974,6 +3209,14 @@ watch(
   color: gray;
   cursor: not-allowed;
 }
+.width-50 {
+  width: 50%;
+}
+.form-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
 </style>
 
 <style lang="scss">
@@ -3033,6 +3276,17 @@ watch(
   [class^='ant-rate-star-'] {
     display: flex;
     align-items: center;
+  }
+  .ant-select-multiple .ant-select-selection-item-remove {
+    display: flex;
+    align-items: center;
+  }
+}
+
+//状态变更
+.status-change-modal {
+  .ant-modal-footer {
+    border-width: 0;
   }
 }
 </style>

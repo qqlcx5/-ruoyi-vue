@@ -3,6 +3,7 @@
   <!--  定制列 v-if是为销毁 - -否则非第一次打开会带入过渡动画 - - -->
   <a-modal
     :visible="true"
+    destroyOnClose
     title="定制列"
     wrapClassName="custom-column"
     width="240px"

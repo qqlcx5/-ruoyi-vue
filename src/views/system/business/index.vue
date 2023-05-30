@@ -3,7 +3,7 @@
   <!-- 搜索工作栏 -->
 
   <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline">
+    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
       <a-form-item :label="`主体名称`" name="keyword">
         <a-input v-model:value="queryParams.keyword" placeholder="请输入主体名称或者编码" />
       </a-form-item>
@@ -167,6 +167,7 @@
   <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
+    destroyOnClose
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
@@ -192,7 +193,6 @@
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
-            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
         <a-form-item
@@ -262,33 +262,35 @@
         </a-form-item>
 
         <a-form-item label="系统logo" name="logoUrl">
-          <a-upload
-            v-model:file-list="state.logoListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'logo')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'logo')
-              }
-            "
-          >
-            <div v-if="state.logoListUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传logo</div>
-            </div>
-          </a-upload>
-          <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
+          <div style="height: 131px">
+            <a-upload
+              v-model:file-list="state.logoListUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'logo')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'logo')
+                }
+              "
+            >
+              <div v-if="state.logoListUrl.length < 1">
+                <Icon icon="svg-icon:add-upload" :size="15" />
+                <div style="margin-top: 8px">上传logo</div>
+              </div>
+            </a-upload>
+            <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
+          </div>
         </a-form-item>
 
         <a-form-item
@@ -314,7 +316,6 @@
               v-model:value="state.formState.effectiveStartEndTime"
               format="YYYY/MM/DD"
               :placeholder="['开始时间', '结束时间']"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
             <!--            <div>-->
             <!--              <a-form-item-rest>-->
@@ -329,9 +330,9 @@
         <a-form-item
           :label="`可用名额`"
           name="accountCount"
-          :rules="[{ required: true, message: `可用名额不能为空` }]"
+          :rules="[{ required: true, message: `可用名额不能为空` }, { validator: numValidator }]"
         >
-          <a-input-number
+          <a-input
             id="inputNumber"
             v-model:value="state.formState.accountCount"
             :controls="false"
@@ -346,6 +347,7 @@
         >
           <a-input
             v-model:value="state.formState.bindingDomainName"
+            addon-before="https://"
             placeholder="请输入绑定的域名"
           />
         </a-form-item>
@@ -399,40 +401,41 @@
             v-model:value="state.formState.establishDate"
             format="YYYY/MM/DD"
             placeholder="请选择时间"
-            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
 
         <a-form-item label="法人身份证" name="legalIdentityUrl">
-          <a-upload
-            v-model:file-list="state.legalPersonListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'legalPerson')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'legalPerson')
-              }
-            "
-          >
-            <div v-if="state.legalPersonListUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传法人证件</div>
-            </div>
-          </a-upload>
+          <div style="height: 131px">
+            <a-upload
+              v-model:file-list="state.legalPersonListUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'legalPerson')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'legalPerson')
+                }
+              "
+            >
+              <div v-if="state.legalPersonListUrl.length < 1">
+                <Icon icon="svg-icon:add-upload" :size="15" />
+                <div style="margin-top: 8px">上传法人证件</div>
+              </div>
+            </a-upload>
 
-          <div class="upload-text">
-            请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
+            <div class="upload-text">
+              请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
+            </div>
           </div>
         </a-form-item>
 
@@ -445,7 +448,6 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
-                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -457,34 +459,36 @@
         </a-form-item>
 
         <a-form-item label="营业执照" name="businessLicenseUrl">
-          <a-upload
-            v-model:file-list="state.businessLicenseListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'businessLicense')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'businessLicense')
-              }
-            "
-          >
-            <div v-if="state.businessLicenseListUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传营业执照</div>
-            </div>
-          </a-upload>
+          <div style="height: 131px">
+            <a-upload
+              v-model:file-list="state.businessLicenseListUrl"
+              :action="updateUrl + '?updateSupport=' + updateSupport"
+              list-type="picture-card"
+              @preview="handlePreview"
+              accept=".jpg, .png, .gif"
+              class="avatar-uploader"
+              :show-upload-list="true"
+              :headers="uploadHeaders"
+              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
+              @change="
+                (file, fileList) => {
+                  handleChange(file, fileList, 'businessLicense')
+                }
+              "
+              @remove="
+                (file) => {
+                  removeImg(file, 'businessLicense')
+                }
+              "
+            >
+              <div v-if="state.businessLicenseListUrl.length < 1">
+                <Icon icon="svg-icon:add-upload" :size="15" />
+                <div style="margin-top: 8px">上传营业执照</div>
+              </div>
+            </a-upload>
 
-          <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
+            <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
+          </div>
         </a-form-item>
       </a-form>
     </div>
@@ -495,7 +499,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >下一步</a-button
+        >{{ state.modalType === 'add' ? '下一步' : '确认' }}</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -504,6 +508,7 @@
   <!-- 配置权限 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
+    destroyOnClose
     title="配置权限"
     @ok="closePermissionModal"
     @cancel="closePermissionModal"
@@ -521,7 +526,7 @@
             :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
           >
             <a-tab-pane key="frontDesk" tab="成员端" force-render>成员端</a-tab-pane>
-            <a-tab-pane key="backstage" tab="服务端">
+            <a-tab-pane key="backstage" tab="管理端">
               <div class="tab-search-content">
                 <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
                 <a-checkbox v-model:checked="state.isExpandAllTab" @change="expandAllFN"
@@ -533,6 +538,7 @@
                   v-if="state.isShowTree"
                   v-model:selectedKeys="state.selectedKeys"
                   v-model:checkedKeys="state.checkedKeys"
+                  :selectable="false"
                   :defaultExpandAll="state.defaultExpandAll"
                   checkable
                   :height="533"
@@ -548,7 +554,7 @@
                 </a-tree>
               </div>
             </a-tab-pane>
-            <a-tab-pane key="frontDesk" tab="client" force-render>客户端</a-tab-pane>
+            <a-tab-pane key="client" tab="客户端" force-render>客户端</a-tab-pane>
           </a-tabs>
         </div>
         <div class="right-content">
@@ -556,6 +562,7 @@
             <div v-if="state.isShowRightTree">已选信息：</div>
             <a-tree
               v-if="state.isShowRightTree"
+              :selectable="false"
               defaultExpandAll
               :height="533"
               :tree-data="state.selectTree"
@@ -566,7 +573,9 @@
               <!--                    <template v-else>{{ title }}</template>-->
               <!--                  </template>-->
             </a-tree>
-            <div v-if="state.selectTree?.length===0" class="select-tip">请选择左侧要配置的菜单</div>
+            <div v-if="state.selectTree?.length === 0" class="select-tip"
+              >请选择左侧要配置的菜单</div
+            >
           </div>
         </div>
       </div>
@@ -581,15 +590,17 @@
   <!--  状态开始关闭 短信提示Modal  -->
   <a-modal
     v-model:visible="state.isShowMessage"
+    destroyOnClose
     :title="state.messageTitle"
+    wrapClassName="date-status-change-modal"
     @ok="statusOk"
     @cancel="statusCancel"
     width="560px"
     :bodyStyle="{
       width: '100%',
-      height: '200px',
+      height: '190px',
       margin: '0',
-      padding: '30px 0 0 0',
+      padding: '10px 0 0 0',
       overflow: 'auto'
     }"
   >
@@ -629,7 +640,9 @@
   <!--  状态开始关闭 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
+    destroyOnClose
     :closable="false"
+    wrapClassName="status-change-modal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -669,9 +682,45 @@
     </template>
   </a-modal>
 
+  <!--  有效期内 状态关闭 开启/不开启Modal  没空没空 直接再开一个modal  -->
+  <a-modal
+    v-model:visible="state.isShowDateStatus"
+    destroyOnClose
+    title="提示"
+    wrapClassName="date-status-change-modal"
+    width="518px"
+    :bodyStyle="{
+      width: '100%',
+      height: '129px',
+      margin: '0',
+      padding: '0px 33px 0 0px',
+      overflow: 'auto'
+    }"
+  >
+    <div class="message-content">
+      <div class="message-text-content">
+        <div class="message-text">
+          <img :src="warningImg" alt="" class="tip-img message-img" />
+          <div>
+            系统校验到您的主体有效期内：{{ state.dateTime.startTime }}~{{ state.dateTime.endTime }}
+            但是您的主体还处于关闭状态。关闭的主体将会登录不 了系统。
+          </div>
+        </div>
+
+        <div class="status-text-info"> 请问您是否要开启主体？ </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <a-button type="primary" html-type="submit" @click="dateOkModal">确认开启</a-button>
+      <a-button @click="closeDateModal">暂不开启</a-button>
+    </template>
+  </a-modal>
+
   <!--  详情  -->
   <a-modal
     v-model:visible="state.isShowDetails"
+    destroyOnClose
     title="详情"
     wrapClassName="details-modal"
     width="763px"
@@ -729,6 +778,7 @@
   <!--  重置密码 Modal  -->
   <a-modal
     v-model:visible="state.isShowResetPassWord"
+    destroyOnClose
     :title="state.resetPasswordTitle"
     :closable="state.closable"
     :footer="null"
@@ -789,6 +839,7 @@
   <!--  上传图片预览  -->
   <a-modal
     :visible="previewVisible"
+    destroyOnClose
     :title="previewTitle"
     :footer="null"
     @cancel="handleCancel"
@@ -843,6 +894,9 @@ import { cloneDeep } from 'lodash-es'
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
+
+import isBetween from 'dayjs/plugin/isBetween'
+dayjs.extend(isBetween)
 
 interface FormState {
   id?: number
@@ -974,6 +1028,22 @@ const chineseEnValidator = (rule, value) => {
   })
 }
 
+//限制数字
+const numValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[0-9]*$/
+      if (!regExp.test(value)) {
+        reject('只能输入数字')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -1015,6 +1085,8 @@ const state = reactive({
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
+  isShowDateStatus: false, //修改modal 有效期 状态关闭 modal
+  dateTime: {}, //修改modal 有效期 状态关闭 modal  date
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
   currentMenu: '目录',
@@ -1027,7 +1099,7 @@ const state = reactive({
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
   formState: {
-    belongTenantId: 0, //上级主体编号
+    belongTenantId: null, //上级主体编号
     code: '', //主体编码
     name: '', //主体名称
     abbreviate: '', //主体简称
@@ -1265,10 +1337,10 @@ const getList = async (isRefresh = false) => {
     status: queryParams.status
   }
 
-  if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
+  if (queryParams?.startEndTime && queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
     params['localDates'] = [
-      queryParams.startEndTime[0]?.format('YYYY-MM-DD'),
-      queryParams.startEndTime[1]?.format('YYYY-MM-DD')
+      queryParams?.startEndTime[0]?.format('YYYY-MM-DD'),
+      queryParams?.startEndTime[1]?.format('YYYY-MM-DD')
       // queryParams.startEndTime[0]?.format('YYYY/MM/DD'),
       // queryParams.startEndTime[1]?.format('YYYY/MM/DD')
     ]
@@ -1354,22 +1426,27 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
+  const res = await getSimpleTenantList()
+
+  // let menuTree = []
+  // let menu = {}
+  // let menu: Tree = { id: 0, name: '顶层主体', children: [] }
+  // menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
+  // menuTree.push(menu)
+
+  state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
+  console.log('state.optionalMenuTree', state.optionalMenuTree)
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     state.formState.belongTenantId = record.id
+  } else {
+    state.formState.belongTenantId = state?.optionalMenuTree[0]
+      ? state?.optionalMenuTree[0]?.id
+      : null
   }
-  const res = await getSimpleTenantList()
-
-  let menuTree = []
-  // let menu = {}
-  let menu: Tree = { id: 0, name: '顶层主体', children: [] }
-  menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
-  menuTree.push(menu)
-
-  state.optionalMenuTree = menuTree
-
   state.isShow = true
 }
+
 //关闭Modal
 const closeModal = () => {
   state.isShow = false
@@ -1429,6 +1506,8 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
+  // 修改modal 有效期 状态 关闭时  modal 用
+  state.permissionRecord = record
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1456,7 +1535,8 @@ const edit = async (record, isCloseDetails = false) => {
     effectiveStartEndTime: [dayjs(res.effectiveStartDate), dayjs(res.expireTime)], //有效期 开始时间
     // expireTime: , //有效期 结束时间
     accountCount: res.accountCount, //可用名额
-    bindingDomainName: res.domain, //绑定域名
+    // bindingDomainName: res.domain, //绑定域名
+    bindingDomainName: res.domain.substring(8), //绑定域名
     creditCode: res.creditCode, //统一社会信用代码
     // organizationCode: res.organizationCode, //组织机构代码
     legalRepresentative: res.legalRepresentative, //法定代表人
@@ -1567,7 +1647,7 @@ const addMajorIndividualFN = async () => {
     // effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY/MM/DD'), //有效期 开始时间
     // expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY/MM/DD'), //有效期 结束时间
     accountCount: state.formState.accountCount, //可用名额
-    domain: state.formState.bindingDomainName, //绑定域名
+    domain: `https://${state.formState.bindingDomainName}`, //绑定域名
     creditCode: state.formState.creditCode, //统一社会信用代码
     // organizationCode: state.formState.organizationCode, //组织机构代码
     legalRepresentative: state.formState.legalRepresentative, //法定代表人
@@ -1624,6 +1704,24 @@ const addMajorIndividualFN = async () => {
       //配置权限
       openPermissionModal()
     } else {
+      if (
+        dayjs().isBetween(
+          state.formState.effectiveStartEndTime[0],
+          state.formState.effectiveStartEndTime[1],
+          'day',
+          []
+        ) &&
+        state.permissionRecord.statusSwitch === false
+      ) {
+        state.dateTime = {
+          startTime: state.formState.effectiveStartEndTime[0].format('YYYY-MM-DD'),
+          endTime: state.formState.effectiveStartEndTime[1].format('YYYY-MM-DD')
+        }
+        openDateModal()
+        closeModal()
+        return
+      }
+
       params['id'] = state.formState.id
       res = await updateEditMajorIndividual(params)
       message.success('修改成功')
@@ -1648,6 +1746,9 @@ const closePermissionModal = () => {
   state.addSuccessId = undefined
   state.selectTree = []
   state.checkedKeys = []
+  state.selectAll = false
+  state.isExpandAllTab = false
+  state.isShowTree = false
   console.log('state.selectTree ', state.selectTree)
 }
 
@@ -1719,11 +1820,14 @@ const assignPermission = async (record) => {
     })
     console.log('state.selectTree', state.selectTree)
     console.log('配置的res', res)
+  } else {
+    state.selectTree = []
   }
   //右侧展开显示 左侧选中的数据
   state.isShowRightTree = false
   nextTick(() => {
     state.isShowRightTree = true
+    state.isShowTree = true
   })
   await openPermissionModal()
 }
@@ -1733,7 +1837,7 @@ const assignPermission = async (record) => {
 const openStatusModal = () => {
   state.isShowStatus = true
 }
-//关闭 状态开始关闭 确认modal
+//关闭 状态开启关闭 确认modal
 const closeStatusModal = () => {
   state.isShowStatus = false
   //直接这里补一次请求吧 - -
@@ -1842,6 +1946,24 @@ const statusOk = async () => {
     statusCancel()
   } finally {
   }
+}
+
+//打开修改 modal 时 有效期与状态 判断 modal
+const openDateModal = () => {
+  state.isShowDateStatus = true
+}
+
+//关闭修改 modal 时 有效期与状态 判断 modal
+const closeDateModal = () => {
+  state.isShowDateStatus = false
+  state.permissionRecord = {}
+  state.dateTime = {}
+}
+//关闭修改 modal 时 有效期与状态 判断 modal  确认开启
+const dateOkModal = () => {
+  state.permissionRecord.statusSwitch = true
+  tableStatusChange(true, state.permissionRecord)
+  closeDateModal()
 }
 
 //功能配置 前台 全选全不选
@@ -2198,6 +2320,17 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
     message.success('上传成功')
   }
   if (info.file.status === 'error') {
+    switch (type) {
+      case 'logo':
+        state.logoListUrl = []
+        break
+      case 'legalPerson':
+        state.legalPersonListUrl = []
+        break
+      case 'businessLicense':
+        state.businessLicenseListUrl = []
+        break
+    }
     loading.value = false
     message.error('上传失败')
   }
@@ -2254,6 +2387,7 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
+  state.isShowCustomColumnModal = false
 }
 
 // //TODO:这个方法有空再抽出去
@@ -2284,7 +2418,9 @@ watch(
     console.log('state.checkedKeys)', state.checkedKeys)
     console.log('checkedKeysBack.value', checkedKeysBack.value)
     state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
+    console.log('state.idArr====>', state.idArr)
     state.selectTree = filterTree(state.menuTreeList, state.idArr)
+    console.log('state.selectTree=====>', state.selectTree)
     state.isShowRightTree = false
     //右侧展开显示 左侧选中的数据
     nextTick(() => {
@@ -2696,6 +2832,7 @@ watch(
 }
 //新增修改 modal 上传 底下文字
 .upload-text {
+  width: 380px;
   color: rgba(153, 153, 153, 1);
   font-size: 12px;
   text-align: left;
@@ -2775,6 +2912,22 @@ watch(
   //可用名额
   .ant-input-number {
     width: 200px;
+  }
+}
+
+//状态变更
+.status-change-modal {
+  .ant-modal-footer {
+    border-width: 0;
+  }
+}
+
+.date-status-change-modal {
+  .ant-modal-footer {
+    border-width: 0;
+  }
+  .ant-modal-header {
+    border-width: 0;
   }
 }
 </style>

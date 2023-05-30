@@ -181,6 +181,8 @@ const getAllKeys = (treeData: Array<treeDataType>): Array<string | number> => {
 // }, 1000)
 
 watch(searchValue, (value) => {
+  // dataList 丢失 直接在这里补一次吧 没空排查原因
+  generateList(state.treeData)
   const expanded = dataList
     .map((item: TreeProps['treeData'][number]) => {
       if (item.title.indexOf(value) > -1) {
@@ -190,6 +192,11 @@ watch(searchValue, (value) => {
     })
     .filter((item, i, self) => item && self.indexOf(item) === i)
   expandedKeys.value = expanded
+  if (!value) {
+    //搜索为空 时 收起整颗树
+    expandedKeys.value = []
+  }
+  console.log('expandedKeys.value', expandedKeys.value)
   searchValue.value = value
   autoExpandParent.value = true
 })

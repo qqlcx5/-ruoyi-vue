@@ -161,6 +161,7 @@
   <a-modal
     v-if="state.isShow"
     v-model:visible="state.isShow"
+    destroyOnClose
     :title="state.addEditTitle"
     @cancel="closeModal"
     :width="'534px'"
@@ -222,7 +223,6 @@
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
-            :getPopupContainer="(triggerNode) => triggerNode.parentNode"
           />
         </a-form-item>
 
@@ -365,6 +365,7 @@
   <!--  状态开始关闭 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
+    destroyOnClose
     :closable="false"
     width="424px"
     :bodyStyle="{
@@ -407,6 +408,7 @@
   <!--  删除确认modal  -->
   <a-modal
     v-model:visible="state.isShowDelete"
+    destroyOnClose
     :closable="false"
     :width="state.deleteModalWidth"
     :bodyStyle="{
@@ -453,6 +455,7 @@
   <!--  详情modal  -->
   <a-modal
     v-model:visible="state.isShowDetails"
+    destroyOnClose
     wrapClassName="details-modal"
     title="详情"
     :bodyStyle="{
@@ -484,6 +487,7 @@
   <!-- 员工数modal  -->
   <a-modal
     v-model:visible="state.isShowEmployees"
+    destroyOnClose
     wrapClassName="details-modal"
     title="员工数"
     :width="state.employeesModalInfo.width"
@@ -514,7 +518,6 @@
               optionFilterProp="label"
               show-search
               placeholder="请选择"
-              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
           </div>
         </div>
@@ -532,7 +535,6 @@
               optionFilterProp="label"
               show-search
               placeholder="请选择"
-              :getPopupContainer="(triggerNode) => triggerNode.parentElement"
             />
             <!--            <a-input-->
             <!--              class="width-100"-->
@@ -1372,6 +1374,7 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
+  state.isShowCustomColumnModal = false
 }
 
 // //TODO:这个方法有空再抽出去
@@ -1884,6 +1887,7 @@ watch(
   width: 200px;
   margin-top: 10px;
   display: flex;
+  align-items: center;
   //justify-content: space-between;
   //background: skyblue;
   //flex: 1 1 auto;
@@ -1992,6 +1996,7 @@ watch(
     font-family: PingFangSC-Medium;
   }
   .post-style {
+    margin-top: 10px;
     font-size: 14px;
     font-family: PingFangSC-Regular;
   }
@@ -2003,7 +2008,7 @@ watch(
   }
   .employees-name {
     margin-right: 10px;
-    margin-top: 19px;
+    margin-top: 5px;
     padding: 4px 8px;
     text-align: center;
     border-radius: 4px;

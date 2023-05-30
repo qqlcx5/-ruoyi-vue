@@ -10,6 +10,11 @@ export interface MajorIndividual {
   expireTime?: Date
 }
 
+// 通过岗位id获取岗位角色
+export const getRolePostList = (params) => {
+  return request.get({ url: '/system/post-role/get/post', params })
+}
+
 // 查询成员管理列表分页
 export const getMemberList = (params: MajorIndividual) => {
   return request.get({ url: '/system/user/extra/page', params })

@@ -13,139 +13,154 @@
     <div class="right-card-content">
       <!--  搜索  -->
       <a-card :bodyStyle="{ marginBottom: '10px' }">
-        <div class="total-search-content">
-          <div class="search-content">
-            <div class="search-item">
-              <div class="item-label">成员姓名：</div>
-              <div class="item-condition">
-                <a-input
-                  class="width-100"
-                  v-model:value="queryParams.memberName"
-                  @pressEnter="getList(1)"
-                  placeholder="请输入成员姓名或工号"
-                />
+        <!--  本来是不上表单的  非要校验联系电话  -->
+        <a-form :model="queryParams" :noStyle="true" class="search-form-style" autocomplete="off">
+          <div class="total-search-content">
+            <div class="search-content">
+              <div class="search-item">
+                <div class="item-label">成员姓名：</div>
+                <div class="item-condition">
+                  <a-input
+                    class="width-100"
+                    v-model:value="queryParams.memberName"
+                    @pressEnter="getList(1)"
+                    placeholder="请输入姓名或工号"
+                    allowClear
+                  />
+                </div>
               </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">联系电话：</div>
+              <div class="search-item">
+                <div class="item-label">联系电话：</div>
+                <div class="item-condition">
+                  <!-- <a-form-item name="memberPhone" :rules="[{ validator: numValidator }]">-->
+                  <a-input
+                    class="width-100"
+                    v-model:value="queryParams.memberPhone"
+                    @pressEnter="getList()"
+                    @change="() => limitInput(queryParams.memberPhone)"
+                    maxlength="11"
+                    placeholder="请输入4位数字查询"
+                    allowClear
+                  />
+                  <!-- </a-form-item>-->
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">岗位类型：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.postType"
+                    :options="state.postTypeOptions"
+                    @change="postTypeChange"
+                    class="width-100"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
 
-              <div class="item-condition">
-                <a-input
-                  class="width-100"
-                  v-model:value="queryParams.memberPhone"
-                  @pressEnter="getList"
-                  placeholder="请输入联系电话"
-                />
+              <div class="search-item">
+                <div class="item-label">岗位：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.post"
+                    :options="state.postTypeSpecifyOptions"
+                    class="width-100"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
               </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">岗位类型：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.postType"
-                  :options="state.postTypeOptions"
-                  @change="postTypeChange"
-                  class="width-100"
-                  placeholder="请选择"
-                />
+
+              <!--            <div class="search-item">-->
+              <!--              <div class="item-label">岗位：</div>-->
+              <!--              <div class="item-condition flex-style">-->
+              <!--                <a-select-->
+              <!--                  v-model:value="queryParams.post"-->
+              <!--                  :options="state.postTypeSpecifyOptions"-->
+              <!--                  class="width-100"-->
+              <!--                  placeholder="请选择"-->
+              <!--                />-->
+              <!--                &lt;!&ndash;                <a-input&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  class="width-100"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  v-model:value="queryParams.post"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  @pressEnter="getList"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                  placeholder="输入岗位名称搜索"&ndash;&gt;-->
+              <!--                &lt;!&ndash;                />&ndash;&gt;-->
+              <!--              </div>-->
+              <!--            </div>-->
+
+              <div class="search-item">
+                <div class="item-label">是否兼岗：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.partPost"
+                    class="width-100"
+                    :options="state.partPostOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
+
+              <div class="search-item">
+                <div class="item-label">配置角色：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.configureRoles"
+                    class="width-100"
+                    :options="state.configureRolesOptions"
+                    mode="multiple"
+                    placeholder="请选择"
+                    optionFilterProp="label"
+                    allowClear
+                  />
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">人员类型：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.memberType"
+                    class="width-100"
+                    :options="state.memberTypeOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">在职状态：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.isOnJob"
+                    class="width-100"
+                    :options="state.onJobOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
+              </div>
+              <div class="search-item">
+                <div class="item-label">帐号状态：</div>
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.userType"
+                    class="width-100"
+                    :options="state.userTypeOptions"
+                    placeholder="请选择"
+                    allowClear
+                  />
+                </div>
               </div>
             </div>
 
-            <div class="search-item">
-              <div class="item-label">岗位：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.post"
-                  :options="state.postTypeSpecifyOptions"
-                  class="width-100"
-                  placeholder="请选择"
-                />
-              </div>
-            </div>
-
-            <!--            <div class="search-item">-->
-            <!--              <div class="item-label">岗位：</div>-->
-            <!--              <div class="item-condition flex-style">-->
-            <!--                <a-select-->
-            <!--                  v-model:value="queryParams.post"-->
-            <!--                  :options="state.postTypeSpecifyOptions"-->
-            <!--                  class="width-100"-->
-            <!--                  placeholder="请选择"-->
-            <!--                />-->
-            <!--                &lt;!&ndash;                <a-input&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  class="width-100"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  v-model:value="queryParams.post"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  @pressEnter="getList"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                  placeholder="输入岗位名称搜索"&ndash;&gt;-->
-            <!--                &lt;!&ndash;                />&ndash;&gt;-->
-            <!--              </div>-->
-            <!--            </div>-->
-
-            <div class="search-item">
-              <div class="item-label">是否兼岗：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.partPost"
-                  class="width-100"
-                  :options="state.partPostOptions"
-                  placeholder="请选择"
-                />
-              </div>
-            </div>
-
-            <div class="search-item">
-              <div class="item-label">配置角色：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.configureRoles"
-                  class="width-100"
-                  :options="state.configureRolesOptions"
-                  mode="multiple"
-                  placeholder="请选择"
-                  optionFilterProp="label"
-                />
-              </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">人员类型：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.memberType"
-                  class="width-100"
-                  :options="state.memberTypeOptions"
-                  placeholder="请选择"
-                />
-              </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">在职状态：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.isOnJob"
-                  class="width-100"
-                  :options="state.onJobOptions"
-                  placeholder="请选择"
-                />
-              </div>
-            </div>
-            <div class="search-item">
-              <div class="item-label">帐号状态：</div>
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.userType"
-                  class="width-100"
-                  :options="state.userTypeOptions"
-                  placeholder="请选择"
-                />
-              </div>
+            <div class="search-btn-content">
+              <a-button type="primary" html-type="submit" @click="getList(1)">查询</a-button>
+              <a-button @click="resetQuery">重置</a-button>
             </div>
           </div>
-
-          <div class="search-btn-content">
-            <a-button type="primary" html-type="submit" @click="getList(1)">查询</a-button>
-            <a-button @click="resetQuery">重置</a-button>
-          </div>
-        </div>
+        </a-form>
       </a-card>
 
       <!--  表格  -->
@@ -271,7 +286,19 @@
             <!--  部门/岗位   -->
             <template v-if="column?.key === 'departmentPost'">
               <div v-for="item in record?.departmentPostList" class="phone-div-content">
-                <div class="phone-div">{{ item.department }}/{{ item.post }}</div>
+                <div class="phone-div"
+                  ><span
+                    :class="[{ 'close-style': item.depStatus }, { 'delete-style': item.depDelete }]"
+                    >{{ item.department }}</span
+                  >/
+                  <span
+                    :class="[
+                      { 'close-style': item.postStatus },
+                      { 'delete-style': item.postDelete }
+                    ]"
+                    >{{ item.post }}</span
+                  >
+                </div>
                 <div :class="item.type === 'main_post' ? 'principal-tag' : 'part-tag'"
                   >{{ item.typeText }}
                 </div>
@@ -285,10 +312,16 @@
               <!--                :color="item.type === '1' ? '#0081FF' : '#0081FF'"-->
               <!--                >{{ item.roleName }}</a-tag-->
               <!--              >-->
+              <!--              :class="item.type === '1' ? 'role-tag' : 'role-close-tag'"-->
               <div class="phone-div-content">
+                <!--  催命似的催  这里直接暴力上判断了  -->
                 <div
-                  :class="item.type === '1' ? 'role-tag' : 'role-close-tag'"
-                  v-for="item in record?.roleVOList"
+                  :class="[
+                    { 'role-tag': !item.roleStatus && !item.roleDelete },
+                    { 'role-close-tag': !item.roleDelete && item.roleStatus },
+                    { 'role-delete-tag': item.roleDelete }
+                  ]"
+                  v-for="item in record?.roleVOListDeal"
                   >{{ item.roleName }}
                 </div>
               </div>
@@ -299,6 +332,7 @@
               <a-switch
                 v-model:checked="record.statusSwitch"
                 @change="(value) => setTableStatusChangeInfo(value, record)"
+                :disabled="record.userStatus === 1"
               />
             </template>
             <!--  操作   -->
@@ -337,10 +371,11 @@
   <!-- 新增 编辑 Modal -->
   <a-modal
     v-model:visible="state.isShow"
+    destroyOnClose
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'900px'"
+    :width="'930px'"
     :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
@@ -403,7 +438,6 @@
               placeholder="请选择时间"
               v-model:value="formState.entryTime"
               class="width-100"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -446,7 +480,6 @@
               v-model:value="formState.departureTime"
               :disabled-date="disabledDate"
               class="width-100"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
@@ -478,9 +511,13 @@
               <template #bodyCell="{ column, text, record, index }">
                 <template v-if="column.key === 'phoneType'">
                   <div>
-                    <a-radio-group v-model:value="record.phoneType" name="radioPhoneTypeGroup">
-                      <a-radio value="1">手机</a-radio>
-                      <a-radio value="2">座机</a-radio>
+                    <a-radio-group
+                      v-model:value="record.phoneType"
+                      name="radioPhoneTypeGroup"
+                      @change="() => clearPhoneNum(record)"
+                    >
+                      <a-radio-button value="1" style="margin-right: 5px">手机</a-radio-button>
+                      <a-radio-button value="2">座机</a-radio-button>
                     </a-radio-group>
                   </div>
                 </template>
@@ -491,7 +528,12 @@
                       :rules="[{ required: true, message: `电话不能为空` }]"
                       class="phone-form-style"
                     >
-                      <a-input v-model:value="record.phoneNum" placeholder="请输入号码" />
+                      <a-input
+                        v-model:value="record.phoneNum"
+                        @change="() => limitInput(record.phoneNum, record)"
+                        placeholder="请输入号码"
+                        :maxlength="record.phoneType === '1' ? 11 : 12"
+                      />
                     </a-form-item>
                   </div>
                 </template>
@@ -499,31 +541,36 @@
                 <template v-if="column.key === 'useType'">
                   <div>
                     <a-radio-group v-model:value="record.useType" name="radioUseTypeGroup">
-                      <a-radio value="1">私人</a-radio>
-                      <a-radio value="2">公司</a-radio>
+                      <a-radio-button value="1" style="margin-right: 5px">私人</a-radio-button>
+                      <a-radio-button value="2">公司</a-radio-button>
                     </a-radio-group>
                   </div>
                 </template>
 
                 <template v-if="column.key === 'isService'">
                   <div>
-                    <a-radio-group v-model:value="record.isService" name="radioIsServiceGroup">
-                      <a-radio value="0">是</a-radio>
-                      <a-radio value="1">否</a-radio>
-                    </a-radio-group>
+                    <!--                    <a-radio-group v-model:value="record.isService" name="radioIsServiceGroup">-->
+                    <!--                      <a-radio value="0">是</a-radio>-->
+                    <!--                      <a-radio value="1">否</a-radio>-->
+                    <!--                    </a-radio-group>-->
+                    <a-switch
+                      v-model:checked="record.isService"
+                      checked-children="开启"
+                      un-checked-children="关闭"
+                    />
                   </div>
                 </template>
 
                 <!--  操作   -->
                 <template v-if="column?.key === 'operation'">
                   <div class="operation-content">
+                    <div class="text-color margin-right-5" @click="addColumns(index)">新增</div>
                     <div
                       class="text-color margin-right-5"
                       @click="deleteColumns(index)"
-                      v-if="index !== 0"
+                      v-if="addDataSource.addEditTableData?.length > 1"
                       >删除</div
                     >
-                    <div class="text-color margin-right-5" @click="addColumns(record)">新增</div>
                   </div>
                 </template>
               </template>
@@ -531,34 +578,36 @@
           </a-form-item>
 
           <a-form-item label="成员头像" name="legalIdentityUrl" class="width-100">
-            <a-upload
-              v-model:file-list="state.legalPersonListUrl"
-              :action="updateUrl + '?updateSupport=' + updateSupport"
-              list-type="picture-card"
-              @preview="handlePreview"
-              accept=".jpg, .png, .gif"
-              class="avatar-uploader"
-              :show-upload-list="true"
-              :headers="uploadHeaders"
-              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-              @change="
-                (file, fileList) => {
-                  handleChange(file, fileList, 'legalPerson')
-                }
-              "
-              @remove="
-                (file) => {
-                  removeImg(file, 'legalPerson')
-                }
-              "
-            >
-              <div v-if="state.legalPersonListUrl.length < 1">
-                <Icon icon="svg-icon:add-upload" :size="15" />
-                <div style="margin-top: 8px">上传照片</div>
-              </div>
-            </a-upload>
+            <div style="height: 131px">
+              <a-upload
+                v-model:file-list="state.legalPersonListUrl"
+                :action="updateUrl + '?updateSupport=' + updateSupport"
+                list-type="picture-card"
+                @preview="handlePreview"
+                accept=".jpg, .png, .gif"
+                class="avatar-uploader"
+                :show-upload-list="true"
+                :headers="uploadHeaders"
+                :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+                @change="
+                  (file, fileList) => {
+                    handleChange(file, fileList, 'legalPerson')
+                  }
+                "
+                @remove="
+                  (file) => {
+                    removeImg(file, 'legalPerson')
+                  }
+                "
+              >
+                <div v-if="state.legalPersonListUrl.length < 1">
+                  <Icon icon="svg-icon:add-upload" :size="15" />
+                  <div style="margin-top: 8px">上传照片</div>
+                </div>
+              </a-upload>
 
-            <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。 </div>
+              <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。 </div>
+            </div>
           </a-form-item>
         </div>
 
@@ -570,6 +619,23 @@
             :pagination="false"
             @resizeColumn="handleResizeColumn"
           >
+            <template #headerCell="{ column }">
+              <!--  自定义表头  -->
+              <template v-if="column.key === 'department'">
+                <div class="table_heard">
+                  <span style="color: red">* </span>
+                  <span>所属部门</span>
+                </div>
+              </template>
+
+              <template v-if="column.key === 'post'">
+                <div class="table_heard">
+                  <span style="color: red">* </span>
+                  <span>岗位</span>
+                </div>
+              </template>
+            </template>
+
             <template #bodyCell="{ column, text, record, index }">
               <template v-if="column.key === 'department'">
                 <div>
@@ -609,6 +675,7 @@
                     style="width: 100%"
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                     placeholder="请选择"
+                    multiple
                     :tree-data="state.barnOptions"
                   />
                 </div>
@@ -635,13 +702,13 @@
               <!--  操作   -->
               <template v-if="column?.key === 'operation'">
                 <div class="operation-content">
+                  <div class="text-color margin-right-5" @click="addPostColumns(index)">新增</div>
                   <div
                     class="text-color margin-right-5"
                     @click="deletePostColumns(index)"
                     v-if="index !== 0"
                     >删除</div
                   >
-                  <div class="text-color margin-right-5" @click="addPostColumns(record)">新增</div>
                 </div>
               </template>
             </template>
@@ -657,11 +724,15 @@
               v-model:value="formState.birthDay"
               :disabled-date="disabledDate"
               class="width-100"
-              :getPopupContainer="(triggerNode) => triggerNode.parentNode"
             />
           </a-form-item>
 
-          <a-form-item :label="`QQ`" class="width-50">
+          <a-form-item
+            :label="`QQ`"
+            name="qqNum"
+            class="width-50"
+            :rules="[{ validator: numValidator }]"
+          >
             <a-input
               v-model:value="formState.qqNum"
               show-count
@@ -693,7 +764,6 @@
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
                 placeholder="请选择省市区"
-                :getPopupContainer="(triggerNode) => triggerNode.parentNode"
               />
             </a-form-item-rest>
             <a-input
@@ -721,6 +791,7 @@
   <!-- 分配角色 Modal -->
   <a-modal
     v-model:visible="state.isShowPermission"
+    destroyOnClose
     title="分配角色"
     @cancel="closePermissionModal"
     :width="'665px'"
@@ -739,15 +810,19 @@
       <div
         class="message-text assign-roles-tip"
         v-if="
-          state.permissionRecord?.roleVOList?.length === 0 ||
-          state.permissionRecord?.roleVOList === null
+          (state.permissionRecord?.roleVOList?.length === 0 ||
+            state.permissionRecord?.roleVOList === null) &&
+          state.roleId?.length > 0
         "
       >
         <img :src="warningImg" alt="" class="tip-img message-img waring-img" />
         <div class="roles-text">
           系统校验到您设置的岗位
-          <span v-for="item in state.permissionRecord?.postVOList">
-            【{{ item.postName }}】、
+          <span
+            v-for="(item, index) in state.permissionRecord?.postVOListDeal"
+            :key="`postVOListDeal-${index}`"
+          >
+            【{{ item.postName }}】
           </span>
           已有分配以下角色，您可修改或增加
         </div>
@@ -776,6 +851,7 @@
   <!--  状态开始关闭  删除 确认Modal  -->
   <a-modal
     v-model:visible="state.isShowStatus"
+    destroyOnClose
     :closable="false"
     width="424px"
     :bodyStyle="{
@@ -816,6 +892,7 @@
   <!--  详情  -->
   <a-modal
     v-model:visible="state.isShowDetails"
+    destroyOnClose
     title="详情"
     wrapClassName="details-modal"
     width="763px"
@@ -908,7 +985,7 @@
               </div>
             </div>
 
-            <div class="record-tip-content">
+            <div class="record-tip-content" v-if="recorditem.needBeforeChange">
               <div class="width-10"> 变更前: </div>
               <div class="width-90">
                 {{ recorditem.beforeChange }}
@@ -937,6 +1014,7 @@
   <!--  重置密码 Modal  -->
   <a-modal
     v-model:visible="state.isShowResetPassWord"
+    destroyOnClose
     :title="state.resetPasswordTitle"
     :closable="state.closable"
     :footer="null"
@@ -992,6 +1070,7 @@
   <!--  上传图片预览  -->
   <a-modal
     :visible="previewVisible"
+    destroyOnClose
     :title="previewTitle"
     :footer="null"
     @cancel="handleCancel"
@@ -1053,6 +1132,7 @@ import {
   getMemberList,
   getPostList,
   getPostTypeList,
+  getRolePostList,
   getRolesList,
   getTypePostList,
   updateMember,
@@ -1403,6 +1483,7 @@ const state = reactive({
     'memberPhone',
     'departmentPost',
     'configureRoles',
+    'isOnJob',
     'memberType',
     'statusSwitch',
     'operation'
@@ -1606,6 +1687,7 @@ const getList = async (page) => {
     state.tableDataList.map((item) => {
       const tempPhoneList = []
       const tempDepartmentPost = []
+      const tempRoleVOList = []
       //联系电话
       item?.phoneVOList?.map((phoneItem) => {
         // '0'公司 '1'私人
@@ -1627,11 +1709,37 @@ const getList = async (page) => {
         if (postItem.type === 'secondary_post') {
           tempText = '兼岗'
         }
+        //0开启 1关闭
+        let depStatusText = postItem.organizationStatus === 0 ? '' : '(关闭)'
+        //0未删除 1删除  删除显示优先级高于关闭
+        depStatusText = postItem.organizationDeleted === 0 ? depStatusText : '(删除)'
+
+        //0开启 1关闭
+        let postStatusText = postItem.postStatus === 0 ? '' : '(关闭)'
+        //0未删除 1删除  删除显示优先级高于关闭
+        postStatusText = postItem.postDeleted === 0 ? postStatusText : '(删除)'
         tempDepartmentPost.push({
-          department: postItem.componentName, //部门
-          post: postItem.postName, //岗位
+          department: `${postItem.componentName}${depStatusText}`, //部门
+          depStatus: postItem.organizationStatus === 1, //0开启 1关闭 部门开启/关闭
+          depDelete: postItem.organizationDeleted === 1, //0未删除 1删除 部门未删除/删除
+          postStatus: postItem.postStatus === 1, //0开启 1关闭 岗位开启/关闭
+          postDelete: postItem.postDeleted === 1, //0未删除 1删除 岗位未删除/删除
+          post: `${postItem.postName}${postStatusText}`, //岗位
           type: postItem.type, //主岗0 兼岗1
           typeText: tempText
+        })
+      })
+
+      //配置角色
+      item?.roleVOList?.map((roleItem) => {
+        //0开启 1关闭
+        let roleStatusText = roleItem.roleStatus === 0 ? '' : '(关闭)'
+        //0未删除 1删除  删除显示优先级高于关闭
+        roleStatusText = roleItem.roleDeleted === 0 ? roleStatusText : '(删除)'
+        tempRoleVOList.push({
+          roleName: `${roleItem.roleName}${roleStatusText}`,
+          roleStatus: roleItem.roleStatus === 1, //0开启 1关闭 岗位开启/关闭
+          roleDelete: roleItem.roleDeleted === 1 //0未删除 1删除 岗位未删除/删除
         })
       })
 
@@ -1649,6 +1757,7 @@ const getList = async (page) => {
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
       item.entryTime = item.onboardingTime //入职时间
+      item.roleVOListDeal = tempRoleVOList
     })
 
     console.log('state.tableDataList', state.tableDataList)
@@ -1698,6 +1807,9 @@ const resetQuery = () => {
   queryParams.isOnJob = null //在职状态
   queryParams.userType = null //账号类型
 
+  state.postTypeSpecifyOptions = []
+  postTypeChange(null)
+
   handleQuery()
 }
 
@@ -1743,6 +1855,7 @@ const closeModal = () => {
   formState.entryTime = dayjs() //入职时间
   formState.memberType = 'trial_members' //人员类型
   formState.isOnJob = '0' //在职(人员)状态
+  formState.status = true //账号状态
   formState.birthDay = null //出生日期
   formState.departureTime = null //离职日期
   formState.qqNum = null //QQ
@@ -1764,7 +1877,7 @@ const closeModal = () => {
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: '0'
+      isService: true
     }
   ]
 
@@ -1773,7 +1886,7 @@ const closeModal = () => {
       index: 0,
       department: null,
       post: null,
-      brand: null,
+      brand: [],
       isMainPost: null,
       isMainPostKey: 'main_post',
       isMainPostText: '主岗',
@@ -1825,18 +1938,20 @@ const edit = async (record, isCloseDetails = false) => {
       phoneType: item.phoneCategory,
       phoneNum: item.phone,
       useType: item.usageType,
-      isService: item.recordEnable ? '0' : '1'
+      isService: item.recordEnable
     })
   })
 
   // addPostDataSource.addEditTableData.map((item) => {
   record?.postVOList?.map((item, index) => {
+    const tempBrand = item.brands === '' || item.brands === null ? [] : item.brands.split(',')
+    console.log('tempBrand', tempBrand)
     tempPostList.push({
       index: index,
       id: item.id,
       department: item.organizationId,
       post: item.postId,
-      brand: item.brands,
+      brand: tempBrand,
       isMainPost: item.type,
       isMainPostKey: item.type,
       isMainPostText: item.type === 'main_post' ? '主岗' : '兼岗',
@@ -1850,7 +1965,7 @@ const edit = async (record, isCloseDetails = false) => {
       phoneType: '',
       phoneNum: '',
       useType: '',
-      isService: ''
+      isService: true
     })
   }
 
@@ -1859,7 +1974,7 @@ const edit = async (record, isCloseDetails = false) => {
       index: 0,
       department: null,
       post: null,
-      brand: null,
+      brand: [],
       isMainPost: null,
       isMainPostKey: 'main_post',
       isMainPostText: '主岗',
@@ -1965,7 +2080,7 @@ const addMajorIndividualFN = async () => {
         phoneCategory: item.phoneType, //号码类别
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
-        recordEnable: item.isService === '0', //是否开通云录音
+        recordEnable: item.isService, //是否开通云录音
         userId: formState.id,
         id: item.id
       })
@@ -1974,7 +2089,7 @@ const addMajorIndividualFN = async () => {
         phoneCategory: item.phoneType, //号码类别
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
-        recordEnable: item.isService === '0' //是否开通云录音
+        recordEnable: item.isService //是否开通云录音
       })
     }
 
@@ -1988,12 +2103,18 @@ const addMajorIndividualFN = async () => {
   }
 
   addPostDataSource.addEditTableData.map((item) => {
+    let tempBrandString = ''
+    console.log('item.brand', item.brand)
+
+    tempBrandString = item.brand.join()
+
+    console.log('tempBrandString', tempBrandString)
     //修改时
     if (formState.id) {
       tempPostList.push({
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
-        brands: item.brand, //所属品牌
+        brands: tempBrandString, //所属品牌
         type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow, //是否显示
         userId: formState.id,
@@ -2003,7 +2124,7 @@ const addMajorIndividualFN = async () => {
       tempPostList.push({
         organizationId: item.department, //所属部门
         postId: item.post, //岗位
-        brands: item.brand, //所属品牌
+        brands: tempBrandString, //所属品牌
         type: item.isMainPostKey, //主岗/兼岗
         visible: item.isShow //是否显示
       })
@@ -2024,10 +2145,6 @@ const addMajorIndividualFN = async () => {
   if (markPost) {
     return message.warning('请选择岗位')
   }
-
-  console.log('tempPhoneList==========>', tempPhoneList)
-  console.log('tempPostList===========>', tempPostList)
-  console.log('formState.birthDay===>', formState.birthDay)
 
   let params = {
     username: formState.memberNum, //成员工号
@@ -2074,7 +2191,7 @@ const addMajorIndividualFN = async () => {
       console.log('新增成员res', res)
       message.success('新建成员成功')
       //分配角色
-      openPermissionModal()
+      openPermissionModal(true)
     } else {
       params['id'] = formState.id
       params['departureTime'] = formState.departureTime?.format('YYYY-MM-DD')
@@ -2108,8 +2225,9 @@ const openPermissionModal = async (isAdd = false) => {
     const res = await getMemberDetails({ id: state.addSuccessId })
     state.permissionRecord = res
     console.log('新增后获取res', res)
+    assignPermission(res)
   }
-  state.isShowPermission = true
+  // state.isShowPermission = true
 }
 
 //分配角色 Modal 确认
@@ -2123,17 +2241,44 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
+//数组对象去重
+const uniqueFunc = (arr, uniId) => {
+  const res = new Map()
+  return arr.filter((item) => !res.has(item[uniId]) && res.set(item[uniId], 1))
+}
+
 const assignPermission = async (record) => {
   console.log('分配角色record=》', record)
+  const { postVOList = [], roleVOList = [] } = record
+  const tempArr = uniqueFunc(postVOList, 'postId')
+  record.postVOListDeal = tempArr
+  console.log('tempArr', tempArr)
+  let postIdArr = []
+  console.log('postVOList', postVOList)
+  tempArr.map((item) => {
+    postIdArr.push(item.postId)
+  })
+  console.log('roleVOList', roleVOList)
+  if (roleVOList?.length === 0 || roleVOList === null) {
+    const tempRes = await getRolePostList({
+      postIds: postIdArr
+    })
+    nextTick(() => {
+      state.roleId = tempRes
+    })
+    console.log('state.configureRolesNewOptions======>', state.configureRolesNewOptions)
+    console.log('默认角色岗位tempRes', tempRes)
+  }
   state.permissionRecord = record
-  const { roleVOList = [] } = record
   //回显 已分配的角色
   state.roleId = []
   roleVOList?.map((item) => {
     state.roleId.push(item.roleId)
   })
   state.PermissionType = 'edit'
-  openPermissionModal()
+  // openPermissionModal()
+  //开启分配角色 modal
+  state.isShowPermission = true
 }
 
 //表格状态改变 确认modal... 然后才开短信 modal
@@ -2344,8 +2489,18 @@ const detailsInfo = async (record) => {
   ]
   let tableData = []
   let tablePostData = []
-  console.log('res.sex', res.sex)
-  console.log('res.sexres.sex', typeof res.sex)
+  const tempRoleVOList = []
+
+  roleVOList?.map((roleItem) => {
+    //0开启 1关闭
+    let roleStatusText = roleItem.roleStatus === 0 ? '' : '(关闭)'
+    //0未删除 1删除  删除显示优先级高于关闭
+    roleStatusText = roleItem.roleDeleted === 0 ? roleStatusText : '(删除)'
+    tempRoleVOList.push({
+      roleName: `${roleItem.roleName}${roleStatusText}`
+    })
+  })
+
   switch (res.sex) {
     case 1:
       sexText = '男'
@@ -2399,8 +2554,8 @@ const detailsInfo = async (record) => {
   changeRecord = []
   //变更记录
   userHistoryVOList.map((item) => {
-    const temp1 = JSON.parse(item.beforeData)
-    const temp2 = JSON.parse(item.afterData)
+    const temp1 = item.beforeData ? JSON.parse(item.beforeData) : []
+    const temp2 = item.afterData ? JSON.parse(item.afterData) : []
     let tempItem = {
       date: dayjs(item?.createTime)?.format('YYYY-MM-DD'),
       time: dayjs(item?.createTime)?.format('HH:mm:ss')
@@ -2410,7 +2565,6 @@ const detailsInfo = async (record) => {
       // operator: '操作人：张三（010005）'
     }
 
-    console.log('时间戳', dayjs(temp1?.createTime))
     console.log('beforeData', temp1)
     console.log('afterData', temp2)
     switch (item?.historyType) {
@@ -2419,6 +2573,7 @@ const detailsInfo = async (record) => {
         tempItem.type = '修改'
         tempItem.beforeChange = '部门/岗位-'
         tempItem.afterChange = `部门/岗位-`
+        tempItem.needBeforeChange = true
         temp1?.map((item) => {
           const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
           tempItem.beforeChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
@@ -2429,27 +2584,35 @@ const detailsInfo = async (record) => {
           tempItem.afterChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
         })
 
-        tempItem.operator = `操作人：${item.createName}`
+        tempItem.operator = `${item.createName}`
         break
       case 'entry':
         //入职
         tempItem.type = '入职'
-        // tempItem.beforeChange = '变更前：入职时间-'
-        tempItem.afterChange = `入职时间-`
+        tempItem.beforeChange = `离职时间-${temp1[0]?.departureTime}、`
+        tempItem.afterChange = `入职时间-${temp2[0]?.onboardingTime}、`
         // temp1?.map((item) => {
         //   const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
         //   tempItem.beforeChange += `${item?.updateTime?.year}-${item?.updateTime?.month}-${item?.updateTime?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
         // })
+        tempItem.needBeforeChange = temp1.length > 0
+        temp1?.map((item) => {
+          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+
+          // tempItem.beforeChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+          tempItem.beforeChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+        })
 
         temp2?.map((item) => {
           const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-          console.log('item============>', item)
-          console.log('item.updateTime', item.updateTime)
-          console.log('item.updateTime.date', item.updateTime.date)
-          console.log('item.updateTime.date.year', item.updateTime.date.year)
-          console.log('item?.updateTime?.data?.month', item?.updateTime?.data)
+          // console.log('item============>', item)
+          // console.log('item.updateTime', item.updateTime)
+          // console.log('item.updateTime.date', item.updateTime.date)
+          // console.log('item.updateTime.date.year', item.updateTime.date.year)
+          // console.log('item?.updateTime?.data?.month', item?.updateTime?.data)
 
-          tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+          // tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+          tempItem.afterChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
         })
 
         // tempItem.beforeChange = `变更前：入职时间-${temp1?.updateTime?.year}-${temp1?.updateTime?.month}-${temp1?.updateTime?.day}、部门/岗位-${temp1?.componentName}/ ${temp1?.postName}`
@@ -2460,9 +2623,11 @@ const detailsInfo = async (record) => {
         //离职
         tempItem.type = '离职'
         tempItem.beforeChange = `在职状态-在职`
-        tempItem.afterChange = `在职状态-离职、离职时间-${dayjs(temp1?.createTime)?.format(
-          'YYYY-MM-DD'
-        )}`
+        // tempItem.afterChange = `在职状态-离职、离职时间-${dayjs(temp1?.createTime)?.format(
+        //   'YYYY-MM-DD'
+        // )}`
+        tempItem.needBeforeChange = true
+        tempItem.afterChange = `在职状态-离职、离职时间-${temp2[0]?.departureTime}`
         tempItem.operator = `${item.createName}`
         break
     }
@@ -2656,7 +2821,7 @@ const detailsInfo = async (record) => {
     {
       baseTitle: '角色信息',
       isShow: true,
-      infoArr: roleVOList
+      infoArr: tempRoleVOList
     },
     {
       baseTitle: '详细信息',
@@ -2875,6 +3040,17 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
     message.success('上传成功')
   }
   if (info.file.status === 'error') {
+    switch (type) {
+      case 'logo':
+        state.logoListUrl = []
+        break
+      case 'legalPerson':
+        state.legalPersonListUrl = []
+        break
+      case 'businessLicense':
+        state.businessLicenseListUrl = []
+        break
+    }
     loading.value = false
     message.error('上传失败')
   }
@@ -2931,6 +3107,7 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.changedColumnsObj = cloneDeep(columnsObj)
   state.refreshTable = false
   state.refreshTable = true
+  state.isShowCustomColumnModal = false
 }
 
 //初始化 获取默认的 columns
@@ -3090,7 +3267,7 @@ const getAllType = async () => {
     state.barnOptions = tempBarnOptions
   })
   //
-  // console.log('岗位类型', res)
+  console.log('岗位类型', res)
   // console.log('岗位类型D', state.postTypeOptions)
   // console.log('配置角色', rolesRes)
   // console.log('配置角色D', state.configureRolesOptions)
@@ -3100,6 +3277,7 @@ const getAllType = async () => {
   // console.log('岗位列表D', state.postListOptions)
   // console.log('岗位类型主岗/兼岗', tempPostType)
   // console.log('所属品牌', tempBarnOptions)
+  postTypeChange(null)
 }
 
 getAllType()
@@ -3119,7 +3297,7 @@ const addEditColumns = [
   },
   {
     title: '号码类别',
-    width: 130,
+    width: 145,
     dataIndex: 'phoneType',
     key: 'phoneType',
     resizable: true,
@@ -3129,7 +3307,7 @@ const addEditColumns = [
   },
   {
     title: '号码',
-    width: 110,
+    width: 130,
     dataIndex: 'phoneNum',
     key: 'phoneNum',
     resizable: true,
@@ -3139,7 +3317,7 @@ const addEditColumns = [
   },
   {
     title: '使用类型',
-    width: 130,
+    width: 145,
     dataIndex: 'useType',
     key: 'useType',
     resizable: true,
@@ -3159,7 +3337,7 @@ const addEditColumns = [
   },
   {
     title: '操作',
-    width: 100,
+    width: 80,
     dataIndex: 'operation',
     key: 'operation',
     resizable: true,
@@ -3175,19 +3353,30 @@ const addDataSource = reactive({
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: '0'
+      isService: true
     }
   ]
 })
 
 //新增编辑 联系电话 add
-const addColumns = () => {
-  addDataSource.addEditTableData.push({
+const addColumns = (index) => {
+  // addDataSource.addEditTableData.push({
+  //   phoneType: '1',
+  //   phoneNum: '',
+  //   useType: '1',
+  //   isService: true
+  // })
+
+  const tempObj = {
     phoneType: '1',
     phoneNum: '',
     useType: '1',
-    isService: '0'
-  })
+    isService: true
+  }
+
+  console.log('index', index)
+
+  addDataSource.addEditTableData.splice(index + 1, 0, tempObj)
 
   addDataSource.addEditTableData.map((item, index) => {
     item.index = index
@@ -3196,13 +3385,14 @@ const addColumns = () => {
 
 //新增编辑 联系电话 delete
 const deleteColumns = (index) => {
+  console.log('index', index)
   addDataSource.addEditTableData = addDataSource.addEditTableData.filter(
     (item) => item.index !== index
   )
 
   console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
   addDataSource.addEditTableData.map((item, index) => {
-    item.index = index + 1
+    item.index = index
   })
 }
 
@@ -3220,7 +3410,7 @@ const addEditPostColumns = [
   },
   {
     title: '岗位',
-    width: 140,
+    width: 170,
     dataIndex: 'post',
     key: 'post',
     resizable: true,
@@ -3230,7 +3420,7 @@ const addEditPostColumns = [
   },
   {
     title: '所属品牌',
-    width: 130,
+    width: 150,
     dataIndex: 'brand',
     key: 'brand',
     resizable: true,
@@ -3250,7 +3440,7 @@ const addEditPostColumns = [
   },
   {
     title: '是否显示',
-    width: 120,
+    width: 100,
     dataIndex: 'isShow',
     key: 'isShow',
     resizable: true,
@@ -3260,7 +3450,7 @@ const addEditPostColumns = [
   },
   {
     title: '操作',
-    width: 100,
+    width: 80,
     dataIndex: 'operation',
     key: 'operation',
     resizable: true,
@@ -3275,7 +3465,7 @@ const addPostDataSource = reactive({
       index: 0,
       department: null,
       post: null,
-      brand: null,
+      brand: [],
       isMainPost: null,
       isMainPostKey: 'main_post',
       isMainPostText: '主岗',
@@ -3285,16 +3475,30 @@ const addPostDataSource = reactive({
 })
 
 //新增编辑 岗位信息 add
-const addPostColumns = () => {
-  addPostDataSource.addEditTableData.push({
+const addPostColumns = (index) => {
+  // addPostDataSource.addEditTableData.push({
+  //   department: null,
+  //   post: null,
+  //   brand: [],
+  //   isMainPost: null,
+  //   isMainPostKey: 'secondary_post',
+  //   isMainPostText: '兼岗',
+  //   isShow: true
+  // })
+
+  const tempObj = {
     department: null,
     post: null,
-    brand: null,
+    brand: [],
     isMainPost: null,
     isMainPostKey: 'secondary_post',
     isMainPostText: '兼岗',
-    isShow: false
-  })
+    isShow: true
+  }
+
+  console.log('index', index)
+
+  addPostDataSource.addEditTableData.splice(index + 1, 0, tempObj)
 
   addPostDataSource.addEditTableData.map((item, index) => {
     item.index = index
@@ -3310,11 +3514,11 @@ const deletePostColumns = (index) => {
   )
 
   console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
-  nextTick(() => {
-    addPostDataSource.addEditTableData.map((item, index) => {
-      item.index = index
-    })
+  // nextTick(() => {
+  addPostDataSource.addEditTableData.map((item, index) => {
+    item.index = index
   })
+  // })
 }
 
 const rolesChange = (rolesID) => {
@@ -3337,6 +3541,10 @@ const disabledDate = (current) => {
 
 //岗位类型 获取岗位列表
 const postTypeChange = async (value) => {
+  if (!value) {
+    state.postTypeSpecifyOptions = cloneDeep(state.postListOptions)
+    return
+  }
   const postListRes = await getTypePostList({ typeCode: value })
   queryParams.post = null
   const needReplacePartPostKey = [
@@ -3346,6 +3554,26 @@ const postTypeChange = async (value) => {
   state.postTypeSpecifyOptions = reconstructionArrayObject(postListRes, needReplacePartPostKey)
 
   console.log('岗位列表postListRes', postListRes)
+}
+
+const limitInput = (value, currentValue) => {
+  console.log('value', value)
+  if (!value) {
+    return
+  }
+  const regExp = /^[0-9]*$/
+  if (!regExp.test(value)) {
+    if (currentValue) {
+      currentValue.phoneNum = null
+    } else {
+      queryParams.memberPhone = null
+    }
+    message.warning('联系电话只能输入数字')
+  }
+}
+
+const clearPhoneNum = (record) => {
+  record.phoneNum = ''
 }
 
 //监听  左侧选中数据  更新 右侧展示数据
@@ -3377,6 +3605,8 @@ const batchAssignUserRole = (): void => {
 // 批量设角色
 
 onMounted(async () => {
+  console.log('$router', $router)
+  console.log('$route', $route)
   state.organizationList = await getOrganizationListFN()
   let organizationId = ''
   //机构管理 员工数跳转进来
@@ -3390,6 +3620,25 @@ onMounted(async () => {
     })
   } else if ($router.options.history.state?.back === '/system/post') {
     //岗位管理 页面跳转进来
+    const { isOnJob = '0', postId = null, postTypeId = null } = $route?.query || {}
+
+    await postTypeChange(postTypeId)
+    console.log('postId============>', postId)
+    if (queryParams.postType != null) {
+      queryParams.postType = postTypeId
+      queryParams.isOnJob = isOnJob
+    }
+    if (postId != null) {
+      queryParams.post = Number(postId)
+      queryParams.isOnJob = isOnJob
+    }
+  } else if ($router.options.history.state?.back === '/system/role') {
+    //角色管理 页面跳转进来
+    const { isOnJob = '0', roleId = null } = $route?.query || {}
+    if (roleId != null) {
+      queryParams.isOnJob = isOnJob
+      queryParams.configureRoles = [Number(roleId)]
+    }
   }
 
   sendCurrentSelect(organizationId)
@@ -3398,6 +3647,11 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 //========================== search start ==================================
+.search-form-style {
+  :deep(.ant-form-item) {
+    margin: 0;
+  }
+}
 .total-search-content {
   display: flex;
   justify-content: space-between;
@@ -4093,6 +4347,19 @@ onMounted(async () => {
   border: 0.5px solid rgba(113, 185, 255, 1);
   color: rgba(0, 129, 255, 0.52);
 }
+.role-delete-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+  padding: 8px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(234, 235, 239, 1);
+  color: rgba(181, 183, 189, 1);
+  font-size: 12px;
+  font-family: PingFangSC-Regular;
+}
 :deep(.ant-select-multiple .ant-select-selection-item-remove) {
   display: flex;
   align-items: center;
@@ -4101,6 +4368,18 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+}
+//table 关闭状态颜色
+.close-style {
+  color: rgba(153, 153, 153, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+}
+//table 删除状态颜色
+.delete-style {
+  color: rgba(210, 210, 210, 1) !important;
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
 }
 </style>
 

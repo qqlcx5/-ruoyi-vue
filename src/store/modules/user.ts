@@ -55,10 +55,6 @@ export const useUserStore = defineStore('admin-user', {
       let userInfo = wsCache.get(CACHE_KEY.USER)
       if (!userInfo) {
         userInfo = await getInfoApi()
-        console.log('userInfo====>', userInfo)
-        console.log('', userInfo?.tenant?.systemName)
-        appStore.setTitle(userInfo?.tenant?.systemName || '万国投资管理系统')
-        appStore.setLogoUrl(userInfo?.tenant?.logoUrl || '')
       }
       this.permissions = userInfo.permissions
       this.roles = userInfo.roles
