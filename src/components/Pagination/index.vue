@@ -1,15 +1,15 @@
 <!-- 基于 ruoyi-vue3 的 Pagination 重构，核心是简化无用的属性，并使用 ts 重写 -->
 <template>
   <el-pagination
-    v-show="total > 0"
     v-model:current-page="currentPage"
     v-model:page-size="pageSize"
     :background="false"
-    :page-sizes="[10, 20, 30, 50, 100]"
+    :page-sizes="[10, 20, 30, 50, 100, 200, 300, 500, 1000]"
     :pager-count="pagerCount"
     :total="total"
     class="custom-pagination float-right mt-15px mb-15px"
     layout="sizes, total, prev, pager, next, jumper"
+    :hide-on-single-page="false"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
   />
@@ -31,7 +31,7 @@ const props = defineProps({
   // 每页显示条目个数：pageSize
   limit: {
     type: Number,
-    default: 20
+    default: 10
   },
   // 设置最大页码按钮数。 页码按钮的数量，当总页数超过该值时会折叠
   // 移动端页码按钮的数量端默认值 5
