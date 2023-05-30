@@ -285,13 +285,7 @@ const roleStatusChange = async (row, trigger) => {
   if (trigger === 'form') return
   message
     .wgConfirm(
-      row.status === CommonStatusEnum.ENABLE
-        ? h('span', [
-            `${text}后， ${row.name} 底下的 `,
-            h('span', { style: { color: 'red' } }, row.staffCount),
-            ` 个员工将同步${text}该角色，请谨慎操作。`
-          ])
-        : `${text}后， 将无法再选择该角色，请谨慎操作。`,
+      row.status === CommonStatusEnum.ENABLE ? '' : `${text}后， 将无法再选择该角色，请谨慎操作。`,
       `确定${text} ${row.name} 吗？`,
       {
         confirmButtonText: t(

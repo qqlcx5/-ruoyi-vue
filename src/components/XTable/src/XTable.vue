@@ -222,6 +222,11 @@ const getProxyConfig = (options: XTableProps) => {
             }
             return new Promise(async (resolve) => {
               resolve(await getListApi(queryParams).catch(() => {}))
+              setTimeout(() => {
+                Array.from(document.getElementsByClassName('vxe-pager--total')).forEach(
+                  (el) => (el.innerHTML = el.innerHTML.replace(/记录/g, ''))
+                )
+              })
             })
           },
           delete: ({ body }) => {
@@ -318,33 +323,16 @@ const getPageConfig = (options: XTableProps) => {
         pageSize: 10, // 每页大小
         pagerCount: 7, // 显示页码按钮的数量
         autoHidden: false, // 当只有一页时自动隐藏
-        pageSizes: [5, 10, 20, 30, 50, 100, 200, 300, 500, 1000], // 每页大小选项列表
-        // pageSizes: [
-        //   { label: '5条/页', value: 5 },
-        //   { label: '10条/页', value: 10 },
-        //   { label: '15条/页', value: 15 },
-        //   { label: '20条/页', value: 20 },
-        //   { label: '25条/页', value: 25 },
-        //   { label: '30条/页', value: 30 },
-        //   { label: '35条/页', value: 35 },
-        //   { label: '40条/页', value: 40 },
-        //   { label: '45条/页', value: 45 },
-        //   { label: '50条/页', value: 50 },
-        //   { label: '100条/页', value: 100 },
-        //   { label: '200条/页', value: 200 },
-        //   { label: '300条/页', value: 300 },
-        //   { label: '500条/页', value: 500 },
-        //   { label: '1000条/页', value: 1000 }
-        // ], // 每页大小选项列表
-        // className: 'wg-xtable-pagination',
+        pageSizes: [10, 20, 30, 50, 100, 200, 300, 500, 1000], // 每页大小选项列表
+        className: 'wg-xtable-pagination',
         layouts: [
           'Sizes',
           'Total',
-          'PrevJump',
+          // 'PrevJump',
           'PrevPage',
           'Number',
           'NextPage',
-          'NextJump',
+          // 'NextJump',
           'FullJump'
         ]
       }
@@ -592,9 +580,19 @@ const columnInit = () => {
     }
   })
 }
+const pagerInit = () => {
+  try {
+    Array.from(document.getElementsByClassName('vxe-pager--goto-text')).forEach(
+      (el) => (el.innerHTML = '跳转至')
+    )
+  } catch (e) {
+    console.error(e)
+  }
+}
 
 onMounted(() => {
   columnInit()
+  pagerInit()
 })
 
 defineExpose({

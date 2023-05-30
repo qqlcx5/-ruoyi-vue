@@ -367,7 +367,10 @@ const onPostDel = async (row, type: string) => {
   } else {
     if (type === 'type') {
       message
-        .wgConfirm('删除后， 数据将不可恢复，请谨慎操作。', `确定删除 ${row.name} 该岗位类型吗？`)
+        .wgConfirm('删除后， 数据将不可恢复，请谨慎操作。', `确定删除 ${row.name} 该岗位类型吗？`, {
+          confirmButtonText: t('common.confirmDel'),
+          cancelButtonText: t('common.cancel')
+        })
         .then(async () => {
           deleteReq(row.id)
           postParent.value = {}
@@ -376,7 +379,10 @@ const onPostDel = async (row, type: string) => {
         .catch(() => {})
     } else if (type === 'info') {
       message
-        .wgConfirm('删除后， 数据将不可恢复，请谨慎操作。', `确定删除 ${row.name} 该岗位吗？`)
+        .wgConfirm('删除后， 数据将不可恢复，请谨慎操作。', `确定删除 ${row.name} 该岗位吗？`, {
+          confirmButtonText: t('common.confirmDel'),
+          cancelButtonText: t('common.cancel')
+        })
         .then(async () => {
           await postInfoDelete(row.id)
           await postTypeGet()
@@ -419,14 +425,12 @@ const postInfoStatusChange = async (row) => {
       .wgConfirm(
         row.status === CommonStatusEnum.DISABLE
           ? h('span', `${text}后，将无法再选择该岗位，请谨慎操作。`)
-          : h('span', [
-              `${text}后，${row.name}底下的 `,
-              h('span', { style: { color: 'red' } }, row.userCount),
-              ' 个员工将同步开启该岗位，请谨慎操作。'
-            ]),
-        `确定${text} ${row.name} 吗？`,
+          : '',
+        `确定${text} ${row.name} 该岗位吗？`,
         {
-          confirmButtonText: t('common.ok'),
+          confirmButtonText: t(
+            row.status === CommonStatusEnum.DISABLE ? 'common.confirmClose' : 'common.confirmOpen'
+          ),
           cancelButtonText: t('common.cancel'),
           lockScroll: false,
           autofocus: false
