@@ -165,11 +165,6 @@
 
       <!--  表格  -->
       <a-card :bordered="false" style="padding-bottom: 30px">
-        <!--  <ContentWrap>-->
-        <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
-        <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
-        <!--    >-->
-
         <div class="card-content">
           <!--  左侧按钮  -->
           <div class="button-content">
@@ -220,28 +215,30 @@
           </div>
         </div>
 
+        <!-- 分页本来用antdV自带的  那边用的vxe table 在没有引进antdV之前用element plus 的分页封了个组件 - - 本来想说换成antdV的 榕森不换  -->
+        <!--        @change="onChange"-->
+        <!--        :pagination="{-->
+        <!--        pageSizeOptions: ['20', '30', '60', '100', '200', '500', '1000'],-->
+        <!--        showSizeChanger: true,-->
+        <!--        showQuickJumper: true,-->
+        <!--        pageSize: queryParams.pageSize,-->
+        <!--        current: queryParams.current,-->
+        <!--        total: state.total,-->
+        <!--        showTotal: (total) => `总共 ${total} 条`-->
+        <!--        }"-->
         <a-table
           v-if="state.refreshTable"
           class="table-list"
           :columns="state.columns"
           :data-source="state.tableDataList"
           :scroll="{ x: '100%' }"
-          @change="onChange"
           row-key="id"
           :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
           :loading="state.loading"
           :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
           :defaultExpandAllRows="state.isExpandAll"
           @resizeColumn="handleResizeColumn"
-          :pagination="{
-            pageSizeOptions: ['20', '30', '60', '100', '200', '500', '1000'],
-            showSizeChanger: true,
-            showQuickJumper: true,
-            pageSize: queryParams.pageSize,
-            current: queryParams.current,
-            total: state.total,
-            showTotal: (total) => `总共 ${total} 条`
-          }"
+          :pagination="false"
         >
           <!--  自定义展开折叠图标  -->
           <template #expandIcon="props">
@@ -360,7 +357,14 @@
             </template>
           </template>
         </a-table>
-        <!--  </ContentWrap>-->
+        <!-- 分页 -->
+        <Pagination
+          :total="state.total"
+          v-model:page="queryParams.pageNo"
+          v-model:limit="queryParams.pageSize"
+          style="padding: 0 15px"
+          @pagination="onPageChange"
+        />
       </a-card>
     </div>
 
@@ -1646,7 +1650,6 @@ const getList = async (page) => {
 
   let tempConfigureRoles = []
   let roleExist = null
-  console.log('queryParams.configureRoles', queryParams.configureRoles)
   queryParams.configureRoles.map((item) => {
     if (item === 'all') {
       roleExist = null
@@ -1681,7 +1684,7 @@ const getList = async (page) => {
 
   try {
     const res = await getMemberList(params)
-    console.log('成员管理res', res)
+
     state.rawData = res.list
     state.tableDataList = res.list
     state.tableDataList.map((item) => {
@@ -1759,8 +1762,6 @@ const getList = async (page) => {
       item.entryTime = item.onboardingTime //入职时间
       item.roleVOListDeal = tempRoleVOList
     })
-
-    console.log('state.tableDataList', state.tableDataList)
 
     state.total = res.total
   } finally {
@@ -1911,14 +1912,13 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
-  console.log('成员record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
   }
   //获取成员详情
   const res = await getMemberDetails({ id: record.id })
-  console.log('成员详情res', res)
+
   formState.id = record.id
 
   //菜单状态 0开启 1关闭
@@ -1945,7 +1945,6 @@ const edit = async (record, isCloseDetails = false) => {
   // addPostDataSource.addEditTableData.map((item) => {
   record?.postVOList?.map((item, index) => {
     const tempBrand = item.brands === '' || item.brands === null ? [] : item.brands.split(',')
-    console.log('tempBrand', tempBrand)
     tempPostList.push({
       index: index,
       id: item.id,
@@ -1999,8 +1998,6 @@ const edit = async (record, isCloseDetails = false) => {
   formState.wechat = record.wechat //微信号
   formState.detailedAddress = record.address //公司地址 详细地址
 
-  console.log('formState.isOnJob=========', formState.isOnJob)
-
   if (record.avatar) {
     state.legalPersonListUrl = [
       {
@@ -2045,9 +2042,16 @@ const edit = async (record, isCloseDetails = false) => {
   openModal()
 }
 
+// //页码改变
+// const onChange = ({ pageSize, current }) => {
+//   queryParams.current = current
+//   queryParams.pageSize = pageSize
+//   getList()
+// }
+
 //页码改变
-const onChange = ({ pageSize, current }) => {
-  queryParams.current = current
+const onPageChange = ({ pageSize, pageNo }) => {
+  queryParams.current = pageNo
   queryParams.pageSize = pageSize
   getList()
 }
@@ -2059,11 +2063,9 @@ let needReplaceKey = [
   ['value', 'code']
 ]
 state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
-// console.log('state.proMunAreaList', state.proMunAreaList)
 
 //新增成员
 const addMajorIndividualFN = async () => {
-  // console.log('dayjs', dayjs().format('YYYY/MM/DD'))
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
@@ -2104,11 +2106,9 @@ const addMajorIndividualFN = async () => {
 
   addPostDataSource.addEditTableData.map((item) => {
     let tempBrandString = ''
-    console.log('item.brand', item.brand)
 
     tempBrandString = item.brand.join()
 
-    console.log('tempBrandString', tempBrandString)
     //修改时
     if (formState.id) {
       tempPostList.push({
@@ -2129,7 +2129,6 @@ const addMajorIndividualFN = async () => {
         visible: item.isShow //是否显示
       })
     }
-    console.log('item.organizationId', item.organizationId)
 
     if (!item.department) {
       markDep = true
@@ -2164,7 +2163,6 @@ const addMajorIndividualFN = async () => {
     address: formState.detailedAddress //公司地址 详细地址
   }
 
-  console.log('formState?.cascadeInfo', formState?.cascadeInfo)
   //省市区
   if (formState?.cascadeInfo[0]) {
     params['province'] = formState.cascadeInfo[0].label
@@ -2180,7 +2178,6 @@ const addMajorIndividualFN = async () => {
   }
 
   state.addEditLoading = true
-  console.log('新增params', params)
   try {
     let res = []
     if (state.modalType === 'add') {
@@ -2188,14 +2185,12 @@ const addMajorIndividualFN = async () => {
       params['password'] = '123456'
       res = await addMember(params)
       state.addSuccessId = res
-      console.log('新增成员res', res)
       message.success('新建成员成功')
       //分配角色
       openPermissionModal(true)
     } else {
       params['id'] = formState.id
       params['departureTime'] = formState.departureTime?.format('YYYY-MM-DD')
-      console.log('params===>', params)
       res = await updateMember(params)
       message.success('修改成员成功')
     }
@@ -2224,7 +2219,6 @@ const openPermissionModal = async (isAdd = false) => {
   if (isAdd) {
     const res = await getMemberDetails({ id: state.addSuccessId })
     state.permissionRecord = res
-    console.log('新增后获取res', res)
     assignPermission(res)
   }
   // state.isShowPermission = true
@@ -2248,17 +2242,13 @@ const uniqueFunc = (arr, uniId) => {
 }
 
 const assignPermission = async (record) => {
-  console.log('分配角色record=》', record)
   const { postVOList = [], roleVOList = [] } = record
   const tempArr = uniqueFunc(postVOList, 'postId')
   record.postVOListDeal = tempArr
-  console.log('tempArr', tempArr)
   let postIdArr = []
-  console.log('postVOList', postVOList)
   tempArr.map((item) => {
     postIdArr.push(item.postId)
   })
-  console.log('roleVOList', roleVOList)
   if (roleVOList?.length === 0 || roleVOList === null) {
     const tempRes = await getRolePostList({
       postIds: postIdArr
@@ -2266,8 +2256,6 @@ const assignPermission = async (record) => {
     nextTick(() => {
       state.roleId = tempRes
     })
-    console.log('state.configureRolesNewOptions======>', state.configureRolesNewOptions)
-    console.log('默认角色岗位tempRes', tempRes)
   }
   state.permissionRecord = record
   //回显 已分配的角色
@@ -2303,8 +2291,6 @@ const setTableStatusChangeInfo = (value, record, type = 'switch') => {
     record,
     type: type
   }
-  console.log('value', value)
-  console.log('record', record)
   switch (type) {
     case 'delete':
       //删除
@@ -2454,8 +2440,6 @@ const detailsInfo = async (record) => {
   const res = await getMemberDetails({ id: record.id })
   const { roleVOList = [] } = record
   const { userHistoryVOList = [], phoneVOList = [], postVOList = [] } = res
-  console.log('详情record', record)
-  console.log('详情res', res)
   let sexText = '男'
   let isOnJobText = '在职'
   let homeAddress = ''
@@ -2497,7 +2481,8 @@ const detailsInfo = async (record) => {
     //0未删除 1删除  删除显示优先级高于关闭
     roleStatusText = roleItem.roleDeleted === 0 ? roleStatusText : '(删除)'
     tempRoleVOList.push({
-      roleName: `${roleItem.roleName}${roleStatusText}`
+      roleName: `${roleItem.roleName}${roleStatusText}`,
+      roleId: roleItem.roleId
     })
   })
 
@@ -2565,8 +2550,6 @@ const detailsInfo = async (record) => {
       // operator: '操作人：张三（010005）'
     }
 
-    console.log('beforeData', temp1)
-    console.log('afterData', temp2)
     switch (item?.historyType) {
       case 'update':
         //修改
@@ -2605,11 +2588,6 @@ const detailsInfo = async (record) => {
 
         temp2?.map((item) => {
           const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-          // console.log('item============>', item)
-          // console.log('item.updateTime', item.updateTime)
-          // console.log('item.updateTime.date', item.updateTime.date)
-          // console.log('item.updateTime.date.year', item.updateTime.date.year)
-          // console.log('item?.updateTime?.data?.month', item?.updateTime?.data)
 
           // tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
           tempItem.afterChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
@@ -3079,7 +3057,6 @@ const removeImg = (file, type) => {
 
 // //永久有效 取消勾选清空 日期选择器值
 // const foreverChange = (e) => {
-//   console.log('e', e)
 //   if (e.target.checked === false) {
 //     state.formState.effectiveStartEndTime = []
 //   }
@@ -3135,32 +3112,22 @@ function filterOne(dataList, value, type) {
 }
 
 const sendCurrentSelect = (currentKey) => {
-  // console.log('typeof currentKey', typeof currentKey)
-  // const organizationList = state.organizationList.filter((item) => item.parentId === currentKey)
-  // console.log('organizationList', organizationList)
-  //currentKey 有值 取本身id以及所有子项id  currentKey无值 取所有id
-  // console.log('state.organizationList!!!!!!!!!!', state.organizationList)
   //Number强转 路由跳转进来为String
   const tempItem = state.organizationList.filter((item) => item.id === Number(currentKey))
-  // console.log('tempItem', tempItem)
   const tempComponent = tempItem[0]?.component
   const needArr = filterOne(state.organizationList, tempComponent, ['component'])
   const tempArr = []
-  // console.log('needArr!!!!!!!', needArr)
   if (currentKey) {
     needArr.map((item) => {
       tempArr.push(item.id)
     })
     queryParams.organization = tempArr
-    // console.log('tempArr11111111111111111111', tempArr)
   } else {
     state.organizationList.map((item) => {
       tempArr.push(item.id)
     })
     queryParams.organization = tempArr
-    // console.log('tempArr222222222222222222222222222222', tempArr)
   }
-  // console.log('queryParams.organization', queryParams.organization)
   getList(1)
 }
 
@@ -3172,25 +3139,10 @@ interface DataItem {
   children?: DataItem[]
 }
 
-// const rowSelection = ref({
-//   selectedRowKeys: state.selectedRowKeys,
-//   checkStrictly: false,
-//   onChange: (selectedRowKeys: (string | number)[], selectedRows: DataItem[]) => {
-//     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
-//   },
-//   onSelect: (record: DataItem, selected: boolean, selectedRows: DataItem[]) => {
-//     console.log(record, selected, selectedRows)
-//   },
-//   onSelectAll: (selected: boolean, selectedRows: DataItem[], changeRows: DataItem[]) => {
-//     console.log(selected, selectedRows, changeRows)
-//   }
-// })
-
 //获取部门列表
 const getOrganizationListFN = async () => {
   const res = await getSimpleOrganizationList()
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
-  // console.log('organization', organizationList)
 
   state.organizationList = res
   // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
@@ -3220,8 +3172,6 @@ const getAllType = async () => {
   const rolesRes = await getRolesList()
   //获取数据字典
   const dictRes = await getOrganizationTypeList()
-
-  // console.log('dictRes', dictRes)
 
   //人员类型
   const tempMemberType = dictRes.filter((item) => item.dictType === 'person_type')
@@ -3266,17 +3216,7 @@ const getAllType = async () => {
     state.partPostOptionsText = tempPostType
     state.barnOptions = tempBarnOptions
   })
-  //
-  console.log('岗位类型', res)
-  // console.log('岗位类型D', state.postTypeOptions)
-  // console.log('配置角色', rolesRes)
-  // console.log('配置角色D', state.configureRolesOptions)
-  // console.log('人员类型', tempMemberType)
-  // console.log('人员类型D', state.memberTypeOptions)
-  // console.log('岗位列表', postList)
-  // console.log('岗位列表D', state.postListOptions)
-  // console.log('岗位类型主岗/兼岗', tempPostType)
-  // console.log('所属品牌', tempBarnOptions)
+
   postTypeChange(null)
 }
 
@@ -3374,8 +3314,6 @@ const addColumns = (index) => {
     isService: true
   }
 
-  console.log('index', index)
-
   addDataSource.addEditTableData.splice(index + 1, 0, tempObj)
 
   addDataSource.addEditTableData.map((item, index) => {
@@ -3385,12 +3323,10 @@ const addColumns = (index) => {
 
 //新增编辑 联系电话 delete
 const deleteColumns = (index) => {
-  console.log('index', index)
   addDataSource.addEditTableData = addDataSource.addEditTableData.filter(
     (item) => item.index !== index
   )
 
-  console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
   addDataSource.addEditTableData.map((item, index) => {
     item.index = index
   })
@@ -3496,8 +3432,6 @@ const addPostColumns = (index) => {
     isShow: true
   }
 
-  console.log('index', index)
-
   addPostDataSource.addEditTableData.splice(index + 1, 0, tempObj)
 
   addPostDataSource.addEditTableData.map((item, index) => {
@@ -3507,18 +3441,13 @@ const addPostColumns = (index) => {
 
 //新增编辑 岗位信息 delete
 const deletePostColumns = (index) => {
-  console.log('index', index)
-  console.log('addPostDataSource.addEditTableData', addPostDataSource.addEditTableData)
   addPostDataSource.addEditTableData = addPostDataSource.addEditTableData.filter(
     (item) => item.index !== index
   )
 
-  console.log('addDataSource.addEditTableData', addDataSource.addEditTableData)
-  // nextTick(() => {
   addPostDataSource.addEditTableData.map((item, index) => {
     item.index = index
   })
-  // })
 }
 
 const rolesChange = (rolesID) => {
@@ -3528,9 +3457,7 @@ const rolesChange = (rolesID) => {
 
 //详情 角色信息标签点击事件
 const clickRoleTag = async (childItem) => {
-  console.log('角色信息标签点击事件childItem', childItem)
   const res = await getRoleApi(childItem.roleId)
-  console.log('角色权限res', res)
   await configDetailDrawerRef.value.openDrawer(res)
 }
 
@@ -3552,12 +3479,9 @@ const postTypeChange = async (value) => {
     ['value', 'id']
   ]
   state.postTypeSpecifyOptions = reconstructionArrayObject(postListRes, needReplacePartPostKey)
-
-  console.log('岗位列表postListRes', postListRes)
 }
 
 const limitInput = (value, currentValue) => {
-  console.log('value', value)
   if (!value) {
     return
   }
@@ -3605,8 +3529,6 @@ const batchAssignUserRole = (): void => {
 // 批量设角色
 
 onMounted(async () => {
-  console.log('$router', $router)
-  console.log('$route', $route)
   state.organizationList = await getOrganizationListFN()
   let organizationId = ''
   //机构管理 员工数跳转进来
@@ -3616,14 +3538,12 @@ onMounted(async () => {
     organizationId = organization
     nextTick(() => {
       state.selectedKeys = [Number(organization)]
-      console.log('state.selectedKeys', state.selectedKeys)
     })
   } else if ($router.options.history.state?.back === '/system/post') {
     //岗位管理 页面跳转进来
     const { isOnJob = '0', postId = null, postTypeId = null } = $route?.query || {}
 
     await postTypeChange(postTypeId)
-    console.log('postId============>', postId)
     if (queryParams.postType != null) {
       queryParams.postType = postTypeId
       queryParams.isOnJob = isOnJob

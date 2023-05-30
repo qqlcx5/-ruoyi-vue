@@ -1,161 +1,168 @@
 <!--  菜单管理  -->
 <template>
-  <!-- 搜索工作栏 -->
-  <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
-      <a-form-item :label="`菜单名称`" name="name">
-        <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
-      </a-form-item>
-      <a-form-item :label="`菜单类型`" name="type">
-        <a-select
-          v-model:value="queryParams.type"
-          placeholder="请选择菜单类型"
-          style="width: 200px"
-          :options="getIntDictOptions(DICT_TYPE.SYSTEM_MENU_TYPE)"
-        />
-      </a-form-item>
-      <a-form-item :label="`状态`" name="status">
-        <a-select
-          v-model:value="queryParams.status"
-          placeholder="请选择菜单状态"
-          style="width: 200px"
-          :options="getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
-        />
-      </a-form-item>
-      <!-- TODO:权限-->
-      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
-      <a-button @click="resetQuery">重置</a-button>
-    </a-form>
-  </ContentWrap>
+  <div class="total-content">
+    <!-- 搜索工作栏 -->
+    <ContentWrap style="min-height: 72px">
+      <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
+        <a-form-item :label="`菜单名称`" name="name">
+          <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
+        </a-form-item>
+        <a-form-item :label="`菜单类型`" name="type">
+          <a-select
+            v-model:value="queryParams.type"
+            placeholder="请选择菜单类型"
+            style="width: 200px"
+            :options="getIntDictOptions(DICT_TYPE.SYSTEM_MENU_TYPE)"
+          />
+        </a-form-item>
+        <a-form-item :label="`状态`" name="status">
+          <a-select
+            v-model:value="queryParams.status"
+            placeholder="请选择菜单状态"
+            style="width: 200px"
+            :options="getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+          />
+        </a-form-item>
+        <!-- TODO:权限-->
+        <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
+        <a-button @click="resetQuery">重置</a-button>
+      </a-form>
+    </ContentWrap>
 
-  <!--  表格  -->
-  <a-card :bordered="false" style="min-width: 1650px" id="card-content">
-    <!--  <ContentWrap>-->
-    <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
-    <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
-    <!--    >-->
+    <!--  表格  -->
+    <a-card :bordered="false" style="min-width: 1650px; height: 100%" id="card-content">
+      <!--  <ContentWrap>-->
+      <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
+      <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
+      <!--    >-->
 
-    <div class="card-content">
-      <!--  左侧按钮  -->
-      <div class="button-content">
-        <a-button type="primary" @click="openModal">
-          <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
-          新增
-        </a-button>
-        <a-button @click="toggleExpandAll">
-          <template #icon>
-            <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
-            <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
+      <div class="card-content">
+        <!--  左侧按钮  -->
+        <div class="button-content">
+          <a-button type="primary" @click="openModal">
+            <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
+            新增
+          </a-button>
+          <a-button @click="toggleExpandAll">
+            <template #icon>
+              <Icon
+                icon="svg-icon:expansion"
+                class="btn-icon"
+                :size="10"
+                v-if="state.isExpandAll"
+              />
+              <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
+            </template>
+            {{ state.isExpandAll ? '收起全部' : '展开全部' }}
+          </a-button>
+        </div>
+        <!--  右侧操作  -->
+        <div class="operation-content">
+          <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
+          <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
+          <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
+          <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
+          <Icon
+            icon="svg-icon:custom-column"
+            :size="50"
+            class="cursor-pointer"
+            @click="state.isShowCustomColumnModal = true"
+          />
+        </div>
+      </div>
+
+      <a-table
+        :columns="state.columns"
+        :data-source="list"
+        :scroll="{ x: '100%' }"
+        :row-key="(record) => record.id"
+        :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
+        :defaultExpandAllRows="state.isExpandAll"
+        v-if="state.refreshTable"
+        @resizeColumn="handleResizeColumn"
+        :expandIconColumnIndex="state.treeIconIndex"
+        :pagination="false"
+      >
+        <!--  自定义展开折叠图标  -->
+        <template #expandIcon="props">
+          <span v-if="props.record.children && props.record.children.length > 0">
+            <div
+              v-if="props.expanded"
+              style="display: inline-block; margin-right: 10px"
+              @click="
+                (e) => {
+                  props.onExpand(props.record, e)
+                }
+              "
+            >
+              <Icon icon="ep:caret-bottom" :size="12" />
+            </div>
+            <div
+              v-else
+              style="display: inline-block; margin-right: 10px"
+              @click="
+                (e) => {
+                  props.onExpand(props.record, e)
+                }
+              "
+            >
+              <Icon icon="ep:caret-right" :size="12" />
+            </div>
+          </span>
+          <span v-else style="margin-right: 21px"></span>
+        </template>
+        <!--  单元格插槽  -->
+        <template #bodyCell="{ column, record }">
+          <!--  菜单名称   -->
+          <template v-if="column.key === 'name'">
+            <div class="name-content">
+              <Icon :icon="record.icon" v-if="record.icon" style="margin-right: 5px" />
+              <div>{{ record.name }}</div>
+            </div>
           </template>
-          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
-        </a-button>
-      </div>
-      <!--  右侧操作  -->
-      <div class="operation-content">
-        <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
-        <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
-        <Icon
-          icon="svg-icon:custom-column"
-          :size="50"
-          class="cursor-pointer"
-          @click="state.isShowCustomColumnModal = true"
-        />
-      </div>
-    </div>
-
-    <a-table
-      :columns="state.columns"
-      :data-source="list"
-      :scroll="{ x: '100%' }"
-      :row-key="(record) => record.id"
-      :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
-      :defaultExpandAllRows="state.isExpandAll"
-      v-if="state.refreshTable"
-      @resizeColumn="handleResizeColumn"
-      :expandIconColumnIndex="state.treeIconIndex"
-      :pagination="false"
-    >
-      <!--  自定义展开折叠图标  -->
-      <template #expandIcon="props">
-        <span v-if="props.record.children && props.record.children.length > 0">
-          <div
-            v-if="props.expanded"
-            style="display: inline-block; margin-right: 10px"
-            @click="
-              (e) => {
-                props.onExpand(props.record, e)
-              }
-            "
-          >
-            <Icon icon="ep:caret-bottom" :size="12" />
-          </div>
-          <div
-            v-else
-            style="display: inline-block; margin-right: 10px"
-            @click="
-              (e) => {
-                props.onExpand(props.record, e)
-              }
-            "
-          >
-            <Icon icon="ep:caret-right" :size="12" />
-          </div>
-        </span>
-        <span v-else style="margin-right: 21px"></span>
-      </template>
-      <!--  单元格插槽  -->
-      <template #bodyCell="{ column, record }">
-        <!--  菜单名称   -->
-        <template v-if="column.key === 'name'">
-          <div class="name-content">
-            <Icon :icon="record.icon" v-if="record.icon" style="margin-right: 5px" />
-            <div>{{ record.name }}</div>
-          </div>
+          <!--  类型   -->
+          <template v-if="column.key === 'type'">
+            <span v-show="record.type === 1">目录</span>
+            <span v-show="record.type === 2">菜单</span>
+            <span v-show="record.type === 3">按钮</span>
+          </template>
+          <!--  员工数   -->
+          <template v-if="column.key === 'employeesNumber'">
+            <div class="employees-Number" @click="openDetails(record)">{{ record?.userCount }}</div>
+          </template>
+          <!--  菜单状态   -->
+          <template v-if="column.key === 'status'">
+            <a-switch
+              v-model:checked="record.statusSwitch"
+              @change="(value) => tableStatusChange(value, record)"
+            />
+          </template>
+          <!--  显示状态   -->
+          <template v-if="column.key === 'visible'">
+            <a-switch
+              v-model:checked="record.visible"
+              @change="(value) => tableVisibleChange(value, record)"
+            />
+          </template>
+          <!--  操作   -->
+          <template v-if="column.key === 'operation'">
+            <div class="operation-content">
+              <div class="text-color margin-right-5" @click="edit(record)">修改</div>
+              <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
+              <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+              <a-popover placement="bottom">
+                <template #content>
+                  <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+          </template>
         </template>
-        <!--  类型   -->
-        <template v-if="column.key === 'type'">
-          <span v-show="record.type === 1">目录</span>
-          <span v-show="record.type === 2">菜单</span>
-          <span v-show="record.type === 3">按钮</span>
-        </template>
-        <!--  员工数   -->
-        <template v-if="column.key === 'employeesNumber'">
-          <div class="employees-Number" @click="openDetails(record)">{{ record?.userCount }}</div>
-        </template>
-        <!--  菜单状态   -->
-        <template v-if="column.key === 'status'">
-          <a-switch
-            v-model:checked="record.statusSwitch"
-            @change="(value) => tableStatusChange(value, record)"
-          />
-        </template>
-        <!--  显示状态   -->
-        <template v-if="column.key === 'visible'">
-          <a-switch
-            v-model:checked="record.visible"
-            @change="(value) => tableVisibleChange(value, record)"
-          />
-        </template>
-        <!--  操作   -->
-        <template v-if="column.key === 'operation'">
-          <div class="operation-content">
-            <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-            <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
-            <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
-            <a-popover placement="bottom">
-              <template #content>
-                <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
-              </template>
-              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-            </a-popover>
-          </div>
-        </template>
-      </template>
-    </a-table>
-    <!--  </ContentWrap>-->
-  </a-card>
+      </a-table>
+      <!--  </ContentWrap>-->
+    </a-card>
+  </div>
 
   <!-- 新增 编辑 Modal -->
   <a-modal
@@ -1644,6 +1651,12 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+.total-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 .content {
   width: 100px;
   height: 100px;

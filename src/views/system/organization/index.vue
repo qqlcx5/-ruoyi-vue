@@ -1,194 +1,208 @@
 <!--  机构管理  -->
 <template>
-  <!-- 搜索工作栏 -->
+  <div class="total-content">
+    <!-- 搜索工作栏 -->
+    <ContentWrap style="min-height: 72px">
+      <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
+        <a-form-item :label="`机构名称`" name="keyword">
+          <a-input v-model:value="queryParams.keyword" placeholder="请输入机构名称或者编码" />
+        </a-form-item>
 
-  <ContentWrap>
-    <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
-      <a-form-item :label="`机构名称`" name="keyword">
-        <a-input v-model:value="queryParams.keyword" placeholder="请输入机构名称或者编码" />
-      </a-form-item>
-
-      <a-form-item :label="`机构类型`" name="organizationType">
-        <a-select
-          v-model:value="queryParams.organizationType"
-          placeholder="请选择机构类型"
-          style="width: 200px"
-          :options="state.organizationTypeOptions"
-        />
-      </a-form-item>
-
-      <a-form-item :label="`状态`" name="status">
-        <a-select
-          v-model:value="queryParams.status"
-          placeholder="请选择状态"
-          style="width: 200px"
-          :options="state.statusOptions"
-        />
-      </a-form-item>
-      <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
-      <a-button @click="resetQuery">重置</a-button>
-    </a-form>
-  </ContentWrap>
-
-  <!--  表格  -->
-  <a-card :bordered="false" style="min-width: 1650px; padding-bottom: 30px" id="card-content">
-    <!--  <ContentWrap>-->
-    <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
-    <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
-    <!--    >-->
-
-    <div class="card-content">
-      <!--  左侧按钮  -->
-      <div class="button-content">
-        <a-button type="primary" @click="openModal()">
-          <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
-          新增
-        </a-button>
-        <a-button @click="toggleExpandAll">
-          <template #icon>
-            <Icon icon="svg-icon:expansion" class="btn-icon" :size="10" v-if="state.isExpandAll" />
-            <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
-          </template>
-          {{ state.isExpandAll ? '收起全部' : '展开全部' }}
-        </a-button>
-      </div>
-      <!--  右侧操作  -->
-      <div class="operation-content">
-        <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
-        <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-        <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
-        <Icon
-          icon="svg-icon:custom-column"
-          :size="50"
-          class="cursor-pointer"
-          @click="state.isShowCustomColumnModal = true"
-        />
-      </div>
-    </div>
-
-    <!--  分页 - - 之前有 后面去掉了  -->
-    <!--    :pagination="{-->
-    <!--    pageSizeOptions: ['20', '30', '60', '100'],-->
-    <!--    showSizeChanger: true,-->
-    <!--    showQuickJumper: true,-->
-    <!--    pageSize: queryParams.pageSize,-->
-    <!--    current: queryParams.current,-->
-    <!--    total: state.total,-->
-    <!--    showTotal: (total) => `总共 ${total} 条`-->
-    <!--    }"-->
-
-    <a-table
-      v-if="state.refreshTable"
-      :columns="state.columns"
-      :data-source="state.tableDataList"
-      :scroll="{ x: '100%' }"
-      :pagination="false"
-      @change="onChange"
-      :row-key="(record) => record.id"
-      :loading="state.loading"
-      :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
-      :defaultExpandAllRows="state.isExpandAll"
-      @resizeColumn="handleResizeColumn"
-      :expandIconColumnIndex="state.treeIconIndex"
-    >
-      <!--  自定义展开折叠图标  -->
-      <template #expandIcon="props">
-        <span v-if="props.record.children && props.record.children.length > 0">
-          <div
-            v-if="props.expanded"
-            style="display: inline-block; margin-right: 10px"
-            @click="
-              (e) => {
-                props.onExpand(props.record, e)
-              }
-            "
-          >
-            <Icon icon="ep:caret-bottom" :size="12" />
-          </div>
-          <div
-            v-else
-            style="display: inline-block; margin-right: 10px"
-            @click="
-              (e) => {
-                props.onExpand(props.record, e)
-              }
-            "
-          >
-            <Icon icon="ep:caret-right" :size="12" />
-          </div>
-        </span>
-        <span v-else style="margin-right: 22px"></span>
-      </template>
-      <!--  单元格插槽  -->
-      <template #bodyCell="{ column, record }">
-        <!--  员工数  -->
-        <template v-if="column?.key === 'employeesNumber'">
-          <div class="employees-Number" @click="jumpToMember(record)">{{ record.staffCount }}</div>
-        </template>
-
-        <!--  可用名额   -->
-        <template v-if="column?.key === 'usableAmount'">
-          <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
-        </template>
-        <!--  有效期   -->
-        <template v-if="column?.key === 'validityPeriod'">
-          <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
-        </template>
-        <!--  状态   -->
-        <template v-if="column?.key === 'statusSwitch'">
-          <a-switch
-            :disabled="record.level === 1"
-            v-model:checked="record.statusSwitch"
-            @change="(value) => setTableStatusChangeInfo(value, record)"
+        <a-form-item :label="`机构类型`" name="organizationType">
+          <a-select
+            v-model:value="queryParams.organizationType"
+            placeholder="请选择机构类型"
+            style="width: 200px"
+            :options="state.organizationTypeOptions"
           />
-        </template>
-        <!--  操作   -->
-        <template v-if="column?.key === 'operation'">
-          <div class="operation-content">
-            <div class="text-color margin-right-5" @click="edit(record)">修改</div>
+        </a-form-item>
+
+        <a-form-item :label="`状态`" name="status">
+          <a-select
+            v-model:value="queryParams.status"
+            placeholder="请选择状态"
+            style="width: 200px"
+            :options="state.statusOptions"
+          />
+        </a-form-item>
+        <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
+        <a-button @click="resetQuery">重置</a-button>
+      </a-form>
+    </ContentWrap>
+
+    <!--  表格  -->
+    <a-card
+      :bordered="false"
+      style="min-width: 1650px; height: 100%; padding-bottom: 30px"
+      id="card-content"
+    >
+      <!--  <ContentWrap>-->
+      <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
+      <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
+      <!--    >-->
+
+      <div class="card-content">
+        <!--  左侧按钮  -->
+        <div class="button-content">
+          <a-button type="primary" @click="openModal()">
+            <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
+            新增
+          </a-button>
+          <a-button @click="toggleExpandAll">
+            <template #icon>
+              <Icon
+                icon="svg-icon:expansion"
+                class="btn-icon"
+                :size="10"
+                v-if="state.isExpandAll"
+              />
+              <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
+            </template>
+            {{ state.isExpandAll ? '收起全部' : '展开全部' }}
+          </a-button>
+        </div>
+        <!--  右侧操作  -->
+        <div class="operation-content">
+          <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
+          <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
+          <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
+          <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
+          <Icon
+            icon="svg-icon:custom-column"
+            :size="50"
+            class="cursor-pointer"
+            @click="state.isShowCustomColumnModal = true"
+          />
+        </div>
+      </div>
+
+      <!--  分页 - - 之前有 后面去掉了  -->
+      <!--    :pagination="{-->
+      <!--    pageSizeOptions: ['20', '30', '60', '100'],-->
+      <!--    showSizeChanger: true,-->
+      <!--    showQuickJumper: true,-->
+      <!--    pageSize: queryParams.pageSize,-->
+      <!--    current: queryParams.current,-->
+      <!--    total: state.total,-->
+      <!--    showTotal: (total) => `总共 ${total} 条`-->
+      <!--    }"-->
+
+      <a-table
+        v-if="state.refreshTable"
+        :columns="state.columns"
+        :data-source="state.tableDataList"
+        :scroll="{ x: '100%' }"
+        :pagination="false"
+        @change="onChange"
+        :row-key="(record) => record.id"
+        :loading="state.loading"
+        :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
+        :defaultExpandAllRows="state.isExpandAll"
+        @resizeColumn="handleResizeColumn"
+        :expandIconColumnIndex="state.treeIconIndex"
+      >
+        <!--  自定义展开折叠图标  -->
+        <template #expandIcon="props">
+          <span v-if="props.record.children && props.record.children.length > 0">
             <div
-              :class="[
-                'text-color',
-                'margin-right-5',
-                { 'disable-color': record?.statusSwitch === false }
-              ]"
-              @click="openModal(record, record?.statusSwitch === false)"
-              >新增子项</div
+              v-if="props.expanded"
+              style="display: inline-block; margin-right: 10px"
+              @click="
+                (e) => {
+                  props.onExpand(props.record, e)
+                }
+              "
             >
+              <Icon icon="ep:caret-bottom" :size="12" />
+            </div>
             <div
-              :class="[
-                'text-color',
-                'margin-right-5',
-                { 'disable-color': record?.statusSwitch === false }
-              ]"
-              @click="assignPermission(record, false, record?.statusSwitch === false)"
-              v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
-              >设置属性</div
+              v-else
+              style="display: inline-block; margin-right: 10px"
+              @click="
+                (e) => {
+                  props.onExpand(props.record, e)
+                }
+              "
             >
-            <div class="text-color margin-right-5" @click="detailsInfo(record)" v-else>详情</div>
-            <a-popover placement="bottom">
-              <template #content>
-                <div
-                  class="text-color margin-right-5"
-                  @click="detailsInfo(record)"
-                  v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
-                  >详情</div
-                >
-                <div
-                  class="text-color margin-right-5"
-                  @click="setTableStatusChangeInfo(false, record, 'delete')"
-                  >删除</div
-                >
-              </template>
-              <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-            </a-popover>
-          </div>
+              <Icon icon="ep:caret-right" :size="12" />
+            </div>
+          </span>
+          <span v-else style="margin-right: 22px"></span>
         </template>
-      </template>
-    </a-table>
-    <!--  </ContentWrap>-->
-  </a-card>
+        <!--  单元格插槽  -->
+        <template #bodyCell="{ column, record }">
+          <!--  员工数  -->
+          <template v-if="column?.key === 'employeesNumber'">
+            <div class="employees-Number" @click="jumpToMember(record)">{{
+              record.staffCount
+            }}</div>
+          </template>
+
+          <!--  可用名额   -->
+          <template v-if="column?.key === 'usableAmount'">
+            <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
+          </template>
+          <!--  有效期   -->
+          <template v-if="column?.key === 'validityPeriod'">
+            <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
+          </template>
+          <!--  状态   -->
+          <template v-if="column?.key === 'statusSwitch'">
+            <a-switch
+              :disabled="record.level === 1"
+              v-model:checked="record.statusSwitch"
+              @change="(value) => setTableStatusChangeInfo(value, record)"
+            />
+          </template>
+          <!--  操作   -->
+          <template v-if="column?.key === 'operation'">
+            <div class="operation-content">
+              <div class="text-color margin-right-5" @click="edit(record)">修改</div>
+              <div
+                :class="[
+                  'text-color',
+                  'margin-right-5',
+                  { 'disable-color': record?.statusSwitch === false }
+                ]"
+                @click="openModal(record, record?.statusSwitch === false)"
+                >新增子项</div
+              >
+              <div
+                :class="[
+                  'text-color',
+                  'margin-right-5',
+                  { 'disable-color': record?.statusSwitch === false }
+                ]"
+                @click="assignPermission(record, false, record?.statusSwitch === false)"
+                v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
+                >设置属性</div
+              >
+              <div class="text-color margin-right-5" @click="detailsInfo(record)" v-else>详情</div>
+              <a-popover placement="bottom">
+                <template #content>
+                  <div
+                    class="text-color margin-right-5"
+                    @click="detailsInfo(record)"
+                    v-if="
+                      record.organizationType === '分公司' || record.organizationType === '门店'
+                    "
+                    >详情</div
+                  >
+                  <div
+                    class="text-color margin-right-5"
+                    @click="setTableStatusChangeInfo(false, record, 'delete')"
+                    >删除</div
+                  >
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+          </template>
+        </template>
+      </a-table>
+      <!--  </ContentWrap>-->
+    </a-card>
+  </div>
 
   <!-- 新增 编辑 Modal -->
   <a-modal
@@ -1601,7 +1615,7 @@ const getList = async (isRefresh = false) => {
     })
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'parentId', 'children')
-    console.log(' state.tableDataList', state.tableDataList)
+
     state.total = res.total
     if (isRefresh) {
       message.success('刷新成功')
@@ -1891,7 +1905,6 @@ const PermissionOk = async () => {
   const valid = await formAttributeRef.value.validate()
   state.addEditLoading = true
 
-  console.log('state.formAttributeState.type', state.formAttributeState.type)
   if (state.formAttributeState.type?.length === 0 || !state.formAttributeState.type) {
     return message.warning('类型不能为空')
   }
@@ -1968,7 +1981,7 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
   if (disabled) {
     return
   }
-  console.log('设置属性record', record)
+
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1983,7 +1996,7 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
     //... res 可能为null
     state.detailsRecord = res
     let tempType = [] || ''
-    console.log('设置属性详情res', res)
+
     if (record.organizationType == '分公司') {
       tempType = res?.relVO?.type[0]
     } else {
@@ -2118,8 +2131,7 @@ const closeStatusModal = () => {
 const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
   const res = await getActiveEmployeesNumber({ id: record.id })
   // const res = 25
-  console.log('res------', res)
-  console.log('record', record)
+
   if (res === 0) {
     nextTick(() => {
       state.tableStatusChangeInfo['ctiveEmployeesNumber'] = 0
@@ -2195,8 +2207,6 @@ const detailsInfo = async (record) => {
   //获取机构详情
   const res = await getOrganizationDetails({ id: record.id })
   const { relVO = {} } = res
-  console.log('详情record', record)
-  console.log('详情res', res)
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
@@ -2214,7 +2224,6 @@ const detailsInfo = async (record) => {
     const tempArrTypeF = state.branchCompanyTypeOptions.filter((topItem) => {
       return relVO?.type.some((item) => topItem.value === item)
     })
-    console.log('tempArrTypeF', tempArrTypeF)
 
     tempArrTypeF.map((item) => {
       if (tempArrTypeString === '') {
@@ -2770,6 +2779,12 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+.total-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 .content {
   width: 100px;
   height: 100px;
