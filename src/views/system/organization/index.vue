@@ -436,6 +436,109 @@
           </a-checkbox-group>
         </a-form-item>
 
+        <div class="form-content">
+          <a-form-item
+            label="是否有销售"
+            name="isSale"
+            class="width-50"
+            :rules="[{ required: true, message: `是否有销售不能为空` }]"
+          >
+            <a-radio-group v-model:value="state.formAttributeState.isSale">
+              <a-radio-button
+                v-for="(item, index) in state.barndOptions"
+                :key="`isSale-${index}`"
+                :value="item.value"
+                >{{ item.label }}</a-radio-button
+              >
+            </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            label="销售品牌"
+            name="isSale"
+            class="width-50"
+            :rules="[{ required: true, message: `销售品牌不能为空` }]"
+            v-if="state.formAttributeState.isSale === 0"
+          >
+            <a-tree-select
+              v-model:value="state.formAttributeState.saleBrand"
+              style="width: 100%"
+              :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+              placeholder="请选择销售品牌"
+              multiple
+              :tree-data="state.saleBrandOptions"
+            />
+          </a-form-item>
+        </div>
+        <div class="form-content">
+          <a-form-item
+            label="是否提供救援"
+            name="isRescue"
+            class="width-50"
+            :rules="[{ required: true, message: `是否提供救援不能为空` }]"
+          >
+            <a-radio-group v-model:value="state.formAttributeState.isRescue">
+              <a-radio-button
+                v-for="(item, index) in state.barndOptions"
+                :key="`isRescue-${index}`"
+                :value="item.value"
+                >{{ item.label }}</a-radio-button
+              >
+            </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            label="救援品牌"
+            name="rescueBrand"
+            class="width-50"
+            :rules="[{ required: true, message: `救援品牌不能为空` }]"
+            v-if="state.formAttributeState.isRescue === 0"
+          >
+            <a-tree-select
+              v-model:value="state.formAttributeState.rescueBrand"
+              style="width: 100%"
+              :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+              placeholder="请选择救援品牌"
+              multiple
+              :tree-data="state.rescueBrandOptions"
+            />
+          </a-form-item>
+        </div>
+        <div class="form-content">
+          <a-form-item
+            label="是否提供维保"
+            name="isMaintenance"
+            class="width-50"
+            :rules="[{ required: true, message: `是否提供维保不能为空` }]"
+          >
+            <a-radio-group v-model:value="state.formAttributeState.isMaintenance">
+              <a-radio-button
+                v-for="(item, index) in state.barndOptions"
+                :key="`isMaintenance-${index}`"
+                :value="item.value"
+                >{{ item.label }}</a-radio-button
+              >
+            </a-radio-group>
+          </a-form-item>
+
+          <a-form-item
+            label="维保品牌"
+            name="maintenanceBrand"
+            class="width-50"
+            :rules="[{ required: true, message: `维保品牌不能为空` }]"
+            v-if="state.formAttributeState.isMaintenance === 0"
+          >
+            <a-tree-select
+              v-model:value="state.formAttributeState.maintenanceBrand"
+              style="width: 100%"
+              :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+              placeholder="请选择维保品牌"
+              multiple
+              :tree-data="state.maintenanceBrandOptions"
+            />
+          </a-form-item>
+        </div>
+
         <a-form-item :label="`星级`" name="startRating">
           <a-rate v-model:value="state.formAttributeState.startRating" allow-half />
         </a-form-item>
@@ -1214,6 +1317,12 @@ const state = reactive({
   }, //新增表单
   formAttributeState: {
     type: [], //分公司类型 门店类型
+    isSale: '0', //是否有销售
+    saleBrand: [], //销售品牌
+    isRescue: '0', //是否提供救援
+    rescueBrand: [], //救援品牌
+    isMaintenance: '0', //是否提供维保
+    maintenanceBrand: [], //维保品牌
     startRating: 0, //星级
     logoUrl: '', //系统logo
     environmentUrl: '', //环境图片
@@ -1236,6 +1345,13 @@ const state = reactive({
     establishDate: '', //成立日期
     businessLicenseUrl: '' //营业执照
   }, //新增(设置)属性表单
+  saleBrandOptions: [], //销售品牌List 设置属性
+  rescueBrandOptions: [], //救援品牌List 设置属性
+  maintenanceBrandOptions: [], //销售品牌List 设置属性
+  barndOptions: [
+    { label: '是', value: 0 },
+    { label: '否', value: 1 }
+  ],
   addSuccessId: undefined, //创建机构成功ID 主要是用于创建机构后配置权限
   activeKey: 'baseKey', //详情modal tab
   permissionRecord: {}, //权限配置 操作 时 存的整条数据
@@ -1292,6 +1408,12 @@ const getOrganizationTypeListFN = async () => {
   state.storeTypeOptions = res.filter((item) => item.dictType === 'store_type')
   //联系方式类型
   state.contactInformationOptions = res.filter((item) => item.dictType === 'contact_type')
+  //销售品牌
+  state.saleBrandOptions = res.filter((item) => item.dictType === 'sellingBrand')
+  //救援品牌
+  state.rescueBrandOptions = res.filter((item) => item.dictType === 'rescueBrand')
+  //维保品牌
+  state.maintenanceBrandOptions = res.filter((item) => item.dictType === 'maintenanceBrand')
   //获取成员列表(不分页) 新增编辑 modal内的负责人list
   // const memberRes = await getMemberList()
   const memberRes = await getMemberAllList()
@@ -1713,6 +1835,12 @@ const closePermissionModal = () => {
   state.formAttributeState.companyAddress = []
   state.formAttributeState = {
     type: '', //分公司类型
+    isSale: '0', //是否有销售
+    saleBrand: [], //销售品牌
+    isRescue: '0', //是否提供救援
+    rescueBrand: [], //救援品牌
+    isMaintenance: '0', //是否提供维保
+    maintenanceBrand: [], //维保品牌
     startRating: 0, //星级
     logoUrl: '', //系统logo
     environmentUrl: '', //环境图片
@@ -1775,6 +1903,14 @@ const PermissionOk = async () => {
   const params = {
     organizationId: state.detailsRecord.id || state.addSuccessId,
     type: state.formAttributeState.type, //分公司类型
+    isSale: state.formAttributeState.isSale, //是否有销售
+    saleBrand: state.formAttributeState.isSale === 0 ? state.formAttributeState.saleBrand : [], //销售品牌
+    isRescue: state.formAttributeState.isRescue, //是否提供救援
+    rescueBrand:
+      state.formAttributeState.isRescue === 0 ? state.formAttributeState.rescueBrand : [], //救援品牌
+    isMaintenance: state.formAttributeState.isMaintenance, //是否提供维保
+    maintenanceBrand:
+      state.formAttributeState.isMaintenance === 0 ? state.formAttributeState.maintenanceBrand : [], //维保品牌
     startRating: state.formAttributeState.startRating, //星级
     logoUrl: state.logoUrlSuccess, //系统logo
     environmentUrl: state.environmentSuccess, //环境图片
@@ -1857,6 +1993,12 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
     state.formAttributeState = {
       organizationId: record.id, //机构id
       type: tempType, //分公司类型
+      isSale: res?.relVO?.isSale, //是否有销售
+      saleBrand: res?.relVO?.saleBrand, //销售品牌
+      isRescue: res?.relVO?.isRescue, //是否提供救援
+      rescueBrand: res?.relVO?.rescueBrand, //救援品牌
+      isMaintenance: res?.relVO?.isMaintenance, //是否提供维保
+      maintenanceBrand: res?.relVO?.maintenanceBrand, //维保品牌
       startRating: res?.relVO?.startRating, //星级
       detailedAddress: res?.relVO?.address, //地址 详细地址
       // contactInformationArr: res.relVO?.contact, //联系方式 设置属性
@@ -2053,6 +2195,8 @@ const detailsInfo = async (record) => {
   //获取机构详情
   const res = await getOrganizationDetails({ id: record.id })
   const { relVO = {} } = res
+  console.log('详情record', record)
+  console.log('详情res', res)
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
@@ -2095,6 +2239,51 @@ const detailsInfo = async (record) => {
       }
     })
   }
+
+  //销售品牌
+  let tempSaleString = ''
+  const tempSaleArr = state.saleBrandOptions.filter((topItem) => {
+    return relVO?.saleBrand.some((item) => topItem.value === item)
+  })
+
+  tempSaleArr.map((item) => {
+    if (tempSaleString === '') {
+      //避免开头多拼一个 、
+      tempSaleString = item.label
+    } else {
+      tempSaleString = tempSaleString + '、' + item.label
+    }
+  })
+
+  //救援品牌
+  let tempRescueString = ''
+  const tempRescueArr = state.rescueBrandOptions.filter((topItem) => {
+    return relVO?.rescueBrand.some((item) => topItem.value === item)
+  })
+
+  tempRescueArr.map((item) => {
+    if (tempRescueString === '') {
+      //避免开头多拼一个 、
+      tempRescueString = item.label
+    } else {
+      tempRescueString = tempRescueString + '、' + item.label
+    }
+  })
+
+  //维保品牌
+  let tempMaintenanceString = ''
+  const tempMaintenanceArr = state.maintenanceBrandOptions.filter((topItem) => {
+    return relVO?.saleBrand.some((item) => topItem.value === item)
+  })
+
+  tempMaintenanceArr.map((item) => {
+    if (tempMaintenanceString === '') {
+      //避免开头多拼一个 、
+      tempMaintenanceString = item.label
+    } else {
+      tempMaintenanceString = tempMaintenanceString + '、' + item.label
+    }
+  })
 
   //地址
   let companyAddress = ''
@@ -2181,27 +2370,27 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '是否有销售：',
-          text: ''
+          text: relVO?.isSale === 0 ? '是' : '否'
         },
         {
           textSpan: '销售品牌：',
-          text: ''
+          text: tempSaleString
         },
         {
           textSpan: '是否提供救援：',
-          text: ''
+          text: relVO?.isSale === 0 ? '是' : '否'
         },
         {
           textSpan: '救援品牌：',
-          text: ''
+          text: tempRescueString
         },
         {
           textSpan: '是否提供维保：',
-          text: ''
+          text: relVO?.isMaintenance === 0 ? '是' : '否'
         },
         {
           textSpan: '维保品牌：',
-          text: ''
+          text: tempMaintenanceString
         },
         {
           textSpan: '门店等级：',
@@ -3020,6 +3209,14 @@ watch(
   color: gray;
   cursor: not-allowed;
 }
+.width-50 {
+  width: 50%;
+}
+.form-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
 </style>
 
 <style lang="scss">
@@ -3077,6 +3274,10 @@ watch(
     display: flex;
   }
   [class^='ant-rate-star-'] {
+    display: flex;
+    align-items: center;
+  }
+  .ant-select-multiple .ant-select-selection-item-remove {
     display: flex;
     align-items: center;
   }

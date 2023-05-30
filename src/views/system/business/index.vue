@@ -592,14 +592,15 @@
     v-model:visible="state.isShowMessage"
     destroyOnClose
     :title="state.messageTitle"
+    wrapClassName="date-status-change-modal"
     @ok="statusOk"
     @cancel="statusCancel"
     width="560px"
     :bodyStyle="{
       width: '100%',
-      height: '200px',
+      height: '190px',
       margin: '0',
-      padding: '30px 0 0 0',
+      padding: '10px 0 0 0',
       overflow: 'auto'
     }"
   >
@@ -678,6 +679,41 @@
         state.tableStatusChangeInfo.statusBtnText
       }}</a-button>
       <a-button @click="closeStatusModal">取消</a-button>
+    </template>
+  </a-modal>
+
+  <!--  有效期内 状态关闭 开启/不开启Modal  没空没空 直接再开一个modal  -->
+  <a-modal
+    v-model:visible="state.isShowDateStatus"
+    destroyOnClose
+    title="提示"
+    wrapClassName="date-status-change-modal"
+    width="518px"
+    :bodyStyle="{
+      width: '100%',
+      height: '129px',
+      margin: '0',
+      padding: '0px 33px 0 0px',
+      overflow: 'auto'
+    }"
+  >
+    <div class="message-content">
+      <div class="message-text-content">
+        <div class="message-text">
+          <img :src="warningImg" alt="" class="tip-img message-img" />
+          <div>
+            系统校验到您的主体有效期内：{{ state.dateTime.startTime }}~{{ state.dateTime.endTime }}
+            但是您的主体还处于关闭状态。关闭的主体将会登录不 了系统。
+          </div>
+        </div>
+
+        <div class="status-text-info"> 请问您是否要开启主体？ </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <a-button type="primary" html-type="submit" @click="dateOkModal">确认开启</a-button>
+      <a-button @click="closeDateModal">暂不开启</a-button>
     </template>
   </a-modal>
 
@@ -858,6 +894,9 @@ import { cloneDeep } from 'lodash-es'
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
+
+import isBetween from 'dayjs/plugin/isBetween'
+dayjs.extend(isBetween)
 
 interface FormState {
   id?: number
@@ -1046,6 +1085,8 @@ const state = reactive({
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
+  isShowDateStatus: false, //修改modal 有效期 状态关闭 modal
+  dateTime: {}, //修改modal 有效期 状态关闭 modal  date
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
   currentMenu: '目录',
@@ -1296,10 +1337,10 @@ const getList = async (isRefresh = false) => {
     status: queryParams.status
   }
 
-  if (queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
+  if (queryParams?.startEndTime && queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
     params['localDates'] = [
-      queryParams.startEndTime[0]?.format('YYYY-MM-DD'),
-      queryParams.startEndTime[1]?.format('YYYY-MM-DD')
+      queryParams?.startEndTime[0]?.format('YYYY-MM-DD'),
+      queryParams?.startEndTime[1]?.format('YYYY-MM-DD')
       // queryParams.startEndTime[0]?.format('YYYY/MM/DD'),
       // queryParams.startEndTime[1]?.format('YYYY/MM/DD')
     ]
@@ -1465,6 +1506,8 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
+  // 修改modal 有效期 状态 关闭时  modal 用
+  state.permissionRecord = record
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1493,7 +1536,7 @@ const edit = async (record, isCloseDetails = false) => {
     // expireTime: , //有效期 结束时间
     accountCount: res.accountCount, //可用名额
     // bindingDomainName: res.domain, //绑定域名
-    bindingDomainName:res.domain.substring(8), //绑定域名
+    bindingDomainName: res.domain.substring(8), //绑定域名
     creditCode: res.creditCode, //统一社会信用代码
     // organizationCode: res.organizationCode, //组织机构代码
     legalRepresentative: res.legalRepresentative, //法定代表人
@@ -1661,6 +1704,24 @@ const addMajorIndividualFN = async () => {
       //配置权限
       openPermissionModal()
     } else {
+      if (
+        dayjs().isBetween(
+          state.formState.effectiveStartEndTime[0],
+          state.formState.effectiveStartEndTime[1],
+          'day',
+          []
+        ) &&
+        state.permissionRecord.statusSwitch === false
+      ) {
+        state.dateTime = {
+          startTime: state.formState.effectiveStartEndTime[0].format('YYYY-MM-DD'),
+          endTime: state.formState.effectiveStartEndTime[1].format('YYYY-MM-DD')
+        }
+        openDateModal()
+        closeModal()
+        return
+      }
+
       params['id'] = state.formState.id
       res = await updateEditMajorIndividual(params)
       message.success('修改成功')
@@ -1776,7 +1837,7 @@ const assignPermission = async (record) => {
 const openStatusModal = () => {
   state.isShowStatus = true
 }
-//关闭 状态开始关闭 确认modal
+//关闭 状态开启关闭 确认modal
 const closeStatusModal = () => {
   state.isShowStatus = false
   //直接这里补一次请求吧 - -
@@ -1885,6 +1946,24 @@ const statusOk = async () => {
     statusCancel()
   } finally {
   }
+}
+
+//打开修改 modal 时 有效期与状态 判断 modal
+const openDateModal = () => {
+  state.isShowDateStatus = true
+}
+
+//关闭修改 modal 时 有效期与状态 判断 modal
+const closeDateModal = () => {
+  state.isShowDateStatus = false
+  state.permissionRecord = {}
+  state.dateTime = {}
+}
+//关闭修改 modal 时 有效期与状态 判断 modal  确认开启
+const dateOkModal = () => {
+  state.permissionRecord.statusSwitch = true
+  tableStatusChange(true, state.permissionRecord)
+  closeDateModal()
 }
 
 //功能配置 前台 全选全不选
@@ -2753,6 +2832,7 @@ watch(
 }
 //新增修改 modal 上传 底下文字
 .upload-text {
+  width: 380px;
   color: rgba(153, 153, 153, 1);
   font-size: 12px;
   text-align: left;
@@ -2838,6 +2918,15 @@ watch(
 //状态变更
 .status-change-modal {
   .ant-modal-footer {
+    border-width: 0;
+  }
+}
+
+.date-status-change-modal {
+  .ant-modal-footer {
+    border-width: 0;
+  }
+  .ant-modal-header {
     border-width: 0;
   }
 }
