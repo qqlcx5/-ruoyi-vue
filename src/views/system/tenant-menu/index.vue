@@ -2,7 +2,7 @@
 <template>
   <div class="total-content">
     <!-- 搜索工作栏 -->
-    <ContentWrap style="min-height: 72px">
+    <ContentWrap style="min-height: 78px">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
         <a-form-item :label="`菜单名称`" name="name">
           <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
