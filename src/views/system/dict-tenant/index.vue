@@ -93,7 +93,7 @@
             <!-- 操作：编辑类型 -->
             <XTextButton
               :title="t('action.edit')"
-              v-hasPermi="['system:dict:update']"
+              v-hasPermi="['system:tenant-dict-type:update']"
               @click="handleTypeUpdate(row.id)"
             />
           </template>
@@ -142,7 +142,7 @@
                 type="primary"
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
-                v-hasPermi="['system:dict:create']"
+                v-hasPermi="['system:tenant-dict-type:create']"
                 @click="handleDataCreate()"
               />
             </template>
@@ -158,16 +158,12 @@
             <template #actionbtns_default="{ row }">
               <!-- 操作：修改数据 -->
               <XTextButton
-                v-hasPermi="['system:dict:update']"
+                v-hasPermi="['system:tenant-dict-type:update']"
                 :title="t('action.edit')"
                 @click="handleDataUpdate(row.id)"
               />
               <!-- 操作：详情 -->
-              <XTextButton
-                v-hasPermi="['system:dict:update']"
-                :title="t('action.detail')"
-                @click="handleDataDetail(row)"
-              />
+              <XTextButton :title="t('action.detail')" @click="handleDataDetail(row)" />
               <!--              &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
               <!--              <XTextButton-->
               <!--                v-hasPermi="['system:dict:delete']"-->
@@ -295,7 +291,7 @@
             type="primary"
             iconFont="icon-xinzeng"
             :title="t('action.add')"
-            v-hasPermi="['system:dict:create']"
+            v-hasPermi="['system:tenant-dict-type:create']"
             @click="handleDataCreate('dataLevel3Create')"
           />
         </template>
@@ -311,7 +307,7 @@
         <template #actionbtns_default="{ row }">
           <!-- 操作：修改数据 -->
           <XTextButton
-            v-hasPermi="['system:dict:update']"
+            v-hasPermi="['system:tenant-dict-type:update']"
             :title="t('action.edit')"
             @click="handleDataUpdate(row.id, 'dataLevel3Update')"
           />
