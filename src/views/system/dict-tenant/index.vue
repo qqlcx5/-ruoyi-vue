@@ -194,7 +194,7 @@
             <el-input
               v-model="dictTypeValue"
               placeholder="请输入字典编码"
-              @input="(val) => (dictTypeValue = val.replace(/[^a-zA-Z0-9]/g, ''))"
+              @input="(val) => (dictTypeValue = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
             />
           </template>
         </template>
@@ -213,7 +213,7 @@
             ><el-input
               v-model="row.value"
               placeholder="请输入数据键值"
-              @input="(val) => (row.value = val.replace(/[^a-zA-Z0-9]/g, ''))"
+              @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
             />
           </template>
         </template>
@@ -232,7 +232,7 @@
             ><el-input
               v-model="row.value"
               placeholder="请输入子项键值"
-              @input="(val) => (row.value = val.replace(/[^a-zA-Z0-9]/g, ''))"
+              @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
             />
           </template>
         </template>
