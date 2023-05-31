@@ -30,7 +30,7 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card :bordered="false" style="min-width: 1650px; height: 100%" id="card-content">
+    <a-card :bordered="false" style="min-width: 1710px; height: 100%" id="card-content">
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -175,7 +175,13 @@
     :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
   >
     <div class="base_info_content">
-      <a-form :model="state.formState" ref="formRef" v-bind="layout" autocomplete="off">
+      <a-form
+        :model="state.formState"
+        ref="formRef"
+        v-bind="layout"
+        :label-col="{ style: { width: '110px' } }"
+        autocomplete="off"
+      >
         <a-form-item
           :label="`${state.currentMenu}名称`"
           name="name"
@@ -248,6 +254,21 @@
           v-if="state.formState.type !== SystemMenuTypeEnum.BUTTON"
         >
           <a-input v-model:value="state.formState.path" :placeholder="`请输入路由地址名称`" />
+        </a-form-item>
+
+        <a-form-item label="适用主体类型" name="tenantType">
+          <a-checkbox-group v-model:value="state.formState.tenantType" class="checkbox-group">
+            <div class="major-individual-type">
+              <a-checkbox
+                v-for="item in state.majorIndividualTypeOptions"
+                :value="item.value"
+                :key="item.value"
+                class="checkbox-style"
+              >
+                {{ item.label }}
+              </a-checkbox>
+            </div>
+          </a-checkbox-group>
         </a-form-item>
 
         <a-form-item
@@ -621,6 +642,7 @@ import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
 import {
   getMajorIndividualDetails,
+  getMajorIndividualList,
   getSimpleTenantList,
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
@@ -629,8 +651,9 @@ import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
 import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
-import { getPostList, getRolesList } from '@/api/system/member'
+import { getPostList, getPostTypeList, getRolesList } from '@/api/system/member'
 import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
+import { getOrganizationTypeList } from '@/api/system/organization'
 
 const queryParams = reactive({
   name: undefined,
@@ -678,6 +701,16 @@ const allColumns = [
     width: 100,
     dataIndex: 'type',
     key: 'type',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 2
+  },
+  {
+    title: '适用主体类型',
+    width: 100,
+    dataIndex: 'tenantTypeString',
+    key: 'tenantTypeString',
     resizable: true,
     ellipsis: true,
     disabled: true,
@@ -780,6 +813,7 @@ const state = reactive({
   isShowStatus: false, //table 状态开启关闭 modal
   modalType: 'add', //add新增edit编辑
   addEditTitle: '新增', //新增编辑 modal title
+  majorIndividualTypeOptions: [], //适用主体类型Options
   formState: {
     id: 0,
     name: '', //目录名称
@@ -787,6 +821,7 @@ const state = reactive({
     parentId: 0, //上级目录
     icon: '', //图标
     path: '', //路由地址
+    tenantType: [], //适用主体类型
     sort: 0, //排序
     status: CommonStatusEnum.ENABLE, //菜单状态
     statusSwitch: true, //菜单状态 - - switch boolean
@@ -804,7 +839,16 @@ const state = reactive({
   modalBtnLoading: false,
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [],
-  defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'visible', 'operation'], //定制列默认的keys
+  defaultKeys: [
+    'name',
+    'type',
+    'tenantTypeString',
+    'employeesNumber',
+    'sort',
+    'status',
+    'visible',
+    'operation'
+  ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   configureRolesOptions: [], //角色 Options tree  员工数 modal
   postListOptions: [], //岗位 Options tree  员工数 modal
@@ -897,6 +941,28 @@ const getList = async (isRefresh = false) => {
       item.statusSwitch = item.status === 0
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
+
+      //适用主体类型 key
+      const tempTenantTypeList =
+        item.tenantType === '' || item.tenantType === null ? [] : item.tenantType.split(',')
+      item.tenantTypeList = tempTenantTypeList
+
+      let tempTenantTypeString = ''
+      //适用主体类型 label
+      const tempArrTypeListOptions = state.majorIndividualTypeOptions.filter((topItem) => {
+        return item.tenantTypeList.some((item) => topItem.value === item)
+      })
+
+      tempArrTypeListOptions.map((item) => {
+        if (tempTenantTypeString === '') {
+          //避免开头多拼一个 、
+          tempTenantTypeString = item.label
+        } else {
+          tempTenantTypeString = tempTenantTypeString + '、' + item.label
+        }
+      })
+
+      item.tenantTypeString = tempTenantTypeString
     })
     state.menuArr = res
     list.value = handleTree(res)
@@ -965,6 +1031,7 @@ const closeModal = () => {
     parentId: 0, //上级目录
     icon: '', //图标
     path: '', //路由地址
+    tenantType: [], //适用主体类型
     sort: 0, //排序
     status: CommonStatusEnum.ENABLE, //菜单状态
     statusSwitch: true, //菜单状态 - - switch boolean
@@ -1033,6 +1100,10 @@ const saveForm = async () => {
   } else {
     params.status = 1
   }
+
+  const tempTenantTypeString = state.formState.tenantType.join() || ''
+
+  params.tenantType = tempTenantTypeString
   state.modalBtnLoading = true
   //
   try {
@@ -1088,9 +1159,9 @@ const edit = (record, isCloseDetails = false) => {
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   // record.status = record.status === 0
-
   state.modalType = 'edit'
   state.addEditTitle = '修改'
+  record.tenantType = record.tenantTypeList
   //赋值
   state.formState = { ...record }
   openModal()
@@ -1257,6 +1328,10 @@ const detailsInfo = async (record) => {
           text: record?.path
         },
         {
+          textSpan: '适用主体类型：',
+          text: record?.tenantTypeString
+        },
+        {
           textSpan: '排序：',
           text: record?.sort
         },
@@ -1302,6 +1377,10 @@ const detailsInfo = async (record) => {
         {
           textSpan: '组件地址：',
           text: record?.component
+        },
+        {
+          textSpan: '适用主体类型：',
+          text: record?.tenantTypeString
         },
         {
           textSpan: '组件名字：',
@@ -1350,6 +1429,10 @@ const detailsInfo = async (record) => {
           text: tempItemBtn[0]?.name
         },
         {
+          textSpan: '适用主体类型：',
+          text: record?.tenantTypeString
+        },
+        {
           textSpan: '图标：',
           text: '暂无图标',
           icon: record?.icon
@@ -1384,25 +1467,10 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.isShowCustomColumnModal = false
 }
 
-// //TODO:这个方法有空再抽出去
-// //获取默认的columns
-// const getColumns = () => {
-//   //menu 为当前存储的页面
-//   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
-//   //有缓存 取缓存
-//   if (columnsObj[PageKeyObj.menu]) {
-//     state.changedColumnsObj = columnsObj[PageKeyObj.menu]
-//     return columnsObj[PageKeyObj.menu].currentColumns
-//   }
-//   const currentColumns = allColumns.filter((columnsItem) => {
-//     return state.defaultKeys.some((item) => columnsItem.key === item)
-//   })
-//   return currentColumns
-// }
-// //初始化 获取默认的 columns
-// state.columns = getColumns()
-
 //初始化 获取默认的 columns
+allColumns.map((item, index) => {
+  item.sort = index + 1
+})
 state.columns = getColumns(state, PageKeyObj.menu, allColumns, state.defaultKeys)
 
 //table 列伸缩
@@ -1623,6 +1691,17 @@ const closeEmployees = () => {
   state.configureRoles = [] //角色
   state.postList = [] //岗位
 }
+
+//数据字典
+const getAllType = async () => {
+  //获取数据字典
+  const dictRes = await getOrganizationTypeList()
+
+  //适用主体类型
+  state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
+}
+
+getAllType()
 
 watch(
   () => state.formState.type,
@@ -1956,6 +2035,17 @@ watch(
 
 :deep(.ant-table-tbody) {
   min-height: 520px;
+}
+.checkbox-group {
+  width: 100%;
+}
+.major-individual-type {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.checkbox-style {
+  margin-right: 15px;
 }
 </style>
 

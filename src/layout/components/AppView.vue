@@ -43,6 +43,7 @@ watch(
   <section
     :class="[
       'p-[var(--app-content-padding)] w-[100%] bg-[var(--app-contnet-bg-color)] dark:bg-[var(--el-bg-color)] wg-section',
+      'min-width-1740',
       {
         '!min-h-[calc(100%-var(--app-footer-height))]':
           fixedHeader && (layout === 'classic' || layout === 'topLeft') && footer,
@@ -77,7 +78,7 @@ watch(
     </router-view>
   </section>
   <Footer v-if="footer" />
-  <EditUserInfo v-if="state.isShow"></EditUserInfo>
+  <EditUserInfo v-if="state.isShow" />
 </template>
 
 <style lang="scss" scoped>
@@ -86,5 +87,8 @@ watch(
     border: none;
     margin-bottom: 12px !important;
   }
+}
+.min-width-1740 {
+  min-width: 1740px;
 }
 </style>

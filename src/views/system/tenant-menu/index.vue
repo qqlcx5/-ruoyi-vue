@@ -30,7 +30,7 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card :bordered="false" style="min-width: 1650px; height: 100%" id="card-content">
+    <a-card :bordered="false" style="min-width: 1710px; height: 100%" id="card-content">
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -625,6 +625,7 @@ import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/util
 import { getPostList, getRolesList } from '@/api/system/member'
 import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 import { cloneDeep } from 'lodash-es'
+import { getOrganizationTypeList } from '@/api/system/organization'
 
 const queryParams = reactive({
   name: undefined,
@@ -670,6 +671,16 @@ const allColumns = [
     width: 100,
     dataIndex: 'type',
     key: 'type',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 2
+  },
+  {
+    title: '适用主体类型',
+    width: 100,
+    dataIndex: 'tenantTypeString',
+    key: 'tenantTypeString',
     resizable: true,
     ellipsis: true,
     disabled: true,
@@ -771,6 +782,7 @@ const state = reactive({
   isShowStatus: false, //table 状态开启关闭 modal
   modalType: 'add', //add新增edit编辑
   addEditTitle: '新增', //新增编辑 modal title
+  majorIndividualTypeOptions: [], //适用主体类型Options
   formState: {
     id: 0,
     name: '', //目录名称
@@ -795,7 +807,16 @@ const state = reactive({
   modalBtnLoading: false,
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [],
-  defaultKeys: ['name', 'type', 'employeesNumber', 'sort', 'status', 'visible', 'operation'], //定制列默认的keys
+  defaultKeys: [
+    'name',
+    'type',
+    'tenantTypeString',
+    'employeesNumber',
+    'sort',
+    'status',
+    'visible',
+    'operation'
+  ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   configureRolesOptions: [], //角色 Options tree  员工数 modal
   postListOptions: [], //岗位 Options tree  员工数 modal
@@ -888,6 +909,28 @@ const getList = async (isRefresh = false) => {
       item.statusSwitch = item.status === 0
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
+
+      //适用主体类型 key
+      const tempTenantTypeList =
+        item.tenantType === '' || item.tenantType === null ? [] : item.tenantType.split(',')
+      item.tenantTypeList = tempTenantTypeList
+
+      let tempTenantTypeString = ''
+      //适用主体类型 label
+      const tempArrTypeListOptions = state.majorIndividualTypeOptions.filter((topItem) => {
+        return item.tenantTypeList.some((item) => topItem.value === item)
+      })
+
+      tempArrTypeListOptions.map((item) => {
+        if (tempTenantTypeString === '') {
+          //避免开头多拼一个 、
+          tempTenantTypeString = item.label
+        } else {
+          tempTenantTypeString = tempTenantTypeString + '、' + item.label
+        }
+      })
+
+      item.tenantTypeString = tempTenantTypeString
     })
     state.menuArr = res
     list.value = handleTree(res)
@@ -1196,7 +1239,6 @@ const tableStatusConfirm = async () => {
   //   status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1,
   //   type: state.tableStatusChangeInfo.record.type
   // }
-  console.log('state.tableStatusChangeInfo.record', state.tableStatusChangeInfo.record)
   const params = {
     menuId: state.tableStatusChangeInfo.record.id,
     status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1,
@@ -1240,6 +1282,10 @@ const detailsInfo = async (record) => {
         {
           textSpan: '路由地址：',
           text: record?.path
+        },
+        {
+          textSpan: '适用主体类型：',
+          text: record?.tenantTypeString
         },
         {
           textSpan: '排序：',
@@ -1289,6 +1335,10 @@ const detailsInfo = async (record) => {
           text: record?.component
         },
         {
+          textSpan: '适用主体类型：',
+          text: record?.tenantTypeString
+        },
+        {
           textSpan: '组件名字：',
           text: record?.componentName
         },
@@ -1335,6 +1385,10 @@ const detailsInfo = async (record) => {
           text: tempItemBtn[0]?.name
         },
         {
+          textSpan: '适用主体类型：',
+          text: record?.tenantTypeString
+        },
+        {
           textSpan: '图标：',
           text: '暂无图标',
           icon: record?.icon
@@ -1369,25 +1423,10 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.isShowCustomColumnModal = false
 }
 
-// //TODO:这个方法有空再抽出去
-// //获取默认的columns
-// const getColumns = () => {
-//   //tenant 为当前存储的页面
-//   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
-//   //有缓存 取缓存
-//   if (columnsObj[PageKeyObj.tenant]) {
-//     state.changedColumnsObj = columnsObj[PageKeyObj.tenant]
-//     return columnsObj[PageKeyObj.tenant].currentColumns
-//   }
-//   const currentColumns = allColumns.filter((columnsItem) => {
-//     return state.defaultKeys.some((item) => columnsItem.key === item)
-//   })
-//   return currentColumns
-// }
-// //初始化 获取默认的 columns
-// state.columns = getColumns()
-
 //初始化 获取默认的 columns
+allColumns.map((item, index) => {
+  item.sort = index + 1
+})
 state.columns = getColumns(state, PageKeyObj.tenant, allColumns, state.defaultKeys)
 
 //table 列伸缩
@@ -1601,6 +1640,17 @@ const closeEmployees = () => {
   state.configureRoles = [] //角色
   state.postList = [] //岗位
 }
+
+//数据字典
+const getAllType = async () => {
+  //获取数据字典
+  const dictRes = await getOrganizationTypeList()
+
+  //适用主体类型
+  state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
+}
+
+getAllType()
 
 watch(
   () => state.columns,

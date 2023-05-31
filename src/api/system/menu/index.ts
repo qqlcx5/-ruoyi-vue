@@ -10,6 +10,7 @@ export interface MenuVO {
   path: string
   icon: string
   component: string
+  tenantType?: string
   componentName?: string
   status: number
   visible: boolean

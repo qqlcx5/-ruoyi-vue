@@ -2,7 +2,7 @@
 <template>
   <div class="total-content">
     <!-- 搜索工作栏 -->
-    <ContentWrap style="min-height: 72px">
+    <a-card class="search-card">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
         <a-form-item :label="`主体名称`" name="keyword">
           <a-input v-model:value="queryParams.keyword" placeholder="请输入主体名称或者编码" />
@@ -29,12 +29,12 @@
         <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
         <a-button @click="resetQuery">重置</a-button>
       </a-form>
-    </ContentWrap>
+    </a-card>
 
     <!--  表格  -->
     <a-card
       :bordered="false"
-      style="min-width: 1650px; height: 100%; padding-bottom: 30px"
+      style="min-width: 1710px; height: 100%; padding-bottom: 30px"
       id="card-content"
     >
       <!--  <ContentWrap>-->
@@ -714,12 +714,14 @@
         <div class="message-text">
           <img :src="warningImg" alt="" class="tip-img message-img" />
           <div>
-            系统校验到您的主体有效期内：{{ state.dateTime.startTime }}~{{ state.dateTime.endTime }}
-            但是您的主体还处于关闭状态。关闭的主体将会登录不 了系统。
+            系统校验到您的主体在有效期内：{{ state.dateTime.startTime }}~{{
+              state.dateTime.endTime
+            }}
+            但是您的主体还处于已关闭状态。关闭的主体将会登录不了系统。
           </div>
         </div>
 
-        <div class="status-text-info"> 请问您是否要开启主体？ </div>
+        <div class="status-text-info"> 请问您是否要开启该主体？ </div>
       </div>
     </div>
 
@@ -2448,6 +2450,14 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+.search-card {
+  min-width: 1710px;
+  min-height: 72px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
 .total-content {
   width: 100%;
   height: 100%;

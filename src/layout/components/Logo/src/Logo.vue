@@ -30,7 +30,7 @@ const state = reactive({
 })
 
 //原本的从 pinia 里获取有问题 刷新就没了 或者做持久化存储 - - 算了 懒得搞 - -直接换取localStorage
-let userInfo = wsCache.get(CACHE_KEY.USER)
+const userInfo = ref(wsCache.get(CACHE_KEY.USER))
 
 onMounted(() => {
   if (unref(collapse)) show.value = false
@@ -78,11 +78,11 @@ watch(
   () => appStore.getIsShowEditUserInfo,
   (val) => {
     if (!val) {
-      userInfo = wsCache.get(CACHE_KEY.USER)
+      userInfo.value = wsCache.get(CACHE_KEY.USER)
     }
   },
   {
-    immediate: true
+    deep: true
   }
 )
 </script>

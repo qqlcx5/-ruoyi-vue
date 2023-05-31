@@ -33,7 +33,7 @@
     <!--  表格  -->
     <a-card
       :bordered="false"
-      style="min-width: 1650px; height: 100%; padding-bottom: 30px"
+      style="min-width: 1710px; height: 100%; padding-bottom: 30px"
       id="card-content"
     >
       <!--  <ContentWrap>-->

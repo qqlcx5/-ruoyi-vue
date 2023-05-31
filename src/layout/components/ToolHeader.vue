@@ -10,11 +10,13 @@ import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
 import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
 import { Icon } from '@/components/Icon'
+import SelectMajorIndividual from '@/layout/components/SelectMajorIndividual/selectMajorIndividual.vue'
 
 const state = reactive({
   userInfo: {
     company: '厦门分公司'
-  }
+  },
+  needSelectTree: false
 })
 
 const { getPrefixCls, variables } = useDesign()
@@ -44,6 +46,21 @@ const locale = computed(() => appStore.getLocale)
 // 消息图标
 const message = computed(() => appStore.getMessage)
 
+// setTimeout(()=>{
+//   // 刷新浏览器
+//   location.reload()
+// },5000)
+
+const handleMouseEnter = () => {
+  console.log('鼠标移入')
+  state.needSelectTree = true
+}
+
+const handleMouseLeave = (needSelectTree) => {
+  console.log('鼠标移出', needSelectTree)
+  state.needSelectTree = false
+}
+
 export default defineComponent({
   name: 'ToolHeader',
   setup() {
@@ -62,17 +79,26 @@ export default defineComponent({
           </div>
         ) : undefined}
         <div class="h-full flex items-center">
-          <div class="company-content flex items-center px-22px">
-            <div class="company-text">
-              <span class="company">{state.userInfo.company}</span>
-            </div>
-            <Icon
-              icon="svg-icon:switch"
-              size={14}
-              class="cursor-pointer"
-              color="var(--top-header-text-color)"
+          {state.needSelectTree ? (
+            <SelectMajorIndividual
+              onMouseLeave={(needSelectTree) => handleMouseLeave(needSelectTree)}
             />
-          </div>
+          ) : (
+            <div
+              class="company-content flex items-center px-22px"
+              onMouseenter={() => handleMouseEnter()}
+            >
+              <div className="company-text">
+                <span className="company">{state.userInfo.company}</span>
+              </div>
+              <Icon
+                icon="svg-icon:switch"
+                size={14}
+                class="cursor-pointer"
+                color="var(--top-header-text-color)"
+              />
+            </div>
+          )}
           <div class="vertical-line"></div>
           {screenfull.value ? (
             <Screenfull class="hover-trigger" color="var(--top-header-text-color)"></Screenfull>
