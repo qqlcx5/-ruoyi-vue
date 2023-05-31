@@ -93,7 +93,7 @@
         <!-- 操作：修改 -->
         <XTextButton
           :title="t('action.edit')"
-          v-hasPermi="['infra:config:update']"
+          v-hasPermi="['system:tenant:config:update']"
           @click="handleUpdate(row.id)"
         />
         <!-- 操作：详情 -->
