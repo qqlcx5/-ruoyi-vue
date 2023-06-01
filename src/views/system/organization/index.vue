@@ -245,7 +245,7 @@
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
             placeholder="请选择机构类型"
-            :tree-data="state.organizationTypeOptions"
+            :tree-data="state.organizationTypeOptions.filter((item) => item.value !== '4')"
             treeNodeFilterProp="label"
           />
         </a-form-item>
@@ -1081,7 +1081,7 @@ import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
 import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
-import { provincesMunicipalitiesArea } from './pr'
+import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
   filterTree,
   getAllIds,
@@ -1303,6 +1303,7 @@ const state = reactive({
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   treeIconIndex: 0,
   tableDataList: [], //表格数据
+  tableDataArr: [], //表格数据
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
@@ -1614,6 +1615,7 @@ const getList = async (isRefresh = false) => {
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
     })
 
+    state.tableDataArr = res
     state.tableDataList = handleTree(state.tableDataList, 'id', 'parentId', 'children')
 
     state.total = res.total
@@ -2129,6 +2131,15 @@ const closeStatusModal = () => {
 
 //表格状态开关
 const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
+  console.log(' record', record)
+  const tempItem = state.tableDataArr.find((item) => item.id === record.parentId)
+  if (tempItem.statusSwitch === false) {
+    record.statusSwitch = false
+    return message.warning(
+      `该机构的上级主体【${tempItem.name}】为关闭状态，请先开启【${tempItem.name}】才可开启该状态`
+    )
+  }
+  console.log('tempItem ', tempItem)
   const res = await getActiveEmployeesNumber({ id: record.id })
   // const res = 25
 

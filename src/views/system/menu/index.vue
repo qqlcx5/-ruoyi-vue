@@ -256,7 +256,11 @@
           <a-input v-model:value="state.formState.path" :placeholder="`请输入路由地址名称`" />
         </a-form-item>
 
-        <a-form-item label="适用主体类型" name="tenantType">
+        <a-form-item
+          label="适用主体类型"
+          name="tenantType"
+          :rules="[{ required: true, message: '适用主体类型不能为空' }]"
+        >
           <a-checkbox-group v-model:value="state.formState.tenantType" class="checkbox-group">
             <div class="major-individual-type">
               <a-checkbox

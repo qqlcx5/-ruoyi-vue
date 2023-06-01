@@ -1113,7 +1113,7 @@ import {
 } from '@/api/system/business'
 import { aassignUserRoleApi } from '@/api/system/permission'
 import { getRoleApi } from '@/api/system/role'
-import { provincesMunicipalitiesArea } from './pr'
+import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
   filterTree,
   getAllIds,

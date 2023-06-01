@@ -167,6 +167,12 @@ const setDefaultColumns = () => {
     currentCheckedList: [], //当前选中的复选框
     currentColumns: state.columns //当前的表格列
   }
+  //获取当前的缓存
+  const tempCache = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ)
+  //设置缓存 localStorage
+  const tempObjCache = { ...tempCache }
+  tempObjCache[props.pageKey] = tempObj
+  wsCache.set(CACHE_KEY.TABLE_COLUMNS_OBJ, tempObjCache)
   message.success('定制列还原成功')
   emit('changeColumn', tempObj)
 

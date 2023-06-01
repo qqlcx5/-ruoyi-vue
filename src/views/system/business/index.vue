@@ -133,6 +133,13 @@
         <!--  单元格插槽  -->
         <template #bodyCell="{ column, record }">
           <!--  可用名额   -->
+          <template v-if="column?.key === 'name'">
+            <div class="name-content"
+              >{{ record.name }}
+              <div class="store-tag" v-if="record.store">{{ record.store }}</div></div
+            >
+          </template>
+          <!--  可用名额   -->
           <template v-if="column?.key === 'usableAmount'">
             <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
           </template>
@@ -158,7 +165,9 @@
           <template v-if="column?.key === 'operation'">
             <div class="operation-content">
               <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-              <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
+              <div class="text-color margin-right-5" @click="openModal(record)">{{
+                record.type === 'dealer' ? '新增门店' : '新增子项'
+              }}</div>
               <div class="text-color margin-right-5" @click="assignPermission(record)"
                 >功能配置</div
               >
@@ -195,9 +204,27 @@
         autocomplete="off"
       >
         <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
+
+        <a-form-item
+          :label="`主体类型`"
+          name="majorIndividualType"
+          :rules="[{ required: true, message: `主体类型不能为空` }]"
+        >
+          <a-radio-group v-model:value="state.formState.majorIndividualType">
+            <a-radio
+              v-for="item in state.majorIndividualTypeOptions"
+              :value="item.value"
+              :key="item.value"
+            >
+              {{ item.label }}</a-radio
+            >
+          </a-radio-group>
+        </a-form-item>
+
         <a-form-item :label="`上级主体`" name="belongTenantId">
           <a-tree-select
             v-model:value="state.formState.belongTenantId"
+            :disabled="state.modalType === 'edit'"
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -223,10 +250,7 @@
         <a-form-item
           :label="`主体名称`"
           name="name"
-          :rules="[
-            { required: true, message: `主体名称不能为空` },
-            { validator: chineseValidator }
-          ]"
+          :rules="[{ required: true, message: `主体名称不能为空` }]"
         >
           <a-input
             v-model:value="state.formState.name"
@@ -236,11 +260,7 @@
           />
         </a-form-item>
 
-        <a-form-item
-          :label="`主体简称`"
-          name="abbreviate"
-          :rules="[{ validator: chineseValidator }]"
-        >
+        <a-form-item :label="`主体简称`" name="abbreviate">
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -516,6 +536,8 @@
       <a-button @click="closeModal">取消</a-button>
     </template>
   </a-modal>
+
+  <Store v-if="false"></Store>
 
   <!-- 配置权限 Modal -->
   <a-modal
@@ -888,7 +910,7 @@ import {
   updateEditMajorIndividual,
   updateEditMajorIndividualStatus
 } from '@/api/system/business'
-import { provincesMunicipalitiesArea } from './pr'
+import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
   filterTree,
   getAllIds,
@@ -904,12 +926,14 @@ import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import { cloneDeep } from 'lodash-es'
+import Store from '@/views/system/business/Store.vue'
 
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
 
 import isBetween from 'dayjs/plugin/isBetween'
+import { getOrganizationTypeList } from '@/api/system/organization'
 dayjs.extend(isBetween)
 
 interface FormState {
@@ -1112,7 +1136,9 @@ const state = reactive({
   legalMobileRules: [{ validator: legalMobileValidator }],
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
+  majorIndividualTypeOptions: [], //适用主体类型Options
   formState: {
+    majorIndividualType: '', //主体类型
     belongTenantId: null, //上级主体编号
     code: '', //主体编码
     name: '', //主体名称
@@ -1181,6 +1207,7 @@ const state = reactive({
   defaultKeys: [
     'name',
     'code',
+    'majorIndividualType',
     'systemName',
     'usableAmount',
     'validityPeriod',
@@ -1219,6 +1246,16 @@ const allColumns = [
     width: 100,
     dataIndex: 'code',
     key: 'code',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 2
+  },
+  {
+    title: '主体类型',
+    width: 100,
+    dataIndex: 'majorIndividualType',
+    key: 'majorIndividualType',
     resizable: true,
     ellipsis: true,
     disabled: true,
@@ -1369,6 +1406,13 @@ const getList = async (isRefresh = false) => {
       item.bindingDomainName = item.domain
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
+
+      const tempType = state.majorIndividualTypeOptions.filter(
+        (typeItem) => typeItem.value === item.type
+      )
+      item.majorIndividualType = tempType[0]?.label || ''
+
+      item.store = item.type === null ? '门店' : ''
     })
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
@@ -1438,6 +1482,10 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
+  if (record.type === 'dealer') {
+    console.log('新增门店')
+    return
+  }
   const res = await getSimpleTenantList()
 
   // let menuTree = []
@@ -1466,6 +1514,7 @@ const closeModal = () => {
   //级联选择器 需要单独清空
   state.formState.companyAddress = []
   state.formState = {
+    majorIndividualType: '', //主体类型
     belongTenantId: 0, //上级主体
     code: '', //主体编码
     name: '', //主体名称
@@ -1535,6 +1584,7 @@ const edit = async (record, isCloseDetails = false) => {
   state.modalTitle = '编辑'
   //赋值 回显
   state.formState = {
+    majorIndividualType: res.type, //主体类型
     belongTenantId: res.belongTenantId, //上级主体
     id: record.id,
     code: res.code, //主体编码
@@ -1645,6 +1695,7 @@ const addMajorIndividualFN = async () => {
   const valid = await formRef.value.validate()
   state.addEditLoading = true
   let params = {
+    type: state.formState.majorIndividualType, //主体类型
     belongTenantId: state.formState.belongTenantId, //上级主体
     code: state.formState.code, //主体编码
     name: state.formState.name, //主体名称
@@ -2034,6 +2085,8 @@ const detailsInfo = async (record) => {
   const tempRes = await getSimpleTenantList()
   const tempItem = tempRes.filter((item) => item.id === record.belongTenantId)
 
+  const tempType = state.majorIndividualTypeOptions.filter((item) => item.value === res.type)
+
   state.detailsInfo = [
     {
       baseTitle: '基本信息',
@@ -2045,6 +2098,10 @@ const detailsInfo = async (record) => {
         {
           textSpan: '主体名称：',
           text: res.name
+        },
+        {
+          textSpan: '主体类型：',
+          text: tempType[0]?.label
         },
         {
           textSpan: '主体编码：',
@@ -2384,6 +2441,17 @@ const setPreviewImage = (imgUrl = '') => {
   previewVisible.value = true
 }
 
+//数据字典
+const getAllType = async () => {
+  //获取数据字典
+  const dictRes = await getOrganizationTypeList()
+
+  //适用主体类型
+  state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
+}
+
+getAllType()
+
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
 const changeColumn = (columnsObj, isCloseModal = false) => {
   if (isCloseModal) {
@@ -2397,25 +2465,10 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
   state.isShowCustomColumnModal = false
 }
 
-// //TODO:这个方法有空再抽出去
-// //获取默认的columns
-// const getColumns = () => {
-//   //business 为当前存储的页面
-//   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
-//   //有缓存 取缓存
-//   if (columnsObj[PageKeyObj.business]) {
-//     state.changedColumnsObj = columnsObj[PageKeyObj.business]
-//     return columnsObj[PageKeyObj.business].currentColumns
-//   }
-//   const currentColumns = allColumns.filter((columnsItem) => {
-//     return state.defaultKeys.some((item) => columnsItem.key === item)
-//   })
-//   return currentColumns
-// }
-// //初始化 获取默认的 columns
-// state.columns = getColumns()
-
 //初始化 获取默认的 columns
+allColumns.map((item, index) => {
+  item.sort = index + 1
+})
 state.columns = getColumns(state, PageKeyObj.business, allColumns, state.defaultKeys)
 
 //监听  左侧选中数据  更新 右侧展示数据
@@ -2880,6 +2933,23 @@ watch(
   justify-content: center;
   align-items: center;
   color: rgb(179, 179, 179);
+}
+.name-content {
+  display: flex;
+}
+.store-tag {
+  margin-left: 10px;
+  padding: 8px;
+  width: 40px;
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  background-color: rgba(237, 249, 232, 1);
+  color: rgba(82, 196, 26, 1);
+  font-size: 12px;
+  font-family: PingFangSC-Regular;
 }
 </style>
 
