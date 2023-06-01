@@ -3,22 +3,28 @@ import { defineStore } from 'pinia'
 import { getAccessToken, removeToken } from '@/utils/auth'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import { getInfoApi, loginOutApi } from '@/api/login'
-import {useAppStore} from "@/store/modules/app";
+import { useWatermark } from '@/hooks/web/useWatermark'
 
 const { wsCache } = useCache()
-
-const appStore = useAppStore()
+const { setWatermark, clear } = useWatermark()
 
 interface UserVO {
   id: number
   avatar: string
   nickname: string
+  username: string
+}
+interface TenantVO {
+  systemName?: string
+  logoUrl?: string
+  watermark?: string
 }
 interface UserInfoVO {
   permissions: string[]
   roles: string[]
   isSetUser: boolean
   user: UserVO
+  tenant: TenantVO
 }
 
 export const useUserStore = defineStore('admin-user', {
@@ -29,8 +35,10 @@ export const useUserStore = defineStore('admin-user', {
     user: {
       id: 0,
       avatar: '',
-      nickname: ''
-    }
+      nickname: '',
+      username: ''
+    },
+    tenant: {}
   }),
   getters: {
     getPermissions(): string[] {
@@ -44,9 +52,17 @@ export const useUserStore = defineStore('admin-user', {
     },
     getUser(): UserVO {
       return this.user
+    },
+    getTenant(): TenantVO {
+      return this.tenant
     }
   },
   actions: {
+    setTenantAction(watermark?: string) {
+      const userInfo = wsCache.get(CACHE_KEY.USER)
+      userInfo.tenant.watermark = watermark || ''
+      wsCache.set(CACHE_KEY.USER, userInfo)
+    },
     async setUserInfoAction() {
       if (!getAccessToken()) {
         this.resetState()
@@ -59,11 +75,15 @@ export const useUserStore = defineStore('admin-user', {
       this.permissions = userInfo.permissions
       this.roles = userInfo.roles
       this.user = userInfo.user
+      this.tenant = userInfo.tenant
       this.isSetUser = true
+      // 设置系统水印
+      setWatermark(userInfo.tenant?.watermark)
       wsCache.set(CACHE_KEY.USER, userInfo)
     },
     async loginOut() {
       await loginOutApi()
+      clear()
       removeToken()
       wsCache.clear()
       this.resetState()
@@ -75,8 +95,10 @@ export const useUserStore = defineStore('admin-user', {
       this.user = {
         id: 0,
         avatar: '',
-        nickname: ''
+        nickname: '',
+        username: ''
       }
+      this.tenant = {}
     }
   }
 })

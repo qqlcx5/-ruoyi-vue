@@ -43,7 +43,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
       }
     },
     {
-      title: t('common.status'),
+      title: '权限开启状态',
       field: 'status',
       dictType: DICT_TYPE.COMMON_STATUS,
       dictClass: 'number',
@@ -59,7 +59,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
         }
       },
       table: {
-        width: 80,
+        width: 120,
         slots: {
           default: 'status_default'
         }

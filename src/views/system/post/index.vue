@@ -189,13 +189,13 @@
                   v-if="item.roleName"
                   class="role-tag"
                   :class="{
-                    delete: item.roleDeleted === CommonStatusEnum.ENABLE,
-                    close: item.roleStatus === CommonStatusEnum.ENABLE
+                    delete: item.roleDeleted === CommonStatusEnum.DISABLE,
+                    close: item.roleStatus === CommonStatusEnum.DISABLE
                   }"
                 >
                   {{ item.roleName }}
-                  <span v-if="item.roleDeleted === CommonStatusEnum.ENABLE">(删除)</span>
-                  <span v-else-if="item.roleStatus === CommonStatusEnum.ENABLE">(关闭)</span>
+                  <span v-if="item.roleDeleted === CommonStatusEnum.DISABLE">(删除)</span>
+                  <span v-else-if="item.roleStatus === CommonStatusEnum.DISABLE">(关闭)</span>
                 </div>
               </div>
             </template>
