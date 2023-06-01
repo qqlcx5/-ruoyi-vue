@@ -1,3 +1,5 @@
+import { useUserStoreWithOut } from '@/store/modules/user'
+
 const domSymbol = Symbol('watermark-dom')
 
 export function useWatermark(appendEl: HTMLElement | null = document.body) {
@@ -15,14 +17,14 @@ export function useWatermark(appendEl: HTMLElement | null = document.body) {
     clear()
 
     const can = document.createElement('canvas')
-    can.width = 300
+    can.width = 360
     can.height = 240
 
     const cans = can.getContext('2d')
     if (cans) {
       cans.rotate((-20 * Math.PI) / 120)
       cans.font = '15px Vedana'
-      cans.fillStyle = 'rgba(0, 0, 0, 0.15)'
+      cans.fillStyle = 'rgba(0, 0, 0, 0.1)'
       cans.textAlign = 'left'
       cans.textBaseline = 'middle'
       cans.fillText(str, can.width / 20, can.height)
@@ -43,10 +45,18 @@ export function useWatermark(appendEl: HTMLElement | null = document.body) {
     return id
   }
 
-  function setWatermark(str: string) {
-    createWatermark(str)
+  function setWatermark(str: string | undefined) {
+    const userStore = useUserStoreWithOut()
+    const tenant = userStore.getTenant
+    const user = userStore.getUser
+    let watermark = str || tenant.watermark || tenant.systemName || ''
+    if (watermark) {
+      if (user.nickname) watermark += `-${user.nickname}`
+      if (user.username) watermark += `-${user.username}`
+    }
+    createWatermark(watermark)
     func = () => {
-      createWatermark(str)
+      createWatermark(watermark)
     }
     window.addEventListener('resize', func)
   }

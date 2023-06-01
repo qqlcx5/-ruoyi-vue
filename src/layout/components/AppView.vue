@@ -15,9 +15,9 @@ const fixedHeader = computed(() => appStore.getFixedHeader)
 
 const footer = computed(() => appStore.getFooter)
 
-const collapse = computed(() => appStore.getCollapse)
-
-const fixedMenu = computed(() => appStore.getFixedMenu)
+// const collapse = computed(() => appStore.getCollapse)
+//
+// const fixedMenu = computed(() => appStore.getFixedMenu)
 
 const tagsViewStore = useTagsViewStore()
 
@@ -43,7 +43,6 @@ watch(
   <section
     :class="[
       'p-[var(--app-content-padding)] w-[100%] bg-[var(--app-contnet-bg-color)] dark:bg-[var(--el-bg-color)] wg-section',
-      'min-width-1740',
       {
         '!min-h-[calc(100%-var(--app-footer-height))]':
           fixedHeader && (layout === 'classic' || layout === 'topLeft') && footer,
@@ -68,7 +67,7 @@ watch(
         '!w-[calc(100%+30px)] -mx-15px -mt-10px mb-10px border-bottom-1 border-top-1 border-solid border-[var(--tags-view-border-color)] dark:border-[var(--el-border-color)]'
       ]"
       :style="{ transition: 'width var(--transition-time-02), left var(--transition-time-02)' }"
-    ></TagsView>
+    />
     <router-view>
       <template #default="{ Component, route }">
         <keep-alive :include="getCaches">
@@ -87,8 +86,5 @@ watch(
     border: none;
     margin-bottom: 12px !important;
   }
-}
-.min-width-1740 {
-  min-width: 1740px;
 }
 </style>

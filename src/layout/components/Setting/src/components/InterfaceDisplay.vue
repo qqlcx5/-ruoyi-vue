@@ -1,5 +1,5 @@
 <template>
-  <div :class="prefixCls">
+  <div :class="prefixCls" v-loading="loading">
     <div class="checkbox-content">
       <div class="checkbox-style" v-for="(item, index) in state.arr" :key="`layout+${index}`">
         <el-checkbox
@@ -13,6 +13,7 @@
           <el-checkbox
             v-model="checkValue"
             size="large"
+            disabled
             :label="item.label"
             @change="waterCheckboxChang"
           />
@@ -20,9 +21,17 @@
             :placeholder="t('common.inputText')"
             v-model="water"
             input-style="height: 30px; margin: 0 10px;"
-            class="w-20 right-1"
-            @input="setWater()"
-          />
+            class="w-30 right-1"
+            :disabled="!canEditWatermark"
+          >
+            <template #suffix v-if="canEditWatermark">
+              <i
+                class="iconfont icon-chenggong cursor-pointer"
+                :style="{ color: 'var(--el-color-primary)' }"
+                @click="handleUpdateWatermark"
+              ></i>
+            </template>
+          </ElInput>
         </div>
       </div>
     </div>
@@ -35,16 +44,24 @@ import { setCssVar } from '@/utils'
 import { useDesign } from '@/hooks/web/useDesign'
 import { useWatermark } from '@/hooks/web/useWatermark'
 import { useAppStore } from '@/store/modules/app'
+import { updateWatermark } from '@/api/system/tenant'
+import { useUserStoreWithOut } from '@/store/modules/user'
 
 const { t } = useI18n()
 const { getPrefixCls } = useDesign()
 const { setWatermark } = useWatermark()
 const prefixCls = getPrefixCls('interface-display')
 const appStore = useAppStore()
+const messageBox = useMessage()
+const userStore = useUserStoreWithOut()
 
-const water = ref()
+const canEditWatermark = computed(() => {
+  return userStore.getRoles.includes('super_admin')
+})
+
+const water = ref(userStore.getTenant.watermark || '')
 //水印复选框
-const checkValue = ref(null)
+const checkValue = ref(true)
 
 // 面包屑
 const breadcrumb = ref(appStore.getBreadcrumb)
@@ -167,6 +184,26 @@ const setWater = () => {
   } else {
     setWatermark('')
   }
+}
+
+const loading = ref(false)
+// 更新水印
+const handleUpdateWatermark = async () => {
+  loading.value = true
+  await updateWatermark({ watermark: water.value })
+    .then((res) => {
+      if (!res) return messageBox.error('更新水印失败')
+      messageBox.success('更新水印成功')
+      userStore.setTenantAction(water.value)
+      if (checkValue.value && water.value !== undefined) {
+        setWatermark(water.value)
+      } else {
+        setWatermark('')
+      }
+    })
+    .finally(() => {
+      loading.value = false
+    })
 }
 
 const layout = computed(() => appStore.getLayout)

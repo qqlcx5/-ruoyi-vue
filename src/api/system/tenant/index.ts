@@ -60,3 +60,8 @@ export const deleteTenant = (id: number) => {
 export const exportTenant = (params: TenantExportReqVO) => {
   return request.download({ url: '/system/tenant/export-excel', params })
 }
+
+// 修改主题水印
+export const updateWatermark = (params) => {
+  return request.put({ url: '/system/tenant/update-watermark', params })
+}
