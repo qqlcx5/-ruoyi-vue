@@ -6,6 +6,7 @@
     destroyOnClose
     wrapClassName="status-change-modal"
     width="530px"
+    @cancel="closeStatusModal"
     :bodyStyle="{
       width: '100%',
       height: '189px',
@@ -207,10 +208,14 @@ const statusOk = async () => {
       tenantId: state.formState.belongTenantId
     })
 
-    message.success('修改状态成功')
+    message.success('修改上级主体成功')
     statusCancel()
   } finally {
   }
+}
+
+const closeStatusModal = () => {
+  emit('closeStoreParentMajorIndividual', false)
 }
 
 onMounted(async () => {
