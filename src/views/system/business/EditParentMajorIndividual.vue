@@ -225,8 +225,15 @@ onMounted(async () => {
   console.log('tempRes ', tempRes)
   const tempItem = tempRes.find((item) => item.id === props.currentRecord.belongTenantId)
   console.log('tempItem', tempItem)
-  //获取门店的 顶层主体的 手机号
-  state.contactMobile = tempItem.contactMobile
+  if (tempItem.belongTenantId !== 0) {
+    const tempItemSecond = tempRes.find((item) => item.id === tempItem.belongTenantId)
+    //获取门店的 顶层主体的 手机号  max2层
+    state.contactMobile = tempItemSecond.contactMobile
+  } else {
+    //获取门店的 顶层主体的 手机号  max2层
+    state.contactMobile = tempItem.contactMobile
+  }
+
   //contactMobile
   //去除顶层机构以及厂家 只保留经销商
   res = res.filter((item) => item.type === 'dealer')

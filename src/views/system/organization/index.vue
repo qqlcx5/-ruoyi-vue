@@ -131,6 +131,14 @@
         </template>
         <!--  单元格插槽  -->
         <template #bodyCell="{ column, record }">
+          <!--  机构名称  -->
+          <template v-if="column?.key === 'name'">
+            <div class="phone-div-content">
+              <div class="phone-div">{{ record.name }}</div>
+              <div v-if="record?.migrated === 1" class="migrated-tag">已转移 </div>
+            </div>
+          </template>
+
           <!--  员工数  -->
           <template v-if="column?.key === 'employeesNumber'">
             <div class="employees-Number" @click="jumpToMember(record)">{{
@@ -156,7 +164,7 @@
           </template>
           <!--  操作   -->
           <template v-if="column?.key === 'operation'">
-            <div class="operation-content">
+            <div class="operation-content" v-if="record.migrated !== 1">
               <div class="text-color margin-right-5" @click="edit(record)">修改</div>
               <div
                 :class="[
@@ -207,6 +215,15 @@
                 </template>
                 <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
               </a-popover>
+            </div>
+
+            <div class="operation-content" v-else>
+              <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+              <div
+                :class="['text-color', ' margin-right-5']"
+                @click="setTableStatusChangeInfo(false, record, 'delete', false)"
+                >删除</div
+              >
             </div>
           </template>
         </template>
@@ -1651,7 +1668,6 @@ const getList = async (isRefresh = false) => {
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
       //item?.migrated 0没迁移 1迁移
-      item.name = item?.migrated === 1 ? `${item.name}(已转移)` : item.name
     })
 
     state.tableDataArr = res
@@ -3349,6 +3365,24 @@ watch(
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+}
+.phone-div-content {
+  display: flex;
+  margin-bottom: 10px;
+}
+.phone-div {
+  margin-right: 14px;
+}
+.migrated-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  width: 60px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgb(255, 245, 245);
+  color: rgba(255, 65, 65, 1);
 }
 </style>
 

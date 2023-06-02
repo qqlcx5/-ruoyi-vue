@@ -3142,13 +3142,14 @@ interface DataItem {
 //获取部门列表
 const getOrganizationListFN = async () => {
   const res = await getSimpleOrganizationList()
+  console.log('res+++++++++++', res)
   res.map((item) => {
-    if (item.migrated === 0) {
+    if (item.migrated === 1) {
       //0没迁移 1迁移
-      item.name = item.migrated === 0 ? item.name : `${item.name}(关闭)(已转移)`
+      item.name = item.migrated === 1 ? `${item.name}(关闭)(已转移)` : item.name
     } else {
       //0开启 1关闭
-      item.name = item.status == 0 ? item.name : `${item.name}(关闭)`
+      item.name = item.status == 1 ? `${item.name}(关闭)` : item.name
     }
   })
   console.log('部门res', res)
