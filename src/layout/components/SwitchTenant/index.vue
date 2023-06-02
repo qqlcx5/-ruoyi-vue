@@ -13,7 +13,7 @@
           @click="handleItemClick(item)"
         >
           <div class="flex items-center justify-between">
-            <div class="item-name">{{ item.tenantName }}-厂家</div>
+            <div class="item-name">{{ item.tenantName }}-{{ TenantMap[item.tenantType] }}</div>
             <div v-if="item.isDefaultLogin" class="default-item">默认</div>
           </div>
           <div class="flex items-center justify-between">
@@ -42,6 +42,11 @@
 import { updateDefaultTenant, updateDefaultTenantByUserName } from '@/api/login/index'
 import { getAccessToken } from '@/utils/auth'
 
+// 字典未登录无法获取，先写死
+const TenantMap = {
+  dealer: '经销商',
+  manufacturer: '厂家'
+}
 const message = useMessage()
 
 interface TenantInfo {
