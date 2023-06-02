@@ -93,4 +93,19 @@ $messageMap: (
   }
 }
 
+.wg-dialog {
+  .el-dialog__header {
+    padding: 20px;
+    margin: 0;
+    border-bottom: 1px solid $border-color;
+  }
+  .el-dialog__body {
+    padding: 16px;
+  }
+  .el-dialog__footer {
+    padding: 16px 20px;
+    border-top: 1px solid $border-color;
+  }
+}
+
 .wg-query-form .el-form-item--default{ margin-bottom: 0; }

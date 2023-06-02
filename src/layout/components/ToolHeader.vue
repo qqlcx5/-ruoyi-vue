@@ -1,6 +1,7 @@
 <script lang="tsx">
 import { defineComponent, computed } from 'vue'
 import { Message } from '@/layout/components//Message'
+import { Collapse } from '@/layout/components/Collapse'
 import { UserInfo } from '@/layout/components/UserInfo'
 import { Screenfull } from '@/layout/components/Screenfull'
 import { Breadcrumb } from '@/layout/components/Breadcrumb'
@@ -10,14 +11,16 @@ import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
 import { ThemeSwitch } from '@/layout/components/ThemeSwitch'
 import { Icon } from '@/components/Icon'
-import SelectMajorIndividual from '@/layout/components/SelectMajorIndividual/selectMajorIndividual.vue'
-
-const state = reactive({
-  userInfo: {
-    company: '厦门分公司'
-  },
-  needSelectTree: false
-})
+import SwitchTenant from '@/layout/components/SwitchTenant/index.vue'
+import { useUserStoreWithOut } from '@/store/modules/user'
+import { getTenantById, handoffTenant } from '@/api/login'
+import { getTenantId, setTenantId } from '@/utils/auth'
+import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
+import router from '@/router'
+import { RouteRecordRaw } from 'vue-router'
+import { usePermissionStoreWithOut } from '@/store/modules/permission'
+import * as authUtil from '@/utils/auth'
+import { ElLoading } from 'element-plus'
 
 const { getPrefixCls, variables } = useDesign()
 
@@ -28,6 +31,8 @@ const appStore = useAppStore()
 // 面包屑
 const breadcrumb = computed(() => appStore.getBreadcrumb)
 
+// 折叠图标
+const hamburger = computed(() => appStore.getHamburger)
 // // 折叠图标
 // const hamburger = computed(() => appStore.getHamburger)
 
@@ -46,24 +51,52 @@ const locale = computed(() => appStore.getLocale)
 // 消息图标
 const message = computed(() => appStore.getMessage)
 
-// setTimeout(()=>{
-//   // 刷新浏览器
-//   location.reload()
-// },5000)
-
-const handleMouseEnter = () => {
-  console.log('鼠标移入')
-  state.needSelectTree = true
-}
-
-const handleMouseLeave = (needSelectTree) => {
-  console.log('鼠标移出', needSelectTree)
-  state.needSelectTree = false
-}
-
 export default defineComponent({
   name: 'ToolHeader',
   setup() {
+    const { wsCache } = useCache()
+    const messageBox = useMessage()
+    const userStore = useUserStoreWithOut()
+    const permissionStore = usePermissionStoreWithOut()
+    const switchTenantRef = ref()
+    const tenantName = computed(() => {
+      return userStore.getTenant.systemName
+    })
+    // 切换主体
+    const switchTenant = async () => {
+      await getTenantById({ tenantId: getTenantId() }).then((res) => {
+        if (!res) return messageBox.error('获取可选主体失败')
+        let tenantList: any[] = []
+        res.forEach((tenant) => {
+          tenantList = [...tenantList, ...tenant.tenantInfos]
+        })
+        switchTenantRef.value.openDialog(tenantList, getTenantId())
+      })
+    }
+    // 选中切换主体
+    const handleSwitchTenant = async (data) => {
+      ElLoading.service({
+        lock: true,
+        text: '正在切换主体中...',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+      // 重新设置token信息
+      await handoffTenant({ tenantId: data }).then((res) => {
+        if (!res) return messageBox.error('获取新主体token失败')
+        authUtil.setToken(res)
+      })
+      setTenantId(data)
+      // 设置登录信息
+      wsCache.delete(CACHE_KEY.USER)
+      await userStore.setUserInfoAction()
+      // 重新设置权限
+      await permissionStore.generateRoutes()
+      permissionStore.getAddRouters.forEach((route) => {
+        router.addRoute(route as unknown as RouteRecordRaw) // 动态添加可访问路由表
+      })
+      router.go(0)
+    }
+
     return () => (
       <div
         id={`${variables.namespace}-tool-header`}
@@ -75,30 +108,27 @@ export default defineComponent({
       >
         {layout.value !== 'top' ? (
           <div class="h-full flex items-center">
+            {hamburger.value ? (
+              <Collapse class="collapse" color="var(--top-header-text-color)"></Collapse>
+            ) : undefined}
             {breadcrumb.value ? <Breadcrumb class="<md:hidden"></Breadcrumb> : undefined}
           </div>
         ) : undefined}
         <div class="h-full flex items-center">
-          {state.needSelectTree ? (
-            <SelectMajorIndividual
-              onMouseLeave={(needSelectTree) => handleMouseLeave(needSelectTree)}
-            />
-          ) : (
-            <div
-              class="company-content flex items-center px-22px"
-              onMouseenter={() => handleMouseEnter()}
-            >
-              <div className="company-text">
-                <span className="company">{state.userInfo.company}</span>
-              </div>
-              <Icon
-                icon="svg-icon:switch"
-                size={14}
-                class="cursor-pointer"
-                color="var(--top-header-text-color)"
-              />
+          <div
+            class="company-content flex items-center px-22px hover-trigger"
+            onClick={switchTenant}
+          >
+            <div class="company-text">
+              <span class="company">{tenantName.value}</span>
             </div>
-          )}
+            <Icon
+              icon="svg-icon:switch"
+              size={14}
+              class="cursor-pointer"
+              color="var(--top-header-text-color)"
+            />
+          </div>
           <div class="vertical-line"></div>
           {screenfull.value ? (
             <Screenfull class="hover-trigger" color="var(--top-header-text-color)"></Screenfull>
@@ -121,6 +151,7 @@ export default defineComponent({
           <div class="vertical-line"></div>
           <UserInfo></UserInfo>
         </div>
+        <SwitchTenant ref={switchTenantRef} onConfirm={handleSwitchTenant} />
       </div>
     )
   }
@@ -144,6 +175,7 @@ $prefix-cls: #{$namespace}-tool-header;
   }
   .el-icon {
     color: var(--top-header-text-color);
+    color: var(--top-header-text-color);
   }
   .company {
     color: var(--top-header-text-color);
@@ -152,6 +184,7 @@ $prefix-cls: #{$namespace}-tool-header;
 }
 
 .hover-trigger {
+  color: #8291a9;
   color: #8291a9;
 }
 

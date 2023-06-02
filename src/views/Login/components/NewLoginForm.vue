@@ -64,28 +64,28 @@
             </el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="24">
-          <el-form-item prop="tenantName">
-            <el-input
-              type="text"
-              v-model="loginData.loginForm.tenantName"
-              :placeholder="t('login.tenantNamePlaceholder')"
-            >
-              <template #prefix>
-                <i class="iconfont icon-gongsi !text-18px"></i>
-              </template>
-            </el-input>
-            <!--            <el-select v-model="loginData.loginForm.tenantName" placeholder="请选择" class="w-full">-->
-            <!--              <template #prefix>-->
-            <!--                <i class="iconfont icon-gongsi !text-18px"></i>-->
-            <!--              </template>-->
-            <!--              <el-option-->
-            <!--                :label="loginData.loginForm.tenantName"-->
-            <!--                :value="loginData.loginForm.tenantName"-->
-            <!--              />-->
-            <!--            </el-select>-->
-          </el-form-item>
-        </el-col>
+        <!--        <el-col :span="24">-->
+        <!--          <el-form-item prop="tenantName">-->
+        <!--            <el-input-->
+        <!--              type="text"-->
+        <!--              v-model="loginData.loginForm.tenantName"-->
+        <!--              :placeholder="t('login.tenantNamePlaceholder')"-->
+        <!--            >-->
+        <!--              <template #prefix>-->
+        <!--                <i class="iconfont icon-gongsi !text-18px"></i>-->
+        <!--              </template>-->
+        <!--            </el-input>-->
+        <!--            &lt;!&ndash;            <el-select v-model="loginData.loginForm.tenantName" placeholder="请选择" class="w-full">&ndash;&gt;-->
+        <!--            &lt;!&ndash;              <template #prefix>&ndash;&gt;-->
+        <!--            &lt;!&ndash;                <i class="iconfont icon-gongsi !text-18px"></i>&ndash;&gt;-->
+        <!--            &lt;!&ndash;              </template>&ndash;&gt;-->
+        <!--            &lt;!&ndash;              <el-option&ndash;&gt;-->
+        <!--            &lt;!&ndash;                :label="loginData.loginForm.tenantName"&ndash;&gt;-->
+        <!--            &lt;!&ndash;                :value="loginData.loginForm.tenantName"&ndash;&gt;-->
+        <!--            &lt;!&ndash;              />&ndash;&gt;-->
+        <!--            &lt;!&ndash;            </el-select>&ndash;&gt;-->
+        <!--          </el-form-item>-->
+        <!--        </el-col>-->
         <el-col :span="24">
           <el-form-item>
             <el-row justify="space-between">
@@ -119,10 +119,11 @@
         mode="pop"
         :captchaType="captchaType"
         :imgSize="{ width: '400px', height: '200px' }"
-        @success="handleLogin"
+        @success="getTenantByUser"
       />
     </el-row>
   </el-form>
+  <SwitchTenant ref="switchTenantRef" @confirm="onSwitchBodyConfirm" />
 </template>
 <script setup lang="ts">
 import { ElLoading } from 'element-plus'
@@ -133,10 +134,12 @@ import * as authUtil from '@/utils/auth'
 import { usePermissionStore } from '@/store/modules/permission'
 import * as LoginApi from '@/api/login'
 import { LoginStateEnum, LoginStateMap, useLoginState, useFormValid } from './useLogin'
+import SwitchTenant from '@/layout/components/SwitchTenant/index.vue'
 
 import qrCodeImage from '@/assets/imgs/login-qrcode.png'
 import formImage from '@/assets/imgs/login-form.png'
 
+const message = useMessage()
 const { t } = useI18n()
 const formLogin = ref()
 const { validForm } = useFormValid(formLogin)
@@ -152,7 +155,7 @@ const getShow = computed(() => unref(getLoginState) === LoginStateEnum.LOGIN)
 const LoginFormTitle = computed(() => LoginStateMap[unref(getLoginState)])
 
 const LoginRules = {
-  tenantName: [required],
+  // tenantName: [required],
   username: [required],
   password: [required]
 }
@@ -180,7 +183,7 @@ const loginData = reactive({
 const getCode = async () => {
   // 情况一，未开启：则直接登录
   if (loginData.captchaEnable === 'false') {
-    await handleLogin({})
+    await handleLogin()
   } else {
     // 情况二，已开启：则展示验证码；只有完成验证码的情况，才进行登录
     // 弹出验证码
@@ -207,8 +210,50 @@ const getCookie = () => {
     }
   }
 }
+
+// 登录前请求是否有多主体可选
+const switchTenantRef = ref()
+const getTenantByUser = async (data) => {
+  loginLoading.value = true
+  loginData.loginForm.captchaVerification = data.captchaVerification
+  const params = {
+    captchaVerification: loginData.loginForm.captchaVerification,
+    username: loginData.loginForm.username,
+    password: loginData.loginForm.password
+  }
+  await LoginApi.getTenantUser(params).then((res) => {
+    if (!res) return message.error('登录失败，账号密码不正确')
+    let tenantList: any[] = []
+    res.forEach((tenant) => {
+      tenantList = [...tenantList, ...tenant.tenantInfos]
+    })
+    if (tenantList.length === 0) {
+      message.error('没有主体可以进入系统')
+    } else if (tenantList.length === 1) {
+      // 直接进入系统
+      authUtil.setTenantId(tenantList[0]!.tenantId)
+      handleLogin()
+    } else {
+      // 多主体选择登录的主体
+      const defaultTenant = tenantList.find((t) => t.isDefaultLogin)
+      if (defaultTenant) {
+        authUtil.setTenantId(defaultTenant.tenantId)
+        handleLogin()
+      } else {
+        switchTenantRef.value.openDialog(tenantList, '', loginData.loginForm)
+      }
+    }
+  })
+}
+
+// 选择主体完确定
+const onSwitchBodyConfirm = (data) => {
+  authUtil.setTenantId(data)
+  handleLogin()
+}
+
 // 登录
-const handleLogin = async (params) => {
+const handleLogin = async () => {
   loginLoading.value = true
   try {
     await getTenantId()
@@ -216,7 +261,6 @@ const handleLogin = async (params) => {
     if (!data) {
       return
     }
-    loginData.loginForm.captchaVerification = params.captchaVerification
     const res = await LoginApi.loginApi(loginData.loginForm)
     if (!res) {
       return
