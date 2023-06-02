@@ -551,15 +551,15 @@
                   class="avatar-uploader"
                   :show-upload-list="true"
                   :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
+                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'noticeLetter')"
                   @change="
                     (file, fileList) => {
-                      handleChange(file, fileList, 'logo')
+                      handleChange(file, fileList, 'noticeLetter')
                     }
                   "
                   @remove="
                     (file) => {
-                      removeImg(file, 'logo')
+                      removeImg(file, 'noticeLetter')
                     }
                   "
                 >
@@ -1127,6 +1127,11 @@ const checkImageWH = (file, width, height) => {
 }
 //上传前
 const beforeUpload = async (file: UploadProps['beforeUpload'][number], fileList, type) => {
+  if (type === 'noticeLetter' && state.noticeLetterUrl.length === 1) {
+    //通知函
+    message.warning('通知函只能上传一个')
+    return Upload.LIST_IGNORE
+  }
   if (type === 'environment') {
     //环境图片
     const isJpgOrPng =
@@ -1222,6 +1227,15 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
           return
         }
         state.environmentSuccess = info?.file.response?.data?.store || ''
+        break
+      case 'noticeLetter':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          state.noticeLetterUrl = []
+          return
+        }
+        state.noticeLetterSuccess = info?.file.response?.data?.store || ''
+        console.log('state.noticeLetterUrl', state.noticeLetterUrl)
         break
     }
 

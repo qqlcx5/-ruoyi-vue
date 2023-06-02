@@ -219,11 +219,9 @@ const closeStatusModal = () => {
 }
 
 onMounted(async () => {
-  const res = await getSimpleTenantList()
-  res.map((item) => {
-    //禁用厂家
-    item.disabled = item.type === 'manufacturer'
-  })
+  let res = await getSimpleTenantList()
+  //去除顶层机构以及厂家 只保留经销商
+  res = res.filter((item) => item.id !== 0 || item.type === 'dealer')
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
   console.log('state.optionalMenuTree', state.optionalMenuTree)
   state.formState.belongTenantId = props.currentRecord.belongTenantId

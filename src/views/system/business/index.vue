@@ -1625,6 +1625,7 @@ const closeModal = () => {
 const closeStore = () => {
   state.isShowStore = false
   state.belongTenantId = null
+  state.modalType = 'add'
   state.record = {}
   getList()
 }
