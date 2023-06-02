@@ -39,7 +39,7 @@
                     @pressEnter="getList()"
                     @change="() => limitInput(queryParams.memberPhone)"
                     maxlength="11"
-                    placeholder="请输入4位数字查询"
+                    placeholder="请输入联系电话"
                     allowClear
                   />
                   <!-- </a-form-item>-->

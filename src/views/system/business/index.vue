@@ -164,12 +164,32 @@
           <!--  操作   -->
           <template v-if="column?.key === 'operation'">
             <div class="operation-content">
-              <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-              <div class="text-color margin-right-5" @click="openModal(record)">{{
-                record.type === 'dealer' ? '新增门店' : '新增子项'
-              }}</div>
-              <div class="text-color margin-right-5" @click="assignPermission(record)"
+              <div
+                class="text-color margin-right-5"
+                @click="edit(record, false, record.type === null)"
+                >修改</div
+              >
+              <div
+                v-if="record.type !== null"
+                class="text-color margin-right-5"
+                @click="openModal(record)"
+                >{{ record.type === 'dealer' ? '新增门店' : '新增子项' }}</div
+              >
+              <div v-else class="text-color margin-right-5" @click="openModal(record)"
+                >修改上级主体</div
+              >
+
+              <div
+                v-if="record.type !== null"
+                class="text-color margin-right-5"
+                @click="assignPermission(record)"
                 >功能配置</div
+              >
+              <div
+                v-else
+                class="text-color margin-right-5"
+                @click="edit(record, false, record.type === null, 'underlyingAttribute')"
+                >设置属性</div
               >
               <a-popover placement="bottom">
                 <template #content>
@@ -210,7 +230,10 @@
           name="majorIndividualType"
           :rules="[{ required: true, message: `主体类型不能为空` }]"
         >
-          <a-radio-group v-model:value="state.formState.majorIndividualType">
+          <a-radio-group
+            v-model:value="state.formState.majorIndividualType"
+            :disabled="state.modalType === 'edit'"
+          >
             <a-radio
               v-for="item in state.majorIndividualTypeOptions"
               :value="item.value"
@@ -537,7 +560,14 @@
     </template>
   </a-modal>
 
-  <Store v-if="false"></Store>
+  <!--  新增/修改门店  -->
+  <Store
+    v-if="state.isShowStore"
+    @closeStore="closeStore()"
+    :belongTenantId="state.belongTenantId"
+    :editRecord="state.record"
+    :tabsActiveKey="state.currentTabs"
+  ></Store>
 
   <!-- 配置权限 Modal -->
   <a-modal
@@ -703,7 +733,8 @@
             state.tableStatusChangeInfo.record.name
           }}底下
           <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
-          个子项主体将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          个子项{{ state.tableStatusChangeInfo?.type }}将同步
+          {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
     </div>
@@ -810,6 +841,14 @@
       </div>
     </div>
   </a-modal>
+
+  <!--  门店详情  -->
+  <StoreDetails
+    v-if="state.isShowStoreDetails"
+    @closeStoreDetails="closeStoreDetails()"
+    @editStoreDetails="editStoreDetails"
+    :currentRecord="state.record"
+  ></StoreDetails>
 
   <!--  重置密码 Modal  -->
   <a-modal
@@ -927,13 +966,15 @@ import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import { cloneDeep } from 'lodash-es'
 import Store from '@/views/system/business/Store.vue'
+import StoreDetails from '@/views/system/business/StoreDetails.vue'
 
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
 
 import isBetween from 'dayjs/plugin/isBetween'
-import { getOrganizationTypeList } from '@/api/system/organization'
+import { getOrganizationTypeList, updateOrganizationStatus } from '@/api/system/organization'
+import { getMajorIndividualSimpleMenusList } from '@/api/system/menu'
 dayjs.extend(isBetween)
 
 interface FormState {
@@ -1100,6 +1141,7 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
+  belongTenantId: null, //上级主体编号 新增门店
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
   messageText: '为了保护您的主体公司业务数据安全，请通过安全验证：',
@@ -1120,6 +1162,9 @@ const state = reactive({
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false, //新增编辑modal
+  isShowStore: false, //新增编辑 门店
+  isShowStoreDetails: false, //详情 门店
+  currentTabs: 'basicInformation', //门店 设置属性&&修改 current Tab
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
@@ -1410,6 +1455,7 @@ const getList = async (isRefresh = false) => {
       const tempType = state.majorIndividualTypeOptions.filter(
         (typeItem) => typeItem.value === item.type
       )
+
       item.majorIndividualType = tempType[0]?.label || ''
 
       item.store = item.type === null ? '门店' : ''
@@ -1417,6 +1463,7 @@ const getList = async (isRefresh = false) => {
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
     state.total = res.total
+    console.log('state.tableDataList ', state.tableDataList)
 
     if (isRefresh) {
       message.success('刷新成功')
@@ -1453,8 +1500,6 @@ const resetQuery = () => {
   handleQuery()
 }
 
-getList()
-
 //一键 展开 折叠 全部
 const toggleExpandAll = () => {
   //由于antdV只提供了初始化时默认展开全部的 API 因此 此处利用v-if 来实现重新初始化
@@ -1482,8 +1527,14 @@ const fullScreen = () => {
 
 //打开Modal
 const openModal = async (record = {}) => {
-  if (record.type === 'dealer') {
-    console.log('新增门店')
+  //新增门店
+  if (record.type === 'dealer' && state.modalType === 'add') {
+    if (!(Object.keys(record).length === 0)) {
+      //非空对象判断 新增子项时回显
+      state.belongTenantId = record.id
+      state.isShowStore = true
+      console.log('新增门店')
+    }
     return
   }
   const res = await getSimpleTenantList()
@@ -1498,7 +1549,8 @@ const openModal = async (record = {}) => {
 
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
-    state.formState.belongTenantId = record.id
+    //上级主体
+    state.formState.belongTenantId = record.belongTenantId
   } else {
     state.formState.belongTenantId = state?.optionalMenuTree[0]
       ? state?.optionalMenuTree[0]?.id
@@ -1551,6 +1603,27 @@ const closeModal = () => {
   state.modalType = 'add'
 }
 
+//关闭 新增/编辑门店
+const closeStore = () => {
+  state.isShowStore = false
+  state.belongTenantId = null
+  state.record = {}
+  getList()
+}
+
+//关闭 详情 门店
+const closeStoreDetails = () => {
+  state.isShowStoreDetails = false
+  state.record = {}
+}
+
+//详情 门店 修改
+const editStoreDetails = (record) => {
+  closeStoreDetails()
+  console.log('record!!!!!!!!!!!!!!!!!!!', record)
+  edit(record, false, record.type === null)
+}
+
 /** 添加/修改操作 */
 const formRef = ref()
 
@@ -1566,7 +1639,23 @@ const getTree = async () => {
 getTree()
 
 //编辑
-const edit = async (record, isCloseDetails = false) => {
+const edit = async (
+  record,
+  isCloseDetails = false,
+  isStore = false,
+  currentTabs = 'basicInformation'
+) => {
+  state.modalType = 'edit'
+  state.modalTitle = '编辑'
+  console.log('修改record', record)
+  console.log('isStore', isStore)
+  if (isStore) {
+    //门店
+    state.currentTabs = currentTabs
+    state.isShowStore = true
+    state.record = record
+    return
+  }
   // 修改modal 有效期 状态 关闭时  modal 用
   state.permissionRecord = record
   if (isCloseDetails) {
@@ -1575,13 +1664,12 @@ const edit = async (record, isCloseDetails = false) => {
   }
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
+  console.log('res==========', res)
 
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
 
-  state.modalType = 'edit'
-  state.modalTitle = '编辑'
   //赋值 回显
   state.formState = {
     majorIndividualType: res.type, //主体类型
@@ -1607,6 +1695,8 @@ const edit = async (record, isCloseDetails = false) => {
     detailedAddress: res.address //公司地址 详细地址
     // businessLicenseUrl: res.businessLicenseUrl //营业执照
   }
+  console.log('state.optionalMenuTree', state.optionalMenuTree)
+  console.log('state.formState.belongTenantId', state.formState.belongTenantId)
 
   if (res.logoUrl) {
     state.logoListUrl = [
@@ -1670,7 +1760,7 @@ const edit = async (record, isCloseDetails = false) => {
     })
   }
 
-  openModal()
+  openModal(record)
 }
 
 //页码改变
@@ -1764,7 +1854,7 @@ const addMajorIndividualFN = async () => {
       // message.success('新增成功')
       message.success('主体已建立成功！主体用户名和密码已发送到负责人手机号中，请注意查收！')
       //配置权限
-      openPermissionModal()
+      openPermissionModal(state.addSuccessId)
     } else {
       if (
         dayjs().isBetween(
@@ -1814,12 +1904,14 @@ const closePermissionModal = () => {
 }
 
 //开启功能配置 modal
-const openPermissionModal = async () => {
+const openPermissionModal = async (id) => {
   state.isShowPermission = true
   // //获取菜单列表
   // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  // //获取菜单列表
+  // const menuList = await MenuApi.getSimpleMenusList()
   //获取菜单列表
-  const menuList = await MenuApi.getSimpleMenusList()
+  const menuList = await MenuApi.getMajorIndividualSimpleMenusList({ id })
   //不要展示按钮 默认按钮全选 后端处理
   const tempArr = menuList.filter((item) => item.type !== 3)
   state.menuTreeList = handleTree(tempArr)
@@ -1887,7 +1979,7 @@ const assignPermission = async (record) => {
     state.isShowRightTree = true
     state.isShowTree = true
   })
-  await openPermissionModal()
+  await openPermissionModal(record.id)
 }
 
 //表格状态改变 确认modal... 然后才开短信 modal
@@ -1917,11 +2009,13 @@ const setTableStatusChangeInfo = (value, record) => {
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
     state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
+    state.tableStatusChangeInfo['type'] = record?.type === null ? '机构' : '主体'
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
     state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
+    state.tableStatusChangeInfo['type'] = record?.type === null ? '机构' : '主体'
   }
 
   //过滤得到父级项
@@ -1991,15 +2085,24 @@ const statusOk = async () => {
     message.warning('请输入短信验证码')
     return
   }
-
-  const params = {
-    id: state.record.id,
-    code: state.messageCode,
-    status: state.record.statusSwitch === true ? 0 : 1
-  }
-
   try {
-    await updateEditMajorIndividualStatus(params)
+    if (state.record.type === null) {
+      //门店 TODO 短信
+      await updateOrganizationStatus({
+        id: state.record.id,
+        status: state.record.statusSwitch === true ? 0 : 1
+      })
+    } else {
+      //主体
+      const params = {
+        id: state.record.id,
+        code: state.messageCode,
+        status: state.record.statusSwitch === true ? 0 : 1
+      }
+
+      await updateEditMajorIndividualStatus(params)
+    }
+
     message.success('修改状态成功')
     statusCancel()
   } finally {
@@ -2069,6 +2172,12 @@ function getChildArr(data) {
 
 //详情(打开)
 const detailsInfo = async (record) => {
+  if (record?.type === null) {
+    //门店
+    state.record = record
+    state.isShowStoreDetails = true
+    return
+  }
   // state.record = record
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
@@ -2450,8 +2559,6 @@ const getAllType = async () => {
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
 }
 
-getAllType()
-
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
 const changeColumn = (columnsObj, isCloseModal = false) => {
   if (isCloseModal) {
@@ -2500,6 +2607,11 @@ watch(
     deep: true
   }
 )
+
+onMounted(async () => {
+  await getAllType()
+  await getList()
+})
 </script>
 
 <style lang="scss" scoped>
