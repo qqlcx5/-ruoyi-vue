@@ -190,13 +190,13 @@ const getCode = async () => {
     verify.value.show()
   }
 }
-//获取租户ID
-const getTenantId = async () => {
-  if (loginData.tenantEnable === 'true') {
-    const res = await LoginApi.getTenantIdByNameApi(loginData.loginForm.tenantName)
-    authUtil.setTenantId(res)
-  }
-}
+// //获取租户ID
+// const getTenantId = async () => {
+//   if (loginData.tenantEnable === 'true') {
+//     const res = await LoginApi.getTenantIdByNameApi(loginData.loginForm.tenantName)
+//     authUtil.setTenantId(res)
+//   }
+// }
 // 记住我
 const getCookie = () => {
   const loginForm = authUtil.getLoginForm()
@@ -231,7 +231,7 @@ const getTenantByUser = async (data) => {
       message.error('没有主体可以进入系统')
     } else if (tenantList.length === 1) {
       // 直接进入系统
-      authUtil.setTenantId(tenantList[0]!.tenantId)
+      authUtil.setTenantId(tenantList[0].tenantId)
       handleLogin()
     } else {
       // 多主体选择登录的主体
@@ -256,7 +256,7 @@ const onSwitchBodyConfirm = (data) => {
 const handleLogin = async () => {
   loginLoading.value = true
   try {
-    await getTenantId()
+    // await getTenantId()
     const data = await validForm()
     if (!data) {
       return
