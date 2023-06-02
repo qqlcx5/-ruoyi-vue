@@ -41,6 +41,7 @@
 <script setup lang="ts">
 import { updateDefaultTenant, updateDefaultTenantByUserName } from '@/api/login/index'
 import { getAccessToken } from '@/utils/auth'
+import * as authUtil from '@/utils/auth'
 
 // 字典未登录无法获取，先写死
 const TenantMap = {
@@ -100,6 +101,8 @@ const openDialog = async (data?: TenantInfo[], defaultTenantId?, loginData?) => 
 }
 
 const onConfirm = () => {
+  const activeTenant = tenantList.value.find((item) => item.tenantId == activeTenantId.value)
+  if (activeTenant) authUtil.setTenantData(activeTenant)
   emit('confirm', activeTenantId.value)
   dialogVisible.value = false
 }

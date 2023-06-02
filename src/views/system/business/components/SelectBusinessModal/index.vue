@@ -107,7 +107,7 @@ const submitForm = async () => {
   } else {
     emit(
       'confirm',
-      checkedNodes.filter((item) => !item.children || item.children.length === 0)
+      checkedNodes.filter((item) => !item.type)
     )
   }
   modelVisible.value = false

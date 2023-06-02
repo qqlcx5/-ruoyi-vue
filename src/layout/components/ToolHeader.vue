@@ -14,7 +14,7 @@ import { Icon } from '@/components/Icon'
 import SwitchTenant from '@/layout/components/SwitchTenant/index.vue'
 import { useUserStoreWithOut } from '@/store/modules/user'
 import { getTenantById, handoffTenant } from '@/api/login'
-import { getTenantId, setTenantId } from '@/utils/auth'
+import { getTenantData, getTenantId, setTenantId } from '@/utils/auth'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import router from '@/router'
 import { RouteRecordRaw } from 'vue-router'
@@ -60,7 +60,7 @@ export default defineComponent({
     const permissionStore = usePermissionStoreWithOut()
     const switchTenantRef = ref()
     const tenantName = computed(() => {
-      return userStore.getTenant.systemName
+      return getTenantData().tenantName
     })
     // 切换主体
     const switchTenant = async () => {

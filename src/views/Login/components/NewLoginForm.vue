@@ -221,29 +221,33 @@ const getTenantByUser = async (data) => {
     username: loginData.loginForm.username,
     password: loginData.loginForm.password
   }
-  await LoginApi.getTenantUser(params).then((res) => {
-    if (!res) return message.error('登录失败，账号密码不正确')
-    let tenantList: any[] = []
-    res.forEach((tenant) => {
-      tenantList = [...tenantList, ...tenant.tenantInfos]
-    })
-    if (tenantList.length === 0) {
-      message.error('没有主体可以进入系统')
-    } else if (tenantList.length === 1) {
-      // 直接进入系统
-      authUtil.setTenantId(tenantList[0].tenantId)
-      handleLogin()
-    } else {
-      // 多主体选择登录的主体
-      const defaultTenant = tenantList.find((t) => t.isDefaultLogin)
-      if (defaultTenant) {
-        authUtil.setTenantId(defaultTenant.tenantId)
-        handleLogin()
+  await LoginApi.getTenantUser(params)
+    .then(async (res) => {
+      if (!res) return message.error('登录失败，账号密码不正确')
+      let tenantList: any[] = []
+      res.forEach((tenant) => {
+        tenantList = [...tenantList, ...tenant.tenantInfos]
+      })
+      if (tenantList.length === 0) {
+        message.error('没有主体可以进入系统')
+      } else if (tenantList.length === 1) {
+        // 直接进入系统
+        authUtil.setTenantId(tenantList[0].tenantId)
+        await handleLogin(tenantList[0])
       } else {
-        switchTenantRef.value.openDialog(tenantList, '', loginData.loginForm)
+        // 多主体选择登录的主体
+        const defaultTenant = tenantList.find((t) => t.isDefaultLogin)
+        if (defaultTenant) {
+          authUtil.setTenantId(defaultTenant.tenantId)
+          await handleLogin(defaultTenant)
+        } else {
+          switchTenantRef.value.openDialog(tenantList, '', loginData.loginForm)
+        }
       }
-    }
-  })
+    })
+    .finally(() => {
+      loginLoading.value = false
+    })
 }
 
 // 选择主体完确定
@@ -253,9 +257,10 @@ const onSwitchBodyConfirm = (data) => {
 }
 
 // 登录
-const handleLogin = async () => {
+const handleLogin = async (tenantData?) => {
   loginLoading.value = true
   try {
+    authUtil.setTenantData(tenantData)
     // await getTenantId()
     const data = await validForm()
     if (!data) {

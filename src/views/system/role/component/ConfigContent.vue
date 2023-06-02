@@ -66,7 +66,7 @@
               <el-radio :label="5">仅看自己</el-radio>
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
-              <el-radio :label="2">
+              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">
                 指定部门
                 <div
                   v-if="currentNode.dataScope === 2"
@@ -80,7 +80,7 @@
                   }}
                 </div>
               </el-radio>
-              <el-radio :label="6">
+              <el-radio v-if="tenantType === TenantMap.manufacturer" :label="6">
                 指定经销商
                 <div
                   v-if="currentNode.dataScope === 6"
@@ -141,6 +141,7 @@ import SelectOrgAndStaffModal from '../../organization/components/SelectOrgAndSt
 import SelectBusinessModal from '../../business/components/SelectBusinessModal/index.vue'
 import { cloneDeep } from 'lodash-es'
 import { getDictOptions } from '@/utils/dict'
+import { getTenantData } from '@/utils/auth'
 
 const { query } = useRoute()
 
@@ -152,6 +153,13 @@ const props = defineProps({
 })
 const emit = defineEmits(['change'])
 const roleConfig = ref<any[]>([])
+const tenantType = computed(() => {
+  return getTenantData()?.tenantType || null
+})
+const TenantMap = {
+  dealer: 'dealer', // 经销商
+  manufacturer: 'manufacturer' // 厂家
+}
 // ================= 菜单 ====================
 const defaultCheckedKeys = ref()
 const treeOptions = ref<any[]>([]) // 菜单树形结构
@@ -252,11 +260,12 @@ const selectedBrands = computed({
     currentNode.value.dataScopeBrandIds = val
   }
 }) // 选中select操作权限
+// 指定部门选择
 const openDepartModal = () => {
-  selectOrgAndStaffModalRef.value.openModal(currentNode.value.dataScopeDepts.map((item) => item.id))
+  const { dataScopeDeptIds, dataScopeUserIds } = currentNode.value
+  selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, dataScopeUserIds)
 }
 const onSelectOrgConfirm = (data) => {
-  console.log(data)
   currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
   currentNode.value.dataScopeDepts = data
   let userIds: any[] = []
@@ -344,6 +353,7 @@ const getParams = () => {
       item.dataScopeDeptIds = []
       item.dataScopeDepts = []
     }
+    item.dataScopeBrandIds = item.databrandScope === 2 ? item.dataScopeBrandIds : []
     return item
   })
 }
