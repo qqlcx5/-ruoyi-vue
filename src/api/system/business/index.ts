@@ -21,6 +21,15 @@ export const getMajorIndividualList = (params: MajorIndividual) => {
   return request.get({ url: '/system/tenant/list', params })
 }
 
+// 查询 门店 修改上级主体 是否能迁移
+export const getCheckMajorIndividual = (params: MajorIndividual) => {
+  return request.get({ url: '/system/organization/check-migrate', params })
+}
+// 门店 修改上级主体 迁移
+export const updateParentMajorIndividual = (data) => {
+  return request.put({ url: '/system/organization/migrate', data })
+}
+
 // 获取上级主体列表
 export const getSimpleTenantList = () => {
   return request.get({ url: '/system/tenant/list-all-simple' })

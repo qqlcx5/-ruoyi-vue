@@ -1,4 +1,5 @@
 <template>
+  <!--  门店详情  -->
   <a-modal
     v-model:visible="state.isShowDetails"
     destroyOnClose

@@ -1649,6 +1649,8 @@ const getList = async (isRefresh = false) => {
       item.employeesNumber = item.staffCount
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
+      //item?.migrated 0没迁移 1迁移
+      item.name = item?.migrated === 1 ? `${item.name}(已转移)` : item.name
     })
 
     state.tableDataArr = res

@@ -3142,6 +3142,16 @@ interface DataItem {
 //获取部门列表
 const getOrganizationListFN = async () => {
   const res = await getSimpleOrganizationList()
+  res.map((item) => {
+    if (item.migrated === 0) {
+      //0没迁移 1迁移
+      item.name = item.migrated === 0 ? item.name : `${item.name}(关闭)(已转移)`
+    } else {
+      //0开启 1关闭
+      item.name = item.status == 0 ? item.name : `${item.name}(关闭)`
+    }
+  })
+  console.log('部门res', res)
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
 
   state.organizationList = res

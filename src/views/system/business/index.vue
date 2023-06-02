@@ -175,7 +175,10 @@
                 @click="openModal(record)"
                 >{{ record.type === 'dealer' ? '新增门店' : '新增子项' }}</div
               >
-              <div v-else class="text-color margin-right-5" @click="openModal(record)"
+              <div
+                v-else
+                class="text-color margin-right-5"
+                @click="openEditParentMajorIndividual(record)"
                 >修改上级主体</div
               >
 
@@ -251,7 +254,7 @@
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级目录"
+            placeholder="请选择上级主体"
             :tree-data="state.optionalMenuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
@@ -901,6 +904,13 @@
     </div>
   </a-modal>
 
+  <!--  门店修改上级主体  -->
+  <EditParentMajorIndividual
+    v-if="state.isShowParentMajorIndividual"
+    @closeStoreParentMajorIndividual="closeStoreParentMajorIndividual()"
+    :currentRecord="state.record"
+  ></EditParentMajorIndividual>
+
   <!--  定制列  -->
   <CustomColumn
     v-if="state.isShowCustomColumnModal"
@@ -967,6 +977,7 @@ import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import { cloneDeep } from 'lodash-es'
 import Store from '@/views/system/business/Store.vue'
 import StoreDetails from '@/views/system/business/StoreDetails.vue'
+import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 
 const { wsCache } = useCache()
 
@@ -1169,6 +1180,7 @@ const state = reactive({
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
   isShowDateStatus: false, //修改modal 有效期 状态关闭 modal
+  isShowParentMajorIndividual: false, //修改上级主体 门店
   dateTime: {}, //修改modal 有效期 状态关闭 modal  date
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
@@ -1525,6 +1537,12 @@ const fullScreen = () => {
   }
 }
 
+//打开 修改上级主体 门店
+const openEditParentMajorIndividual = (record) => {
+  state.isShowParentMajorIndividual = true
+  state.record = record
+}
+
 //打开Modal
 const openModal = async (record = {}) => {
   //新增门店
@@ -1615,6 +1633,13 @@ const closeStore = () => {
 const closeStoreDetails = () => {
   state.isShowStoreDetails = false
   state.record = {}
+}
+
+//关闭 修改上级主体 门店
+const closeStoreParentMajorIndividual = () => {
+  state.isShowParentMajorIndividual = false
+  state.record = {}
+  getList()
 }
 
 //详情 门店 修改
