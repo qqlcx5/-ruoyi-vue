@@ -109,3 +109,8 @@ export const putResetPassWord = (data) => {
 // export const deleteMenu = (id: number) => {
 //   return request.delete({ url: '/system/menu/delete?id=' + id })
 // }
+
+// 获取经销商门店精简信息列表
+export const getListDealerStore = () => {
+  return request.get({ url: '/system/tenant/list-dealer-store' })
+}

@@ -93,3 +93,8 @@ export const batchAssignUserRole = (data) => {
 export const getAllMemberList = (params) => {
   return request.get({ url: '/system/user/extra/page/all', params })
 }
+
+// 通过机构获取用户精简信息列表
+export const getUserListByOrg = (params) => {
+  return request.get({ url: '/system/user/extra/list-by-org', params })
+}
