@@ -66,6 +66,7 @@ export const removeLoginForm = () => {
 
 const TenantIdKey = 'TENANT_ID'
 const TenantNameKey = 'TENANT_NAME'
+const TenantDataKey = 'TENANT_DATA'
 
 export const getTenantName = () => {
   return wsCache.get(TenantNameKey)
@@ -89,4 +90,16 @@ export const setTenantId = (username: string) => {
 
 export const removeTenantId = () => {
   wsCache.delete(TenantIdKey)
+}
+
+export const getTenantData = () => {
+  return wsCache.get(TenantDataKey)
+}
+
+export const setTenantData = (data) => {
+  wsCache.set(TenantDataKey, data)
+}
+
+export const removeTenantData = () => {
+  wsCache.delete(TenantDataKey)
 }

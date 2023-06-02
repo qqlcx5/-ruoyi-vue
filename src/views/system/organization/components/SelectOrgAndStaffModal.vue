@@ -110,8 +110,8 @@ const init = async () => {
 }
 
 // 打开弹窗
-const openModal = async (data?: string[] | number[]) => {
-  if (data && data.length > 0) defaultCheckedKeys.value = data
+const openModal = async (deptIds?: string[] | number[], userIds?: string[] | number[]) => {
+  if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = deptIds
   await init()
   modelVisible.value = true
 }
