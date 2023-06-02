@@ -16,6 +16,9 @@
       <el-table-column label="数据权限" show-overflow-tooltip>
         <template #default="{ row }">{{ dataAccess(row) }}</template>
       </el-table-column>
+      <el-table-column label="品牌权限" show-overflow-tooltip>
+        <template #default="{ row }">{{ brandAccess(row) }}</template>
+      </el-table-column>
     </el-table>
   </div>
   <div class="table-box card-gary-bg">
@@ -34,6 +37,9 @@
       </el-table-column>
       <el-table-column label="数据权限" show-overflow-tooltip>
         <template #default="{ row }">{{ dataAccess(row) }}</template>
+      </el-table-column>
+      <el-table-column label="品牌权限" show-overflow-tooltip>
+        <template #default="{ row }">{{ brandAccess(row) }}</template>
       </el-table-column>
     </el-table>
   </div>
@@ -74,6 +80,8 @@ const dataAccess = (data): string => {
       return data.dataScopeDept.join('、')
     } else if (data.dataScopeUser && data.dataScopeUser.length > 0) {
       return data.dataScopeUser.join('、')
+    } else if (data.dataScopeStore && data.dataScopeStore.length > 0) {
+      return data.dataScopeStore.join('、')
     } else {
       return data.dataScopeName
     }
@@ -95,6 +103,11 @@ const dataAccess = (data): string => {
     } else {
       return DATA_ACCESS_MAP[data.dataScope]
     }
+  }
+}
+const brandAccess = (data) => {
+  if (props.origin === 'detail') {
+    return data.dataScopeBrandIds.join('、')
   }
 }
 </script>
