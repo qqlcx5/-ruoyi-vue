@@ -249,6 +249,7 @@
         <a-form-item
           :label="`机构类型`"
           name="organizationType"
+          v-if="state.record.organizationType !== '门店'"
           :rules="[{ required: true, message: `机构类型不能为空` }]"
         >
           <a-tree-select
@@ -1747,6 +1748,7 @@ const closeModal = () => {
     status: true //状态
   }
   delete state.formState?.id
+  state.record = {}
   state.modalTitle = '新增'
   state.modalType = 'add'
   state.currentType = '-1' //新增/修改/设置属性 机构类型(门店/分公司)
@@ -1770,6 +1772,7 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
+  console.log('record,', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1779,6 +1782,7 @@ const edit = async (record, isCloseDetails = false) => {
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
+  state.record = record
   console.log('res', res)
 
   state.modalType = 'edit'

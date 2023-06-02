@@ -140,11 +140,13 @@
             >
           </template>
           <!--  可用名额   -->
-          <template v-if="column?.key === 'usableAmount'">
+          <!--  排除门店  -->
+          <template v-if="column?.key === 'usableAmount' && record.type !== null">
             <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
           </template>
           <!--  有效期   -->
-          <template v-if="column?.key === 'validityPeriod'">
+          <!--  排除门店  -->
+          <template v-if="column?.key === 'validityPeriod' && record.type !== null">
             <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
           </template>
           <!--  状态   -->
@@ -236,6 +238,7 @@
           <a-radio-group
             v-model:value="state.formState.majorIndividualType"
             :disabled="state.modalType === 'edit'"
+            @change="majorIndividualTypeChange"
           >
             <a-radio
               v-for="item in state.majorIndividualTypeOptions"
@@ -255,7 +258,7 @@
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
             placeholder="请选择上级主体"
-            :tree-data="state.optionalMenuTree"
+            :tree-data="state.optionalMenuTreeChange"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
           />
@@ -1168,6 +1171,7 @@ const state = reactive({
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
+  tableDataArr: [], //表格数据 Arr
   treeIconIndex: 0,
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
@@ -1251,7 +1255,9 @@ const state = reactive({
   }, //重置密码 modal样式
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [], //表格 columns
+  optionalMenuList: [], //上级主体 List
   optionalMenuTree: [], //上级主体 treeList
+  optionalMenuTreeChange: [], //上级主体 跟主体类型联动
   logoListUrl: [], //系统logo 上传 回显 - -
   logoUrlSuccess: '', //系统logo 新增编辑入参
   legalPersonListUrl: [], //法人身份证 上传回显
@@ -1457,6 +1463,7 @@ const getList = async (isRefresh = false) => {
   try {
     const res = await getMajorIndividualList(params)
     state.rawData = res
+    state.tableDataArr = res
     state.tableDataList = res
     state.tableDataList.map((item) => {
       item.statusSwitch = item.status === 0
@@ -1484,17 +1491,18 @@ const getList = async (isRefresh = false) => {
     state.loading = false
   }
 
-  //获取菜单列表
-  const menuList = await MenuApi.getSimpleMenusList()
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = menuList.filter((item) => item.type !== 3)
-  state.menuTreeList = handleTree(tempArr)
-
-  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  state.parentCheckedKeys = []
-  state.menuTreeList.map((item) => {
-    state.parentCheckedKeys.push(item.id)
-  })
+  // //获取菜单列表
+  // // const menuList = await MenuApi.getSimpleMenusList()
+  // const menuList = await MenuApi.getMajorIndividualSimpleMenusList({ id })
+  // //不要展示按钮 默认按钮全选 后端处理
+  // const tempArr = menuList.filter((item) => item.type !== 3)
+  // state.menuTreeList = handleTree(tempArr)
+  //
+  // // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  // state.parentCheckedKeys = []
+  // state.menuTreeList.map((item) => {
+  //   state.parentCheckedKeys.push(item.id)
+  // })
   // state.defaultExpandAll = true
   await nextTick(() => {
     state.isShowTree = true
@@ -1562,17 +1570,24 @@ const openModal = async (record = {}) => {
   // let menu: Tree = { id: 0, name: '顶层主体', children: [] }
   // menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
   // menuTree.push(menu)
+  state.optionalMenuList = res
 
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
 
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     //上级主体
-    state.formState.belongTenantId = record.belongTenantId
+    if (!state.formState.majorIndividualType) {
+      state.formState.belongTenantId = null
+    } else {
+      state.formState.belongTenantId = record.belongTenantId
+    }
   } else {
-    state.formState.belongTenantId = state?.optionalMenuTree[0]
-      ? state?.optionalMenuTree[0]?.id
-      : null
+    // state.formState.belongTenantId = state?.optionalMenuTree[0]
+    //   ? state?.optionalMenuTree[0]?.id
+    //   : null
+    //不再取第一项了
+    state.formState.belongTenantId = null
   }
   state.isShow = true
 }
@@ -1585,7 +1600,7 @@ const closeModal = () => {
   state.formState.companyAddress = []
   state.formState = {
     majorIndividualType: '', //主体类型
-    belongTenantId: 0, //上级主体
+    belongTenantId: null, //上级主体
     code: '', //主体编码
     name: '', //主体名称
     abbreviate: '', //主体简称
@@ -1786,6 +1801,7 @@ const edit = async (
     })
   }
 
+  majorIndividualTypeChange()
   openModal(record)
 }
 
@@ -2583,6 +2599,30 @@ const getAllType = async () => {
 
   //适用主体类型
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
+}
+
+// 新增、修改 主体类型
+const majorIndividualTypeChange = () => {
+  console.log('state.optionalMenuTree', state.optionalMenuTree)
+
+  if (state.formState.majorIndividualType === 'manufacturer') {
+    //  厂家
+    //  厂家 - -只有顶层
+    state.optionalMenuTreeChange = state.optionalMenuList.filter((item) => item.id === 0)
+    console.log(' state.optionalMenuTreeChange=====', state.optionalMenuTreeChange)
+  } else {
+    //  经销商 - -顶层 跟厂家
+    state.optionalMenuTreeChange = state.optionalMenuList.filter(
+      (item) => item.id === 0 || item.type === 'manufacturer'
+    )
+  }
+
+  state.optionalMenuTreeChange = handleTree(
+    state.optionalMenuTreeChange,
+    'id',
+    'belongTenantId',
+    'children'
+  )
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -

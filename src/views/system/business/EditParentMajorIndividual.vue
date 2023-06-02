@@ -83,7 +83,7 @@
         </div>
         <div class="message-phone">
           主体负责人绑定的手机号：{{
-            props.currentRecord.contactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
+            state.contactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')
           }}
         </div>
         <div class="message-input-content"
@@ -110,6 +110,7 @@
 import { reactive } from 'vue'
 import {
   getCheckMajorIndividual,
+  getMajorIndividualList,
   getSimpleTenantList,
   updateEditMajorIndividualStatus,
   updateParentMajorIndividual
@@ -140,7 +141,8 @@ const state = reactive({
   optionalMenuTree: [], //上级主体 treeList
   canSendCode: true, //能否发送验证码
   codeCountdown: 60, //短信发送倒计时 s
-  messageCode: '' //短信验证码
+  messageCode: '', //短信验证码
+  contactMobile: '' //顶层主体的手机号 因为只有两层 所以只需要找父节点即可
 })
 
 const formRef = ref()
@@ -175,10 +177,7 @@ const senCodeFN = () => {
   //TODO:发送短信请求
   if (true) {
     message.success(
-      `验证码已发送至${props.currentRecord.contactMobile.replace(
-        /^(.{3})(?:\d+)(.{4})$/,
-        '$1****$2'
-      )}`
+      `验证码已发送至${state.contactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')}`
     )
   }
   state.canSendCode = false
@@ -220,12 +219,20 @@ const closeStatusModal = () => {
 
 onMounted(async () => {
   let res = await getSimpleTenantList()
+  console.log('res', res)
+  console.log('props.currentRecord', props.currentRecord)
+  const tempRes = await getMajorIndividualList()
+  console.log('tempRes ', tempRes)
+  const tempItem = tempRes.find((item) => item.id === props.currentRecord.belongTenantId)
+  console.log('tempItem', tempItem)
+  //获取门店的 顶层主体的 手机号
+  state.contactMobile = tempItem.contactMobile
+  //contactMobile
   //去除顶层机构以及厂家 只保留经销商
-  res = res.filter((item) => item.id !== 0 || item.type === 'dealer')
+  res = res.filter((item) => item.type === 'dealer')
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
   console.log('state.optionalMenuTree', state.optionalMenuTree)
   state.formState.belongTenantId = props.currentRecord.belongTenantId
-  console.log('props.currentRecord', props.currentRecord)
 })
 </script>
 

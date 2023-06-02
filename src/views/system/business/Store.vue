@@ -1333,7 +1333,9 @@ const trialOperationStoreLevelChange = () => {
 
 //获取数据字典
 const getOrganizationTypeListFN = async () => {
-  const majorIndividualOptionRes = await getSimpleTenantList()
+  let majorIndividualOptionRes = await getSimpleTenantList()
+  // 新增门店 上级主体 只有经销商
+  majorIndividualOptionRes = majorIndividualOptionRes.filter((item) => item.type === 'dealer')
   state.majorIndividualOption = handleTree(
     majorIndividualOptionRes,
     'id',
