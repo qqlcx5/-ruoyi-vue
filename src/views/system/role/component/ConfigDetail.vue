@@ -46,6 +46,7 @@
 </template>
 <script setup lang="ts">
 import { DATA_ACCESS_MAP } from './role.data'
+import { getDictLabel } from '@/utils/dict'
 
 const props = defineProps({
   frontTableData: {
@@ -94,10 +95,10 @@ const dataAccess = (data): string => {
         })
         .join('、')
     } else if (data.dataScope === 6) {
-      // 指定人
-      return data.dataScopeUsers
+      // 指定门店
+      return data.dataScopeStores
         .map((item) => {
-          return item.nickname
+          return item.name
         })
         .join('、')
     } else {
@@ -106,9 +107,13 @@ const dataAccess = (data): string => {
   }
 }
 const brandAccess = (data) => {
-  if (props.origin === 'detail') {
-    return data.dataScopeBrandIds.join('、')
-  }
+  return data.dataScopeBrandIds
+    ? data.dataScopeBrandIds
+        .map((item) => {
+          return getDictLabel('brand', item)
+        })
+        .join('、')
+    : ''
 }
 </script>
 <style lang="scss" scoped>

@@ -76,7 +76,6 @@ const defaultCheckedKeys = ref<string[] | number[]>([])
 const currentNode = ref<TreeNodeData>({})
 
 const onTreeCheck = (node, list) => {
-  console.log(list)
   currentNode.value = node
   treeRef.value!.setCurrentKey(node.id, true)
   const nodeSelectStatus = list.checkedKeys.includes(node.id)
@@ -93,7 +92,7 @@ const setNodeUserInfo = async (node, allSelect?: boolean) => {
   if (!node.userList) {
     currentNode.value.userList = (await getUserListByOrg({ orgId: node.id })) || []
   }
-  currentNode.value.userIds = allSelect ? currentNode.value.userList.map((user) => user.id) : []
+  // currentNode.value.userIds = allSelect ? currentNode.value.userList.map((user) => user.id) : []
 }
 // --------------- 成员 ---------------
 

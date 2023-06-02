@@ -249,23 +249,25 @@ const selectedBrands = computed({
     return currentNode.value.type === 2 ? currentNode.value.dataScopeBrandIds : []
   },
   set(val) {
-    currentNode.value.dataScopeBrandIds = dictBrand.value.filter((item) => val.includes(item.value))
+    currentNode.value.dataScopeBrandIds = val
   }
 }) // 选中select操作权限
 const openDepartModal = () => {
   selectOrgAndStaffModalRef.value.openModal(currentNode.value.dataScopeDepts.map((item) => item.id))
 }
 const onSelectOrgConfirm = (data) => {
+  console.log(data)
   currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
+  currentNode.value.dataScopeDepts = data
   let userIds: any[] = []
   data.forEach((item) => {
     if (item.userIds) userIds = [...userIds, ...item.userIds]
   })
   currentNode.value.dataScopeUserIds = userIds
-  console.log(currentNode.value)
 }
+// 选择经销商
 const openMemberModal = () => {
-  selectBusinessModalRef.value.openModal(currentNode.value.dataScopeUsers)
+  selectBusinessModalRef.value.openModal(currentNode.value.dataScopeStoreIds)
 }
 const onSelectBusinessConfirm = (data) => {
   currentNode.value.dataScopeStoreIds = data.map((item) => item.id)
@@ -304,7 +306,7 @@ const init = async () => {
           menu.dataScopeUserIds = roleData?.dataScopeUserIds || []
           menu.dataScopeUsers = roleData?.dataScopeUsers || []
           menu.dataScopeStoreIds = roleData?.dataScopeStoreIds || []
-          // menu.dataScopeStores = roleData?.dataScopeStores || []
+          menu.dataScopeStores = roleData?.dataScopeStores || []
           menu.dataScopeBrandIds = roleData?.dataScopeBrandIds || []
           menu.databrandScope = roleData?.dataScopeBrandIds.length > 0 ? 2 : 1
         }
@@ -332,11 +334,13 @@ const getParams = () => {
     item['menuParentId'] = item.parentId
     delete item.children
     if (item.dataScope === 2) {
+      item.dataScopeStoreIds = []
+      item.dataScopeStores = []
+    } else if (item.dataScope === 6) {
+      // 指定人清空部门
       // 部门清空指定人
       item.dataScopeUserIds = []
       item.dataScopeUsers = []
-    } else if (item.dataScope === 6) {
-      // 指定人清空部门
       item.dataScopeDeptIds = []
       item.dataScopeDepts = []
     }
