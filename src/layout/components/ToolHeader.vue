@@ -88,6 +88,7 @@ export default defineComponent({
       setTenantId(data)
       // 设置登录信息
       wsCache.delete(CACHE_KEY.USER)
+      wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
       await userStore.setUserInfoAction()
       // 重新设置权限
       await permissionStore.generateRoutes()
