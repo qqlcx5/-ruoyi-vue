@@ -32,11 +32,46 @@
       <template v-else>
         <el-table-column fixed prop="name" label="菜单权限" />
       </template>
-      <el-table-column label="操作权限" show-overflow-tooltip>
-        <template #default="{ row }">{{ operationAccess(row.operations) }}</template>
+      <el-table-column label="操作权限">
+        <template #default="{ row }">
+          <!--          {{ operationAccess(row.operations) }}-->
+          <el-tooltip placement="top">
+            <template #content>
+              <div class="max-w-300px">
+                {{ operationAccess(row.operations) }}
+              </div>
+            </template>
+            <div class="text-ellipsis">{{ operationAccess(row.operations) }}</div>
+          </el-tooltip>
+        </template>
       </el-table-column>
-      <el-table-column label="数据权限" show-overflow-tooltip>
-        <template #default="{ row }">{{ dataAccess(row) }}</template>
+      <el-table-column label="数据权限">
+        <template #default="{ row }">
+          <el-tooltip placement="top">
+            <template #content>
+              <div v-if="row.dataScope === 2" class="max-w-300px">
+                <div class="flex">
+                  <div class="flex-shrink-0">部门：</div>
+                  <div>{{ row.dataScopeDepts.map((item) => item.name).join('、') }}</div>
+                </div>
+                <div v-if="row.dataScopeUsers && row.dataScopeUsers.length > 0" class="flex">
+                  <div class="flex-shrink-0">人员：</div>
+                  <div>{{ row.dataScopeUsers.map((item) => item.name).join('、') }}</div>
+                </div>
+              </div>
+              <div v-else-if="row.dataScope === 6" class="max-w-300px">
+                <div class="flex">
+                  <div class="flex-shrink-0">门店：</div>
+                  <div>{{ row.dataScopeStores.map((item) => item.name).join('、') }}</div>
+                </div>
+              </div>
+              <template v-else>
+                {{ dataAccess(row) }}
+              </template>
+            </template>
+            <div class="text-ellipsis">{{ dataAccess(row) }}</div>
+          </el-tooltip>
+        </template>
       </el-table-column>
       <el-table-column label="品牌权限" show-overflow-tooltip>
         <template #default="{ row }">{{ brandAccess(row) }}</template>
@@ -127,5 +162,10 @@ const brandAccess = (data) => {
     box-sizing: border-box;
     border: 1px solid #eaebef;
   }
+}
+.text-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

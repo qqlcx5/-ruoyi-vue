@@ -60,40 +60,37 @@ const treeData = ref<any[]>([])
 const defaultCheckedKeys = ref<string[] | number[]>([])
 
 const onTreeCheck = (node, list) => {
-  console.log([...list.checkedNodes, ...list.halfCheckedNodes])
-  const halfCheckedNodes = [...list.halfCheckedNodes].map((i) => {
-    i.children = undefined
-    return i
-  })
   selectedBusinessData.value = handleTree(
-    [...unref(list.checkedNodes), ...unref(halfCheckedNodes)],
+    [
+      ...unref(list.checkedNodes.filter((item) => !item.type)),
+      ...unref(list.halfCheckedNodes.filter((item) => !item.type))
+    ],
     'id',
     'belongTenantId'
   )
-  console.log(treeData.value)
   if (props.mode === 'single') {
     if (list.checkedKeys.length === 2) treeRef.value!.setCheckedKeys([node.id])
   }
 }
+const setSelectedData = () => {
+  nextTick(() => {
+    selectedBusinessData.value = treeRef.value!.getCheckedNodes(true, true)
+  })
+}
 
 // ----------已选信息---------
 const selectedBusinessData = ref()
-// const selectedBusinessData = computed(() => {
-//   nextTick(() => {
-//     const checkedKeys = treeRef.value!.getCheckedKeys()
-//     return treeData.value.filter((t) => checkedKeys.includes(t.id))
-//   })
-// })
 
 const init = async () => {
   const result = await getListDealerStore()
   treeData.value = [...handleTree(result, 'id', 'belongTenantId')]
+  setSelectedData()
 }
 // 打开弹窗
-const openModal = async (data?: string[] | number[]) => {
-  if (data && data.length > 0) defaultCheckedKeys.value = data
-  await init()
+const openModal = async (ids?: string[] | number[], data?) => {
+  if (ids && ids.length > 0) defaultCheckedKeys.value = ids
   modelVisible.value = true
+  await init()
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 

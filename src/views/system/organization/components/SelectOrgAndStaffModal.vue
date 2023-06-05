@@ -30,6 +30,7 @@
       </div>
       <div>
         <div>已选信息</div>
+        <div>部门</div>
         <el-tree
           class="px-6px py-10px max-h-560px"
           ref="selectedTreeRef"
@@ -40,6 +41,12 @@
           :data="selectedTreeData"
           empty-text=""
         />
+        <div>成员</div>
+        <div class="pl-30px">
+          <div v-for="item in selectedStaffData" :key="item.id">
+            {{ item.nickname }}-{{ item.username }}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -80,6 +87,7 @@ const onTreeCheck = (node, list) => {
   treeRef.value!.setCurrentKey(node.id, true)
   const nodeSelectStatus = list.checkedKeys.includes(node.id)
   setNodeUserInfo(node, nodeSelectStatus)
+  selectedTreeData.value = treeData.value.filter((t) => list.checkedKeys.includes(t.id))
   if (props.mode === 'single') {
     if (list.checkedKeys.length === 2) treeRef.value!.setCheckedKeys([node.id])
   }
@@ -92,28 +100,36 @@ const setNodeUserInfo = async (node, allSelect?: boolean) => {
   if (!node.userList) {
     currentNode.value.userList = (await getUserListByOrg({ orgId: node.id })) || []
   }
-  // currentNode.value.userIds = allSelect ? currentNode.value.userList.map((user) => user.id) : []
 }
 // --------------- 成员 ---------------
 
 // --------------- 已选信息 ---------------
-const selectedTreeData = computed(() => {
-  nextTick(() => {
-    const checkedKeys = treeRef.value!.getCheckedKeys()
-    return treeData.value.filter((t) => checkedKeys.includes(t.id))
-  })
-})
+const selectedTreeData = ref<any[]>([])
+const selectedStaffData = ref()
+watch(
+  () => treeData.value,
+  (data) => {
+    selectedStaffData.value = data
+      .filter((i) => i.userIds && i.userIds.length > 0)
+      .map((item) => {
+        return item.userList.filter((u) => item.userIds.includes(u.id))
+      })
+      .flat()
+  },
+  { immediate: true, deep: true }
+)
 
 const init = async () => {
   const result = await getSimpleOrganizationList({ status: CommonStatusEnum.ENABLE })
   treeData.value = handleTree(result)
+  selectedTreeData.value = treeData.value.filter((t) => defaultCheckedKeys.value.includes(t.id))
 }
 
 // 打开弹窗
-const openModal = async (deptIds?: string[] | number[], userIds?: string[] | number[]) => {
+const openModal = async (deptIds?: string[] | number[], dataScopeUsers?: string[] | number[]) => {
   if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = deptIds
-  await init()
   modelVisible.value = true
+  await init()
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 
@@ -125,7 +141,7 @@ const submitForm = async () => {
     if (checkedNodes.length === 0) return message.warning('请勾选')
     emit('confirm', checkedNodes[0])
   } else {
-    emit('confirm', checkedNodes)
+    emit('confirm', checkedNodes, selectedStaffData.value)
   }
   modelVisible.value = false
 }
