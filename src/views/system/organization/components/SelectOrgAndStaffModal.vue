@@ -1,11 +1,11 @@
 <template>
   <!-- 弹窗 -->
-  <XModal title="选择部门/人" v-model="modelVisible" width="900px">
+  <XModal title="选择部门/人" v-model="modelVisible" width="758px">
     <div class="grid grid-cols-3">
-      <div>
-        <div>部门</div>
+      <div class="grid-item">
+        <div class="info-title">部门</div>
         <el-tree
-          class="px-6px py-10px max-h-560px"
+          class="max-h-560px"
           ref="treeRef"
           node-key="id"
           show-checkbox
@@ -20,19 +20,24 @@
           @node-click="onTreeNodeClick"
         />
       </div>
-      <div>
-        <div>成员</div>
-        <a-checkbox-group v-model:value="currentNode.userIds">
-          <a-checkbox v-for="item in currentNode.userList" :value="item.id" :key="item.id">{{
-            item.nickname
-          }}</a-checkbox>
-        </a-checkbox-group>
+      <div class="grid-item">
+        <div class="info-title">成员</div>
+        <el-checkbox-group v-model="currentNode.userIds" class="!flex !flex-col">
+          <el-checkbox
+            class="!h-26px"
+            v-for="item in currentNode.userList"
+            :value="item.id"
+            :label="item.id"
+            :key="item.id"
+            >{{ item.nickname }}</el-checkbox
+          >
+        </el-checkbox-group>
       </div>
-      <div>
-        <div>已选信息</div>
+      <div class="grid-item">
+        <div class="info-title">已选信息</div>
         <div>部门</div>
         <el-tree
-          class="px-6px py-10px max-h-560px"
+          class="max-h-560px"
           ref="selectedTreeRef"
           node-key="id"
           highlight-current
@@ -42,7 +47,7 @@
           empty-text=""
         />
         <div>成员</div>
-        <div class="pl-30px">
+        <div class="pl-24px">
           <div v-for="item in selectedStaffData" :key="item.id">
             {{ item.nickname }}-{{ item.username }}
           </div>
@@ -97,9 +102,11 @@ const onTreeNodeClick = async (node) => {
   setNodeUserInfo(node)
 }
 const setNodeUserInfo = async (node, allSelect?: boolean) => {
-  if (!node.userList) {
-    currentNode.value.userList = (await getUserListByOrg({ orgId: node.id })) || []
-  }
+  currentNode.value.userList =
+    (await getUserListByOrg({ orgId: node.id })).map((item) => {
+      item['deptId'] = node.id
+      return item
+    }) || []
 }
 // --------------- 成员 ---------------
 
@@ -129,6 +136,7 @@ const init = async (dataScopeUsers) => {
   }
   treeData.value = handleTree(result)
   selectedTreeData.value = treeData.value.filter((t) => defaultCheckedKeys.value.includes(t.id))
+  console.log(treeData.value)
 }
 
 // 打开弹窗
@@ -152,4 +160,17 @@ const submitForm = async () => {
   modelVisible.value = false
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.grid-item {
+  padding-left: 16px;
+  &:not(:last-child) {
+    border-right: 1px solid $border-color;
+  }
+}
+.info-title {
+  color: $title-color;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: bold;
+}
+</style>
