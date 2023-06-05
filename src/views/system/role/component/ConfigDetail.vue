@@ -50,24 +50,30 @@
           <el-tooltip placement="top">
             <template #content>
               <div v-if="row.dataScope === 2" class="max-w-300px">
-                <div class="flex">
-                  <div class="flex-shrink-0">部门：</div>
-                  <div>{{ row.dataScopeDepts.map((item) => item.name).join('、') }}</div>
-                </div>
                 <div v-if="row.dataScopeUsers && row.dataScopeUsers.length > 0" class="flex">
-                  <div class="flex-shrink-0">人员：</div>
-                  <div>{{ row.dataScopeUsers.map((item) => item.name).join('、') }}</div>
+                  <div class="flex-shrink-0">指定人：</div>
+                  <div>{{
+                    row.dataScopeUsers
+                      .map((item) => `${item.nickname}(${item.username})`)
+                      .join('、')
+                  }}</div>
+                </div>
+                <div v-if="row.dataScopeDepts && row.dataScopeDepts.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定部门：</div>
+                  <div>{{
+                    row.dataScopeDepts.map((item) => `${item.name}(${item.code})`).join('、')
+                  }}</div>
                 </div>
               </div>
               <div v-else-if="row.dataScope === 6" class="max-w-300px">
                 <div class="flex">
-                  <div class="flex-shrink-0">门店：</div>
+                  <div class="flex-shrink-0">指定门店：</div>
                   <div>{{ row.dataScopeStores.map((item) => item.name).join('、') }}</div>
                 </div>
               </div>
-              <template v-else>
+              <div v-else class="max-w-300px">
                 {{ dataAccess(row) }}
-              </template>
+              </div>
             </template>
             <div class="text-ellipsis">{{ dataAccess(row) }}</div>
           </el-tooltip>
