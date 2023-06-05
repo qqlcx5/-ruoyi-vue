@@ -13,6 +13,9 @@ const { wsCache } = useCache()
 //antdV黑暗模式
 import { DarkMode } from '@/styles/antdVTheme/changAntdModal'
 import { ConfigProvider } from 'ant-design-vue'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import 'dayjs/locale/zh-cn'
+import emptyImg from '@/assets/imgs/empty.png'
 
 // 根据浏览器当前主题设置系统主题色
 const setDefaultTheme = () => {
@@ -43,9 +46,8 @@ watchEffect(() => {
   state.isDark = appStore.isDark
 })
 
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
-import 'dayjs/locale/zh-cn'
-import emptyImg from '@/assets/imgs/empty.png'
+// 清空，从而触发刷新 菜单 路由
+wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
 </script>
 <template>
   <!--  element plus 全局配置-->
@@ -55,7 +57,6 @@ import emptyImg from '@/assets/imgs/empty.png'
       :componentSize="currentSize"
       :locale="zhCN"
       :get-popup-container="getPopupContainer"
-
     >
       <template #renderEmpty>
         <div class="empty-content">

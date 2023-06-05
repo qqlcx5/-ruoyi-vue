@@ -581,7 +581,7 @@
     :belongTenantId="state.belongTenantId"
     :editRecord="state.record"
     :tabsActiveKey="state.currentTabs"
-  ></Store>
+  />
 
   <!-- 配置权限 Modal -->
   <a-modal
@@ -862,7 +862,7 @@
     @closeStoreDetails="closeStoreDetails()"
     @editStoreDetails="editStoreDetails"
     :currentRecord="state.record"
-  ></StoreDetails>
+  />
 
   <!--  重置密码 Modal  -->
   <a-modal
@@ -920,7 +920,7 @@
     v-if="state.isShowParentMajorIndividual"
     @closeStoreParentMajorIndividual="closeStoreParentMajorIndividual()"
     :currentRecord="state.record"
-  ></EditParentMajorIndividual>
+  />
 
   <!--  定制列  -->
   <CustomColumn
@@ -1294,11 +1294,14 @@ const state = reactive({
 
 //存放功能配置 选中的所有keys(包括父节点id)
 const checkedKeysBack = ref([])
+const checkedKeysBackNew = ref([])
 
 //获取子节点的 父节点id
 const testCheck = (checkedKeys, e) => {
   //存放功能配置 选中的所有keys(包括父节点id)
   checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
+  console.log('checkedKeys', checkedKeys)
+  console.log('checkedKeysBack.value', checkedKeysBack.value)
 }
 
 //ALL columns 用于定制列过滤 排序
@@ -2027,6 +2030,7 @@ const assignPermission = async (record) => {
     nextTick(() => {
       state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
     })
+    checkedKeysBackNew.value = [...dirIds]
     console.log('state.selectTree', state.selectTree)
   } else {
     state.selectTree = []
@@ -2663,9 +2667,12 @@ state.columns = getColumns(state, PageKeyObj.business, allColumns, state.default
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
-  () => [state.checkedKeys, checkedKeysBack.value],
+  () => [state.checkedKeys, checkedKeysBack.value, checkedKeysBackNew.value],
   () => {
-    state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
+    state.idArr = [
+      ...new Set(checkedKeysBack.value.concat(state.checkedKeys)),
+      ...new Set(checkedKeysBackNew.value)
+    ]
     state.selectTree = filterTree(state.menuTreeList, state.idArr)
     state.isShowRightTree = false
     //右侧展开显示 左侧选中的数据

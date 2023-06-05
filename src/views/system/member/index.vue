@@ -169,7 +169,9 @@
           <!--  左侧按钮  -->
           <div class="button-content">
             <a-button type="primary" @click="openModal()">
-              <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
+              <template #icon>
+                <Icon icon="svg-icon:add" class="btn-icon" :size="10" />
+              </template>
               新增
             </a-button>
             <a-button @click="toggleExpandAll" v-if="false">
@@ -187,13 +189,13 @@
             <a-button
               :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
               @click="batchChangePost()"
-              >批量转岗</a-button
-            >
+              >批量转岗
+            </a-button>
             <a-button
               :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
               @click="batchAssignUserRole()"
-              >批量设角色</a-button
-            >
+              >批量设角色
+            </a-button>
           </div>
           <!--  右侧操作  -->
           <div class="operation-content">
@@ -337,16 +339,16 @@
               <div class="operation-content">
                 <div class="text-color margin-right-5" @click="edit(record)">修改</div>
                 <div class="text-color margin-right-5" @click="assignPermission(record)"
-                  >分配角色</div
-                >
+                  >分配角色
+                </div>
                 <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
                 <a-popover placement="bottom">
                   <template #content>
                     <div
                       class="text-color margin-right-5"
                       @click="setTableStatusChangeInfo(false, record, 'delete')"
-                      >删除</div
-                    >
+                      >删除
+                    </div>
                     <div class="text-color margin-right-5" @click="resetPassword(record)">
                       重置密码
                     </div>
@@ -390,7 +392,10 @@
         :label-col="{ style: { width: '130px' } }"
         autocomplete="off"
       >
-        <div class="title-content"><div class="blue-line"></div> 基本信息 </div>
+        <div class="title-content">
+          <div class="blue-line"></div>
+          基本信息
+        </div>
         <div class="form-content">
           <a-form-item
             :label="`成员工号`"
@@ -452,9 +457,9 @@
             class="width-50"
           >
             <a-radio-group v-model:value="formState.memberType" name="radioMemberTypeGroup">
-              <a-radio v-for="item in state.memberTypeOptions" :value="item.value">{{
-                item.label
-              }}</a-radio>
+              <a-radio v-for="item in state.memberTypeOptions" :value="item.value"
+                >{{ item.label }}
+              </a-radio>
             </a-radio-group>
           </a-form-item>
 
@@ -466,9 +471,9 @@
             class="width-50"
           >
             <a-radio-group v-model:value="formState.isOnJob" name="radioIsOnJobGroup">
-              <a-radio v-for="item in state.onJobOptions" :value="item.value">{{
-                item.label
-              }}</a-radio>
+              <a-radio v-for="item in state.onJobOptions" :value="item.value"
+                >{{ item.label }}
+              </a-radio>
             </a-radio-group>
           </a-form-item>
 
@@ -573,8 +578,8 @@
                       class="text-color margin-right-5"
                       @click="deleteColumns(index)"
                       v-if="addDataSource.addEditTableData?.length > 1"
-                      >删除</div
-                    >
+                      >删除
+                    </div>
                   </div>
                 </template>
               </template>
@@ -610,12 +615,15 @@
                 </div>
               </a-upload>
 
-              <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。 </div>
+              <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。</div>
             </div>
           </a-form-item>
         </div>
 
-        <div class="title-content"><div class="blue-line"></div> 岗位信息 </div>
+        <div class="title-content">
+          <div class="blue-line"></div>
+          岗位信息
+        </div>
         <a-form-item :label="``" class="width-100">
           <a-table
             :data-source="addPostDataSource.addEditTableData"
@@ -711,15 +719,18 @@
                     class="text-color margin-right-5"
                     @click="deletePostColumns(index)"
                     v-if="index !== 0"
-                    >删除</div
-                  >
+                    >删除
+                  </div>
                 </div>
               </template>
             </template>
           </a-table>
         </a-form-item>
 
-        <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
+        <div class="title-content">
+          <div class="blue-line"></div>
+          详细信息
+        </div>
 
         <div class="form-content">
           <a-form-item :label="`出生日期`" class="width-50">
@@ -786,8 +797,8 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >确定</a-button
-      >
+        >确定
+      </a-button>
       <a-button @click="closeModal">取消</a-button>
     </template>
   </a-modal>
@@ -839,7 +850,7 @@
           mode="multiple"
           style="width: 100%"
           placeholder="请选择角色"
-          :options="state.configureRolesNewOptions"
+          :options="state.configureRolesNewTreeOptions"
           @change="rolesChange"
           optionFilterProp="label"
         />
@@ -875,8 +886,8 @@
           }}
           {{ state.tableStatusChangeInfo.record.memberName }}
           {{ state.tableStatusChangeInfo.statusText }}
-          吗？</div
-        >
+          吗？
+        </div>
         <div class="status-text-info">
           {{ state.tableStatusChangeInfo.statusTopText }}，
           {{ state.tableStatusChangeInfo.record.name }}
@@ -886,9 +897,9 @@
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="tableStatusConfirm">{{
-        state.tableStatusChangeInfo.statusBtnText
-      }}</a-button>
+      <a-button type="primary" html-type="submit" @click="tableStatusConfirm"
+        >{{ state.tableStatusChangeInfo.statusBtnText }}
+      </a-button>
       <a-button @click="closeStatusModal">取消</a-button>
     </template>
   </a-modal>
@@ -905,10 +916,13 @@
   >
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
       <div class="flex-space">
-        <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
+        <div class="title-content">
+          <div class="blue-line"></div>
+          {{ item.baseTitle }}
+        </div>
         <div class="details-edit" @click="edit(state.detailsRecord, true)" v-if="item?.needEdit"
-          ><img :src="editImg" alt="" class="edit-Img" />修改</div
-        >
+          ><img :src="editImg" alt="" class="edit-Img" />修改
+        </div>
       </div>
       <div :class="['info-content', { 'tags-content': item?.isShow }]">
         <template v-if="!item.isShow">
@@ -963,9 +977,9 @@
             :key="`childItem${childIndex}`"
             class="margin-left-6"
           >
-            <a-tag @click="clickRoleTag(childItem)" class="tag-style">{{
-              childItem?.roleName
-            }}</a-tag>
+            <a-tag @click="clickRoleTag(childItem)" class="tag-style"
+              >{{ childItem?.roleName }}
+            </a-tag>
           </div>
         </template>
       </div>
@@ -990,21 +1004,21 @@
             </div>
 
             <div class="record-tip-content" v-if="recorditem.needBeforeChange">
-              <div class="width-10"> 变更前: </div>
+              <div class="width-10"> 变更前:</div>
               <div class="width-90">
                 {{ recorditem.beforeChange }}
               </div>
             </div>
 
             <div class="record-tip-content">
-              <div class="width-10"> 变更后: </div>
+              <div class="width-10"> 变更后:</div>
               <div class="width-90">
                 {{ recorditem.afterChange }}
               </div>
             </div>
 
             <div class="record-tip-content">
-              <div class="width-10"> 操作人: </div>
+              <div class="width-10"> 操作人:</div>
               <div class="width-90">
                 {{ recorditem.operator }}
               </div>
@@ -1154,6 +1168,7 @@ const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
 import { useRouter, useRoute } from 'vue-router'
+
 const $router = useRouter() // 这是路由跳转的
 const $route = useRoute() // 用于接收路由参数的
 
@@ -1322,6 +1337,8 @@ const state = reactive({
   ], //是否兼岗 Options tree
   configureRolesOptions: [], //配置角色 Options tree
   configureRolesNewOptions: [], //分配角色 Options tree
+  configureRolesNewTreeOptions: [], //分配角色 Options tree  Modal 已删除 已关闭 包括
+  configureRolesNewList: [], //分配角色 数组 没有 关闭跟删除
   memberTypeOptions: [
     {
       value: 'full_members',
@@ -1743,7 +1760,8 @@ const getList = async (page) => {
         tempRoleVOList.push({
           roleName: `${roleItem.roleName}${roleStatusText}`,
           roleStatus: roleItem.roleStatus === 1, //0开启 1关闭 岗位开启/关闭
-          roleDelete: roleItem.roleDeleted === 1 //0未删除 1删除 岗位未删除/删除
+          roleDelete: roleItem.roleDeleted === 1, //0未删除 1删除 岗位未删除/删除
+          id: roleItem.roleId
         })
       })
 
@@ -2261,6 +2279,33 @@ const assignPermission = async (record) => {
       state.roleId = tempRes
     })
   }
+
+  const tempRolesNewList = cloneDeep(state.configureRolesNewList)
+  record?.roleVOListDeal.map((item) => {
+    if (item.roleDelete) {
+      //删除 true
+      tempRolesNewList.push({
+        name: item.roleName,
+        id: item.id
+      })
+    } else if (item.roleStatus) {
+      //关闭 true
+      tempRolesNewList.push({
+        name: item.roleName,
+        id: item.id
+      })
+    }
+  })
+
+  const needReplacePartPostKey = [
+    ['label', 'name'],
+    ['value', 'id']
+  ]
+  state.configureRolesNewTreeOptions = reconstructionArrayObject(
+    tempRolesNewList,
+    needReplacePartPostKey
+  )
+
   state.permissionRecord = record
   //回显 已分配的角色
   state.roleId = []
@@ -2425,6 +2470,7 @@ const expandAllFN = ({ target }) => {
 
 // 定义childArr存放所有子节点
 const childArr = ref([])
+
 // 遍历获取所有子节点
 function getChildArr(data) {
   data.forEach((res) => {
@@ -2896,6 +2942,7 @@ function getBase64(file) {
     reader.onerror = (error) => reject(error)
   })
 }
+
 const previewVisible = ref(false)
 const previewImage = ref('')
 const previewTitle = ref('')
@@ -3146,7 +3193,7 @@ interface DataItem {
 //获取部门列表
 const getOrganizationListFN = async () => {
   const res = await getSimpleOrganizationList()
-  console.log('res+++++++++++', res)
+
   res.map((item) => {
     if (item.migrated === 1) {
       //0没迁移 1迁移
@@ -3156,7 +3203,7 @@ const getOrganizationListFN = async () => {
       item.name = item.status == 1 ? `${item.name}(关闭)` : item.name
     }
   })
-  console.log('部门res', res)
+
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
 
   state.organizationList = res
@@ -3208,6 +3255,7 @@ const getAllType = async () => {
   await nextTick(() => {
     state.postTypeOptions = reconstructionArrayObject(res, needReplaceKey)
     state.configureRolesOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
+    state.configureRolesNewList = cloneDeep(rolesRes)
     state.configureRolesNewOptions = reconstructionArrayObject(rolesRes, needReplacePartPostKey)
     state.configureRolesOptions = [
       // {
@@ -3587,6 +3635,7 @@ onMounted(async () => {
     margin: 0;
   }
 }
+
 .total-search-content {
   display: flex;
   justify-content: space-between;
@@ -3665,6 +3714,7 @@ onMounted(async () => {
   flex: 1 4 auto;
   //flex-shrink: 1;
 }
+
 .right-card-content {
   width: 100%;
   height: 100%;
@@ -3719,14 +3769,17 @@ onMounted(async () => {
 :deep(.ant-table-wrapper) {
   padding: 0 15px;
 }
+
 //名称
 .name-content {
   display: flex;
 }
+
 // 可用名额 操作 颜色
 .text-color {
   color: rgba(0, 129, 255, 100);
 }
+
 :deep(.ant-table-cell-with-append) {
   display: flex;
 }
@@ -3736,11 +3789,13 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
 }
+
 //上传
 .avatar-uploader > .ant-upload {
   width: 128px;
   height: 128px;
 }
+
 .flex-content {
   display: flex;
   align-items: center;
@@ -3772,6 +3827,7 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
 }
+
 //分配角色左侧
 .left-content {
   width: 290px;
@@ -3799,6 +3855,7 @@ onMounted(async () => {
   font-size: 14px;
   font-family: PingFangSC-Regular;
 }
+
 .status-text {
   margin-left: 32px;
   display: flex;
@@ -3808,6 +3865,7 @@ onMounted(async () => {
   font-weight: bold;
   font-family: PingFangSC-Medium;
 }
+
 .status-text-info {
   margin-left: 68px;
   margin-top: 12px;
@@ -3817,6 +3875,7 @@ onMounted(async () => {
   text-align: left;
   font-family: PingFangSC-Regular;
 }
+
 .status-span {
   color: red;
 }
@@ -3825,13 +3884,16 @@ onMounted(async () => {
 .message-content {
   display: flex;
 }
+
 .message-text-content {
   width: 520px;
   //margin-left: 15px;
 }
+
 .message-img {
   margin-top: 3px;
 }
+
 .message-text {
   margin-left: 20px;
   display: flex;
@@ -3843,15 +3905,18 @@ onMounted(async () => {
   text-align: left;
   font-family: PingFangSC-Medium;
 }
+
 .message-phone {
   margin: 12px 0 0 56px;
 }
+
 .message-input-content {
   //padding-left: 76px;
   margin: 26px 0 0 132px;
   display: flex;
   align-items: center;
 }
+
 //发送验证码 btn
 .send-code-btn {
   display: flex;
@@ -3865,6 +3930,7 @@ onMounted(async () => {
   background-color: rgba(237, 244, 251);
   cursor: pointer;
 }
+
 //重新获取验证码
 .countdown-code-btn {
   display: flex;
@@ -3877,6 +3943,7 @@ onMounted(async () => {
   color: rgba(0, 129, 255, 0.61);
   background-color: rgb(237, 244, 251);
 }
+
 //权限配置前台底下搜索
 .tab-search-content {
   height: 40px;
@@ -3897,18 +3964,22 @@ onMounted(async () => {
   font-weight: bold;
   font-family: PingFangSC-Medium;
 }
+
 .details-content {
   display: flex;
   flex-direction: column;
 }
+
 .flex-space {
   display: flex;
   justify-content: space-between;
 }
+
 .info-content,
 .details-modal-content {
   flex: 1;
 }
+
 //详情修改文字
 .details-edit {
   width: 50%;
@@ -3919,12 +3990,14 @@ onMounted(async () => {
   font-size: 14px;
   font-family: PingFangSC-Regular;
   cursor: pointer;
+
   .edit-Img {
     width: 8.65px;
     height: 8.81px;
     margin-right: 8px;
   }
 }
+
 //蓝色竖线
 .blue-line {
   width: 3px;
@@ -3932,17 +4005,20 @@ onMounted(async () => {
   margin: 3px;
   background-color: rgba(0, 129, 255, 1);
 }
+
 .info-content {
   margin-bottom: 30px;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
 .text-style {
   span {
     font-weight: bold;
     font-family: PingFangSC-Medium;
   }
+
   width: 50%;
   display: block;
   display: flex;
@@ -3954,6 +4030,7 @@ onMounted(async () => {
   padding-left: 26px;
   font-family: PingFangSC-Regular;
 }
+
 .super-admin-style {
   display: flex;
   align-items: center;
@@ -3982,6 +4059,7 @@ onMounted(async () => {
   height: 20px;
   margin-right: 16px;
 }
+
 //详情img
 .details-img {
   width: 20px;
@@ -4016,18 +4094,22 @@ onMounted(async () => {
   display: flex;
   align-items: center;
 }
+
 .success-img {
   margin-right: 8px;
   width: 24px;
   height: 24px;
 }
+
 .user-info1 {
   padding: 28px 0 0 139px;
 }
+
 .user-info2 {
   padding: 9px 0 0 139px;
   display: flex;
 }
+
 .copy-button {
   width: 52px;
   height: 24px;
@@ -4040,6 +4122,7 @@ onMounted(async () => {
   background-color: rgba(0, 129, 255, 1);
   cursor: pointer;
 }
+
 .user-info3 {
   margin: 19px 0 0 50px;
   //width: 388px;
@@ -4049,6 +4132,7 @@ onMounted(async () => {
   text-align: left;
   font-family: PingFangSC-Regular;
 }
+
 .close-btn-content {
   margin-top: 37px;
   display: flex;
@@ -4081,6 +4165,7 @@ onMounted(async () => {
   text-align: left;
   font-family: PingFangSC-Regular;
 }
+
 //新增修改 modal 上传 底下文字
 .upload-text {
   color: rgba(153, 153, 153, 1);
@@ -4088,21 +4173,26 @@ onMounted(async () => {
   text-align: left;
   font-family: PingFangSC-Regular;
 }
+
 //新增 等按钮内 icon
 .btn-icon {
   margin-right: 4px;
   cursor: pointer;
 }
+
 //新增修改 modal 系统名称- - width
 .flex-content {
   width: 374px;
 }
+
 .icon-tip {
   margin-left: 8px;
 }
+
 .adress-content {
   width: 470px;
 }
+
 .adress-input {
   width: 530px;
 }
@@ -4112,30 +4202,37 @@ onMounted(async () => {
   display: flex;
   margin-bottom: 10px;
 }
+
 .phone-div {
   margin-right: 14px;
 }
+
 //新增修改
 .form-content {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
 }
+
 .width-50 {
   width: 50%;
 }
+
 .width-100 {
   width: 100%;
   //background: skyblue;
 }
+
 //分配角色 modal
 .assign-roles-content {
   margin: 20px;
 }
+
 .member-info {
   display: flex;
   margin-bottom: 14px;
 }
+
 //分配角色 工号
 .member-num {
   margin-right: 50px;
@@ -4143,30 +4240,36 @@ onMounted(async () => {
   font-size: 14px;
   font-family: PingFangSC-Regular;
 }
+
 //分配角色 姓名
 .member-num {
   color: rgba(51, 51, 51, 1);
   font-size: 14px;
   font-family: PingFangSC-Regular;
 }
+
 //分配角色 modal
 .assign-roles-tip {
   padding: 10px;
   margin: 0 0 15px;
   background-color: rgba(253, 246, 237, 1);
 }
+
 .waring-img {
   width: 14px;
   height: 14px;
 }
+
 .roles-text {
   color: rgba(231, 162, 60, 1);
   font-size: 14px;
   font-family: PingFangSC-Regular;
 }
+
 .role-text {
   margin-bottom: 10px;
 }
+
 //分配角色 select
 .roles-select-content {
 }
@@ -4179,12 +4282,15 @@ onMounted(async () => {
   font-weight: bold;
   font-family: PingFangSC-Medium;
 }
+
 .record-time {
   margin-left: 20px;
 }
+
 .record-type {
   margin-left: 64px;
 }
+
 .record-ellipsis {
   color: rgba(51, 51, 51, 1);
   font-size: 14px;
@@ -4194,18 +4300,23 @@ onMounted(async () => {
   text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
 }
+
 .record-tip-content {
   display: flex;
 }
+
 .width-10 {
   width: 50px;
 }
+
 .width-90 {
   width: 90%;
 }
+
 .width-full {
   width: 100% !important;
 }
+
 ////表格空数据时大小
 //:deep(.table-list .empty-content) {
 //  min-height: 480px;
@@ -4222,6 +4333,7 @@ onMounted(async () => {
   background-color: rgb(244, 234, 253);
   color: rgba(176, 94, 255, 1);
 }
+
 //公司
 .company-tag {
   display: flex;
@@ -4233,6 +4345,7 @@ onMounted(async () => {
   background-color: rgba(53, 198, 217, 0.24);
   color: rgba(53, 198, 217, 1);
 }
+
 //主岗
 .principal-tag {
   display: flex;
@@ -4245,6 +4358,7 @@ onMounted(async () => {
   background-color: rgba(237, 249, 232, 1);
   color: rgba(82, 196, 26, 1);
 }
+
 //兼岗
 .part-tag {
   display: flex;
@@ -4257,6 +4371,7 @@ onMounted(async () => {
   background-color: rgba(253, 246, 235, 1);
   color: rgba(231, 162, 60, 1);
 }
+
 //配置角色tag
 .role-tag {
   display: flex;
@@ -4270,6 +4385,7 @@ onMounted(async () => {
   border: 0.5px solid rgba(0, 129, 255, 1);
   color: rgba(0, 129, 255, 1);
 }
+
 .role-close-tag {
   display: flex;
   justify-content: center;
@@ -4282,6 +4398,7 @@ onMounted(async () => {
   border: 0.5px solid rgba(113, 185, 255, 1);
   color: rgba(0, 129, 255, 0.52);
 }
+
 .role-delete-tag {
   display: flex;
   justify-content: center;
@@ -4295,21 +4412,25 @@ onMounted(async () => {
   font-size: 12px;
   font-family: PingFangSC-Regular;
 }
+
 :deep(.ant-select-multiple .ant-select-selection-item-remove) {
   display: flex;
   align-items: center;
 }
+
 .phone-style {
   display: flex;
   justify-content: flex-start;
   align-items: center;
 }
+
 //table 关闭状态颜色
 .close-style {
   color: rgba(153, 153, 153, 1);
   font-size: 14px;
   font-family: PingFangSC-Regular;
 }
+
 //table 删除状态颜色
 .delete-style {
   color: rgba(210, 210, 210, 1) !important;
@@ -4330,15 +4451,18 @@ onMounted(async () => {
     padding-bottom: 0;
     margin: 0;
   }
+
   .ant-modal-content {
     display: flex;
     flex-direction: column;
     height: calc(100vh);
   }
+
   .ant-modal-body {
     flex: 1;
   }
 }
+
 //重置密码 modal
 .reset-PassWord {
   .ant-modal-header,
@@ -4352,18 +4476,22 @@ onMounted(async () => {
   .phone-form-style {
     margin: 0 !important;
   }
+
   //日期选择器清除icon 应该是被全局哪里影响到了
   .ant-picker-clear {
     background-color: transparent !important;
   }
+
   //级联选择器 清除icon 应该是被全局哪里影响到了
   .ant-select-clear {
     display: flex !important;
   }
+
   //新增修改表单
   .ant-form-item {
     margin-bottom: 14px;
   }
+
   //可用名额
   .ant-input-number {
     width: 200px;
@@ -4373,6 +4501,7 @@ onMounted(async () => {
   .ant-table thead > tr > th {
     background: rgb(246, 246, 246);
   }
+
   .ant-table-tbody {
     background: white;
   }
@@ -4380,12 +4509,15 @@ onMounted(async () => {
   .ant-modal .ant-table tbody > tr > td {
     border-bottom: 1px solid rgba(234, 235, 239, 1);
   }
+
   .ant-modal .ant-table thead > tr > th {
     border-bottom: 1px solid rgba(234, 235, 239, 1);
   }
+
   .ant-modal .ant-table tbody .ant-table-cell {
     background: white !important;
   }
+
   .ant-table-cell-row-hover {
     background: white !important;
   }
@@ -4406,6 +4538,7 @@ onMounted(async () => {
   .ant-table thead > tr > th {
     background: rgb(246, 246, 246);
   }
+
   .ant-table-tbody {
     background: white;
   }
@@ -4413,12 +4546,15 @@ onMounted(async () => {
   .ant-modal .ant-table tbody > tr > td {
     border-bottom: 1px solid rgba(234, 235, 239, 1);
   }
+
   .ant-modal .ant-table thead > tr > th {
     border-bottom: 1px solid rgba(234, 235, 239, 1);
   }
+
   .ant-modal .ant-table tbody .ant-table-cell {
     background: white !important;
   }
+
   .ant-table-cell-row-hover {
     background: white !important;
   }
