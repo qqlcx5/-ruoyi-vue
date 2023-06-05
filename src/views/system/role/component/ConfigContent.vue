@@ -57,7 +57,7 @@
         <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
       </div>
     </div>
-    <div class="box grid grid-rows-2">
+    <div class="box grid grid-rows-2 overflow-hidden">
       <div>
         <div class="box-header"> 请选择数据权限 </div>
         <div class="box-content px-14px py-10px">
@@ -66,15 +66,16 @@
               <el-radio :label="5">仅看自己</el-radio>
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
-              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">
+              <!--              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">-->
+              <el-radio :label="2">
                 指定部门
                 <div
                   v-if="currentNode.dataScope === 2"
                   class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
                   @click="openDepartModal"
                   >{{
-                    currentNode.dataScopeDeptIds.length > 0 ||
-                    currentNode.dataScopeUserIds.length > 0
+                    (currentNode.dataScopeDeptIds && currentNode.dataScopeDeptIds.length > 0) ||
+                    (currentNode.dataScopeUserIds && currentNode.dataScopeUserIds.length) > 0
                       ? `已选${currentNode.dataScopeDeptIds.length}个部门,${currentNode.dataScopeUserIds.length}个人`
                       : '请选择'
                   }}
@@ -87,7 +88,7 @@
                   class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
                   @click="openMemberModal"
                   >{{
-                    currentNode.dataScopeStoreIds.length > 0
+                    currentNode.dataScopeStoreIds && currentNode.dataScopeStoreIds.length > 0
                       ? `已选${currentNode.dataScopeStoreIds.length}个门店`
                       : '请选择'
                   }}
@@ -103,10 +104,15 @@
         <div class="box-header"> 请选择数据权限 </div>
         <div class="box-content px-14px py-10px">
           <div v-if="currentNode && currentNode.type === 2">
-            <el-radio-group class="relative w-full" v-model="currentNode.databrandScope">
+            <el-radio-group
+              class="relative w-full"
+              v-model="currentNode.databrandScope"
+              @change="onBrandScopeChange"
+            >
               <el-radio :label="1">不限品牌</el-radio>
               <el-radio :label="2">指定品牌</el-radio>
               <el-checkbox
+                v-if="currentNode.databrandScope === 2"
                 class="!absolute right-0 bottom-0"
                 v-model="brandCheckAll"
                 @change="handleBrandCheckAllChange"
@@ -126,7 +132,7 @@
         </div>
       </div>
     </div>
-    <SelectOrgAndStaffModal ref="selectOrgAndStaffModalRef" @confirm="onSelectOrgConfirm" />
+    <SelectOrgAndStaffModal ref="selectOrgAndStaffModalRef" @confirm="onSelectOrgAndStaffConfirm" />
     <SelectBusinessModal ref="selectBusinessModalRef" @confirm="onSelectBusinessConfirm" />
   </div>
 </template>
@@ -250,7 +256,9 @@ const selectOrgAndStaffModalRef = ref()
 const selectBusinessModalRef = ref()
 const dictBrand = ref(getDictOptions('brand'))
 const brandCheckAll = computed(() => {
-  return currentNode.value.dataScopeBrandIds.length === dictBrand.value.length
+  return currentNode.value.dataScopeBrandIds
+    ? currentNode.value.dataScopeBrandIds.length === dictBrand.value.length
+    : false
 })
 const selectedBrands = computed({
   get() {
@@ -262,21 +270,19 @@ const selectedBrands = computed({
 }) // 选中select操作权限
 // 指定部门选择
 const openDepartModal = () => {
-  const { dataScopeDeptIds, dataScopeUserIds } = currentNode.value
-  selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, dataScopeUserIds)
+  const { dataScopeDeptIds, dataScopeUsers } = currentNode.value
+  selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, dataScopeUsers)
 }
-const onSelectOrgConfirm = (data) => {
-  currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
-  currentNode.value.dataScopeDepts = data
-  let userIds: any[] = []
-  data.forEach((item) => {
-    if (item.userIds) userIds = [...userIds, ...item.userIds]
-  })
-  currentNode.value.dataScopeUserIds = userIds
+const onSelectOrgAndStaffConfirm = (dataScopeDepts, dataScopeUsers) => {
+  currentNode.value.dataScopeDeptIds = dataScopeDepts.map((item) => item.id)
+  currentNode.value.dataScopeDepts = dataScopeDepts
+  currentNode.value.dataScopeUserIds = dataScopeUsers.map((item) => item.id)
+  currentNode.value.dataScopeUsers = dataScopeUsers
 }
 // 选择经销商
 const openMemberModal = () => {
-  selectBusinessModalRef.value.openModal(currentNode.value.dataScopeStoreIds)
+  const { dataScopeStoreIds, dataScopeStores } = currentNode.value
+  selectBusinessModalRef.value.openModal(dataScopeStoreIds, dataScopeStores)
 }
 const onSelectBusinessConfirm = (data) => {
   currentNode.value.dataScopeStoreIds = data.map((item) => item.id)
@@ -289,6 +295,9 @@ const onSelectBusinessConfirm = (data) => {
 }
 const handleBrandCheckAllChange = (val: boolean) => {
   currentNode.value.dataScopeBrandIds = val ? dictBrand.value.map((item) => item.value) : []
+}
+const onBrandScopeChange = (value) => {
+  if (value === 1) currentNode.value.dataScopeBrandIds = []
 }
 
 // ================= 初始化 ====================
@@ -317,7 +326,8 @@ const init = async () => {
           menu.dataScopeStoreIds = roleData?.dataScopeStoreIds || []
           menu.dataScopeStores = roleData?.dataScopeStores || []
           menu.dataScopeBrandIds = roleData?.dataScopeBrandIds || []
-          menu.databrandScope = roleData?.dataScopeBrandIds.length > 0 ? 2 : 1
+          menu.databrandScope =
+            roleData?.dataScopeBrandIds && roleData?.dataScopeBrandIds.length > 0 ? 2 : 1
         }
         return menu.type !== 3
       })
@@ -337,7 +347,7 @@ watch(
 )
 
 const getParams = () => {
-  const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes())
+  const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes(false, true))
   return menuDataScopeItemList.map((item) => {
     item['menuId'] = item.id
     item['menuParentId'] = item.parentId
