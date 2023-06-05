@@ -26,6 +26,14 @@
             :options="state.statusOptions"
           />
         </a-form-item>
+        <a-form-item :label="`主体类型`" name="type">
+          <a-select
+            v-model:value="queryParams.type"
+            placeholder="请选择主体类型"
+            style="width: 200px"
+            :options="state.majorIndividualTypeOptions"
+          />
+        </a-form-item>
         <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
         <a-button @click="resetQuery">重置</a-button>
       </a-form>
@@ -1014,7 +1022,8 @@ const queryParams = reactive({
   keyword: undefined,
   systemName: undefined,
   startEndTime: [],
-  status: undefined
+  status: undefined,
+  type: null
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -1448,7 +1457,8 @@ const getList = async (isRefresh = false) => {
     // pageSize: queryParams.pageSize,
     keyword: queryParams.keyword,
     systemName: queryParams.systemName,
-    status: queryParams.status
+    status: queryParams.status,
+    type: queryParams.type
   }
 
   if (queryParams?.startEndTime && queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
@@ -2615,7 +2625,6 @@ const majorIndividualTypeChange = () => {
     //  厂家
     //  厂家 - -只有顶层
     state.optionalMenuTreeChange = state.optionalMenuList.filter((item) => item.id === 0)
-    console.log(' state.optionalMenuTreeChange=====', state.optionalMenuTreeChange)
   } else {
     //  经销商 - -顶层 跟厂家
     state.optionalMenuTreeChange = state.optionalMenuList.filter(
@@ -2629,6 +2638,8 @@ const majorIndividualTypeChange = () => {
     'belongTenantId',
     'children'
   )
+
+  state.formState.belongTenantId = state.optionalMenuTreeChange[0]?.id
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -

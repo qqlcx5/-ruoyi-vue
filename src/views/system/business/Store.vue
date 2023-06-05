@@ -102,7 +102,7 @@
                 v-model:value="state.formState.brand"
                 style="width: 100%"
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                placeholder="请选择"
+                placeholder="请选择品牌，可多选"
                 multiple
                 :tree-data="state.barnOptions"
               />
@@ -157,7 +157,7 @@
             </a-form-item>
 
             <a-form-item label="负责人邮箱" name="contactMail" :rules="state.contactMailRules">
-              <a-input v-model:value="state.formState.contactMail" placeholder="请输入邮箱" />
+              <a-input v-model:value="state.formState.contactMail" placeholder="请输入负责人邮箱" />
             </a-form-item>
 
             <a-form-item label="排序" name="sort" :rules="[{ required: true, message: '排序!' }]">
@@ -521,7 +521,7 @@
               <a-input
                 v-model:value="state.formState.trialOperationStoreAddress"
                 @change="trialOperationStoreAddressChange"
-                placeholder="门店地址"
+                placeholder="请输入门店地址"
               />
             </a-form-item>
 
@@ -601,7 +601,7 @@
             <a-form-item label="建店补偿金额" name="compensateAmount">
               <a-input
                 v-model:value="state.formState.compensateAmount"
-                placeholder="建店补偿金额"
+                placeholder="请输入建店补偿金额"
               />
             </a-form-item>
 
@@ -921,7 +921,9 @@ const state = reactive({
   noticeLetterSuccess: [], //通知函 新增编辑入参
   notificationLetterUrl: [], //告知函 上传回显
   notificationLetterSuccess: [], //告知函 新增编辑入参
-  legalMobileRules: [{ validator: legalMobileValidator }]
+  legalMobileRules: [{ validator: legalMobileValidator }],
+  contactMobileRules: [{ validator: contactMobileValidator }],
+  contactMailRules: [{ validator: contactMailRulesValidator }]
 })
 
 const loading = ref<boolean>(false)
@@ -961,8 +963,22 @@ const addMajorIndividualFN = async () => {
   if (!formRef) return
   const valid = await formRef.value.validate()
   state.addEditLoading = true
-  const tempNoticeLetterUrl = []
+  const tempNoticeLetter = []
   const tempNotificationLetter = []
+
+  state.noticeLetterSuccess.map((item) => {
+    tempNoticeLetter.push({
+      fileName: item.fileName,
+      fileUrl: item.fileUrl //通知函
+    })
+  })
+
+  state.notificationLetterSuccess.map((item) => {
+    tempNotificationLetter.push({
+      fileName: item.fileName,
+      fileUrl: item.fileUrl //告知函
+    })
+  })
 
   let params = {
     tenantId: state.formState.belongTenantId, //上级主体
@@ -1010,8 +1026,8 @@ const addMajorIndividualFN = async () => {
       operationDeadline: state.formState.operationDeadline, //验收信息 规定运营年限
       // acceptanceTime: state.formState.acceptanceTime //验收信息 验收通过时间
 
-      noticeLetter: state.noticeLetterSuccess, //通知函
-      notificationLetter: state.notificationLetterSuccess //告知函
+      noticeLetters: tempNoticeLetter, //通知函
+      notificationLetters: tempNotificationLetter //告知函
     }
   }
 
@@ -1603,23 +1619,27 @@ const getOrganizationDetailsFN = async () => {
     state.formState['acceptanceTime'] = dayjs(res?.relVO?.acceptanceTime) //验收通过时间
   }
 
-  if (res?.relVO?.noticeLetter) {
-    res?.relVO?.noticeLetter.map((item) => {
+  if (res?.relVO?.noticeLetters) {
+    res?.relVO?.noticeLetters.map((item) => {
       state.noticeLetterUrl.push({
         name: item.fileName,
         status: 'done',
-        url: item.fileUrl //通知函
+        url: item.fileUrl, //通知函
+        fileName: item.fileName,
+        fileUrl: item.fileUrl //通知函
       })
     })
     state.noticeLetterSuccess = state.noticeLetterUrl
   }
 
-  if (res?.relVO?.notificationLetter) {
-    res?.relVO?.notificationLetter.map((item) => {
+  if (res?.relVO?.notificationLetters) {
+    res?.relVO?.notificationLetters.map((item) => {
       state.notificationLetterUrl.push({
         name: item.fileName,
         status: 'done',
-        url: item.fileUrl //告知函
+        url: item.fileUrl, //告知函
+        fileName: item.fileName,
+        fileUrl: item.fileUrl //告知函
       })
     })
     state.notificationLetterSuccess = state.notificationLetterUrl
@@ -1663,13 +1683,13 @@ state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needRe
   font-family: PingFangSC-Regular;
 }
 .adress-content {
-  width: 470px;
+  width: 458px;
 }
 .adress-cascader {
-  width: 200px;
+  width: 210px !important;
 }
 .adress-input {
-  width: 255px;
+  width: 248px !important;
 }
 //设置属性 联系方式  +
 .add-circle {
