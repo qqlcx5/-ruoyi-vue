@@ -79,7 +79,7 @@ const modelVisible = ref(false) // 是否显示弹出层
 // --------------- 部门 ---------------
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const treeData = ref<any[]>([])
-const defaultCheckedKeys = ref<string[] | number[]>([])
+const defaultCheckedKeys = ref<any[]>([])
 const currentNode = ref<TreeNodeData>({})
 
 const onTreeCheck = (node, list) => {
@@ -116,20 +116,26 @@ watch(
       })
       .flat()
   },
-  { immediate: true, deep: true }
+  { deep: true }
 )
 
-const init = async () => {
+const init = async (dataScopeUsers) => {
   const result = await getSimpleOrganizationList({ status: CommonStatusEnum.ENABLE })
+  if (dataScopeUsers && dataScopeUsers.length > 0) {
+    result.forEach((item) => {
+      item['userList'] = dataScopeUsers.filter((u) => item.id === u.deptId)
+      item['userIds'] = item['userList'].map((u) => u.id)
+    })
+  }
   treeData.value = handleTree(result)
   selectedTreeData.value = treeData.value.filter((t) => defaultCheckedKeys.value.includes(t.id))
 }
 
 // 打开弹窗
-const openModal = async (deptIds?: string[] | number[], dataScopeUsers?: string[] | number[]) => {
+const openModal = async (deptIds?: any[], dataScopeUsers?) => {
   if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = deptIds
   modelVisible.value = true
-  await init()
+  await init(dataScopeUsers)
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 

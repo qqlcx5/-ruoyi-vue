@@ -74,6 +74,7 @@ $messageMap: (
   $fill: map-get($map: $item, $key: fill);
   $fillColor: map-get($map: $item, $key: fillColor);
   .wg-message {
+    z-index: 9999 !important;
     &.el-message--#{$type} {
       border-color: $color;
       background-color: $bgColor;
@@ -83,6 +84,7 @@ $messageMap: (
     }
   }
   .wg-message-plain {
+    z-index: 9999 !important;
     &.el-message--#{$type} {
       border-color: $fillColor;
       background-color: $fill;

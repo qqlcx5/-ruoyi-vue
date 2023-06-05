@@ -8,10 +8,12 @@
     class="setting-drawer-content"
   >
     <template #header>
-      <span class="text-16px font-700 text-[var(--top-header-text-color)]">{{ t('setting.projectSetting') }}</span>
+      <span class="text-16px font-700 text-[var(--top-header-text-color)]">{{
+        t('setting.projectSetting')
+      }}</span>
     </template>
 
-<!--    <ElDivider />-->
+    <!--    <ElDivider />-->
     <!--     TODO:有空再抽 都一样的-->
     <el-scrollbar>
       <div class="layout-content-center pt-14px pb-80px">
@@ -67,7 +69,7 @@
         <!-- 界面显示 -->
         <div class="general-content pt-40px">
           <div class="drawer-title"> {{ t('setting.interfaceDisplay') }}</div>
-          <div class="layout-radio-picker-content px-20px pt-25px">
+          <div class="layout-radio-picker-content pl-20px pt-25px">
             <InterfaceDisplay />
           </div>
         </div>
@@ -305,7 +307,7 @@ $prefix-cls: #{$namespace}-setting;
   //重置
   .button-reset {
     color: var(--el-color-primary);
-    background-color: #EDF4FB;
+    background-color: #edf4fb;
   }
 }
 </style>
@@ -316,7 +318,7 @@ $prefix-cls: #{$namespace}-setting;
     color: #333333;
     margin-bottom: 0;
     padding: 25px 20px;
-    border-bottom: 1px solid #EAEBEF;
+    border-bottom: 1px solid #eaebef;
   }
 
   .el-drawer__body {

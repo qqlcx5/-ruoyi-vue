@@ -18,6 +18,7 @@ interface TenantVO {
   systemName?: string
   logoUrl?: string
   watermark?: string
+  watermarkVisible?: number
 }
 interface UserInfoVO {
   permissions: string[]
@@ -78,7 +79,7 @@ export const useUserStore = defineStore('admin-user', {
       this.tenant = userInfo.tenant
       this.isSetUser = true
       // 设置系统水印
-      setWatermark(userInfo.tenant?.watermark)
+      userInfo.tenant?.watermarkVisible === 0 && setWatermark(userInfo.tenant?.watermark)
       wsCache.set(CACHE_KEY.USER, userInfo)
     },
     async loginOut() {

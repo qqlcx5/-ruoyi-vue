@@ -45,20 +45,24 @@ export function useWatermark(appendEl: HTMLElement | null = document.body) {
     return id
   }
 
-  function setWatermark(str: string | undefined) {
+  function setWatermark(content: string | undefined) {
     const userStore = useUserStoreWithOut()
-    const tenant = userStore.getTenant
-    const user = userStore.getUser
-    let watermark = str || tenant.watermark || tenant.systemName || ''
-    if (watermark) {
-      if (user.nickname) watermark += `-${user.nickname}`
-      if (user.username) watermark += `-${user.username}`
-    }
-    createWatermark(watermark)
-    func = () => {
+    if (content !== undefined) {
+      const tenant = userStore.getTenant
+      const user = userStore.getUser
+      let watermark = content || tenant.watermark || tenant.systemName || ''
+      if (watermark) {
+        if (user.nickname) watermark += `-${user.nickname}`
+        if (user.username) watermark += `-${user.username}`
+      }
       createWatermark(watermark)
+      func = () => {
+        createWatermark(watermark)
+      }
+      window.addEventListener('resize', func)
+    } else {
+      clear()
     }
-    window.addEventListener('resize', func)
   }
 
   return { setWatermark, clear }
