@@ -272,6 +272,7 @@ const clear = () => {
   const { wsCache } = useCache()
   wsCache.delete(CACHE_KEY.LAYOUT)
   wsCache.delete(CACHE_KEY.THEME)
+  wsCache.delete(CACHE_KEY.ANTD_THEME)
   wsCache.delete(CACHE_KEY.IS_DARK)
   window.location.reload()
 }

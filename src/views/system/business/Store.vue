@@ -565,7 +565,7 @@
                 >
                   <a-button> 上传文件 </a-button>
                 </a-upload>
-                <div class="upload-text"> 支持扩展名：.rar .zip .doc .docx .pdf .jpg</div>
+                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg</div>
               </div>
             </a-form-item>
 
@@ -630,22 +630,24 @@
                   class="avatar-uploader"
                   :show-upload-list="true"
                   :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+                  :before-upload="
+                    (file, fileList) => beforeUpload(file, fileList, 'notificationLetter')
+                  "
                   @change="
                     (file, fileList) => {
-                      handleChange(file, fileList, 'legalPerson')
+                      handleChange(file, fileList, 'notificationLetter')
                     }
                   "
                   @remove="
                     (file) => {
-                      removeImg(file, 'legalPerson')
+                      removeImg(file, 'notificationLetter')
                     }
                   "
                 >
                   <a-button> 上传文件 </a-button>
                 </a-upload>
 
-                <div class="upload-text"> 支持扩展名：.rar .zip .doc .docx .pdf .jpg </div>
+                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg </div>
               </div>
             </a-form-item>
           </a-tab-pane>
@@ -916,9 +918,9 @@ const state = reactive({
   environmentUrl: [], //环境图片 上传回显
   environmentSuccess: '', //环境图片 新增编辑入参
   noticeLetterUrl: [], //通知函 上传回显
-  noticeLetterSuccess: '', //通知函 新增编辑入参
+  noticeLetterSuccess: [], //通知函 新增编辑入参
   notificationLetterUrl: [], //告知函 上传回显
-  notificationLetterSuccess: '', //告知函 新增编辑入参
+  notificationLetterSuccess: [], //告知函 新增编辑入参
   legalMobileRules: [{ validator: legalMobileValidator }]
 })
 
@@ -954,10 +956,14 @@ const getPhoneList = async (value) => {
 
 //新增机构
 const addMajorIndividualFN = async () => {
+  console.log('state.noticeLetterUrl', state.noticeLetterUrl)
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
   state.addEditLoading = true
+  const tempNoticeLetterUrl = []
+  const tempNotificationLetter = []
+
   let params = {
     tenantId: state.formState.belongTenantId, //上级主体
     parentId: '0', //上级机构
@@ -1001,11 +1007,11 @@ const addMajorIndividualFN = async () => {
       storeLevel: state.formState.acceptanceStoreLevel, //验收信息 门店级别
       storeScore: state.formState.storeScore, //验收信息 店面验收评分
       compensateAmount: state.formState.compensateAmount, //验收信息 建店补偿金额
-      operationDeadline: state.formState.operationDeadline //验收信息 规定运营年限
+      operationDeadline: state.formState.operationDeadline, //验收信息 规定运营年限
       // acceptanceTime: state.formState.acceptanceTime //验收信息 验收通过时间
 
-      // noticeLetter:'',//通知函 TODO
-      // notificationLetter:[]//告知函
+      noticeLetter: state.noticeLetterSuccess, //通知函
+      notificationLetter: state.notificationLetterSuccess //告知函
     }
   }
 
@@ -1131,17 +1137,24 @@ const checkImageWH = (file, width, height) => {
 }
 //上传前
 const beforeUpload = async (file: UploadProps['beforeUpload'][number], fileList, type) => {
-  if (type === 'noticeLetter' && state.noticeLetterUrl.length === 1) {
-    //通知函
-    message.warning('通知函只能上传一个')
-    return Upload.LIST_IGNORE
-  }
   if (type === 'environment') {
     //环境图片
     const isJpgOrPng =
       file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
     if (!isJpgOrPng) {
       message.error('仅支持jpg/jpeg/png/gif格式')
+      return Upload.LIST_IGNORE
+    }
+  } else if (type === 'noticeLetter') {
+    //通知函
+    if (state.noticeLetterUrl.length === 3) {
+      message.warning(`通知函最多只能上传三个`)
+      return Upload.LIST_IGNORE
+    }
+  } else if (type === 'notificationLetter') {
+    //告知函
+    if (state.notificationLetterUrl.length === 3) {
+      message.warning(`告知函最多只能上传三个`)
       return Upload.LIST_IGNORE
     }
   } else {
@@ -1235,11 +1248,43 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
       case 'noticeLetter':
         if (!info?.file.response?.data) {
           message.error(info?.file.response?.msg)
-          state.noticeLetterUrl = []
+          // state.noticeLetterUrl = []
           return
         }
-        state.noticeLetterSuccess = info?.file.response?.data?.store || ''
+        const tempNoticeLetter = state.noticeLetterUrl.filter((item) => item?.status != 'error')
+        state.noticeLetterSuccess = []
+        tempNoticeLetter.map((item) => {
+          if (item.status === 'done') {
+            state.noticeLetterSuccess.push({
+              fileName: item.name,
+              fileUrl: item.response?.data?.store
+            })
+          }
+        })
+
         console.log('state.noticeLetterUrl', state.noticeLetterUrl)
+        console.log('state.noticeLetterSuccess===>', state.noticeLetterSuccess)
+        break
+      case 'notificationLetter':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          // state.notificationLetterUrl = []
+          return
+        }
+        const tempNotificationLetterUrl = state.notificationLetterUrl.filter(
+          (item) => item?.status != 'error'
+        )
+        console.log('state.notificationLetterUrl', state.notificationLetterUrl)
+        console.log('tempNotificationLetterUrl', tempNotificationLetterUrl)
+        state.notificationLetterSuccess = []
+        tempNotificationLetterUrl.map((item) => {
+          if (item.status === 'done') {
+            state.notificationLetterSuccess.push({
+              fileName: item.name,
+              fileUrl: item.response?.data?.store
+            })
+          }
+        })
         break
     }
 
@@ -1263,6 +1308,14 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
         break
       case 'environment':
         state.environmentUrl = []
+        break
+      case 'noticeLetter':
+        state.noticeLetterUrl = state.noticeLetterUrl.filter((item) => item?.status != 'error')
+        break
+      case 'notificationLetter':
+        state.notificationLetterUrl = state.notificationLetterUrl.filter(
+          (item) => item?.status != 'error'
+        )
         break
     }
     loading.value = false
@@ -1403,6 +1456,7 @@ const getOrganizationDetailsFN = async () => {
 
   //... res 可能为null
   let tempType = [] || ''
+  console.log('详情res', res)
 
   // if (record.organizationType == '分公司') {
   //   tempType = res?.relVO?.type[0]
@@ -1547,6 +1601,28 @@ const getOrganizationDetailsFN = async () => {
   }
   if (res?.relVO?.acceptanceTime) {
     state.formState['acceptanceTime'] = dayjs(res?.relVO?.acceptanceTime) //验收通过时间
+  }
+
+  if (res?.relVO?.noticeLetter) {
+    res?.relVO?.noticeLetter.map((item) => {
+      state.noticeLetterUrl.push({
+        name: item.fileName,
+        status: 'done',
+        url: item.fileUrl //通知函
+      })
+    })
+    state.noticeLetterSuccess = state.noticeLetterUrl
+  }
+
+  if (res?.relVO?.notificationLetter) {
+    res?.relVO?.notificationLetter.map((item) => {
+      state.notificationLetterUrl.push({
+        name: item.fileName,
+        status: 'done',
+        url: item.fileUrl //告知函
+      })
+    })
+    state.notificationLetterSuccess = state.notificationLetterUrl
   }
 }
 

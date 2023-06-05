@@ -816,7 +816,7 @@
         v-if="
           (state.permissionRecord?.roleVOList?.length === 0 ||
             state.permissionRecord?.roleVOList === null) &&
-          state.roleId?.length > 0
+          state.hasRoles
         "
       >
         <img :src="warningImg" alt="" class="tip-img message-img waring-img" />
@@ -1361,6 +1361,7 @@ const state = reactive({
     }
   ], //帐号状态 Options tree
   roleId: [], //分配角色modal
+  hasRoles: false, //默认岗位是否有分配角色
 
   partPostOptionsText: [
     {
@@ -2249,10 +2250,13 @@ const assignPermission = async (record) => {
   tempArr.map((item) => {
     postIdArr.push(item.postId)
   })
+
   if (roleVOList?.length === 0 || roleVOList === null) {
     const tempRes = await getRolePostList({
       postIds: postIdArr
     })
+    state.hasRoles = tempRes?.length != 0 || false
+
     nextTick(() => {
       state.roleId = tempRes
     })
