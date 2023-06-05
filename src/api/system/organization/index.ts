@@ -30,9 +30,19 @@ export const addOrganization = (data) => {
   return request.post({ url: '/system/organization/create', data })
 }
 
+// 新增机构 门店 主体管理页面
+export const addOrganizationStore = (data) => {
+  return request.post({ url: '/system/organization/create-tenant-store', data })
+}
+
 // 编辑机构
 export const updateOrganization = (data) => {
   return request.put({ url: '/system/organization/update', data })
+}
+
+// 编辑机构 门店 主体管理页面
+export const updateOrganizationStore = (data) => {
+  return request.put({ url: '/system/organization/tenant-update-store', data })
 }
 
 // 获取机构在职状态开启的员工
@@ -58,6 +68,11 @@ export const updateAttribute = (data) => {
 // 查询机构详情
 export const getOrganizationDetails = (params) => {
   return request.get({ url: '/system/organization/get', params })
+}
+
+// 查询机构详情 门店 主体管理页面
+export const getOrganizationStoreDetails = (params) => {
+  return request.get({ url: '/system/organization/get-tenant-store', params })
 }
 
 // 删除机构

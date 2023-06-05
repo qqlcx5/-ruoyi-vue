@@ -208,6 +208,7 @@
 import { reactive } from 'vue'
 import {
   getOrganizationDetails,
+  getOrganizationStoreDetails,
   getOrganizationTypeList,
   getSimpleOrganizationList
 } from '@/api/system/organization'
@@ -250,7 +251,8 @@ const state = reactive({
 const detailsInfo = async (record) => {
   state.detailsRecord = record
   //获取机构详情
-  const res = await getOrganizationDetails({ id: record.id })
+  // const res = await getOrganizationDetails({ id: record.id })
+  const res = await getOrganizationStoreDetails({ id: record.id, tenantId: record.belongTenantId })
   const { relVO = {} } = res
 
   //上级机构

@@ -689,9 +689,12 @@
 import { reactive } from 'vue'
 import {
   addOrganization,
+  addOrganizationStore,
   getOrganizationDetails,
+  getOrganizationStoreDetails,
   getOrganizationTypeList,
-  updateOrganization
+  updateOrganization,
+  updateOrganizationStore
 } from '@/api/system/organization'
 import { getMemberAllList, getMemberPhoneList } from '@/api/system/member'
 import { reconstructedTreeData, reconstructionArrayObject } from '@/utils/utils'
@@ -1040,16 +1043,17 @@ const addMajorIndividualFN = async () => {
   }
 
   try {
-    let res = []
     if (state.modalType === 'add') {
-      res = await addOrganization(params)
+      // await addOrganization(params)
+      await addOrganizationStore(params)
 
       message.success('新增成功')
     } else {
       params['id'] = state.formState.id
       params.organizationRel['id'] = state.formState.attributeId
       params.organizationRel['organizationId'] = state.formState.id
-      res = await updateOrganization(params)
+      // await updateOrganization(params)
+      await updateOrganizationStore(params)
       message.success('修改成功')
     }
 
@@ -1391,7 +1395,11 @@ const getOrganizationDetailsFN = async () => {
   }
 
   //获取机构详情
-  const res = await getOrganizationDetails({ id: props.editRecord.id })
+  // const res = await getOrganizationDetails({ id: props.editRecord.id })
+  const res = await getOrganizationStoreDetails({
+    id: props.editRecord.id,
+    tenantId: props.editRecord.belongTenantId
+  })
 
   //... res 可能为null
   let tempType = [] || ''

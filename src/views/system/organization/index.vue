@@ -3371,18 +3371,20 @@ watch(
   margin-bottom: 10px;
 }
 .phone-div {
-  margin-right: 14px;
+  margin-right: 5px;
 }
 .migrated-tag {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 8px;
-  width: 60px;
+  width: 52px;
   height: 22px;
   border-radius: 4px;
-  background-color: rgb(255, 245, 245);
+  background-color: rgba(255, 65, 65, 0.05);
   color: rgba(255, 65, 65, 1);
+  font-size: 12px;
+  text-align: right;
+  font-family: PingFangSC-Regular;
 }
 </style>
 

@@ -2003,15 +2003,21 @@ const findParent = (childrenId, arr, path) => {
 const assignPermission = async (record) => {
   state.permissionRecord = record
   state.PermissionType = 'edit'
+  //TODO 有空改一下 - - 这里不大合适 需求一直改 这里改了好多次 - -
+  await openPermissionModal(record.id)
   if (record.packageId != null) {
     const res = await getTenantPackage({ id: record.packageId })
     //... res 可能为null
     const { menuIds = [], dirIds = [], id } = res || []
     state.editPermissionID = id
     state.checkedKeys = menuIds
+    console.log('state.menuTreeList', state.menuTreeList)
+    console.log('dirIds', dirIds)
+    console.log('menuIds', menuIds)
     nextTick(() => {
       state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
     })
+    console.log('state.selectTree', state.selectTree)
   } else {
     state.selectTree = []
   }
@@ -2021,7 +2027,7 @@ const assignPermission = async (record) => {
     state.isShowRightTree = true
     state.isShowTree = true
   })
-  await openPermissionModal(record.id)
+  // await openPermissionModal(record.id)
 }
 
 //表格状态改变 确认modal... 然后才开短信 modal
