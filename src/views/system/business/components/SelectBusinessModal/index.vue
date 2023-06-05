@@ -1,7 +1,7 @@
 <template>
   <!-- 弹窗 -->
-  <XModal title="选择经销商" v-model="modelVisible" width="800px">
-    <div class="grid grid-cols-2">
+  <XModal title="选择经销商" v-model="modelVisible" width="508px" class="business-modal">
+    <div class="h-full grid grid-cols-2">
       <el-tree
         class="px-6px py-10px max-h-560px"
         ref="treeRef"
@@ -16,10 +16,9 @@
         @check="onTreeCheck"
       />
       <div class="selected-info">
-        已选择信息
+        <div class="info-title">已选择信息</div>
         <el-tree
-          id="1231123"
-          class="px-6px py-10px max-h-560px"
+          class="py-6px max-h-560px"
           ref="selectTreeRef"
           node-key="id"
           highlight-current
@@ -112,6 +111,13 @@ const submitForm = async () => {
 </script>
 <style lang="scss" scoped>
 .selected-info {
+  padding-left: 16px;
   border-left: 1px solid $divider-color;
+  .info-title {
+    font-weight: bold;
+  }
+}
+:deep(.vxe-modal--content .el-scrollbar__view) {
+  height: 100% !important;
 }
 </style>
