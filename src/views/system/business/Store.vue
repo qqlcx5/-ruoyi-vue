@@ -33,23 +33,6 @@
               />
             </a-form-item>
 
-            <!--            <a-form-item-->
-            <!--              :label="`机构类型`"-->
-            <!--              name="organizationType"-->
-            <!--              :rules="[{ required: true, message: `机构类型不能为空` }]"-->
-            <!--            >-->
-            <!--              <a-tree-select-->
-            <!--                v-model:value="state.formState.organizationType"-->
-            <!--                :disabled="true"-->
-            <!--                show-search-->
-            <!--                style="width: 100%"-->
-            <!--                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"-->
-            <!--                placeholder="请选择机构类型"-->
-            <!--                :tree-data="state.organizationTypeOptions"-->
-            <!--                treeNodeFilterProp="label"-->
-            <!--              />-->
-            <!--            </a-form-item>-->
-
             <a-form-item
               :label="`机构名称`"
               name="name"
@@ -958,10 +941,35 @@ const getPhoneList = async (value) => {
 
 //新增机构
 const addMajorIndividualFN = async () => {
-  console.log('state.noticeLetterUrl', state.noticeLetterUrl)
+  if (
+    state.activeKey !== 'basicInformation' &&
+    (!state.formState.name ||
+      !state.formState.code ||
+      !state.formState.brand.length > 0 ||
+      !state.formState.detailedAddress)
+  ) {
+    //基础信息
+    state.activeKey = 'basicInformation'
+  }
+
+  if (
+    state.activeKey !== 'underlyingAttribute' &&
+    state.formState.name &&
+    state.formState.code &&
+    state.formState.brand.length > 0 &&
+    state.formState.detailedAddress &&
+    ((state.formState.isSale === 0 && state.formState.saleBrand.length === 0) ||
+      (state.formState.isRescue === 0 && state.formState.rescueBrand.length === 0) ||
+      (state.formState.isMaintenance === 0 && state.formState.maintenanceBrand.length === 0))
+  ) {
+    //基础属性
+    state.activeKey = 'underlyingAttribute'
+  }
   // 校验表单
   if (!formRef) return
-  const valid = await formRef.value.validate()
+  await formRef.value.validate()
+
+  console.log('state.formState.saleBrand', state.formState.saleBrand)
   state.addEditLoading = true
   const tempNoticeLetter = []
   const tempNotificationLetter = []
@@ -1057,11 +1065,12 @@ const addMajorIndividualFN = async () => {
   }
 
   if (state.formState.trialOperationTime) {
-    params['trialOperationTime'] = state.formState.trialOperationTime.format('YYYY-MM-DD') //试运营时间
+    params.organizationRel['trialOperationTime'] =
+      state.formState.trialOperationTime.format('YYYY-MM-DD') //试运营时间
   }
 
   if (state.formState.acceptanceTime) {
-    params['acceptanceTime'] = state.formState.acceptanceTime?.format('YYYY-MM-DD') //验收通过时间
+    params.organizationRel['acceptanceTime'] = state.formState.acceptanceTime?.format('YYYY-MM-DD') //验收通过时间
   }
 
   try {

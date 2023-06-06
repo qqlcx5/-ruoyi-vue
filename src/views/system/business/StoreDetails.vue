@@ -216,6 +216,7 @@ import { organizationType } from '@/utils/constants'
 import { getMemberAllList } from '@/api/system/member'
 import { reconstructionArrayObject } from '@/utils/utils'
 import editImg from '@/assets/imgs/system/editImg.png'
+import { getSimpleTenantList } from '@/api/system/business'
 
 interface Props {
   currentRecord?: object
@@ -263,6 +264,13 @@ const detailsInfo = async (record) => {
     (item) => item.value === res.organizationType
   )
 
+  //主体列表
+  const majorIndividualRes = await getSimpleTenantList()
+  const tempParentMajorIndividual = majorIndividualRes.find((item) => item.id === res.parentId)
+
+  //数据字典
+  const dictRes = await getOrganizationTypeList()
+
   //类型
   let tempArrTypeString = ''
   if (res.organizationType === '2') {
@@ -295,6 +303,23 @@ const detailsInfo = async (record) => {
       }
     })
   }
+
+  const tempBrandList = dictRes.filter((item) => item.dictType === 'brand')
+  console.log('tempBarnList', tempBrandList)
+  //品牌
+  let tempBrandtring = ''
+  const tempBrandArr = tempBrandList.filter((topItem) => {
+    return res?.brandIds.some((item) => topItem.value === item)
+  })
+
+  tempBrandArr.map((item) => {
+    if (tempBrandtring === '') {
+      //避免开头多拼一个 、
+      tempBrandtring = item.label
+    } else {
+      tempBrandtring = tempBrandtring + '、' + item.label
+    }
+  })
 
   //销售品牌
   let tempSaleString = ''
@@ -370,6 +395,10 @@ const detailsInfo = async (record) => {
       baseTitle: '基础信息',
       infoArr: [
         {
+          textSpan: '上级主体：',
+          text: tempParentMajorIndividual?.name
+        },
+        {
           textSpan: '上级机构：',
           text: tempItem[0]?.name
         },
@@ -388,6 +417,10 @@ const detailsInfo = async (record) => {
         {
           textSpan: '机构简称：',
           text: res.abbreviate
+        },
+        {
+          textSpan: '品牌：',
+          text: tempBrandtring
         },
         {
           textSpan: '门店地址：',

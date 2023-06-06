@@ -890,7 +890,9 @@
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="PermissionOk">确定</a-button>
+      <a-button type="primary" html-type="submit" @click="PermissionOk" :loading="state.btnLoading"
+        >确定</a-button
+      >
       <a-button @click="closePermissionModal">暂不设置</a-button>
     </template>
   </a-modal>
@@ -1371,6 +1373,7 @@ const state = reactive({
   configureRolesNewOptions: [], //分配角色 Options tree
   configureRolesNewTreeOptions: [], //分配角色 Options tree  Modal 已删除 已关闭 包括
   configureRolesNewList: [], //分配角色 数组 没有 关闭跟删除
+  btnLoading: false, //分配角色 btn
   memberTypeOptions: [
     {
       value: 'full_members',
@@ -2281,7 +2284,9 @@ const PermissionOk = async () => {
     userId: state.permissionRecord?.id || state.addSuccessId,
     roleIds: state.roleId
   }
+  state.btnLoading = true
   await aassignUserRoleApi(params)
+  state.btnLoading = false
   await getList()
   closePermissionModal()
 }

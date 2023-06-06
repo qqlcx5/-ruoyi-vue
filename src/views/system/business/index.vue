@@ -53,7 +53,7 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button type="primary" @click="openModal()">
+          <a-button type="primary" @click="openModal()" v-if="state.needAddBtn">
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -1186,6 +1186,7 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
+  needAddBtn: false, //仅超管 有新增 btn
   belongTenantId: null, //上级主体编号 新增门店
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -2756,6 +2757,9 @@ watch(
 onMounted(async () => {
   await getAllType()
   await getList()
+  //仅超管 有新增 btn
+  const { roles = [] } = wsCache.get(CACHE_KEY.USER)
+  state.needAddBtn = roles.includes('super_admin')
 })
 </script>
 
