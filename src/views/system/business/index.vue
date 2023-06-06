@@ -2128,15 +2128,15 @@ const setTableStatusChangeInfo = (value, record) => {
 }
 //表格状态开关
 const tableStatusChange = async (value, record) => {
+  const tempText = record.type === null ? '门店' : '主体公司'
   if (value) {
     state.messageBtnText = '确认开启'
-    state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
+    state.messageText = `为了保护您的${tempText}业务数据安全，请通过安全验证：`
   } else {
     state.messageBtnText = '确认关闭'
-    state.messageText =
-      '因您的主体公司还存在业务数据，如关闭则严重影响到业务，为了保护您的主体公司业务数据安全，请通过安全验证：'
+    state.messageText = `因您的${tempText}还存在业务数据，如关闭则严重影响到业务，为了保护您的${tempText}业务数据安全，请通过安全验证：`
   }
-  console.log('record', record)
+
   if (record.type === null) {
     const tempRes = await getMajorIndividualList()
     const tempItem = tempRes.find((item) => item.id === record.belongTenantId)
