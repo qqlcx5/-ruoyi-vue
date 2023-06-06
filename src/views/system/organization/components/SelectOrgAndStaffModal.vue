@@ -47,8 +47,8 @@
           empty-text=""
         />
         <div>成员</div>
-        <div class="pl-24px">
-          <div v-for="item in selectedStaffData" :key="item.id">
+        <div>
+          <div class="staff-item" v-for="item in selectedStaffData" :key="item.id">
             {{ item.nickname }}-{{ item.username }}
           </div>
         </div>
@@ -90,8 +90,8 @@ const currentNode = ref<TreeNodeData>({})
 const onTreeCheck = (node, list) => {
   currentNode.value = node
   treeRef.value!.setCurrentKey(node.id, true)
-  const nodeSelectStatus = list.checkedKeys.includes(node.id)
-  setNodeUserInfo(node, nodeSelectStatus)
+  // const nodeSelectStatus = list.checkedKeys.includes(node.id)
+  setNodeUserInfo(node)
   selectedTreeData.value = treeData.value.filter((t) => list.checkedKeys.includes(t.id))
   if (props.mode === 'single') {
     if (list.checkedKeys.length === 2) treeRef.value!.setCheckedKeys([node.id])
@@ -101,7 +101,7 @@ const onTreeNodeClick = async (node) => {
   currentNode.value = node
   setNodeUserInfo(node)
 }
-const setNodeUserInfo = async (node, allSelect?: boolean) => {
+const setNodeUserInfo = async (node) => {
   currentNode.value.userList =
     (await getUserListByOrg({ orgId: node.id })).map((item) => {
       item['deptId'] = node.id
@@ -172,5 +172,13 @@ const submitForm = async () => {
   margin-bottom: 16px;
   font-size: 14px;
   font-weight: bold;
+}
+.staff-item {
+  padding-left: 24px;
+  line-height: 26px;
+  cursor: pointer;
+  &:hover {
+    background-color: var(--el-fill-color-light);
+  }
 }
 </style>
