@@ -26,6 +26,14 @@
             :options="state.statusOptions"
           />
         </a-form-item>
+        <a-form-item :label="`主体类型`" name="type">
+          <a-select
+            v-model:value="queryParams.type"
+            placeholder="请选择主体类型"
+            style="width: 200px"
+            :options="state.majorIndividualTypeOptions"
+          />
+        </a-form-item>
         <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
         <a-button @click="resetQuery">重置</a-button>
       </a-form>
@@ -140,11 +148,13 @@
             >
           </template>
           <!--  可用名额   -->
-          <template v-if="column?.key === 'usableAmount'">
+          <!--  排除门店  -->
+          <template v-if="column?.key === 'usableAmount' && record.type !== null">
             <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
           </template>
           <!--  有效期   -->
-          <template v-if="column?.key === 'validityPeriod'">
+          <!--  排除门店  -->
+          <template v-if="column?.key === 'validityPeriod' && record.type !== null">
             <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
           </template>
           <!--  状态   -->
@@ -164,12 +174,35 @@
           <!--  操作   -->
           <template v-if="column?.key === 'operation'">
             <div class="operation-content">
-              <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-              <div class="text-color margin-right-5" @click="openModal(record)">{{
-                record.type === 'dealer' ? '新增门店' : '新增子项'
-              }}</div>
-              <div class="text-color margin-right-5" @click="assignPermission(record)"
+              <div
+                class="text-color margin-right-5"
+                @click="edit(record, false, record.type === null)"
+                >修改</div
+              >
+              <div
+                v-if="record.type !== null"
+                class="text-color margin-right-5"
+                @click="openModal(record)"
+                >{{ record.type === 'dealer' ? '新增门店' : '新增子项' }}</div
+              >
+              <div
+                v-else
+                class="text-color margin-right-5"
+                @click="openEditParentMajorIndividual(record)"
+                >修改上级主体</div
+              >
+
+              <div
+                v-if="record.type !== null"
+                class="text-color margin-right-5"
+                @click="assignPermission(record)"
                 >功能配置</div
+              >
+              <div
+                v-else
+                class="text-color margin-right-5"
+                @click="edit(record, false, record.type === null, 'underlyingAttribute')"
+                >设置属性</div
               >
               <a-popover placement="bottom">
                 <template #content>
@@ -210,7 +243,11 @@
           name="majorIndividualType"
           :rules="[{ required: true, message: `主体类型不能为空` }]"
         >
-          <a-radio-group v-model:value="state.formState.majorIndividualType">
+          <a-radio-group
+            v-model:value="state.formState.majorIndividualType"
+            :disabled="state.modalType === 'edit'"
+            @change="majorIndividualTypeChange"
+          >
             <a-radio
               v-for="item in state.majorIndividualTypeOptions"
               :value="item.value"
@@ -228,8 +265,8 @@
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级目录"
-            :tree-data="state.optionalMenuTree"
+            placeholder="请选择上级主体"
+            :tree-data="state.optionalMenuTreeChange"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
           />
@@ -537,7 +574,14 @@
     </template>
   </a-modal>
 
-  <Store v-if="false"></Store>
+  <!--  新增/修改门店  -->
+  <Store
+    v-if="state.isShowStore"
+    @closeStore="closeStore()"
+    :belongTenantId="state.belongTenantId"
+    :editRecord="state.record"
+    :tabsActiveKey="state.currentTabs"
+  />
 
   <!-- 配置权限 Modal -->
   <a-modal
@@ -703,7 +747,8 @@
             state.tableStatusChangeInfo.record.name
           }}底下
           <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
-          个子项主体将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          个子项{{ state.tableStatusChangeInfo?.type }}将同步
+          {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
     </div>
@@ -811,6 +856,14 @@
     </div>
   </a-modal>
 
+  <!--  门店详情  -->
+  <StoreDetails
+    v-if="state.isShowStoreDetails"
+    @closeStoreDetails="closeStoreDetails()"
+    @editStoreDetails="editStoreDetails"
+    :currentRecord="state.record"
+  />
+
   <!--  重置密码 Modal  -->
   <a-modal
     v-model:visible="state.isShowResetPassWord"
@@ -861,6 +914,13 @@
       <a-button @click="closePasswordModal">关闭</a-button>
     </div>
   </a-modal>
+
+  <!--  门店修改上级主体  -->
+  <EditParentMajorIndividual
+    v-if="state.isShowParentMajorIndividual"
+    @closeStoreParentMajorIndividual="closeStoreParentMajorIndividual()"
+    :currentRecord="state.record"
+  />
 
   <!--  定制列  -->
   <CustomColumn
@@ -927,13 +987,16 @@ import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import { cloneDeep } from 'lodash-es'
 import Store from '@/views/system/business/Store.vue'
+import StoreDetails from '@/views/system/business/StoreDetails.vue'
+import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
 
 import isBetween from 'dayjs/plugin/isBetween'
-import { getOrganizationTypeList } from '@/api/system/organization'
+import { getOrganizationTypeList, updateOrganizationStatus } from '@/api/system/organization'
+import { getMajorIndividualSimpleMenusList } from '@/api/system/menu'
 dayjs.extend(isBetween)
 
 interface FormState {
@@ -959,7 +1022,8 @@ const queryParams = reactive({
   keyword: undefined,
   systemName: undefined,
   startEndTime: [],
-  status: undefined
+  status: undefined,
+  type: null
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -1100,6 +1164,7 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
+  belongTenantId: null, //上级主体编号 新增门店
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
   messageText: '为了保护您的主体公司业务数据安全，请通过安全验证：',
@@ -1115,15 +1180,20 @@ const state = reactive({
   loading: true, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
+  tableDataArr: [], //表格数据 Arr
   treeIconIndex: 0,
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false, //新增编辑modal
+  isShowStore: false, //新增编辑 门店
+  isShowStoreDetails: false, //详情 门店
+  currentTabs: 'basicInformation', //门店 设置属性&&修改 current Tab
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
   isShowDateStatus: false, //修改modal 有效期 状态关闭 modal
+  isShowParentMajorIndividual: false, //修改上级主体 门店
   dateTime: {}, //修改modal 有效期 状态关闭 modal  date
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
@@ -1194,7 +1264,9 @@ const state = reactive({
   }, //重置密码 modal样式
   isShowCustomColumnModal: false, //是否打开定制列modal
   columns: [], //表格 columns
+  optionalMenuList: [], //上级主体 List
   optionalMenuTree: [], //上级主体 treeList
+  optionalMenuTreeChange: [], //上级主体 跟主体类型联动
   logoListUrl: [], //系统logo 上传 回显 - -
   logoUrlSuccess: '', //系统logo 新增编辑入参
   legalPersonListUrl: [], //法人身份证 上传回显
@@ -1222,11 +1294,14 @@ const state = reactive({
 
 //存放功能配置 选中的所有keys(包括父节点id)
 const checkedKeysBack = ref([])
+const checkedKeysBackNew = ref([])
 
 //获取子节点的 父节点id
 const testCheck = (checkedKeys, e) => {
   //存放功能配置 选中的所有keys(包括父节点id)
   checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
+  console.log('checkedKeys', checkedKeys)
+  console.log('checkedKeysBack.value', checkedKeysBack.value)
 }
 
 //ALL columns 用于定制列过滤 排序
@@ -1385,7 +1460,8 @@ const getList = async (isRefresh = false) => {
     // pageSize: queryParams.pageSize,
     keyword: queryParams.keyword,
     systemName: queryParams.systemName,
-    status: queryParams.status
+    status: queryParams.status,
+    type: queryParams.type
   }
 
   if (queryParams?.startEndTime && queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
@@ -1400,6 +1476,7 @@ const getList = async (isRefresh = false) => {
   try {
     const res = await getMajorIndividualList(params)
     state.rawData = res
+    state.tableDataArr = res
     state.tableDataList = res
     state.tableDataList.map((item) => {
       item.statusSwitch = item.status === 0
@@ -1410,6 +1487,7 @@ const getList = async (isRefresh = false) => {
       const tempType = state.majorIndividualTypeOptions.filter(
         (typeItem) => typeItem.value === item.type
       )
+
       item.majorIndividualType = tempType[0]?.label || ''
 
       item.store = item.type === null ? '门店' : ''
@@ -1417,6 +1495,7 @@ const getList = async (isRefresh = false) => {
 
     state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
     state.total = res.total
+    console.log('state.tableDataList ', state.tableDataList)
 
     if (isRefresh) {
       message.success('刷新成功')
@@ -1425,17 +1504,18 @@ const getList = async (isRefresh = false) => {
     state.loading = false
   }
 
-  //获取菜单列表
-  const menuList = await MenuApi.getSimpleMenusList()
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = menuList.filter((item) => item.type !== 3)
-  state.menuTreeList = handleTree(tempArr)
-
-  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  state.parentCheckedKeys = []
-  state.menuTreeList.map((item) => {
-    state.parentCheckedKeys.push(item.id)
-  })
+  // //获取菜单列表
+  // // const menuList = await MenuApi.getSimpleMenusList()
+  // const menuList = await MenuApi.getMajorIndividualSimpleMenusList({ id })
+  // //不要展示按钮 默认按钮全选 后端处理
+  // const tempArr = menuList.filter((item) => item.type !== 3)
+  // state.menuTreeList = handleTree(tempArr)
+  //
+  // // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  // state.parentCheckedKeys = []
+  // state.menuTreeList.map((item) => {
+  //   state.parentCheckedKeys.push(item.id)
+  // })
   // state.defaultExpandAll = true
   await nextTick(() => {
     state.isShowTree = true
@@ -1452,8 +1532,6 @@ const resetQuery = () => {
   queryFormRef.value.resetFields()
   handleQuery()
 }
-
-getList()
 
 //一键 展开 折叠 全部
 const toggleExpandAll = () => {
@@ -1480,10 +1558,22 @@ const fullScreen = () => {
   }
 }
 
+//打开 修改上级主体 门店
+const openEditParentMajorIndividual = (record) => {
+  state.isShowParentMajorIndividual = true
+  state.record = record
+}
+
 //打开Modal
 const openModal = async (record = {}) => {
-  if (record.type === 'dealer') {
-    console.log('新增门店')
+  //新增门店
+  if (record.type === 'dealer' && state.modalType === 'add') {
+    if (!(Object.keys(record).length === 0)) {
+      //非空对象判断 新增子项时回显
+      state.belongTenantId = record.id
+      state.isShowStore = true
+      console.log('新增门店')
+    }
     return
   }
   const res = await getSimpleTenantList()
@@ -1493,16 +1583,24 @@ const openModal = async (record = {}) => {
   // let menu: Tree = { id: 0, name: '顶层主体', children: [] }
   // menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
   // menuTree.push(menu)
+  state.optionalMenuList = res
 
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
 
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
-    state.formState.belongTenantId = record.id
+    //上级主体
+    if (!state.formState.majorIndividualType) {
+      state.formState.belongTenantId = null
+    } else {
+      state.formState.belongTenantId = record.belongTenantId
+    }
   } else {
-    state.formState.belongTenantId = state?.optionalMenuTree[0]
-      ? state?.optionalMenuTree[0]?.id
-      : null
+    // state.formState.belongTenantId = state?.optionalMenuTree[0]
+    //   ? state?.optionalMenuTree[0]?.id
+    //   : null
+    //不再取第一项了
+    state.formState.belongTenantId = null
   }
   state.isShow = true
 }
@@ -1515,7 +1613,7 @@ const closeModal = () => {
   state.formState.companyAddress = []
   state.formState = {
     majorIndividualType: '', //主体类型
-    belongTenantId: 0, //上级主体
+    belongTenantId: null, //上级主体
     code: '', //主体编码
     name: '', //主体名称
     abbreviate: '', //主体简称
@@ -1551,6 +1649,35 @@ const closeModal = () => {
   state.modalType = 'add'
 }
 
+//关闭 新增/编辑门店
+const closeStore = () => {
+  state.isShowStore = false
+  state.belongTenantId = null
+  state.modalType = 'add'
+  state.record = {}
+  getList()
+}
+
+//关闭 详情 门店
+const closeStoreDetails = () => {
+  state.isShowStoreDetails = false
+  state.record = {}
+}
+
+//关闭 修改上级主体 门店
+const closeStoreParentMajorIndividual = () => {
+  state.isShowParentMajorIndividual = false
+  state.record = {}
+  getList()
+}
+
+//详情 门店 修改
+const editStoreDetails = (record) => {
+  closeStoreDetails()
+  console.log('record!!!!!!!!!!!!!!!!!!!', record)
+  edit(record, false, record.type === null)
+}
+
 /** 添加/修改操作 */
 const formRef = ref()
 
@@ -1566,7 +1693,23 @@ const getTree = async () => {
 getTree()
 
 //编辑
-const edit = async (record, isCloseDetails = false) => {
+const edit = async (
+  record,
+  isCloseDetails = false,
+  isStore = false,
+  currentTabs = 'basicInformation'
+) => {
+  state.modalType = 'edit'
+  state.modalTitle = '编辑'
+  console.log('修改record', record)
+  console.log('isStore', isStore)
+  if (isStore) {
+    //门店
+    state.currentTabs = currentTabs
+    state.isShowStore = true
+    state.record = record
+    return
+  }
   // 修改modal 有效期 状态 关闭时  modal 用
   state.permissionRecord = record
   if (isCloseDetails) {
@@ -1575,13 +1718,12 @@ const edit = async (record, isCloseDetails = false) => {
   }
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
+  console.log('res==========', res)
 
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
 
-  state.modalType = 'edit'
-  state.modalTitle = '编辑'
   //赋值 回显
   state.formState = {
     majorIndividualType: res.type, //主体类型
@@ -1607,6 +1749,8 @@ const edit = async (record, isCloseDetails = false) => {
     detailedAddress: res.address //公司地址 详细地址
     // businessLicenseUrl: res.businessLicenseUrl //营业执照
   }
+  console.log('state.optionalMenuTree', state.optionalMenuTree)
+  console.log('state.formState.belongTenantId', state.formState.belongTenantId)
 
   if (res.logoUrl) {
     state.logoListUrl = [
@@ -1670,7 +1814,8 @@ const edit = async (record, isCloseDetails = false) => {
     })
   }
 
-  openModal()
+  majorIndividualTypeChange()
+  openModal(record)
 }
 
 //页码改变
@@ -1764,7 +1909,7 @@ const addMajorIndividualFN = async () => {
       // message.success('新增成功')
       message.success('主体已建立成功！主体用户名和密码已发送到负责人手机号中，请注意查收！')
       //配置权限
-      openPermissionModal()
+      openPermissionModal(state.addSuccessId)
     } else {
       if (
         dayjs().isBetween(
@@ -1814,12 +1959,14 @@ const closePermissionModal = () => {
 }
 
 //开启功能配置 modal
-const openPermissionModal = async () => {
+const openPermissionModal = async (id) => {
   state.isShowPermission = true
   // //获取菜单列表
   // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
+  // //获取菜单列表
+  // const menuList = await MenuApi.getSimpleMenusList()
   //获取菜单列表
-  const menuList = await MenuApi.getSimpleMenusList()
+  const menuList = await MenuApi.getMajorIndividualSimpleMenusList({ id })
   //不要展示按钮 默认按钮全选 后端处理
   const tempArr = menuList.filter((item) => item.type !== 3)
   state.menuTreeList = handleTree(tempArr)
@@ -1869,15 +2016,22 @@ const findParent = (childrenId, arr, path) => {
 const assignPermission = async (record) => {
   state.permissionRecord = record
   state.PermissionType = 'edit'
+  //TODO 有空改一下 - - 这里不大合适 需求一直改 这里改了好多次 - -
+  await openPermissionModal(record.id)
   if (record.packageId != null) {
     const res = await getTenantPackage({ id: record.packageId })
     //... res 可能为null
     const { menuIds = [], dirIds = [], id } = res || []
     state.editPermissionID = id
     state.checkedKeys = menuIds
+    console.log('state.menuTreeList', state.menuTreeList)
+    console.log('dirIds', dirIds)
+    console.log('menuIds', menuIds)
     nextTick(() => {
       state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
     })
+    checkedKeysBackNew.value = [...dirIds]
+    console.log('state.selectTree', state.selectTree)
   } else {
     state.selectTree = []
   }
@@ -1887,7 +2041,7 @@ const assignPermission = async (record) => {
     state.isShowRightTree = true
     state.isShowTree = true
   })
-  await openPermissionModal()
+  // await openPermissionModal(record.id)
 }
 
 //表格状态改变 确认modal... 然后才开短信 modal
@@ -1917,11 +2071,13 @@ const setTableStatusChangeInfo = (value, record) => {
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
     state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
+    state.tableStatusChangeInfo['type'] = record?.type === null ? '机构' : '主体'
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
     state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
+    state.tableStatusChangeInfo['type'] = record?.type === null ? '机构' : '主体'
   }
 
   //过滤得到父级项
@@ -1991,15 +2147,24 @@ const statusOk = async () => {
     message.warning('请输入短信验证码')
     return
   }
-
-  const params = {
-    id: state.record.id,
-    code: state.messageCode,
-    status: state.record.statusSwitch === true ? 0 : 1
-  }
-
   try {
-    await updateEditMajorIndividualStatus(params)
+    if (state.record.type === null) {
+      //门店 TODO 短信
+      await updateOrganizationStatus({
+        id: state.record.id,
+        status: state.record.statusSwitch === true ? 0 : 1
+      })
+    } else {
+      //主体
+      const params = {
+        id: state.record.id,
+        code: state.messageCode,
+        status: state.record.statusSwitch === true ? 0 : 1
+      }
+
+      await updateEditMajorIndividualStatus(params)
+    }
+
     message.success('修改状态成功')
     statusCancel()
   } finally {
@@ -2069,6 +2234,12 @@ function getChildArr(data) {
 
 //详情(打开)
 const detailsInfo = async (record) => {
+  if (record?.type === null) {
+    //门店
+    state.record = record
+    state.isShowStoreDetails = true
+    return
+  }
   // state.record = record
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
@@ -2450,7 +2621,30 @@ const getAllType = async () => {
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
 }
 
-getAllType()
+// 新增、修改 主体类型
+const majorIndividualTypeChange = () => {
+  console.log('state.optionalMenuTree', state.optionalMenuTree)
+
+  if (state.formState.majorIndividualType === 'manufacturer') {
+    //  厂家
+    //  厂家 - -只有顶层
+    state.optionalMenuTreeChange = state.optionalMenuList.filter((item) => item.id === 0)
+  } else {
+    //  经销商 - -顶层 跟厂家
+    state.optionalMenuTreeChange = state.optionalMenuList.filter(
+      (item) => item.id === 0 || item.type === 'manufacturer'
+    )
+  }
+
+  state.optionalMenuTreeChange = handleTree(
+    state.optionalMenuTreeChange,
+    'id',
+    'belongTenantId',
+    'children'
+  )
+
+  state.formState.belongTenantId = state.optionalMenuTreeChange[0]?.id
+}
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
 const changeColumn = (columnsObj, isCloseModal = false) => {
@@ -2473,9 +2667,12 @@ state.columns = getColumns(state, PageKeyObj.business, allColumns, state.default
 
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
-  () => [state.checkedKeys, checkedKeysBack.value],
+  () => [state.checkedKeys, checkedKeysBack.value, checkedKeysBackNew.value],
   () => {
-    state.idArr = [...new Set(checkedKeysBack.value.concat(state.checkedKeys))]
+    state.idArr = [
+      ...new Set(checkedKeysBack.value.concat(state.checkedKeys)),
+      ...new Set(checkedKeysBackNew.value)
+    ]
     state.selectTree = filterTree(state.menuTreeList, state.idArr)
     state.isShowRightTree = false
     //右侧展开显示 左侧选中的数据
@@ -2500,6 +2697,11 @@ watch(
     deep: true
   }
 )
+
+onMounted(async () => {
+  await getAllType()
+  await getList()
+})
 </script>
 
 <style lang="scss" scoped>

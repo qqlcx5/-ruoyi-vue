@@ -74,6 +74,7 @@ $messageMap: (
   $fill: map-get($map: $item, $key: fill);
   $fillColor: map-get($map: $item, $key: fillColor);
   .wg-message {
+    z-index: 9999 !important;
     &.el-message--#{$type} {
       border-color: $color;
       background-color: $bgColor;
@@ -83,6 +84,7 @@ $messageMap: (
     }
   }
   .wg-message-plain {
+    z-index: 9999 !important;
     &.el-message--#{$type} {
       border-color: $fillColor;
       background-color: $fill;
@@ -90,6 +92,21 @@ $messageMap: (
         color: $fillColor;
       }
     }
+  }
+}
+
+.wg-dialog {
+  .el-dialog__header {
+    padding: 20px;
+    margin: 0;
+    border-bottom: 1px solid $border-color;
+  }
+  .el-dialog__body {
+    padding: 16px;
+  }
+  .el-dialog__footer {
+    padding: 16px 20px;
+    border-top: 1px solid $border-color;
   }
 }
 

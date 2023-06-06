@@ -131,6 +131,14 @@
         </template>
         <!--  单元格插槽  -->
         <template #bodyCell="{ column, record }">
+          <!--  机构名称  -->
+          <template v-if="column?.key === 'name'">
+            <div class="phone-div-content">
+              <div class="phone-div">{{ record.name }}</div>
+              <div v-if="record?.migrated === 1" class="migrated-tag">已转移 </div>
+            </div>
+          </template>
+
           <!--  员工数  -->
           <template v-if="column?.key === 'employeesNumber'">
             <div class="employees-Number" @click="jumpToMember(record)">{{
@@ -149,14 +157,14 @@
           <!--  状态   -->
           <template v-if="column?.key === 'statusSwitch'">
             <a-switch
-              :disabled="record.level === 1"
+              :disabled="record.level === 1 || record.organizationType === '门店'"
               v-model:checked="record.statusSwitch"
               @change="(value) => setTableStatusChangeInfo(value, record)"
             />
           </template>
           <!--  操作   -->
           <template v-if="column?.key === 'operation'">
-            <div class="operation-content">
+            <div class="operation-content" v-if="record.migrated !== 1">
               <div class="text-color margin-right-5" @click="edit(record)">修改</div>
               <div
                 :class="[
@@ -189,13 +197,33 @@
                     >详情</div
                   >
                   <div
-                    class="text-color margin-right-5"
-                    @click="setTableStatusChangeInfo(false, record, 'delete')"
+                    :class="[
+                      'text-color',
+                      ' margin-right-5',
+                      { 'disable-color': record?.organizationType === '门店' }
+                    ]"
+                    @click="
+                      setTableStatusChangeInfo(
+                        false,
+                        record,
+                        'delete',
+                        record?.organizationType === '门店'
+                      )
+                    "
                     >删除</div
                   >
                 </template>
                 <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
               </a-popover>
+            </div>
+
+            <div class="operation-content" v-else>
+              <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+              <div
+                :class="['text-color', ' margin-right-5']"
+                @click="setTableStatusChangeInfo(false, record, 'delete', false)"
+                >删除</div
+              >
             </div>
           </template>
         </template>
@@ -211,6 +239,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
+    :width="'665px'"
     :bodyStyle="{ height: '520px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
   >
     <div class="base_info_content">
@@ -237,6 +266,7 @@
         <a-form-item
           :label="`机构类型`"
           name="organizationType"
+          v-if="state.record.organizationType !== '门店'"
           :rules="[{ required: true, message: `机构类型不能为空` }]"
         >
           <a-tree-select
@@ -245,7 +275,9 @@
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
             placeholder="请选择机构类型"
-            :tree-data="state.organizationTypeOptions.filter((item) => item.value !== '4')"
+            :tree-data="
+              state.organizationTypeOptions.filter((item) => item.value !== organizationType.store)
+            "
             treeNodeFilterProp="label"
           />
         </a-form-item>
@@ -287,6 +319,25 @@
             :maxlength="10"
             placeholder="请输入机构简称"
           />
+        </a-form-item>
+
+        <!--  级联选择器  - -   -->
+        <a-form-item :label="`地址`" name="detailedAddress">
+          <div class="flex-content adress-content">
+            <a-form-item-rest>
+              <a-cascader
+                v-model:value="state.formState.companyAddress"
+                :options="state.proMunAreaList"
+                @change="cascadeChange"
+                placeholder="请选择省市区"
+              />
+            </a-form-item-rest>
+            <a-input
+              v-model:value="state.formState.detailedAddress"
+              placeholder="请输入详细的公司地址，具体门牌号"
+              class="adress-input"
+            />
+          </div>
         </a-form-item>
 
         <!--        <a-form-item-->
@@ -1078,7 +1129,7 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
+import { SystemMenuTypeEnum, PageKeyObj, organizationType } from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
 import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
@@ -1324,6 +1375,9 @@ const state = reactive({
     name: '', //机构名称
     code: '', //机构编码
     abbreviate: '', //机构简称
+    companyAddress: [], //公司地址
+    cascadeInfo: [], //选中的省市区全部信息
+    detailedAddress: '', //公司地址 详细地址
     contactName: undefined, //负责人
     contactMobile: undefined, //负责人电话
     contactMail: '', //负责人邮箱
@@ -1407,7 +1461,7 @@ const state = reactive({
   ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   detailsRecord: {}, //当前点击的表格record后获取到的机构详情(包括属性)
-  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '4'门店
+  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '3'门店
   memberOptions: [], //新增修改 负责人list
   memberPhoneOptions: [] //新增修改 负责人电话list
 })
@@ -1613,6 +1667,7 @@ const getList = async (isRefresh = false) => {
       item.employeesNumber = item.staffCount
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
+      //item?.migrated 0没迁移 1迁移
     })
 
     state.tableDataArr = res
@@ -1699,6 +1754,9 @@ const closeModal = () => {
     name: '', //机构名称
     code: '', //机构编码
     abbreviate: '', //机构简称
+    companyAddress: [], //公司地址
+    cascadeInfo: [], //选中的省市区全部信息
+    detailedAddress: '', //公司地址 详细地址
     contactName: undefined, //负责人
     contactMobile: undefined, //负责人电话
     contactMail: '', //负责人邮箱
@@ -1706,6 +1764,7 @@ const closeModal = () => {
     status: true //状态
   }
   delete state.formState?.id
+  state.record = {}
   state.modalTitle = '新增'
   state.modalType = 'add'
   state.currentType = '-1' //新增/修改/设置属性 机构类型(门店/分公司)
@@ -1729,6 +1788,7 @@ getTree()
 
 //编辑
 const edit = async (record, isCloseDetails = false) => {
+  console.log('record,', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1738,6 +1798,8 @@ const edit = async (record, isCloseDetails = false) => {
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
+  state.record = record
+  console.log('res', res)
 
   state.modalType = 'edit'
   state.modalTitle = '编辑'
@@ -1749,6 +1811,7 @@ const edit = async (record, isCloseDetails = false) => {
     name: res.name, //机构名称
     code: res.code, //机构编码
     abbreviate: res.abbreviate, //机构简称
+    detailedAddress: res?.address, //地址 详细地址
     // contactName: res.contactName, //负责人
     contactName: res.contactId, //负责人
     contactMobile: res.contactMobile, //负责人电话
@@ -1758,6 +1821,31 @@ const edit = async (record, isCloseDetails = false) => {
   }
   //状态0 开启 1关闭
   state.formState.status = record.status === true
+
+  //省市区
+  state.formState.companyAddress = []
+  state.formState.cascadeInfo = []
+  if (res?.provinceCode) {
+    state.formState.companyAddress.push(res?.provinceCode)
+    state.formState.cascadeInfo.push({
+      label: res?.province,
+      value: res?.provinceCode
+    })
+  }
+  if (res?.cityCode) {
+    state.formState.companyAddress.push(res?.cityCode)
+    state.formState.cascadeInfo.push({
+      label: res?.city,
+      value: res?.cityCode
+    })
+  }
+  if (res?.countyCode) {
+    state.formState.companyAddress.push(res?.countyCode)
+    state.formState.cascadeInfo.push({
+      label: res?.county,
+      value: res?.countyCode
+    })
+  }
 
   openModal()
 }
@@ -1788,6 +1876,7 @@ const addMajorIndividualFN = async () => {
     organizationType: state.formState.organizationType, //机构类型
     name: state.formState.name, //机构名称
     code: state.formState.code, //机构编码
+    address: state.formState.detailedAddress, //公司地址 详细地址
     abbreviate: state.formState.abbreviate, //机构简称
     // contactName: state.formState.contactName, //负责人
     contactId: state.formState.contactName, //负责人
@@ -1805,6 +1894,20 @@ const addMajorIndividualFN = async () => {
     params['status'] = 1
   }
 
+  //省市区
+  if (state.formState?.cascadeInfo[0]) {
+    params['province'] = state.formState.cascadeInfo[0].label
+    params['provinceCode'] = state.formState.cascadeInfo[0].value
+  }
+  if (state.formState?.cascadeInfo[1]) {
+    params['city'] = state.formState.cascadeInfo[1].label
+    params['cityCode'] = state.formState.cascadeInfo[1].value
+  }
+  if (state.formState?.cascadeInfo[2]) {
+    params['county'] = state.formState.cascadeInfo[2].label
+    params['countyCode'] = state.formState.cascadeInfo[2].value
+  }
+
   try {
     let res = []
     if (state.modalType === 'add') {
@@ -1814,8 +1917,8 @@ const addMajorIndividualFN = async () => {
 
       nextTick(() => {
         state.currentType = tempCurrentType
-        // '2'分公司 '4'门店
-        if (state.currentType === '2' || state.currentType === '4') {
+        // '2'分公司 '3'门店
+        if (state.currentType === '2' || state.currentType === organizationType.store) {
           // 配置权限
           openPermissionModal()
         }
@@ -1837,7 +1940,8 @@ const addMajorIndividualFN = async () => {
 
 //级联选择器选中的内容 改变
 const cascadeChange = (value, selectedOptions) => {
-  state.formAttributeState.cascadeInfo = selectedOptions
+  state.formState.cascadeInfo = selectedOptions
+  // state.formAttributeState.cascadeInfo = selectedOptions
 }
 
 //关闭功能配置 modal
@@ -1860,9 +1964,9 @@ const closePermissionModal = () => {
     startRating: 0, //星级
     logoUrl: '', //系统logo
     environmentUrl: '', //环境图片
-    companyAddress: [], //公司地址
-    cascadeInfo: [], //选中的省市区全部信息
-    detailedAddress: '', //公司地址 详细地址
+    // companyAddress: [], //公司地址
+    // cascadeInfo: [], //选中的省市区全部信息
+    // detailedAddress: '', //公司地址 详细地址
     contactInformationArr: [
       {
         contactType: null,
@@ -2015,7 +2119,7 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
       isMaintenance: res?.relVO?.isMaintenance, //是否提供维保
       maintenanceBrand: res?.relVO?.maintenanceBrand, //维保品牌
       startRating: res?.relVO?.startRating, //星级
-      detailedAddress: res?.relVO?.address, //地址 详细地址
+      // detailedAddress: res?.relVO?.address, //地址 详细地址
       // contactInformationArr: res.relVO?.contact, //联系方式 设置属性
       creditCode: res?.relVO?.creditCode, //统一社会信用代码
       // organizationCode: res.relVO?.organizationCode, //组织机构代码
@@ -2088,30 +2192,30 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
     //状态0 开启 1关闭
     state.formAttributeState.status = res?.status === 0
 
-    //省市区
-    state.formAttributeState.companyAddress = []
-    state.formAttributeState.cascadeInfo = []
-    if (res?.relVO?.provinceCode) {
-      state.formAttributeState.companyAddress.push(res?.relVO?.provinceCode)
-      state.formAttributeState.cascadeInfo.push({
-        label: res?.relVO?.province,
-        value: res?.relVO?.provinceCode
-      })
-    }
-    if (res?.relVO?.cityCode) {
-      state.formAttributeState.companyAddress.push(res?.relVO?.cityCode)
-      state.formAttributeState.cascadeInfo.push({
-        label: res?.relVO?.city,
-        value: res?.relVO?.cityCode
-      })
-    }
-    if (res?.relVO?.countyCode) {
-      state.formAttributeState.companyAddress.push(res?.relVO?.countyCode)
-      state.formAttributeState.cascadeInfo.push({
-        label: res?.relVO?.county,
-        value: res?.relVO?.countyCode
-      })
-    }
+    // //省市区
+    // state.formAttributeState.companyAddress = []
+    // state.formAttributeState.cascadeInfo = []
+    // if (res?.relVO?.provinceCode) {
+    //   state.formAttributeState.companyAddress.push(res?.relVO?.provinceCode)
+    //   state.formAttributeState.cascadeInfo.push({
+    //     label: res?.relVO?.province,
+    //     value: res?.relVO?.provinceCode
+    //   })
+    // }
+    // if (res?.relVO?.cityCode) {
+    //   state.formAttributeState.companyAddress.push(res?.relVO?.cityCode)
+    //   state.formAttributeState.cascadeInfo.push({
+    //     label: res?.relVO?.city,
+    //     value: res?.relVO?.cityCode
+    //   })
+    // }
+    // if (res?.relVO?.countyCode) {
+    //   state.formAttributeState.companyAddress.push(res?.relVO?.countyCode)
+    //   state.formAttributeState.cascadeInfo.push({
+    //     label: res?.relVO?.county,
+    //     value: res?.relVO?.countyCode
+    //   })
+    // }
   }
 
   await openPermissionModal()
@@ -2130,16 +2234,19 @@ const closeStatusModal = () => {
 }
 
 //表格状态开关
-const setTableStatusChangeInfo = async (value, record, type = 'switch') => {
+const setTableStatusChangeInfo = async (value, record, type = 'switch', disabled = false) => {
+  if (disabled) {
+    return
+  }
   console.log(' record', record)
   const tempItem = state.tableDataArr.find((item) => item.id === record.parentId)
-  if (tempItem.statusSwitch === false) {
+  if (tempItem?.statusSwitch === false) {
     record.statusSwitch = false
     return message.warning(
       `该机构的上级主体【${tempItem.name}】为关闭状态，请先开启【${tempItem.name}】才可开启该状态`
     )
   }
-  console.log('tempItem ', tempItem)
+
   const res = await getActiveEmployeesNumber({ id: record.id })
   // const res = 25
 
@@ -2218,6 +2325,8 @@ const detailsInfo = async (record) => {
   //获取机构详情
   const res = await getOrganizationDetails({ id: record.id })
   const { relVO = {} } = res
+  console.log('record', record)
+  console.log('res', res)
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
@@ -2244,7 +2353,7 @@ const detailsInfo = async (record) => {
         tempArrTypeString = tempArrTypeString + '、' + item.label
       }
     })
-  } else if (res.organizationType === '4') {
+  } else if (res.organizationType === organizationType.store) {
     //门店
     const tempArrTypeF = state.storeTypeOptions.filter((topItem) => {
       return relVO?.type.some((item) => topItem.value === item)
@@ -2305,13 +2414,22 @@ const detailsInfo = async (record) => {
     }
   })
 
+  // //地址
+  // let companyAddress = ''
+  // if (res.relVO?.province) {
+  //   companyAddress = res.relVO?.province + res.relVO?.city + res.relVO?.county
+  // }
+  // if (res.relVO?.address) {
+  //   companyAddress += res.relVO?.address
+  // }
+
   //地址
   let companyAddress = ''
-  if (res.relVO?.province) {
-    companyAddress = res.relVO?.province + res.relVO?.city + res.relVO?.county
+  if (res?.province) {
+    companyAddress = res?.province + res?.city + res?.county
   }
-  if (res.relVO?.address) {
-    companyAddress += res.relVO?.address
+  if (res?.address) {
+    companyAddress += res?.address
   }
 
   //联系方式
@@ -2350,6 +2468,11 @@ const detailsInfo = async (record) => {
         {
           textSpan: '机构简称：',
           text: res.abbreviate
+        },
+        {
+          textSpan: '门店地址：',
+          text: companyAddress,
+          isFull: true
         },
         {
           textSpan: '负责人：',
@@ -2427,11 +2550,11 @@ const detailsInfo = async (record) => {
           text: '暂无上传图片',
           imgUrl: res.relVO?.environmentUrl
         },
-        {
-          textSpan: '门店地址：',
-          text: companyAddress,
-          isFull: true
-        },
+        // {
+        //   textSpan: '门店地址：',
+        //   text: companyAddress,
+        //   isFull: true
+        // },
 
         {
           textSpan: '门店联系方式：',
@@ -3242,6 +3365,26 @@ watch(
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+}
+.phone-div-content {
+  display: flex;
+  margin-bottom: 10px;
+}
+.phone-div {
+  margin-right: 5px;
+}
+.migrated-tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 52px;
+  height: 22px;
+  border-radius: 4px;
+  background-color: rgba(255, 65, 65, 0.05);
+  color: rgba(255, 65, 65, 1);
+  font-size: 12px;
+  text-align: right;
+  font-family: PingFangSC-Regular;
 }
 </style>
 

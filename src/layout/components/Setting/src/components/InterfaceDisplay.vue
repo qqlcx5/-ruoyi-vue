@@ -13,23 +13,25 @@
           <el-checkbox
             v-model="checkValue"
             size="large"
-            disabled
+            :disabled="!canEditWatermark"
             :label="item.label"
-            @change="waterCheckboxChang"
+            @change="handleUpdateWatermark"
           />
           <ElInput
             :placeholder="t('common.inputText')"
             v-model="water"
-            input-style="height: 30px; margin: 0 10px;"
-            class="w-30 right-1"
+            class="w-30 right-1 ml-8px"
             :disabled="!canEditWatermark"
           >
-            <template #suffix v-if="canEditWatermark">
-              <i
-                class="iconfont icon-chenggong cursor-pointer"
-                :style="{ color: 'var(--el-color-primary)' }"
-                @click="handleUpdateWatermark"
-              ></i>
+            <!--            <template #suffix v-if="canEditWatermark">-->
+            <!--              <i-->
+            <!--                class="iconfont icon-chenggong cursor-pointer"-->
+            <!--                :style="{ color: 'var(&#45;&#45;el-color-primary)' }"-->
+            <!--                @click="handleUpdateWatermark"-->
+            <!--              ></i>-->
+            <!--            </template>-->
+            <template #append v-if="canEditWatermark">
+              <el-button class="!px-6px" @click="handleUpdateWatermark">保存</el-button>
             </template>
           </ElInput>
         </div>
@@ -61,7 +63,7 @@ const canEditWatermark = computed(() => {
 
 const water = ref(userStore.getTenant.watermark || '')
 //水印复选框
-const checkValue = ref(true)
+const checkValue = ref(userStore.getTenant.watermarkVisible === 0)
 
 // 面包屑
 const breadcrumb = ref(appStore.getBreadcrumb)
@@ -170,11 +172,6 @@ const fixedMenuChange = (show: boolean) => {
   appStore.setFixedMenu(show)
 }
 
-//水印复选框改变
-const waterCheckboxChang = () => {
-  setWater()
-}
-
 // 设置水印
 const setWater = () => {
   //选中 有值 水印
@@ -182,7 +179,7 @@ const setWater = () => {
   if (checkValue.value && water.value !== undefined) {
     setWatermark(water.value)
   } else {
-    setWatermark('')
+    setWatermark(undefined)
   }
 }
 
@@ -190,7 +187,8 @@ const loading = ref(false)
 // 更新水印
 const handleUpdateWatermark = async () => {
   loading.value = true
-  await updateWatermark({ watermark: water.value })
+
+  await updateWatermark({ watermark: water.value, watermarkVisible: checkValue.value ? 0 : 1 })
     .then((res) => {
       if (!res) return messageBox.error('更新水印失败')
       messageBox.success('更新水印成功')
@@ -198,7 +196,7 @@ const handleUpdateWatermark = async () => {
       if (checkValue.value && water.value !== undefined) {
         setWatermark(water.value)
       } else {
-        setWatermark('')
+        setWatermark(undefined)
       }
     })
     .finally(() => {

@@ -61,7 +61,7 @@ import { setupColorPicker } from '@/plugins/colorpicker/idnex'
 
 //先全局引入吧有空再改 antdV
 import Antd from 'ant-design-vue'
-import 'ant-design-vue/dist/antd.css'
+import 'ant-design-vue/dist/antd.variable.min.css'
 
 // 本地开发模式 全局引入 element-plus 样式，加快第一次进入速度
 if (isDevMode() == true) {

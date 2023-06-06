@@ -19,34 +19,36 @@
       >
         <a-tabs v-model:activeKey="state.activeKey">
           <a-tab-pane key="basicInformation" tab="基础信息">
-            <a-form-item :label="`上级机构`" name="parentId">
+            <a-form-item :label="`上级主体`" name="parentId">
               <a-tree-select
-                v-model:value="state.formState.parentId"
+                v-model:value="state.formState.belongTenantId"
+                :disabled="state.modalType === 'edit'"
                 show-search
                 style="width: 100%"
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                placeholder="请选择上级机构"
-                :tree-data="state.optionalMenuTree"
+                placeholder="请选择上级目录"
+                :tree-data="state.majorIndividualOption"
                 :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
                 treeNodeFilterProp="name"
               />
             </a-form-item>
 
-            <a-form-item
-              :label="`机构类型`"
-              name="organizationType"
-              :rules="[{ required: true, message: `机构类型不能为空` }]"
-            >
-              <a-tree-select
-                v-model:value="state.formState.organizationType"
-                show-search
-                style="width: 100%"
-                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                placeholder="请选择机构类型"
-                :tree-data="state.organizationTypeOptions"
-                treeNodeFilterProp="label"
-              />
-            </a-form-item>
+            <!--            <a-form-item-->
+            <!--              :label="`机构类型`"-->
+            <!--              name="organizationType"-->
+            <!--              :rules="[{ required: true, message: `机构类型不能为空` }]"-->
+            <!--            >-->
+            <!--              <a-tree-select-->
+            <!--                v-model:value="state.formState.organizationType"-->
+            <!--                :disabled="true"-->
+            <!--                show-search-->
+            <!--                style="width: 100%"-->
+            <!--                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"-->
+            <!--                placeholder="请选择机构类型"-->
+            <!--                :tree-data="state.organizationTypeOptions"-->
+            <!--                treeNodeFilterProp="label"-->
+            <!--              />-->
+            <!--            </a-form-item>-->
 
             <a-form-item
               :label="`机构名称`"
@@ -55,6 +57,7 @@
             >
               <a-input
                 v-model:value="state.formState.name"
+                @change="nameChange"
                 show-count
                 :maxlength="20"
                 placeholder="请输入机构名称"
@@ -90,6 +93,45 @@
               />
             </a-form-item>
 
+            <a-form-item
+              :label="`品牌`"
+              name="brand"
+              :rules="[{ required: true, message: '品牌不能为空!' }]"
+            >
+              <a-tree-select
+                v-model:value="state.formState.brand"
+                style="width: 100%"
+                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                placeholder="请选择品牌，可多选"
+                multiple
+                :tree-data="state.barnOptions"
+              />
+            </a-form-item>
+
+            <!--  级联选择器  - -   -->
+            <a-form-item
+              :label="`地址`"
+              name="detailedAddress"
+              :rules="[{ required: true, message: '地址不能为空!' }]"
+            >
+              <div class="flex-content adress-content">
+                <a-form-item-rest>
+                  <a-cascader
+                    v-model:value="state.formState.companyAddress"
+                    :options="state.proMunAreaList"
+                    @change="cascadeChange"
+                    placeholder="请选择省市区"
+                    class="adress-cascader"
+                  />
+                </a-form-item-rest>
+                <a-input
+                  v-model:value="state.formState.detailedAddress"
+                  placeholder="请输入详细的公司地址，具体门牌号"
+                  class="adress-input"
+                />
+              </div>
+            </a-form-item>
+
             <a-form-item :label="`负责人`" name="contactName">
               <a-tree-select
                 v-model:value="state.formState.contactName"
@@ -115,7 +157,7 @@
             </a-form-item>
 
             <a-form-item label="负责人邮箱" name="contactMail" :rules="state.contactMailRules">
-              <a-input v-model:value="state.formState.contactMail" placeholder="请输入邮箱" />
+              <a-input v-model:value="state.formState.contactMail" placeholder="请输入负责人邮箱" />
             </a-form-item>
 
             <a-form-item label="排序" name="sort" :rules="[{ required: true, message: '排序!' }]">
@@ -155,30 +197,20 @@
                 >
               </a-radio-group>
             </a-form-item>
-            <a-form-item
-              label="门店类型"
-              :rules="[{ required: true, message: `门店类型不能为空` }]"
-              v-else
-            >
+            <a-form-item label="门店类型" v-else>
               <a-checkbox-group v-model:value="state.formState.type">
                 <a-checkbox
                   v-for="(item, index) in state.storeTypeOptions"
                   :value="item.value"
                   :key="`type${index}`"
                   name="type"
-                  :rules="[{ required: true, message: '门店类型不能为空!' }]"
                   >{{ item.label }}</a-checkbox
                 >
               </a-checkbox-group>
             </a-form-item>
 
             <div class="form-content">
-              <a-form-item
-                label="是否有销售"
-                name="isSale"
-                class="width-50"
-                :rules="[{ required: true, message: `是否有销售不能为空` }]"
-              >
+              <a-form-item label="是否有销售" name="isSale" class="width-50">
                 <a-radio-group v-model:value="state.formState.isSale">
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
@@ -207,12 +239,7 @@
               </a-form-item>
             </div>
             <div class="form-content">
-              <a-form-item
-                label="是否提供救援"
-                name="isRescue"
-                class="width-50"
-                :rules="[{ required: true, message: `是否提供救援不能为空` }]"
-              >
+              <a-form-item label="是否提供救援" name="isRescue" class="width-50">
                 <a-radio-group v-model:value="state.formState.isRescue">
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
@@ -241,12 +268,7 @@
               </a-form-item>
             </div>
             <div class="form-content">
-              <a-form-item
-                label="是否提供维保"
-                name="isMaintenance"
-                class="width-50"
-                :rules="[{ required: true, message: `是否提供维保不能为空` }]"
-              >
+              <a-form-item label="是否提供维保" name="isMaintenance" class="width-50">
                 <a-radio-group v-model:value="state.formState.isMaintenance">
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
@@ -344,25 +366,6 @@
               </div>
             </a-form-item>
 
-            <!--  级联选择器  - -   -->
-            <a-form-item :label="`地址`" name="detailedAddress">
-              <div class="flex-content adress-content">
-                <a-form-item-rest>
-                  <a-cascader
-                    v-model:value="state.formState.companyAddress"
-                    :options="state.proMunAreaList"
-                    @change="cascadeChange"
-                    placeholder="请选择省市区"
-                  />
-                </a-form-item-rest>
-                <a-input
-                  v-model:value="state.formState.detailedAddress"
-                  placeholder="请输入详细的公司地址，具体门牌号"
-                  class="adress-input"
-                />
-              </div>
-            </a-form-item>
-
             <a-space
               v-for="(item, index) in state.formState.contactInformationArr"
               :key="item.id"
@@ -402,18 +405,6 @@
                 @click="removeContactInformation(item)"
               />
             </a-space>
-
-            <a-form-item
-              label="状态"
-              name="status"
-              :rules="[{ required: true, message: '状态不能为空!' }]"
-            >
-              <a-switch
-                v-model:checked="state.formState.status"
-                checked-children="开启"
-                un-checked-children="关闭"
-              />
-            </a-form-item>
 
             <div class="title-content"><div class="blue-line"></div> 详细属性 </div>
             <a-form-item :label="`统一社会信用代码`" name="creditCode">
@@ -516,267 +507,149 @@
             </a-form-item>
           </a-tab-pane>
           <a-tab-pane key="advancedAttribute" tab="高级属性">
-
             <div class="title-content"><div class="blue-line"></div> 试运营信息 </div>
 
-            <a-form-item :label="`公司名称`" name="creditCode">
+            <a-form-item :label="`公司名称`" name="trialOperationCompanyName">
               <a-input
-                v-model:value="state.formState.creditCode"
-                placeholder="请输入统一社会信用代码"
+                v-model:value="state.formState.trialOperationCompanyName"
+                placeholder="请输入公司名称"
+                @change="trialOperationCompanyNameChange"
               />
             </a-form-item>
 
-            <a-form-item :label="`统一社会信用代码`" name="creditCode">
+            <a-form-item :label="`门店地址`" name="trialOperationStoreAddress">
               <a-input
-                v-model:value="state.formState.creditCode"
-                placeholder="请输入统一社会信用代码"
+                v-model:value="state.formState.trialOperationStoreAddress"
+                @change="trialOperationStoreAddressChange"
+                placeholder="请输入门店地址"
               />
             </a-form-item>
 
-            <a-form-item :label="`统一社会信用代码`" name="creditCode">
+            <a-form-item :label="`门店级别`" name="trialOperationStoreLevel">
               <a-input
-                v-model:value="state.formState.creditCode"
-                placeholder="请输入统一社会信用代码"
+                v-model:value="state.formState.trialOperationStoreLevel"
+                @change="trialOperationStoreLevelChange"
+                placeholder="请输入门店级别"
               />
             </a-form-item>
 
-            <a-form-item label="系统logo" name="logoUrl">
-              <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.logoListUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'logo')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'logo')
-                    }
-                  "
-                >
-                  <div v-if="state.logoListUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传logo</div>
-                  </div>
-                </a-upload>
-                <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
-              </div>
-            </a-form-item>
-
-            <a-form-item label="环境图片" name="environmentUrl">
-              <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.environmentUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif , .jpeg"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'environment')"
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'environment')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'legalPerson')
-                    }
-                  "
-                >
-                  <div v-if="state.environmentUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传环境图片</div>
-                  </div>
-                </a-upload>
-
-                <div class="upload-text"> 尺寸1125*633px，支持jpg/jpeg/png/gif格式，不超过5M </div>
-              </div>
-            </a-form-item>
-
-            <!--  级联选择器  - -   -->
-            <a-form-item :label="`地址`" name="detailedAddress">
-              <div class="flex-content adress-content">
-                <a-form-item-rest>
-                  <a-cascader
-                    v-model:value="state.formState.companyAddress"
-                    :options="state.proMunAreaList"
-                    @change="cascadeChange"
-                    placeholder="请选择省市区"
-                  />
-                </a-form-item-rest>
-                <a-input
-                  v-model:value="state.formState.detailedAddress"
-                  placeholder="请输入详细的公司地址，具体门牌号"
-                  class="adress-input"
-                />
-              </div>
-            </a-form-item>
-
-            <a-space
-              v-for="(item, index) in state.formState.contactInformationArr"
-              :key="item.id"
-              style="display: flex; margin-bottom: 0px"
-              align="baseline"
-            >
-              <a-form-item :name="['contactInformationArr', index, 'mobile']" label="联系方式">
-                <a-select
-                  v-model:value="item.contactType"
-                  placeholder="请选择联系方式"
-                  style="width: 200px"
-                  :options="state.contactInformationOptions"
-                />
-              </a-form-item>
-              <a-form-item
-                :name="['contactInformationArr', index, 'mobile']"
-                :rules="[{ validator: numValidator }]"
-              >
-                <a-input
-                  v-model:value="item.mobile"
-                  placeholder="请输入联系电话"
-                  style="width: 130px"
-                />
-              </a-form-item>
-
-              <Icon
-                icon="svg-icon:add-circle"
-                class="add-circle"
-                :size="20"
-                @click="addContactInformation()"
-              />
-              <Icon
-                v-if="state.formState.contactInformationArr?.length > 1"
-                icon="svg-icon:reduce-circle"
-                class="add-circle"
-                :size="20"
-                @click="removeContactInformation(item)"
-              />
-            </a-space>
-
-            <a-form-item
-              label="状态"
-              name="status"
-              :rules="[{ required: true, message: '状态不能为空!' }]"
-            >
-              <a-switch
-                v-model:checked="state.formState.status"
-                checked-children="开启"
-                un-checked-children="关闭"
-              />
-            </a-form-item>
-
-            <div class="title-content"><div class="blue-line"></div> 详细属性 </div>
-            <a-form-item :label="`统一社会信用代码`" name="creditCode">
-              <a-input
-                v-model:value="state.formState.creditCode"
-                placeholder="请输入统一社会信用代码"
-              />
-            </a-form-item>
-
-            <a-form-item :label="`法定代表人`" name="legalRepresentative">
-              <a-input
-                v-model:value="state.formState.legalRepresentative"
-                placeholder="请输入法定代表人姓名"
-              />
-            </a-form-item>
-
-            <a-form-item label="法人电话" name="legalMobile" :rules="state.legalMobileRules">
-              <a-input
-                v-model:value="state.formState.legalMobile"
-                placeholder="请输入法人联系电话"
-              />
-            </a-form-item>
-
-            <a-form-item :label="`成立日期`" name="establishDate">
+            <a-form-item :label="`试运营时间`" name="trialOperationTime">
               <a-date-picker
-                v-model:value="state.formState.establishDate"
+                v-model:value="state.formState.trialOperationTime"
                 format="YYYY/MM/DD"
                 placeholder="请选择时间"
               />
             </a-form-item>
 
-            <a-form-item label="法人身份证" name="legalIdentityUrl">
+            <a-form-item label="通知函" name="noticeLetter">
               <div style="height: 131px">
                 <a-upload
-                  v-model:file-list="state.legalPersonListUrl"
+                  v-model:file-list="state.noticeLetterUrl"
                   :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
                   @preview="handlePreview"
                   accept=".jpg, .png, .gif"
                   class="avatar-uploader"
                   :show-upload-list="true"
                   :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
+                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'noticeLetter')"
                   @change="
                     (file, fileList) => {
-                      handleChange(file, fileList, 'legalPerson')
+                      handleChange(file, fileList, 'noticeLetter')
                     }
                   "
                   @remove="
                     (file) => {
-                      removeImg(file, 'legalPerson')
+                      removeImg(file, 'noticeLetter')
                     }
                   "
                 >
-                  <div v-if="state.legalPersonListUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传法人证件</div>
-                  </div>
+                  <a-button> 上传文件 </a-button>
                 </a-upload>
-
-                <div class="upload-text">
-                  请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
-                </div>
+                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg</div>
               </div>
             </a-form-item>
 
-            <a-form-item label="营业执照" name="businessLicenseUrl">
+            <div class="title-content"><div class="blue-line"></div> 验收信息 </div>
+            <a-form-item :label="`公司名称`" name="creditCode">
+              <a-input
+                v-model:value="state.formState.acceptanceCompanyName"
+                placeholder="请输入公司名称"
+              />
+            </a-form-item>
+
+            <a-form-item :label="`门店地址`" name="acceptanceAddress">
+              <a-input
+                v-model:value="state.formState.acceptanceAddress"
+                placeholder="请输入门店地址"
+              />
+            </a-form-item>
+
+            <a-form-item label="门店级别" name="acceptanceStoreLevel">
+              <a-input
+                v-model:value="state.formState.acceptanceStoreLevel"
+                placeholder="请输入门店级别"
+              />
+            </a-form-item>
+
+            <a-form-item label="店面验收评分" name="acceptanceStoreLevel">
+              <a-input
+                v-model:value="state.formState.storeScore"
+                placeholder="请输入店面验收评分"
+              />
+            </a-form-item>
+
+            <a-form-item label="建店补偿金额" name="compensateAmount">
+              <a-input
+                v-model:value="state.formState.compensateAmount"
+                placeholder="请输入建店补偿金额"
+              />
+            </a-form-item>
+
+            <a-form-item label="规定运营年限" name="operationDeadline">
+              <a-input
+                v-model:value="state.formState.operationDeadline"
+                placeholder="请输入规定运营年限"
+              />
+            </a-form-item>
+
+            <a-form-item :label="`验收通过时间`" name="acceptanceTime">
+              <a-date-picker
+                v-model:value="state.formState.acceptanceTime"
+                format="YYYY/MM/DD"
+                placeholder="请选择时间"
+              />
+            </a-form-item>
+
+            <a-form-item label="告知函" name="legalIdentityUrl">
               <div style="height: 131px">
                 <a-upload
-                  v-model:file-list="state.businessLicenseListUrl"
+                  v-model:file-list="state.notificationLetterUrl"
                   :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
                   @preview="handlePreview"
                   accept=".jpg, .png, .gif"
                   class="avatar-uploader"
                   :show-upload-list="true"
                   :headers="uploadHeaders"
                   :before-upload="
-                    (file, fileList) => beforeUpload(file, fileList, 'businessLicense')
+                    (file, fileList) => beforeUpload(file, fileList, 'notificationLetter')
                   "
                   @change="
                     (file, fileList) => {
-                      handleChange(file, fileList, 'businessLicense')
+                      handleChange(file, fileList, 'notificationLetter')
                     }
                   "
                   @remove="
                     (file) => {
-                      removeImg(file, 'businessLicense')
+                      removeImg(file, 'notificationLetter')
                     }
                   "
                 >
-                  <div v-if="state.businessLicenseListUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传营业执照</div>
-                  </div>
+                  <a-button> 上传文件 </a-button>
                 </a-upload>
 
-                <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
+                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg </div>
               </div>
             </a-form-item>
-
-
           </a-tab-pane>
         </a-tabs>
       </a-form>
@@ -788,7 +661,8 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >{{ state.modalType === 'add' ? '下一步' : '确认' }}</a-button
+      >
+        确认</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -817,14 +691,39 @@
 import { reactive } from 'vue'
 import {
   addOrganization,
+  addOrganizationStore,
+  getOrganizationDetails,
+  getOrganizationStoreDetails,
   getOrganizationTypeList,
-  updateOrganization
+  updateOrganization,
+  updateOrganizationStore
 } from '@/api/system/organization'
 import { getMemberAllList, getMemberPhoneList } from '@/api/system/member'
-import { reconstructionArrayObject } from '@/utils/utils'
+import { reconstructedTreeData, reconstructionArrayObject } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
-import {message, Upload, UploadChangeParam, UploadProps} from 'ant-design-vue'
-import {getAccessToken, getTenantId} from "@/utils/auth";
+import { message, Upload, UploadChangeParam, UploadProps } from 'ant-design-vue'
+import { getAccessToken, getTenantId } from '@/utils/auth'
+import { provincesMunicipalitiesArea } from '@/constant/pr'
+import { getSimpleTenantList } from '@/api/system/business'
+import { handleTree } from '@/utils/tree'
+import { organizationType } from '@/utils/constants'
+import dayjs from 'dayjs'
+
+interface Props {
+  tabsActiveKey?: string
+  belongTenantId?: string
+  editRecord?: object
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tabsActiveKey: 'basicInformation',
+  belongTenantId: '0',
+  editRecord: {}
+})
+
+const emit = defineEmits<{
+  (e: 'closeStore', key: boolean): void
+}>()
 
 //手机号码正则校验 -  简单校验没有全按国内的号码段来  -
 const isValidPhoneNumber = (phoneNumber) => {
@@ -938,15 +837,20 @@ const layout = {
 
 const formRef = ref()
 const state = reactive({
-  activeKey: 'advancedAttribute',
+  activeKey: 'basicInformation',
+  modalType: 'add',
+  addEditLoading: false,
   isShow: true, //新增编辑modal
   modalTitle: '新增门店', //modal title
+  barnOptions: [],
   formState: {
+    belongTenantId: props.belongTenantId || null, //上级主体
     parentId: 0, //上级机构ID
-    organizationType: undefined, //机构类型
+    organizationType: organizationType.store, //机构类型
     name: '', //机构名称
     code: '', //机构编码
     abbreviate: '', //机构简称
+    brand: [], //品牌
     contactName: undefined, //负责人
     contactMobile: undefined, //负责人电话
     contactMail: '', //负责人邮箱
@@ -982,11 +886,23 @@ const state = reactive({
     establishDate: '', //成立日期
     businessLicenseUrl: '', //营业执照
 
-
+    trialOperationCompanyName: '', //公司名称
+    trialOperationStoreAddress: '', //门店地址
+    trialOperationStoreLevel: '', //门店级别
+    trialOperationTime: null, //试运营时间
+    acceptanceCompanyName: '', //验收信息 公司名称
+    acceptanceAddress: '', //验收信息 门店地址
+    acceptanceStoreLevel: '', //验收信息 门店级别
+    storeScore: '', //验收信息 店面验收评分
+    compensateAmount: '', //验收信息 建店补偿金额
+    operationDeadline: '', //验收信息  规定运营年限
+    acceptanceTime: null //验收通过时间
   }, //新增表单
+  proMunAreaList: [], //省市区数据
   optionalMenuTree: [], //上级机构 treeList
   organizationTypeOptions: [], //机构类型列表
   branchCompanyTypeOptions: [], //分公司类型列表
+  majorIndividualOption: [], //上级主体
   memberOptions: [], //新增修改 负责人list
   memberPhoneOptions: [], //新增修改 负责人电话list
   barndOptions: [
@@ -1001,7 +917,13 @@ const state = reactive({
   businessLicenseSuccess: '', //营业执照 新增编辑入参
   environmentUrl: [], //环境图片 上传回显
   environmentSuccess: '', //环境图片 新增编辑入参
+  noticeLetterUrl: [], //通知函 上传回显
+  noticeLetterSuccess: [], //通知函 新增编辑入参
+  notificationLetterUrl: [], //告知函 上传回显
+  notificationLetterSuccess: [], //告知函 新增编辑入参
   legalMobileRules: [{ validator: legalMobileValidator }],
+  contactMobileRules: [{ validator: contactMobileValidator }],
+  contactMailRules: [{ validator: contactMailRulesValidator }]
 })
 
 const loading = ref<boolean>(false)
@@ -1017,26 +939,7 @@ const uploadHeaders = ref({
 
 //关闭Modal
 const closeModal = () => {
-  state.isShow = false
-  formRef.value.resetFields()
-  //级联选择器 需要单独清空
-  state.formState.companyAddress = []
-  state.formState = {
-    parentId: 0, //上级机构ID
-    organizationType: undefined, //机构类型
-    name: '', //机构名称
-    code: '', //机构编码
-    abbreviate: '', //机构简称
-    contactName: undefined, //负责人
-    contactMobile: undefined, //负责人电话
-    contactMail: '', //负责人邮箱
-    sort: 0, //排序
-    status: true //状态
-  }
-  delete state.formState?.id
-  state.modalTitle = '新增'
-  state.modalType = 'add'
-  state.currentType = '-1' //新增/修改/设置属性 机构类型(门店/分公司)
+  emit('closeStore', false)
 }
 
 const getPhoneList = async (value) => {
@@ -1055,23 +958,77 @@ const getPhoneList = async (value) => {
 
 //新增机构
 const addMajorIndividualFN = async () => {
+  console.log('state.noticeLetterUrl', state.noticeLetterUrl)
   // 校验表单
   if (!formRef) return
   const valid = await formRef.value.validate()
   state.addEditLoading = true
+  const tempNoticeLetter = []
+  const tempNotificationLetter = []
+
+  state.noticeLetterSuccess.map((item) => {
+    tempNoticeLetter.push({
+      fileName: item.fileName,
+      fileUrl: item.fileUrl //通知函
+    })
+  })
+
+  state.notificationLetterSuccess.map((item) => {
+    tempNotificationLetter.push({
+      fileName: item.fileName,
+      fileUrl: item.fileUrl //告知函
+    })
+  })
+
   let params = {
-    parentId: state.formState.parentId, //上级机构
-    organizationType: state.formState.organizationType, //机构类型
+    tenantId: state.formState.belongTenantId, //上级主体
+    parentId: '0', //上级机构
+    // organizationType: state.formState.organizationType, //机构类型
+    organizationType: organizationType.store, //机构类型 门店
     name: state.formState.name, //机构名称
     code: state.formState.code, //机构编码
     abbreviate: state.formState.abbreviate, //机构简称
-    // contactName: state.formState.contactName, //负责人
+    brandIds: state.formState.brand, //品牌
+    address: state.formState.detailedAddress, //公司地址 详细地址
     contactId: state.formState.contactName, //负责人
     contactMobile: state.formState.contactMobile, //负责人电话
-    // contactMobile: state.formState.contactMobile, //负责人电话
     contactMail: state.formState.contactMail, //负责人邮箱
     sort: state.formState.sort, //排序
-    status: state.formState.status //状态
+    status: state.formState.status, //状态
+
+    organizationRel: {
+      type: state.formState.type, //分公司类型
+      isSale: state.formState.isSale, //是否有销售
+      saleBrand: state.formState.isSale === 0 ? state.formState.saleBrand : [], //销售品牌
+      isRescue: state.formState.isRescue, //是否提供救援
+      rescueBrand: state.formState.isRescue === 0 ? state.formState.rescueBrand : [], //救援品牌
+      isMaintenance: state.formState.isMaintenance, //是否提供维保
+      maintenanceBrand: state.formState.isMaintenance === 0 ? state.formState.maintenanceBrand : [], //维保品牌
+      startRating: state.formState.startRating, //星级
+      logoUrl: state.logoUrlSuccess, //系统logo
+      environmentUrl: state.environmentSuccess, //环境图片
+      contact: state.formState.contactInformationArr, //联系方式 设置属性
+      creditCode: state.formState.creditCode, //统一社会信用代码
+      legalRepresentative: state.formState.legalRepresentative, //法定代表人
+      legalMobile: state.formState.legalMobile, //法人联系电话
+      legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
+      businessLicenseUrl: state.businessLicenseSuccess, //营业执照
+
+      trialOperationCompanyName: state.formState.trialOperationCompanyName, //试运营公司名称
+      trialOperationStoreAddress: state.formState.trialOperationStoreAddress, //门店地址
+      trialOperationStoreLevel: state.formState.trialOperationStoreLevel, //门店级别
+      // trialOperationTime: state.formState.trialOperationTime, //试运营时间
+      companyName: state.formState.acceptanceCompanyName, //验收信息 公司名称
+      companyAddress: state.formState.acceptanceAddress, //验收信息 门店地址
+      storeLevel: state.formState.acceptanceStoreLevel, //验收信息 门店级别
+      storeScore: state.formState.storeScore, //验收信息 店面验收评分
+      compensateAmount: state.formState.compensateAmount, //验收信息 建店补偿金额
+      operationDeadline: state.formState.operationDeadline, //验收信息 规定运营年限
+      // acceptanceTime: state.formState.acceptanceTime //验收信息 验收通过时间
+
+      noticeLetters: tempNoticeLetter, //通知函
+      notificationLetters: tempNotificationLetter //告知函
+    }
   }
 
   //状态0 开启 1关闭
@@ -1081,31 +1038,49 @@ const addMajorIndividualFN = async () => {
     params['status'] = 1
   }
 
-  try {
-    let res = []
-    if (state.modalType === 'add') {
-      res = await addOrganization(params)
-      state.addSuccessId = res
-      const tempCurrentType = cloneDeep(state.formState.organizationType)
+  //省市区
+  if (state.formState?.cascadeInfo[0]) {
+    params['province'] = state.formState.cascadeInfo[0].label
+    params['provinceCode'] = state.formState.cascadeInfo[0].value
+  }
+  if (state.formState?.cascadeInfo[1]) {
+    params['city'] = state.formState.cascadeInfo[1].label
+    params['cityCode'] = state.formState.cascadeInfo[1].value
+  }
+  if (state.formState?.cascadeInfo[2]) {
+    params['county'] = state.formState.cascadeInfo[2].label
+    params['countyCode'] = state.formState.cascadeInfo[2].value
+  }
 
-      nextTick(() => {
-        state.currentType = tempCurrentType
-        // '2'分公司 '4'门店
-        if (state.currentType === '2' || state.currentType === '4') {
-          // 配置权限
-          openPermissionModal()
-        }
-      })
+  if (state.formState.establishDate) {
+    params['establishDate'] = state.formState.establishDate?.format('YYYY-MM-DD') //成立日期
+  }
+
+  if (state.formState.trialOperationTime) {
+    params['trialOperationTime'] = state.formState.trialOperationTime.format('YYYY-MM-DD') //试运营时间
+  }
+
+  if (state.formState.acceptanceTime) {
+    params['acceptanceTime'] = state.formState.acceptanceTime?.format('YYYY-MM-DD') //验收通过时间
+  }
+
+  try {
+    if (state.modalType === 'add') {
+      // await addOrganization(params)
+      await addOrganizationStore(params)
 
       message.success('新增成功')
     } else {
       params['id'] = state.formState.id
-      res = await updateOrganization(params)
+      params.organizationRel['id'] = state.formState.attributeId
+      params.organizationRel['organizationId'] = state.formState.id
+      // await updateOrganization(params)
+      await updateOrganizationStore(params)
       message.success('修改成功')
     }
 
     closeModal()
-    await getList()
+    // await getList()
   } finally {
     state.addEditLoading = false
   }
@@ -1184,6 +1159,18 @@ const beforeUpload = async (file: UploadProps['beforeUpload'][number], fileList,
       file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
     if (!isJpgOrPng) {
       message.error('仅支持jpg/jpeg/png/gif格式')
+      return Upload.LIST_IGNORE
+    }
+  } else if (type === 'noticeLetter') {
+    //通知函
+    if (state.noticeLetterUrl.length === 3) {
+      message.warning(`通知函最多只能上传三个`)
+      return Upload.LIST_IGNORE
+    }
+  } else if (type === 'notificationLetter') {
+    //告知函
+    if (state.notificationLetterUrl.length === 3) {
+      message.warning(`告知函最多只能上传三个`)
       return Upload.LIST_IGNORE
     }
   } else {
@@ -1274,6 +1261,47 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
         }
         state.environmentSuccess = info?.file.response?.data?.store || ''
         break
+      case 'noticeLetter':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          // state.noticeLetterUrl = []
+          return
+        }
+        const tempNoticeLetter = state.noticeLetterUrl.filter((item) => item?.status != 'error')
+        state.noticeLetterSuccess = []
+        tempNoticeLetter.map((item) => {
+          if (item.status === 'done') {
+            state.noticeLetterSuccess.push({
+              fileName: item.name,
+              fileUrl: item.response?.data?.store
+            })
+          }
+        })
+
+        console.log('state.noticeLetterUrl', state.noticeLetterUrl)
+        console.log('state.noticeLetterSuccess===>', state.noticeLetterSuccess)
+        break
+      case 'notificationLetter':
+        if (!info?.file.response?.data) {
+          message.error(info?.file.response?.msg)
+          // state.notificationLetterUrl = []
+          return
+        }
+        const tempNotificationLetterUrl = state.notificationLetterUrl.filter(
+          (item) => item?.status != 'error'
+        )
+        console.log('state.notificationLetterUrl', state.notificationLetterUrl)
+        console.log('tempNotificationLetterUrl', tempNotificationLetterUrl)
+        state.notificationLetterSuccess = []
+        tempNotificationLetterUrl.map((item) => {
+          if (item.status === 'done') {
+            state.notificationLetterSuccess.push({
+              fileName: item.name,
+              fileUrl: item.response?.data?.store
+            })
+          }
+        })
+        break
     }
 
     // Get this url from response in real world.
@@ -1296,6 +1324,14 @@ const handleChange = (info: UploadChangeParam, fileList, type) => {
         break
       case 'environment':
         state.environmentUrl = []
+        break
+      case 'noticeLetter':
+        state.noticeLetterUrl = state.noticeLetterUrl.filter((item) => item?.status != 'error')
+        break
+      case 'notificationLetter':
+        state.notificationLetterUrl = state.notificationLetterUrl.filter(
+          (item) => item?.status != 'error'
+        )
         break
     }
     loading.value = false
@@ -1350,13 +1386,42 @@ const removeContactInformation = (item) => {
   }
 }
 
+//机构名称change
+const nameChange = () => {
+  state.formState.trialOperationCompanyName = state.formState.acceptanceCompanyName =
+    state.formState.name
+}
+//试运营 公司名称change
+const trialOperationCompanyNameChange = () => {
+  state.formState.acceptanceCompanyName = state.formState.trialOperationCompanyName
+}
+//试运营 门店地址change
+const trialOperationStoreAddressChange = () => {
+  state.formState.acceptanceAddress = state.formState.trialOperationStoreAddress
+}
+//试运营 门店级别change
+const trialOperationStoreLevelChange = () => {
+  state.formState.acceptanceStoreLevel = state.formState.trialOperationStoreLevel
+}
+
 //获取数据字典
 const getOrganizationTypeListFN = async () => {
+  let majorIndividualOptionRes = await getSimpleTenantList()
+  // 新增门店 上级主体 只有经销商
+  majorIndividualOptionRes = majorIndividualOptionRes.filter((item) => item.type === 'dealer')
+  state.majorIndividualOption = handleTree(
+    majorIndividualOptionRes,
+    'id',
+    'belongTenantId',
+    'children'
+  )
   const res = await getOrganizationTypeList()
   //机构类型
   state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
   //分公司类型
   state.branchCompanyTypeOptions = res.filter((item) => item.dictType === 'branch_company_type')
+  //品牌
+  const tempBarnOptions = res.filter((item) => item.dictType === 'brand')
   //门店类型
   state.storeTypeOptions = res.filter((item) => item.dictType === 'store_type')
   //联系方式类型
@@ -1380,9 +1445,216 @@ const getOrganizationTypeListFN = async () => {
   state.memberOptions.map((item) => {
     item.label = `${item.tempLabel}-${item.memberNum}`
   })
+
+  state.barnOptions = tempBarnOptions
 }
 //获取机构类型
 getOrganizationTypeListFN()
+
+const getOrganizationDetailsFN = async () => {
+  if (Object.keys(props.editRecord).length === 0) {
+    //空对象判断
+    state.modalType = 'add'
+    state.modalTitle = '新增门店'
+    return
+  } else {
+    state.modalType = 'edit'
+    state.modalTitle = '修改门店'
+    state.activeKey = props.tabsActiveKey
+  }
+
+  //获取机构详情
+  // const res = await getOrganizationDetails({ id: props.editRecord.id })
+  const res = await getOrganizationStoreDetails({
+    id: props.editRecord.id,
+    tenantId: props.editRecord.belongTenantId
+  })
+
+  //... res 可能为null
+  let tempType = [] || ''
+  console.log('详情res', res)
+
+  // if (record.organizationType == '分公司') {
+  //   tempType = res?.relVO?.type[0]
+  // } else {
+  //   tempType = res?.relVO?.type
+  // }
+
+  //赋值 回显
+  state.formState = {
+    id: res.id, //机构id
+    belongTenantId: res.tenantId, //上级主体
+    parentId: res.parentId, //上级机构ID
+    organizationType: res.organizationType, //机构类型
+    name: res.name, //机构名称
+    code: res.code, //机构编码
+    abbreviate: res.abbreviate, //机构简称
+    brand: res?.brandIds ? res?.brandIds : [], //品牌
+    detailedAddress: res?.address, //地址 详细地址
+    // contactName: res.contactName, //负责人
+    contactName: res.contactId, //负责人
+    contactMobile: res.contactMobile, //负责人电话
+    contactMail: res.contactMail, //负责人邮箱
+    sort: res.sort, //排序
+    status: res.status, //状态
+
+    organizationId: res.id, //机构id
+    attributeId: res?.relVO?.id, //机构属性ID
+    type: res?.relVO?.type, //分公司类型
+    isSale: res?.relVO?.isSale, //是否有销售
+    saleBrand: res?.relVO?.saleBrand, //销售品牌
+    isRescue: res?.relVO?.isRescue, //是否提供救援
+    rescueBrand: res?.relVO?.rescueBrand, //救援品牌
+    isMaintenance: res?.relVO?.isMaintenance, //是否提供维保
+    maintenanceBrand: res?.relVO?.maintenanceBrand, //维保品牌
+    startRating: res?.relVO?.startRating, //星级
+    creditCode: res?.relVO?.creditCode, //统一社会信用代码
+    legalRepresentative: res?.relVO?.legalRepresentative, //法定代表人
+    legalMobile: res?.relVO?.legalMobile, //法人联系电话
+
+    trialOperationCompanyName: res?.relVO?.trialOperationCompanyName, //公司名称
+    trialOperationStoreAddress: res?.relVO?.trialOperationStoreAddress, //门店地址
+    trialOperationStoreLevel: res?.relVO?.trialOperationStoreLevel, //门店级别
+    // trialOperationTime: null, //试运营时间
+    acceptanceCompanyName: res?.relVO?.companyName, //验收信息 公司名称
+    acceptanceAddress: res?.relVO?.companyAddress, //验收信息 门店地址
+    acceptanceStoreLevel: res?.relVO?.storeLevel, //验收信息 门店级别
+    storeScore: res?.relVO?.storeScore, //验收信息 店面验收评分
+    compensateAmount: res?.relVO?.compensateAmount, //验收信息 建店补偿金额
+    operationDeadline: res?.relVO?.operationDeadline //验收信息  规定运营年限
+    // acceptanceTime: null //验收通过时间
+  }
+
+  //省市区
+  state.formState.companyAddress = []
+  state.formState.cascadeInfo = []
+  if (res?.provinceCode) {
+    state.formState.companyAddress.push(res?.provinceCode)
+    state.formState.cascadeInfo.push({
+      label: res?.province,
+      value: res?.provinceCode
+    })
+  }
+  if (res?.cityCode) {
+    state.formState.companyAddress.push(res?.cityCode)
+    state.formState.cascadeInfo.push({
+      label: res?.city,
+      value: res?.cityCode
+    })
+  }
+  if (res?.countyCode) {
+    state.formState.companyAddress.push(res?.countyCode)
+    state.formState.cascadeInfo.push({
+      label: res?.county,
+      value: res?.countyCode
+    })
+  }
+
+  //联系方式 设置属性
+  const tempArr = []
+  if (res?.relVO?.contact) {
+    res?.relVO?.contact.map((item) => {
+      tempArr.push({
+        contactType: item.contactType === '' ? null : item.contactType,
+        mobile: item.mobile
+      })
+    })
+  }
+
+  state.formState.contactInformationArr = tempArr
+
+  if (res.relVO?.contact === null || res?.relVO === null) {
+    state.formState.contactInformationArr = [
+      {
+        contactType: null,
+        mobile: '',
+        id: Date.now()
+      }
+    ] //联系方式 设置属性
+  }
+
+  if (res?.relVO?.logoUrl) {
+    state.logoListUrl = [
+      {
+        url: res?.relVO?.logoUrl //系统logo
+      }
+    ]
+    state.logoUrlSuccess = res?.relVO?.logoUrl
+  }
+
+  if (res?.relVO?.legalIdentityUrl) {
+    state.legalPersonListUrl = [
+      {
+        url: res?.relVO?.legalIdentityUrl //法人身份证
+      }
+    ]
+    state.legalPersonUrlSuccess = res?.relVO?.legalIdentityUrl
+  }
+
+  if (res?.relVO?.businessLicenseUrl) {
+    state.businessLicenseListUrl = [
+      {
+        url: res?.relVO?.businessLicenseUrl //营业执照
+      }
+    ]
+    state.businessLicenseSuccess = res?.relVO?.businessLicenseUrl
+  }
+
+  if (res?.relVO?.environmentUrl) {
+    state.environmentUrl = [
+      {
+        url: res?.relVO?.environmentUrl //环境图片
+      }
+    ]
+    state.environmentSuccess = res?.relVO?.environmentUrl
+  }
+
+  if (res?.relVO?.establishDate) {
+    state.formState['establishDate'] = dayjs(res?.relVO?.establishDate) //成立日期
+  }
+  if (res?.relVO?.trialOperationTime) {
+    state.formState['trialOperationTime'] = dayjs(res?.relVO?.trialOperationTime) //试运营时间
+  }
+  if (res?.relVO?.acceptanceTime) {
+    state.formState['acceptanceTime'] = dayjs(res?.relVO?.acceptanceTime) //验收通过时间
+  }
+
+  if (res?.relVO?.noticeLetters) {
+    res?.relVO?.noticeLetters.map((item) => {
+      state.noticeLetterUrl.push({
+        name: item.fileName,
+        status: 'done',
+        url: item.fileUrl, //通知函
+        fileName: item.fileName,
+        fileUrl: item.fileUrl //通知函
+      })
+    })
+    state.noticeLetterSuccess = state.noticeLetterUrl
+  }
+
+  if (res?.relVO?.notificationLetters) {
+    res?.relVO?.notificationLetters.map((item) => {
+      state.notificationLetterUrl.push({
+        name: item.fileName,
+        status: 'done',
+        url: item.fileUrl, //告知函
+        fileName: item.fileName,
+        fileUrl: item.fileUrl //告知函
+      })
+    })
+    state.notificationLetterSuccess = state.notificationLetterUrl
+  }
+}
+
+getOrganizationDetailsFN()
+
+//处理省市区数据
+// 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
+let needReplaceKey = [
+  ['label', 'fullname'],
+  ['value', 'code']
+]
+state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
 </script>
 
 <style lang="scss" scoped>
@@ -1411,7 +1683,13 @@ getOrganizationTypeListFN()
   font-family: PingFangSC-Regular;
 }
 .adress-content {
-  width: 470px;
+  width: 458px;
+}
+.adress-cascader {
+  width: 210px !important;
+}
+.adress-input {
+  width: 248px !important;
 }
 //设置属性 联系方式  +
 .add-circle {

@@ -71,3 +71,28 @@ export const getCodeApi = (data) => {
 export const reqCheckApi = (data) => {
   return request.postOriginal({ url: 'system/captcha/check', data })
 }
+
+// 根据账号密码获取用户的主体信息
+export const getTenantUser = (data) => {
+  return request.post({ url: '/system/auth/get-tenant/user', data })
+}
+
+// 根据当前用户获取用户的主体信息
+export const getTenantById = (data) => {
+  return request.post({ url: '/system/auth/get-tenant', data })
+}
+
+// 切换主体后，主体token信息
+export const handoffTenant = (data) => {
+  return request.post({ url: '/system/auth/handoff-tenant', data })
+}
+
+// 设置默认主体（未登录）
+export const updateDefaultTenant = (data) => {
+  return request.put({ url: '/system/auth/default-tenant/update', data })
+}
+
+// 设置默认主体
+export const updateDefaultTenantByUserName = (data) => {
+  return request.put({ url: '/system/auth/default-tenant/update-username', data })
+}

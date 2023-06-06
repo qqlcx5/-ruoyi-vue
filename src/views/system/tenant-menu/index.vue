@@ -1384,10 +1384,10 @@ const detailsInfo = async (record) => {
           textSpan: '上级菜单：',
           text: tempItemBtn[0]?.name
         },
-        {
-          textSpan: '适用主体类型：',
-          text: record?.tenantTypeString
-        },
+        // {
+        //   textSpan: '适用主体类型：',
+        //   text: record?.tenantTypeString
+        // },
         {
           textSpan: '图标：',
           text: '暂无图标',

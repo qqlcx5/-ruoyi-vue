@@ -38,6 +38,7 @@ interface AppState {
   footer: boolean
   theme: ThemeTypes
   fixedMenu: boolean
+  antdTheme: object
 }
 
 export const useAppStore = defineStore('app', {
@@ -101,6 +102,9 @@ export const useAppStore = defineStore('app', {
         topHeaderHoverColor: '#f6f6f6',
         // 头部边框颜色
         topToolBorderColor: '#eee'
+      },
+      antdTheme: wsCache.get(CACHE_KEY.ANTD_THEME) || {
+        primaryColor: '#1890FF'
       }
     }
   },
@@ -188,6 +192,9 @@ export const useAppStore = defineStore('app', {
     },
     getIsShowCutSubMenu(): boolean {
       return this.isShowCutSubMenu
+    },
+    getAntdTheme(): object {
+      return this.antdTheme
     }
   },
   actions: {
@@ -294,6 +301,9 @@ export const useAppStore = defineStore('app', {
     },
     setFooter(footer: boolean) {
       this.footer = footer
+    },
+    setAntdTheme(antdTheme: object) {
+      this.antdTheme = antdTheme
     }
   }
 })

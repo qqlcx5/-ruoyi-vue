@@ -259,6 +259,7 @@
         <a-form-item
           label="适用主体类型"
           name="tenantType"
+          v-if="state.formState.type !== SystemMenuTypeEnum.BUTTON"
           :rules="[{ required: true, message: '适用主体类型不能为空' }]"
         >
           <a-checkbox-group v-model:value="state.formState.tenantType" class="checkbox-group">
@@ -1128,6 +1129,8 @@ const saveForm = async () => {
     state.modalBtnLoading = false
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    // 刷新浏览器
+    location.reload()
   }
 }
 /** 获取下拉框[上级菜单]的数据  */
@@ -1262,6 +1265,8 @@ const tableVisibleChange = async (value, record) => {
     message.success('修改显示状态成功')
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    // 刷新浏览器
+    location.reload()
     await getList()
   } finally {
   }
@@ -1301,6 +1306,8 @@ const tableStatusConfirm = async () => {
     await closeStatusModal()
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    // 刷新浏览器
+    location.reload()
   } finally {
   }
 }
@@ -1432,10 +1439,10 @@ const detailsInfo = async (record) => {
           textSpan: '上级菜单：',
           text: tempItemBtn[0]?.name
         },
-        {
-          textSpan: '适用主体类型：',
-          text: record?.tenantTypeString
-        },
+        // {
+        //   textSpan: '适用主体类型：',
+        //   text: record?.tenantTypeString
+        // },
         {
           textSpan: '图标：',
           text: '暂无图标',

@@ -16,7 +16,8 @@ export const CACHE_KEY = {
   DICT_CACHE: 'dictCache',
   TABLE_COLUMN: 'tableColumn',
   TABLE_COLUMNS_OBJ: 'tableColumnsObj',
-  DEPARTMENT: 'department'
+  DEPARTMENT: 'department',
+  ANTD_THEME: 'antdTheme'
 }
 
 export const useCache = (type: CacheType = 'localStorage') => {

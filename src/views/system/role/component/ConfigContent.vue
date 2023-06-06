@@ -57,49 +57,83 @@
         <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
       </div>
     </div>
-    <div class="box">
-      <div class="box-header"> 请选择数据权限 </div>
-      <div class="box-content px-14px py-10px">
-        <el-radio-group
-          v-if="currentNode && currentNode.type === 2"
-          v-model="currentNode.dataScope"
-        >
-          <el-radio :label="5">仅看自己</el-radio>
-          <el-radio :label="4">仅看本部门及以下</el-radio>
-          <el-radio :label="3">仅看本部门</el-radio>
-          <el-radio :label="2">
-            指定部门
-            <div
-              v-if="currentNode.dataScope === 2"
-              class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
-              @click="openDepartModal"
-              >{{
-                currentNode.dataScopeDepts.length > 0
-                  ? `已选${currentNode.dataScopeDepts.length}个部门`
-                  : '请选择'
-              }}
+    <div class="box grid grid-rows-2">
+      <div class="overflow-hidden">
+        <div class="box-header"> 请选择数据权限 </div>
+        <div class="box-content px-14px py-10px">
+          <div v-if="currentNode && currentNode.type === 2">
+            <el-radio-group v-model="currentNode.dataScope">
+              <el-radio :label="5">仅看自己</el-radio>
+              <el-radio :label="4">仅看本部门及以下</el-radio>
+              <el-radio :label="3">仅看本部门</el-radio>
+              <!--              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">-->
+              <el-radio :label="2">
+                指定部门
+                <div
+                  v-if="currentNode.dataScope === 2"
+                  class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
+                  @click="openDepartModal"
+                  >{{
+                    (currentNode.dataScopeDeptIds && currentNode.dataScopeDeptIds.length > 0) ||
+                    (currentNode.dataScopeUserIds && currentNode.dataScopeUserIds.length) > 0
+                      ? `已选${currentNode.dataScopeDeptIds.length}个部门,${currentNode.dataScopeUserIds.length}个人`
+                      : '请选择'
+                  }}
+                </div>
+              </el-radio>
+              <el-radio v-if="tenantType === TenantMap.manufacturer" :label="6">
+                指定经销商
+                <div
+                  v-if="currentNode.dataScope === 6"
+                  class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
+                  @click="openMemberModal"
+                  >{{
+                    currentNode.dataScopeStoreIds && currentNode.dataScopeStoreIds.length > 0
+                      ? `已选${currentNode.dataScopeStoreIds.length}个门店`
+                      : '请选择'
+                  }}
+                </div>
+              </el-radio>
+              <el-radio :label="1">看所有人</el-radio>
+            </el-radio-group>
+          </div>
+          <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
+        </div>
+      </div>
+      <div>
+        <div class="box-header"> 请选择数据权限 </div>
+        <div class="box-content px-14px py-10px">
+          <div v-if="currentNode && currentNode.type === 2">
+            <el-radio-group
+              class="relative w-full"
+              v-model="currentNode.databrandScope"
+              @change="onBrandScopeChange"
+            >
+              <el-radio :label="1">不限品牌</el-radio>
+              <el-radio :label="2">指定品牌</el-radio>
+              <el-checkbox
+                v-if="currentNode.databrandScope === 2"
+                class="!absolute right-0 bottom-0"
+                v-model="brandCheckAll"
+                @change="handleBrandCheckAllChange"
+              >
+                全选
+              </el-checkbox>
+            </el-radio-group>
+            <div v-show="currentNode.databrandScope === 2" class="ml-24px">
+              <el-checkbox-group v-model="selectedBrands">
+                <el-checkbox v-for="item in dictBrand" :key="item.value" :label="item.value">{{
+                  item.label
+                }}</el-checkbox>
+              </el-checkbox-group>
             </div>
-          </el-radio>
-          <el-radio :label="6">
-            指定人
-            <div
-              v-if="currentNode.dataScope === 6"
-              class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
-              @click="openMemberModal"
-              >{{
-                currentNode.dataScopeUserIds.length > 0
-                  ? `已选${currentNode.dataScopeUserIds.length}个成员`
-                  : '请选择'
-              }}
-            </div>
-          </el-radio>
-          <el-radio :label="1">看所有人</el-radio>
-        </el-radio-group>
-        <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
+          </div>
+          <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
+        </div>
       </div>
     </div>
-    <SelectOrgModal ref="selectOrgModalRef" @confirm="onSelectOrgConfirm" />
-    <SelectMemberModal ref="selectMemberModalRef" @confirm="onSelectMemberConfirm" />
+    <SelectOrgAndStaffModal ref="selectOrgAndStaffModalRef" @confirm="onSelectOrgAndStaffConfirm" />
+    <SelectBusinessModal ref="selectBusinessModalRef" @confirm="onSelectBusinessConfirm" />
   </div>
 </template>
 
@@ -109,9 +143,11 @@ import { getSimpleMenusList } from '@/api/system/menu'
 import { getRoleMenuDataScope } from '@/api/system/role'
 import { ElTree } from 'element-plus'
 import { TreeNodeData } from 'element-plus/es/components/tree/src/tree.type'
-import SelectOrgModal from '../../organization/components/SelectOrgModal.vue'
-import SelectMemberModal from '../../member/components/SelectMemberModal/index.vue'
+import SelectOrgAndStaffModal from '../../organization/components/SelectOrgAndStaffModal.vue'
+import SelectBusinessModal from '../../business/components/SelectBusinessModal/index.vue'
 import { cloneDeep } from 'lodash-es'
+import { getDictOptions } from '@/utils/dict'
+import { getTenantData } from '@/utils/auth'
 
 const { query } = useRoute()
 
@@ -123,6 +159,13 @@ const props = defineProps({
 })
 const emit = defineEmits(['change'])
 const roleConfig = ref<any[]>([])
+const tenantType = computed(() => {
+  return getTenantData()?.tenantType || null
+})
+const TenantMap = {
+  dealer: 'dealer', // 经销商
+  manufacturer: 'manufacturer' // 厂家
+}
 // ================= 菜单 ====================
 const defaultCheckedKeys = ref()
 const treeOptions = ref<any[]>([]) // 菜单树形结构
@@ -187,7 +230,7 @@ const selectedPermissions = computed({
   set(val) {
     currentNode.value.operations = getPermissions.value.filter((item) => val.includes(item.id))
   }
-}) // 选中select
+}) // 选中select操作权限
 
 const customNodeClass = (data) => {
   if (data.dataScope || (data.operations && data.operations.length)) {
@@ -209,31 +252,52 @@ const handleCheckChange = (node) => {
 }
 
 // ================= 数据权限 ====================
-const selectOrgModalRef = ref()
-const selectMemberModalRef = ref()
+const selectOrgAndStaffModalRef = ref()
+const selectBusinessModalRef = ref()
+const dictBrand = ref(getDictOptions('brand'))
+const brandCheckAll = computed(() => {
+  return currentNode.value.dataScopeBrandIds
+    ? currentNode.value.dataScopeBrandIds.length === dictBrand.value.length
+    : false
+})
+const selectedBrands = computed({
+  get() {
+    return currentNode.value.type === 2 ? currentNode.value.dataScopeBrandIds : []
+  },
+  set(val) {
+    currentNode.value.dataScopeBrandIds = val
+  }
+}) // 选中select操作权限
+// 指定部门选择
 const openDepartModal = () => {
-  selectOrgModalRef.value.openModal(currentNode.value.dataScopeDepts.map((item) => item.id))
+  const { dataScopeDeptIds, dataScopeUsers } = currentNode.value
+  selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, dataScopeUsers)
 }
-const onSelectOrgConfirm = (data) => {
-  currentNode.value.dataScopeDeptIds = data.map((item) => item.id)
-  currentNode.value.dataScopeDepts = data.map((item) => {
+const onSelectOrgAndStaffConfirm = (dataScopeDepts, dataScopeUsers) => {
+  currentNode.value.dataScopeDeptIds = dataScopeDepts.map((item) => item.id)
+  currentNode.value.dataScopeDepts = dataScopeDepts
+  currentNode.value.dataScopeUserIds = dataScopeUsers.map((item) => item.id)
+  currentNode.value.dataScopeUsers = dataScopeUsers
+}
+// 选择经销商
+const openMemberModal = () => {
+  const { dataScopeStoreIds, dataScopeStores } = currentNode.value
+  selectBusinessModalRef.value.openModal(dataScopeStoreIds, dataScopeStores)
+}
+const onSelectBusinessConfirm = (data) => {
+  currentNode.value.dataScopeStoreIds = data.map((item) => item.id)
+  currentNode.value.dataScopeStores = data.map((item) => {
     return {
       id: item.id,
       name: item.name
     }
   })
 }
-const openMemberModal = () => {
-  selectMemberModalRef.value.openModal(currentNode.value.dataScopeUsers)
+const handleBrandCheckAllChange = (val: boolean) => {
+  currentNode.value.dataScopeBrandIds = val ? dictBrand.value.map((item) => item.value) : []
 }
-const onSelectMemberConfirm = (data) => {
-  currentNode.value.dataScopeUserIds = data.map((item) => item.id)
-  currentNode.value.dataScopeUsers = data.map((item) => {
-    return {
-      id: item.id,
-      nickname: item.nickname
-    }
-  })
+const onBrandScopeChange = (value) => {
+  if (value === 1) currentNode.value.dataScopeBrandIds = []
 }
 
 // ================= 初始化 ====================
@@ -259,6 +323,11 @@ const init = async () => {
           menu.dataScopeDepts = roleData?.dataScopeDepts || []
           menu.dataScopeUserIds = roleData?.dataScopeUserIds || []
           menu.dataScopeUsers = roleData?.dataScopeUsers || []
+          menu.dataScopeStoreIds = roleData?.dataScopeStoreIds || []
+          menu.dataScopeStores = roleData?.dataScopeStores || []
+          menu.dataScopeBrandIds = roleData?.dataScopeBrandIds || []
+          menu.databrandScope =
+            roleData?.dataScopeBrandIds && roleData?.dataScopeBrandIds.length > 0 ? 2 : 1
         }
         return menu.type !== 3
       })
@@ -278,20 +347,23 @@ watch(
 )
 
 const getParams = () => {
-  const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes())
+  const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes(false, true))
   return menuDataScopeItemList.map((item) => {
     item['menuId'] = item.id
     item['menuParentId'] = item.parentId
     delete item.children
     if (item.dataScope === 2) {
+      item.dataScopeStoreIds = []
+      item.dataScopeStores = []
+    } else if (item.dataScope === 6) {
+      // 指定人清空部门
       // 部门清空指定人
       item.dataScopeUserIds = []
       item.dataScopeUsers = []
-    } else if (item.dataScope === 6) {
-      // 指定人清空部门
       item.dataScopeDeptIds = []
       item.dataScopeDepts = []
     }
+    item.dataScopeBrandIds = item.databrandScope === 2 ? item.dataScopeBrandIds : []
     return item
   })
 }
@@ -302,6 +374,7 @@ defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
 <style lang="scss" scoped>
 .role-config {
   .box {
+    height: 100%;
     border: 1px solid #eaebef;
     border-radius: 2px;
   }

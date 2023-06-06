@@ -36,18 +36,21 @@ const goMyList = () => {
 onMounted(() => {
   // 首次加载小红点
   getUnreadCount()
-  // 轮询刷新小红点
-  setInterval(() => {
-    getUnreadCount()
-  }, 1000 * 60 * 2)
+  // // 轮询刷新小红点
+  // setInterval(() => {
+  //   getUnreadCount()
+  // }, 1000 * 60 * 2)
 })
 </script>
 <template>
   <div class="message">
     <ElPopover placement="bottom" :width="400" trigger="click">
       <template #reference>
-        <ElBadge :is-dot="unreadCount > 0" class="item flex items-center justify-center w-60px h-60px">
-<!--           <Icon icon="ep:bell" :size="20" class="cursor-pointer" @click="getList" :color="color" />-->
+        <ElBadge
+          :is-dot="unreadCount > 0"
+          class="item flex items-center justify-center w-60px h-60px"
+        >
+          <!--           <Icon icon="ep:bell" :size="20" class="cursor-pointer" @click="getList" :color="color" />-->
           <div class="flex items-center justify-center w-60px h-60px">
             <Icon
               icon="svg-icon:bell"

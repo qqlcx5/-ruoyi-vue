@@ -58,6 +58,9 @@
 import { PropType } from 'vue'
 import { propTypes } from '@/utils/propTypes'
 import { useDesign } from '@/hooks/web/useDesign'
+import { ConfigProvider } from 'ant-design-vue'
+import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
+const { wsCache } = useCache()
 
 const { getPrefixCls } = useDesign()
 
@@ -74,6 +77,9 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'change'])
 
 const colorVal = ref(props.modelValue)
+const colorState = reactive({
+  primaryColor: '#1890FF'
+})
 
 const selectColor = (color, isDefault = true) => {
   console.log('isDefault', isDefault)
@@ -81,6 +87,12 @@ const selectColor = (color, isDefault = true) => {
     state.isSelect = false
   }
   colorVal.value = color
+  //antdV
+  colorState.primaryColor = color
+  wsCache.set(CACHE_KEY.ANTD_THEME, colorState)
+  ConfigProvider.config({
+    theme: colorState
+  })
 }
 
 const state = reactive({
@@ -172,7 +184,7 @@ $prefix-cls: #{$namespace}-color-radio-picker;
 .checkbox {
   width: 40px;
   height: 30px;
-  border: 1px solid #EFEFEF;
+  border: 1px solid #efefef;
   border-radius: 4px;
 }
 .total-content {

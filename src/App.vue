@@ -12,6 +12,10 @@ const greyMode = computed(() => appStore.getGreyMode)
 const { wsCache } = useCache()
 //antdV黑暗模式
 import { DarkMode } from '@/styles/antdVTheme/changAntdModal'
+import { ConfigProvider } from 'ant-design-vue'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import 'dayjs/locale/zh-cn'
+import emptyImg from '@/assets/imgs/empty.png'
 
 // 根据浏览器当前主题设置系统主题色
 const setDefaultTheme = () => {
@@ -20,6 +24,11 @@ const setDefaultTheme = () => {
     isDarkTheme = isDark()
   }
   appStore.setIsDark(isDarkTheme)
+  //AntdV
+  const tempAntdTheme = wsCache.get(CACHE_KEY.ANTD_THEME)
+  ConfigProvider.config({
+    theme: tempAntdTheme
+  })
 }
 setDefaultTheme()
 
@@ -27,14 +36,18 @@ const getPopupContainer = () => {
   return document.getElementById('card-content') || document.body
 }
 
+const state = reactive({
+  isDark: false
+})
+
 watchEffect(() => {
   //antdV黑暗模式
   DarkMode(appStore.isDark)
+  state.isDark = appStore.isDark
 })
 
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
-import 'dayjs/locale/zh-cn'
-import emptyImg from '@/assets/imgs/empty.png'
+// 清空，从而触发刷新 菜单 路由
+wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
 </script>
 <template>
   <!--  element plus 全局配置-->

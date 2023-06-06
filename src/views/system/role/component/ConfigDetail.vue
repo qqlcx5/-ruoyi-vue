@@ -16,6 +16,9 @@
       <el-table-column label="数据权限" show-overflow-tooltip>
         <template #default="{ row }">{{ dataAccess(row) }}</template>
       </el-table-column>
+      <el-table-column label="品牌权限" show-overflow-tooltip>
+        <template #default="{ row }">{{ brandAccess(row) }}</template>
+      </el-table-column>
     </el-table>
   </div>
   <div class="table-box card-gary-bg">
@@ -29,17 +32,62 @@
       <template v-else>
         <el-table-column fixed prop="name" label="菜单权限" />
       </template>
-      <el-table-column label="操作权限" show-overflow-tooltip>
-        <template #default="{ row }">{{ operationAccess(row.operations) }}</template>
+      <el-table-column label="操作权限">
+        <template #default="{ row }">
+          <!--          {{ operationAccess(row.operations) }}-->
+          <el-tooltip placement="top">
+            <template #content>
+              <div class="max-w-300px">
+                {{ operationAccess(row.operations) }}
+              </div>
+            </template>
+            <div class="text-ellipsis">{{ operationAccess(row.operations) }}</div>
+          </el-tooltip>
+        </template>
       </el-table-column>
-      <el-table-column label="数据权限" show-overflow-tooltip>
-        <template #default="{ row }">{{ dataAccess(row) }}</template>
+      <el-table-column label="数据权限">
+        <template #default="{ row }">
+          <el-tooltip placement="top">
+            <template #content>
+              <div v-if="row.dataScope === 2" class="max-w-300px">
+                <div v-if="row.dataScopeUsers && row.dataScopeUsers.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定人：</div>
+                  <div>{{
+                    row.dataScopeUsers
+                      .map((item) => `${item.nickname}(${item.username})`)
+                      .join('、')
+                  }}</div>
+                </div>
+                <div v-if="row.dataScopeDepts && row.dataScopeDepts.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定部门：</div>
+                  <div>{{
+                    row.dataScopeDepts.map((item) => `${item.name}(${item.code})`).join('、')
+                  }}</div>
+                </div>
+              </div>
+              <div v-else-if="row.dataScope === 6" class="max-w-300px">
+                <div class="flex">
+                  <div class="flex-shrink-0">指定门店：</div>
+                  <div>{{ row.dataScopeStores.map((item) => item.name).join('、') }}</div>
+                </div>
+              </div>
+              <div v-else class="max-w-300px">
+                {{ dataAccess(row) }}
+              </div>
+            </template>
+            <div class="text-ellipsis">{{ dataAccess(row) }}</div>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+      <el-table-column label="品牌权限" show-overflow-tooltip>
+        <template #default="{ row }">{{ brandAccess(row) }}</template>
       </el-table-column>
     </el-table>
   </div>
 </template>
 <script setup lang="ts">
 import { DATA_ACCESS_MAP } from './role.data'
+import { getDictLabel } from '@/utils/dict'
 
 const props = defineProps({
   frontTableData: {
@@ -74,6 +122,8 @@ const dataAccess = (data): string => {
       return data.dataScopeDept.join('、')
     } else if (data.dataScopeUser && data.dataScopeUser.length > 0) {
       return data.dataScopeUser.join('、')
+    } else if (data.dataScopeStore && data.dataScopeStore.length > 0) {
+      return data.dataScopeStore.join('、')
     } else {
       return data.dataScopeName
     }
@@ -86,16 +136,25 @@ const dataAccess = (data): string => {
         })
         .join('、')
     } else if (data.dataScope === 6) {
-      // 指定人
-      return data.dataScopeUsers
+      // 指定门店
+      return data.dataScopeStores
         .map((item) => {
-          return item.nickname
+          return item.name
         })
         .join('、')
     } else {
       return DATA_ACCESS_MAP[data.dataScope]
     }
   }
+}
+const brandAccess = (data) => {
+  return data.dataScopeBrandIds
+    ? data.dataScopeBrandIds
+        .map((item) => {
+          return getDictLabel('brand', item)
+        })
+        .join('、')
+    : ''
 }
 </script>
 <style lang="scss" scoped>
@@ -109,5 +168,10 @@ const dataAccess = (data): string => {
     box-sizing: border-box;
     border: 1px solid #eaebef;
   }
+}
+.text-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>
