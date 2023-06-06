@@ -66,8 +66,7 @@
               <el-radio :label="5">仅看自己</el-radio>
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
-              <!--              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">-->
-              <el-radio :label="2">
+              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">
                 指定部门
                 <div
                   v-if="currentNode.dataScope === 2"
@@ -354,8 +353,13 @@ const getParams = () => {
   const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes(false, true))
   return menuDataScopeItemList.map((item) => {
     if (item.databrandScope === 2 && item.dataScopeBrandIds.length === 0) {
-      message.error(`${item.name}中未选择指定品牌`)
-      throw new Error(`${item.name}中未选择指定品牌`)
+      message.error(`${item.name} 菜单未选择指定品牌`)
+      throw new Error(`${item.name} 菜单未选择指定品牌`)
+    }
+    // type === 2 菜单
+    if (item.type === 2 && !item.dataScope) {
+      message.error(`${item.name} 菜单未选择数据权限`)
+      throw new Error(`${item.name} 菜单未选择数据权限`)
     }
     item['menuId'] = item.id
     item['menuParentId'] = item.parentId
