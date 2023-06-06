@@ -412,13 +412,16 @@
         <a-form-item
           :label="`绑定域名`"
           name="bindingDomainName"
-          :rules="[{ required: true, message: `绑定域名不能为空` }]"
+          :rules="state.bindingDomainNameValidatorRules"
         >
-          <a-input
-            v-model:value="state.formState.bindingDomainName"
-            addon-before="https://"
-            placeholder="请输入绑定的域名"
-          />
+          <a-input v-model:value="state.formState.bindingDomainName" placeholder="请输入绑定的域名">
+            <template #addonBefore>
+              <a-select v-model:value="state.formState.bindingDomainNameBefore" style="width: 90px">
+                <a-select-option value="http://">http://</a-select-option>
+                <a-select-option value="https://">https://</a-select-option>
+              </a-select>
+            </template>
+          </a-input>
         </a-form-item>
 
         <a-form-item
@@ -995,7 +998,11 @@ const { wsCache } = useCache()
 const { toClipboard } = useClipboard()
 
 import isBetween from 'dayjs/plugin/isBetween'
-import { getOrganizationTypeList, updateOrganizationStatus } from '@/api/system/organization'
+import {
+  getOrganizationTypeList,
+  updateOrganizationStatus,
+  updateOrganizationStoreStatus
+} from '@/api/system/organization'
 import { getMajorIndividualSimpleMenusList } from '@/api/system/menu'
 dayjs.extend(isBetween)
 
@@ -1146,6 +1153,21 @@ const numValidator = (rule, value) => {
   })
 }
 
+//绑定域名校验规则
+const bindingDomainNameValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      if (value.startsWith('http://') || value.startsWith('https://')) {
+        reject('绑定域名已经有前缀，不允许输入http://或https://')
+      } else {
+        resolve()
+      }
+    } else {
+      reject()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 }
@@ -1198,6 +1220,10 @@ const state = reactive({
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
   currentMenu: '目录',
+  bindingDomainNameValidatorRules: [
+    { required: true, message: `绑定域名不能为空` },
+    { validator: bindingDomainNameValidator }
+  ],
   routerRules: [{ required: true }, { validator: routeValidator }],
   contactMobileRules: [
     { required: true, message: `负责人电话不能为空` },
@@ -1221,6 +1247,7 @@ const state = reactive({
     // forever: false, //永久有效
     accountCount: undefined, //可用名额
     bindingDomainName: '', //绑定域名
+    bindingDomainNameBefore: 'https://', //绑定域名前缀
     status: true, //状态
     creditCode: '', //统一社会信用代码
     // organizationCode: '', //组织机构代码
@@ -1625,6 +1652,7 @@ const closeModal = () => {
     // forever: false, //永久有效
     accountCount: undefined, //可用名额
     bindingDomainName: '', //绑定域名
+    bindingDomainNameBefore: 'https://', //绑定域名 前缀
     status: true, //状态
     creditCode: '', //统一社会信用代码
     // organizationCode: '', //组织机构代码
@@ -1740,7 +1768,7 @@ const edit = async (
     // expireTime: , //有效期 结束时间
     accountCount: res.accountCount, //可用名额
     // bindingDomainName: res.domain, //绑定域名
-    bindingDomainName: res.domain.substring(8), //绑定域名
+    // bindingDomainName: res.domain.substring(8), //绑定域名
     creditCode: res.creditCode, //统一社会信用代码
     // organizationCode: res.organizationCode, //组织机构代码
     legalRepresentative: res.legalRepresentative, //法定代表人
@@ -1751,6 +1779,14 @@ const edit = async (
   }
   console.log('state.optionalMenuTree', state.optionalMenuTree)
   console.log('state.formState.belongTenantId', state.formState.belongTenantId)
+
+  if (res.domain.startsWith('http://')) {
+    state.formState.bindingDomainNameBefore = 'http://'
+    state.formState.bindingDomainName = res.domain.substring(7)
+  } else if (res.domain.startsWith('https://')) {
+    state.formState.bindingDomainNameBefore = 'https://'
+    state.formState.bindingDomainName = res.domain.substring(8)
+  }
 
   if (res.logoUrl) {
     state.logoListUrl = [
@@ -1854,7 +1890,7 @@ const addMajorIndividualFN = async () => {
     // effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY/MM/DD'), //有效期 开始时间
     // expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY/MM/DD'), //有效期 结束时间
     accountCount: state.formState.accountCount, //可用名额
-    domain: `https://${state.formState.bindingDomainName}`, //绑定域名
+    domain: `${state.formState.bindingDomainNameBefore}${state.formState.bindingDomainName}`, //绑定域名
     creditCode: state.formState.creditCode, //统一社会信用代码
     // organizationCode: state.formState.organizationCode, //组织机构代码
     legalRepresentative: state.formState.legalRepresentative, //法定代表人
@@ -2090,7 +2126,7 @@ const setTableStatusChangeInfo = (value, record) => {
   openStatusModal()
 }
 //表格状态开关
-const tableStatusChange = (value, record) => {
+const tableStatusChange = async (value, record) => {
   if (value) {
     state.messageBtnText = '确认开启'
     state.messageText = '为了保护您的主体公司业务数据安全，请通过安全验证：'
@@ -2099,9 +2135,24 @@ const tableStatusChange = (value, record) => {
     state.messageText =
       '因您的主体公司还存在业务数据，如关闭则严重影响到业务，为了保护您的主体公司业务数据安全，请通过安全验证：'
   }
-  state.isShowMessage = true
-  state.messageContactMobile = record.contactMobile
+  console.log('record', record)
+  if (record.type === null) {
+    const tempRes = await getMajorIndividualList()
+    const tempItem = tempRes.find((item) => item.id === record.belongTenantId)
+    if (tempItem.belongTenantId !== 0) {
+      const tempItemSecond = tempRes.find((item) => item.id === tempItem.belongTenantId)
+      //获取门店的 顶层主体的 手机号  max2层
+      state.messageContactMobile = tempItemSecond.contactMobile
+    } else {
+      //获取门店的 顶层主体的 手机号  max2层
+      state.messageContactMobile = tempItem.contactMobile
+    }
+  } else {
+    state.messageContactMobile = record.contactMobile
+  }
+
   state.record = record
+  state.isShowMessage = true
 }
 
 //表格状态开关modal 确认
@@ -2150,7 +2201,13 @@ const statusOk = async () => {
   try {
     if (state.record.type === null) {
       //门店 TODO 短信
-      await updateOrganizationStatus({
+      // await updateOrganizationStatus({
+      //   id: state.record.id,
+      //   status: state.record.statusSwitch === true ? 0 : 1
+      // })
+
+      await updateOrganizationStoreStatus({
+        tenantId: state.record.belongTenantId, //上级主体
         id: state.record.id,
         status: state.record.statusSwitch === true ? 0 : 1
       })
@@ -2623,8 +2680,6 @@ const getAllType = async () => {
 
 // 新增、修改 主体类型
 const majorIndividualTypeChange = () => {
-  console.log('state.optionalMenuTree', state.optionalMenuTree)
-
   if (state.formState.majorIndividualType === 'manufacturer') {
     //  厂家
     //  厂家 - -只有顶层

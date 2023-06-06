@@ -223,7 +223,7 @@
 
               <a-form-item
                 label="销售品牌"
-                name="isSale"
+                name="saleBrand"
                 class="width-50"
                 :rules="[{ required: true, message: `销售品牌不能为空` }]"
                 v-if="state.formState.isSale === 0"
@@ -1113,6 +1113,13 @@ const handleCancel = () => {
 }
 //上传图片预览
 const handlePreview = async (file) => {
+  console.log('file', file)
+  //   const w = window.open(file.url);
+  //   //延迟刷新浏览器标签页名 防止不显示
+  //   setTimeout(function () {
+  //     w.document.title = `${file.name}`
+  //   }, 100);
+  // return
   if (!file.url && !file.preview) {
     file.preview = await getBase64(file.originFileObj)
   }
@@ -1362,6 +1369,19 @@ const removeImg = (file, type) => {
       state.environmentUrl = [] //环境图片 上传回显
       state.environmentSuccess = '' //环境图片 新增编辑入参
       break
+    case 'noticeLetter':
+      //通知函 新增编辑入参
+      state.noticeLetterSuccess = state.noticeLetterSuccess.filter(
+        (item) => item.fileUrl != file.fileUrl
+      )
+      break
+    case 'notificationLetter':
+      //告知函 新增编辑入参
+      state.notificationLetterSuccess = state.notificationLetterSuccess.filter(
+        (item) => item.fileUrl != file.fileUrl
+      )
+      console.log('state.notificationLetterSuccess', state.notificationLetterSuccess)
+      break
   }
 }
 
@@ -1496,7 +1516,7 @@ const getOrganizationDetailsFN = async () => {
     contactMobile: res.contactMobile, //负责人电话
     contactMail: res.contactMail, //负责人邮箱
     sort: res.sort, //排序
-    status: res.status, //状态
+    status: res.status === 0, //状态
 
     organizationId: res.id, //机构id
     attributeId: res?.relVO?.id, //机构属性ID

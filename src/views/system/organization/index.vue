@@ -311,7 +311,6 @@
         <a-form-item
           :label="`机构简称`"
           name="abbreviate"
-          :rules="[{ validator: chineseValidator }]"
         >
           <a-input
             v-model:value="state.formState.abbreviate"
@@ -520,7 +519,7 @@
 
           <a-form-item
             label="销售品牌"
-            name="isSale"
+            name="saleBrand"
             class="width-50"
             :rules="[{ required: true, message: `销售品牌不能为空` }]"
             v-if="state.formAttributeState.isSale === 0"
@@ -2009,7 +2008,6 @@ const PermissionOk = async () => {
   // 校验表单
   if (!formAttributeRef) return
   const valid = await formAttributeRef.value.validate()
-  state.addEditLoading = true
 
   if (state.formAttributeState.type?.length === 0 || !state.formAttributeState.type) {
     return message.warning('类型不能为空')
@@ -2051,22 +2049,24 @@ const PermissionOk = async () => {
   }
 
   //省市区
-  if (state.formAttributeState?.cascadeInfo[0]) {
-    params['province'] = state.formAttributeState.cascadeInfo[0].label
-    params['provinceCode'] = state.formAttributeState.cascadeInfo[0].value
+  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[0]) {
+    params['province'] = state.formAttributeState.cascadeInfo[0]?.label
+    params['provinceCode'] = state.formAttributeState.cascadeInfo[0]?.value
   }
-  if (state.formAttributeState?.cascadeInfo[1]) {
-    params['city'] = state.formAttributeState.cascadeInfo[1].label
-    params['cityCode'] = state.formAttributeState.cascadeInfo[1].value
+  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[1]) {
+    params['city'] = state.formAttributeState.cascadeInfo[1]?.label
+    params['cityCode'] = state.formAttributeState.cascadeInfo[1]?.value
   }
-  if (state.formAttributeState?.cascadeInfo[2]) {
-    params['county'] = state.formAttributeState.cascadeInfo[2].label
-    params['countyCode'] = state.formAttributeState.cascadeInfo[2].value
+  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[2]) {
+    params['county'] = state.formAttributeState.cascadeInfo[2]?.label
+    params['countyCode'] = state.formAttributeState.cascadeInfo[2]?.value
   }
 
   if (state.formAttributeState.establishDate) {
     params['establishDate'] = state.formAttributeState.establishDate?.format('YYYY-MM-DD') //成立日期
   }
+
+  state.addEditLoading = true
 
   // if (state.PermissionType === 'add') {
   //relVO null则没有属性
