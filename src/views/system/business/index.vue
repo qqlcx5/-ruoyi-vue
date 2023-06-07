@@ -1617,16 +1617,14 @@ const openModal = async (record = {}) => {
 
   console.log('record', record)
   console.log('state.majorIndividualTypeOptions', state.majorIndividualTypeOptions)
-  if (state.isSuperAdmin) {
-    //  超管 新增子项
-    state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions
+
+  if (record.type === 'manufacturer' && state.modalType === 'add') {
+    // 厂家 新增子项 主体类型只能为经销商，上级主体只能为自己
+    state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions.filter(
+      (item) => item.value === 'dealer'
+    )
   } else {
-    //  非超管 新增子项  主体类型为厂家时，主体类型只能为经销商，上级主体只能为自己
-    if (record.type === 'manufacturer') {
-      state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions.filter(
-        (item) => item.value === 'dealer'
-      )
-    }
+    state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions
   }
 
   if (!(Object.keys(record).length === 0)) {
@@ -1635,7 +1633,7 @@ const openModal = async (record = {}) => {
     if (!state.formState.majorIndividualType) {
       state.formState.belongTenantId = null
     } else {
-      state.formState.belongTenantId = record.id
+      state.formState.belongTenantId = record.belongTenantId
     }
   } else {
     // state.formState.belongTenantId = state?.optionalMenuTree[0]
@@ -1681,6 +1679,7 @@ const closeModal = () => {
     businessLicenseUrl: '' //营业执照
   }
 
+  state.record = {}
   state.logoListUrl = [] //系统logo 上传 回显 - -
   state.logoUrlSuccess = '' //系统logo 新增编辑入参
   state.legalPersonListUrl = [] //法人身份证 上传回显
@@ -2725,20 +2724,20 @@ const getAllType = async () => {
 const majorIndividualTypeChange = () => {
   console.log('state.optionalMenuList=====', state.optionalMenuList)
 
-  if (state.isSuperAdmin) {
-    //  超管
-    if (state.formState.majorIndividualType === 'manufacturer') {
-      //  厂家
-      //  厂家 - -只有顶层
-      state.optionalMenuTreeChange = state.optionalMenuList.filter((item) => item.id === 0)
-    } else {
-      //  经销商 - -顶层 跟厂家
-      state.optionalMenuTreeChange = state.optionalMenuList.filter(
-        (item) => item.id === 0 || item.type === 'manufacturer'
-      )
-    }
+  //  超管
+  if (state.formState.majorIndividualType === 'manufacturer') {
+    //  厂家
+    //  厂家 - -只有顶层
+    state.optionalMenuTreeChange = state.optionalMenuList.filter((item) => item.id === 0)
   } else {
-    // 非超管 新增子项  主体类型为厂家时，主体类型只能为经销商，上级主体只能为自己
+    //  经销商 - -顶层 跟厂家
+    state.optionalMenuTreeChange = state.optionalMenuList.filter(
+      (item) => item.id === 0 || item.type === 'manufacturer'
+    )
+  }
+
+  if (state.record.type === 'manufacturer') {
+    // 厂家 新增子项 主体类型只能为经销商，上级主体只能为自己
     state.optionalMenuTreeChange = state.optionalMenuList.filter(
       (item) => item.id === state.record.id
     )
