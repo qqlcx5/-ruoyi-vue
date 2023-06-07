@@ -142,7 +142,7 @@
                 </div>
               </div>
               <div class="search-item">
-                <div class="item-label">帐号状态：</div>
+                <div class="item-label">账号状态：</div>
                 <div class="item-condition">
                   <a-select
                     v-model:value="queryParams.userType"
@@ -2301,6 +2301,7 @@ const assignPermission = async (record) => {
   const { postVOList = [], roleVOList = [] } = record
   const tempArr = uniqueFunc(postVOList, 'postId')
   record.postVOListDeal = tempArr
+
   let postIdArr = []
   tempArr.map((item) => {
     postIdArr.push(item.postId)
@@ -2318,7 +2319,8 @@ const assignPermission = async (record) => {
   }
 
   const tempRolesNewList = cloneDeep(state.configureRolesNewList)
-  record?.roleVOListDeal.map((item) => {
+
+  record?.roleVOListDeal?.map((item) => {
     if (item.roleDelete) {
       //删除 true
       tempRolesNewList.push({
@@ -2346,6 +2348,7 @@ const assignPermission = async (record) => {
   state.permissionRecord = record
   //回显 已分配的角色
   state.roleId = []
+
   roleVOList?.map((item) => {
     state.roleId.push(item.roleId)
   })
@@ -2525,7 +2528,7 @@ const detailsInfo = async (record) => {
   state.detailsRecord = record
   //获取成员详情
   const res = await getMemberDetails({ id: record.id })
-  console.log('res ', res )
+  console.log('res ', res)
   const { roleVOList = [] } = record
   const { userHistoryVOList = [], phoneVOList = [], postVOList = [] } = res
   let sexText = '男'

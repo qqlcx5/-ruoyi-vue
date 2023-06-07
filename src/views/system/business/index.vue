@@ -207,6 +207,12 @@
               <a-popover placement="bottom">
                 <template #content>
                   <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+                  <div
+                    class="text-color margin-right-5"
+                    v-if="record.type === null"
+                    @click="openModal(record)"
+                    >新增子门店</div
+                  >
                 </template>
                 <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
               </a-popover>
@@ -584,6 +590,7 @@
     :belongTenantId="state.belongTenantId"
     :editRecord="state.record"
     :tabsActiveKey="state.currentTabs"
+    :storeType="state.storeType"
   />
 
   <!-- 配置权限 Modal -->
@@ -1210,6 +1217,7 @@ const state = reactive({
   isShowStore: false, //新增编辑 门店
   isShowStoreDetails: false, //详情 门店
   currentTabs: 'basicInformation', //门店 设置属性&&修改 current Tab
+  storeType: 'store', //门店 类型    - - store 门店 storeChildren 子门店
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal

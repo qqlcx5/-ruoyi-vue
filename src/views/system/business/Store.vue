@@ -696,12 +696,15 @@ interface Props {
   tabsActiveKey?: string
   belongTenantId?: string
   editRecord?: object
+  storeType?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   tabsActiveKey: 'basicInformation',
   belongTenantId: '0',
-  editRecord: {}
+  // eslint-disable-next-line vue/require-valid-default-prop
+  editRecord: {},
+  storeType: 'store'
 })
 
 const emit = defineEmits<{
@@ -1496,7 +1499,7 @@ const getOrganizationDetailsFN = async () => {
   // const res = await getOrganizationDetails({ id: props.editRecord.id })
   const res = await getOrganizationStoreDetails({
     id: props.editRecord.id,
-    tenantId: props.editRecord.belongTenantId
+    tenantId: props.editRecord.belongTenantId ||props.editRecord.tenantId
   })
 
   //... res 可能为null

@@ -181,7 +181,14 @@
                   'margin-right-5',
                   { 'disable-color': record?.statusSwitch === false }
                 ]"
-                @click="assignPermission(record, false, record?.statusSwitch === false)"
+                @click="
+                  assignPermission(
+                    record,
+                    false,
+                    record?.statusSwitch === false,
+                    'underlyingAttribute'
+                  )
+                "
                 v-if="record.organizationType === '分公司' || record.organizationType === '门店'"
                 >设置属性</div
               >
@@ -414,6 +421,16 @@
       <a-button @click="closeModal">取消</a-button>
     </template>
   </a-modal>
+
+  <!--  修改门店  -->
+  <Store
+    v-if="state.isShowStore"
+    @closeStore="closeStore()"
+    :belongTenantId="state.belongTenantId"
+    :editRecord="state.record"
+    :tabsActiveKey="state.currentTabs"
+    :storeType="state.storeType"
+  />
 
   <!-- 设置属性 Modal -->
   <a-modal
@@ -670,24 +687,24 @@
           </div>
         </a-form-item>
 
-        <!--  级联选择器  - -   -->
-        <a-form-item :label="`地址`" name="detailedAddress">
-          <div class="flex-content adress-content">
-            <a-form-item-rest>
-              <a-cascader
-                v-model:value="state.formAttributeState.companyAddress"
-                :options="state.proMunAreaList"
-                @change="cascadeChange"
-                placeholder="请选择省市区"
-              />
-            </a-form-item-rest>
-            <a-input
-              v-model:value="state.formAttributeState.detailedAddress"
-              placeholder="请输入详细的公司地址，具体门牌号"
-              class="adress-input"
-            />
-          </div>
-        </a-form-item>
+        <!--        &lt;!&ndash;  级联选择器  - -   &ndash;&gt;-->
+        <!--        <a-form-item :label="`地址`" name="detailedAddress">-->
+        <!--          <div class="flex-content adress-content">-->
+        <!--            <a-form-item-rest>-->
+        <!--              <a-cascader-->
+        <!--                v-model:value="state.formAttributeState.companyAddress"-->
+        <!--                :options="state.proMunAreaList"-->
+        <!--                @change="cascadeChange"-->
+        <!--                placeholder="请选择省市区"-->
+        <!--              />-->
+        <!--            </a-form-item-rest>-->
+        <!--            <a-input-->
+        <!--              v-model:value="state.formAttributeState.detailedAddress"-->
+        <!--              placeholder="请输入详细的公司地址，具体门牌号"-->
+        <!--              class="adress-input"-->
+        <!--            />-->
+        <!--          </div>-->
+        <!--        </a-form-item>-->
 
         <a-space
           v-for="(item, index) in state.formAttributeState.contactInformationArr"
@@ -1094,6 +1111,14 @@
     </a-tabs>
   </a-modal>
 
+  <!--  门店详情  -->
+  <StoreDetails
+    v-if="state.isShowStoreDetails"
+    @closeStoreDetails="closeStoreDetails()"
+    @editStoreDetails="editStoreDetails"
+    :currentRecord="state.record"
+  />
+
   <!--  定制列  -->
   <CustomColumn
     v-if="state.isShowCustomColumnModal"
@@ -1145,6 +1170,9 @@ import editImg from '@/assets/imgs/system/editImg.png'
 import useClipboard from 'vue-clipboard3'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
+import Store from '@/views/system/business/Store.vue'
+import StoreDetails from '@/views/system/business/StoreDetails.vue'
+import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 import {
   addAttribute,
   addOrganization,
@@ -1359,6 +1387,8 @@ const state = reactive({
   refreshTable: true, //v-if table
   isFullScreen: false, //全屏
   isShow: false, //新增编辑modal
+  isShowStore: false, //编辑 门店
+  isShowStoreDetails: false, //详情 门店
   isShowPermission: false, //设置属性modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
   isShowDelete: false, //删除确认 modal
@@ -1405,6 +1435,8 @@ const state = reactive({
         id: Date.now()
       }
     ], //联系方式 设置属性
+    belongTenantId: null, //上级主体编号 编辑门店
+    currentTabs: 'basicInformation', //门店 设置属性&&修改 current Tab
     status: true, //状态
     creditCode: '', //统一社会信用代码
     // organizationCode: '', //组织机构代码
@@ -1771,6 +1803,28 @@ const closeModal = () => {
   state.currentType = '-1' //新增/修改/设置属性 机构类型(门店/分公司)
 }
 
+//关闭 编辑门店
+const closeStore = () => {
+  state.isShowStore = false
+  state.belongTenantId = null
+  state.modalType = 'add'
+  state.record = {}
+  getList()
+}
+
+//关闭 详情 门店
+const closeStoreDetails = () => {
+  state.isShowStoreDetails = false
+  state.record = {}
+}
+
+//详情 门店 修改
+const editStoreDetails = (record) => {
+  closeStoreDetails()
+  console.log('record!!!!!!!!!!!!!!!!!!!', record)
+  edit(record, false)
+}
+
 //新增 编辑 机构类型 为分公司时  btn 为下一步 else 为确认
 const organizationTypeChange = (value) => {
   if (state.modalType === 'add' && value === organizationType.branchCompany) {
@@ -1797,7 +1851,7 @@ const getTree = async () => {
 getTree()
 
 //编辑
-const edit = async (record, isCloseDetails = false) => {
+const edit = async (record, isCloseDetails = false, currentTabs = 'basicInformation') => {
   console.log('record,', record)
   if (isCloseDetails) {
     //关闭详情moal
@@ -1805,6 +1859,14 @@ const edit = async (record, isCloseDetails = false) => {
   }
   //获取机构详情
   const res = await getOrganizationDetails({ id: record.id })
+  console.log('res', res)
+  if (res.organizationType === organizationType.store) {
+    //门店
+    state.currentTabs = currentTabs
+    state.isShowStore = true
+    state.record = res
+    return
+  }
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   record.status = record.status === 0
@@ -2043,7 +2105,7 @@ const PermissionOk = async () => {
     startRating: state.formAttributeState.startRating, //星级
     logoUrl: state.logoUrlSuccess, //系统logo
     environmentUrl: state.environmentSuccess, //环境图片
-    address: state.formAttributeState.detailedAddress, //公司地址 详细地址
+    // address: state.formAttributeState.detailedAddress, //公司地址 详细地址
     contact: state.formAttributeState.contactInformationArr, //联系方式 设置属性
     creditCode: state.formAttributeState.creditCode, //统一社会信用代码
     // organizationCode: state.formAttributeState.organizationCode, //组织机构代码
@@ -2060,19 +2122,19 @@ const PermissionOk = async () => {
     params['status'] = 1
   }
 
-  //省市区
-  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[0]) {
-    params['province'] = state.formAttributeState.cascadeInfo[0]?.label
-    params['provinceCode'] = state.formAttributeState.cascadeInfo[0]?.value
-  }
-  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[1]) {
-    params['city'] = state.formAttributeState.cascadeInfo[1]?.label
-    params['cityCode'] = state.formAttributeState.cascadeInfo[1]?.value
-  }
-  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[2]) {
-    params['county'] = state.formAttributeState.cascadeInfo[2]?.label
-    params['countyCode'] = state.formAttributeState.cascadeInfo[2]?.value
-  }
+  // //省市区
+  // if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[0]) {
+  //   params['province'] = state.formAttributeState.cascadeInfo[0]?.label
+  //   params['provinceCode'] = state.formAttributeState.cascadeInfo[0]?.value
+  // }
+  // if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[1]) {
+  //   params['city'] = state.formAttributeState.cascadeInfo[1]?.label
+  //   params['cityCode'] = state.formAttributeState.cascadeInfo[1]?.value
+  // }
+  // if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[2]) {
+  //   params['county'] = state.formAttributeState.cascadeInfo[2]?.label
+  //   params['countyCode'] = state.formAttributeState.cascadeInfo[2]?.value
+  // }
 
   if (state.formAttributeState.establishDate) {
     params['establishDate'] = state.formAttributeState.establishDate?.format('YYYY-MM-DD') //成立日期
@@ -2095,7 +2157,12 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
-const assignPermission = async (record, isCloseDetails = false, disabled = false) => {
+const assignPermission = async (
+  record,
+  isCloseDetails = false,
+  disabled = false,
+  currentTabs = 'underlyingAttribute'
+) => {
   if (disabled) {
     return
   }
@@ -2111,6 +2178,13 @@ const assignPermission = async (record, isCloseDetails = false, disabled = false
   state.PermissionType = 'edit'
   if (record.id) {
     const res = await getOrganizationDetails({ id: record.id })
+    if (res?.organizationType === organizationType.store) {
+      //门店
+      state.currentTabs = currentTabs
+      state.isShowStore = true
+      state.record = res
+      return
+    }
     //... res 可能为null
     state.detailsRecord = res
     let tempType = [] || ''
@@ -2339,6 +2413,13 @@ const detailsInfo = async (record) => {
   const { relVO = {} } = res
   console.log('record', record)
   console.log('res', res)
+
+  if (res.organizationType === organizationType.store) {
+    //门店
+    state.record = res
+    state.isShowStoreDetails = true
+    return
+  }
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
