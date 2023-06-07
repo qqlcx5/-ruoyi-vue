@@ -1,6 +1,6 @@
 <template>
   <!-- 弹窗 -->
-  <XModal title="选择部门/人" v-model="modelVisible" width="758px">
+  <XModal title="选择部门/人" v-model="modelVisible" width="858px">
     <div class="grid grid-cols-3">
       <div class="grid-item">
         <div class="info-title">部门</div>
@@ -34,22 +34,26 @@
       </div>
       <div class="grid-item">
         <div class="info-title">已选信息</div>
-        <div>部门</div>
-        <el-tree
-          class="max-h-560px"
-          ref="selectedTreeRef"
-          node-key="id"
-          highlight-current
-          default-expand-all
-          :props="defaultProps"
-          :data="selectedTreeData"
-        />
-        <div>成员</div>
-        <div>
-          <div class="staff-item" v-for="item in selectedStaffData" :key="item.id">
-            {{ item.nickname }}-{{ item.username }}
+        <template v-if="selectedTreeData && selectedTreeData.length">
+          <div>部门</div>
+          <el-tree
+            class="max-h-560px"
+            ref="selectedTreeRef"
+            node-key="id"
+            highlight-current
+            default-expand-all
+            :props="defaultProps"
+            :data="selectedTreeData"
+          />
+        </template>
+        <template v-if="selectedStaffData && selectedStaffData.length">
+          <div>成员</div>
+          <div>
+            <div class="staff-item" v-for="item in selectedStaffData" :key="item.id">
+              {{ item.nickname }}-{{ item.username }}
+            </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
 
@@ -134,7 +138,6 @@ const init = async (dataScopeUsers) => {
   }
   treeData.value = handleTree(result)
   selectedTreeData.value = treeData.value.filter((t) => defaultCheckedKeys.value.includes(t.id))
-  console.log(treeData.value)
 }
 
 // 打开弹窗
@@ -161,6 +164,7 @@ const submitForm = async () => {
 <style lang="scss" scoped>
 .grid-item {
   padding-left: 16px;
+  overflow: hidden;
 
   &:not(:last-child) {
     border-right: 1px solid $border-color;

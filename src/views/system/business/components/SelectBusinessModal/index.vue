@@ -41,6 +41,7 @@ import { handleTree, defaultProps } from '@/utils/tree'
 import { ElTree } from 'element-plus'
 import { getListDealerStore } from '@/api/system/business'
 import { message } from 'ant-design-vue'
+import { cloneDeep } from 'lodash-es'
 
 const { t } = useI18n() // 国际化
 const props = defineProps({
@@ -57,18 +58,18 @@ const treeData = ref<any[]>([])
 const defaultCheckedKeys = ref<string[] | number[]>([])
 
 const onTreeCheck = (node, list) => {
-  selectedBusinessData.value = handleTree(
-    [...unref(list.checkedNodes), ...unref(list.halfCheckedNodes)],
-    'id',
-    'belongTenantId'
-  )
+  setSelectedData()
   if (props.mode === 'single') {
     if (list.checkedKeys.length === 2) treeRef.value!.setCheckedKeys([node.id])
   }
 }
 const setSelectedData = () => {
   nextTick(() => {
-    selectedBusinessData.value = treeRef.value!.getCheckedNodes(true, true)
+    selectedBusinessData.value = handleTree(
+      cloneDeep(treeRef.value!.getCheckedNodes(false, true)),
+      'id',
+      'belongTenantId'
+    )
   })
 }
 

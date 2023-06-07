@@ -67,21 +67,23 @@
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
               <el-radio v-if="tenantType === TenantMap.dealer" :label="2" class="flex items-center">
-                指定部门
-                <el-tooltip placement="top">
-                  <template #content>
-                    <div class="max-w-300px">
+                <div class="flex items-center">
+                  指定部门
+                  <el-tooltip placement="top">
+                    <template #content>
+                      <div class="max-w-300px">
+                        {{ departPlaceholder }}
+                      </div>
+                    </template>
+                    <div
+                      v-if="currentNode.dataScope === 2"
+                      class="depart relative inline-block w-160px pl-8px pr-16px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)] overflow-hidden"
+                      @click="openDepartModal"
+                    >
                       {{ departPlaceholder }}
                     </div>
-                  </template>
-                  <div
-                    v-if="currentNode.dataScope === 2"
-                    class="depart relative inline-block w-160px pl-8px pr-16px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)] overflow-hidden"
-                    @click="openDepartModal"
-                  >
-                    {{ departPlaceholder }}
-                  </div>
-                </el-tooltip>
+                  </el-tooltip>
+                </div>
               </el-radio>
               <el-radio v-if="tenantType === TenantMap.manufacturer" :label="6">
                 <div class="flex items-center">
