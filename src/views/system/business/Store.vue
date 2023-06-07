@@ -19,7 +19,7 @@
       >
         <a-tabs v-model:activeKey="state.activeKey">
           <a-tab-pane key="basicInformation" tab="基础信息">
-            <a-form-item :label="`上级主体`" name="parentId">
+            <a-form-item :label="`上级主体`" name="belongTenantId" v-if="props.needBelongTenantId">
               <a-tree-select
                 v-model:value="state.formState.belongTenantId"
                 :disabled="state.modalType === 'edit'"
@@ -28,6 +28,19 @@
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                 placeholder="请选择上级目录"
                 :tree-data="state.majorIndividualOption"
+                :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
+                treeNodeFilterProp="name"
+              />
+            </a-form-item>
+
+            <a-form-item :label="`上级机构`" name="parentId">
+              <a-tree-select
+                v-model:value="state.formState.parentId"
+                show-search
+                style="width: 100%"
+                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                placeholder="请选择上级机构"
+                :tree-data="state.optionalMenuTree"
                 :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
                 treeNodeFilterProp="name"
               />
@@ -678,6 +691,7 @@ import {
   getOrganizationDetails,
   getOrganizationStoreDetails,
   getOrganizationTypeList,
+  getSimpleOrganizationList,
   updateOrganization,
   updateOrganizationStore
 } from '@/api/system/organization'
@@ -697,6 +711,7 @@ interface Props {
   belongTenantId?: string
   editRecord?: object
   storeType?: string
+  needBelongTenantId?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -704,7 +719,8 @@ const props = withDefaults(defineProps<Props>(), {
   belongTenantId: '0',
   // eslint-disable-next-line vue/require-valid-default-prop
   editRecord: {},
-  storeType: 'store'
+  storeType: 'store',
+  needBelongTenantId: true
 })
 
 const emit = defineEmits<{
@@ -993,7 +1009,7 @@ const addMajorIndividualFN = async () => {
 
   let params = {
     tenantId: state.formState.belongTenantId, //上级主体
-    parentId: '0', //上级机构
+    parentId: props.needBelongTenantId ? '0' : state.formState.parentId, //上级机构
     // organizationType: state.formState.organizationType, //机构类型
     organizationType: organizationType.store, //机构类型 门店
     name: state.formState.name, //机构名称
@@ -1484,6 +1500,17 @@ const getOrganizationTypeListFN = async () => {
 getOrganizationTypeListFN()
 
 const getOrganizationDetailsFN = async () => {
+  const majorIndividualRes = await getSimpleOrganizationList({ status: 0 })
+  let menuTree = []
+  // let menu = {}
+  let menu: Tree = { id: 0, name: '顶层机构', children: [] }
+  menu.children = handleTree(majorIndividualRes, 'id', 'parentId', 'children')
+  menuTree.push(menu)
+  // const menuTree = handleTree(res, 'id', 'parentId', 'children')
+  //上级机构
+  state.optionalMenuTree = menuTree
+  console.log('state.optionalMenuTree', state.optionalMenuTree)
+
   if (Object.keys(props.editRecord).length === 0) {
     //空对象判断
     state.modalType = 'add'
@@ -1499,7 +1526,7 @@ const getOrganizationDetailsFN = async () => {
   // const res = await getOrganizationDetails({ id: props.editRecord.id })
   const res = await getOrganizationStoreDetails({
     id: props.editRecord.id,
-    tenantId: props.editRecord.belongTenantId ||props.editRecord.tenantId
+    tenantId: props.editRecord.belongTenantId || props.editRecord.tenantId
   })
 
   //... res 可能为null

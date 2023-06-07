@@ -2176,6 +2176,7 @@ const setTableStatusChangeInfo = (value, record) => {
 }
 //表格状态开关
 const tableStatusChange = async (value, record) => {
+  console.log('record', record)
   const tempText = record.type === null ? '门店' : '主体公司'
   if (value) {
     state.messageBtnText = '确认开启'
@@ -2187,7 +2188,7 @@ const tableStatusChange = async (value, record) => {
 
   if (record.type === null) {
     //门店 获取 顶层主体手机号
-    state.messageContactMobile = await getTopPhone({ id: record.id })
+    state.messageContactMobile = await getTopPhone({ id: record.belongTenantId })
   } else {
     state.messageContactMobile = record.contactMobile
   }

@@ -223,7 +223,7 @@ onMounted(async () => {
   console.log('res', res)
   console.log('props.currentRecord', props.currentRecord)
 
-  state.contactMobile = await getTopPhone({ id: props.currentRecord.id })
+  state.contactMobile = await getTopPhone({ id: props.currentRecord.belongTenantId })
 
   //contactMobile
   //去除顶层机构以及厂家 只保留经销商

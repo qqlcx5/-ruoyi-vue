@@ -429,6 +429,7 @@
     :belongTenantId="state.belongTenantId"
     :editRecord="state.record"
     :tabsActiveKey="state.currentTabs"
+    :needBelongTenantId="false"
     :storeType="state.storeType"
   />
 
