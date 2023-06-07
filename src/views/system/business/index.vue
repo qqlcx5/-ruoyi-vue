@@ -430,18 +430,18 @@
           </a-input>
         </a-form-item>
 
-        <a-form-item
-          v-if="state.modalType === 'add'"
-          label="状态"
-          name="status"
-          :rules="[{ required: true, message: '菜单状态!' }]"
-        >
-          <a-switch
-            v-model:checked="state.formState.status"
-            checked-children="开启"
-            un-checked-children="关闭"
-          />
-        </a-form-item>
+        <!--        <a-form-item-->
+        <!--          v-if="state.modalType === 'add'"-->
+        <!--          label="状态"-->
+        <!--          name="status"-->
+        <!--          :rules="[{ required: true, message: '菜单状态!' }]"-->
+        <!--        >-->
+        <!--          <a-switch-->
+        <!--            v-model:checked="state.formState.status"-->
+        <!--            checked-children="开启"-->
+        <!--            un-checked-children="关闭"-->
+        <!--          />-->
+        <!--        </a-form-item>-->
 
         <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
         <a-form-item
@@ -1934,11 +1934,17 @@ const addMajorIndividualFN = async () => {
   //   // params.effectiveStartDate = dayjs().format('YYYY/MM/DD')
   //   params.expireTime = state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD') //有效期 结束时间
   // }
-  //状态0 开启 1关闭
-  if (state.formState.status) {
+  if (state.modalType === 'add') {
+    //新增默认 传开启
     params['status'] = 0
   } else {
-    params['status'] = 1
+    //状态0 开启 1关闭
+    //修改 原路返回
+    if (state.formState.status) {
+      params['status'] = 0
+    } else {
+      params['status'] = 1
+    }
   }
 
   //省市区
