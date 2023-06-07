@@ -4,10 +4,20 @@ module.exports = {
   customSyntax: 'postcss-html',
   extends: ['stylelint-config-standard', 'stylelint-config-prettier'],
   rules: {
+    'selector-class-pattern': [
+      '^([a-z0-9]*)(-*[a-z0-9]+)(([-|_]+)[a-z0-9]+)*$',
+      { message: 'Only support lower case, number, -, _' }
+    ],
     'selector-pseudo-class-no-unknown': [
       true,
       {
         ignorePseudoClasses: ['global', 'deep']
+      }
+    ],
+    'function-no-unknown': [
+      true,
+      {
+        ignoreFunctions: ['v-bind']
       }
     ],
     'at-rule-no-unknown': [
