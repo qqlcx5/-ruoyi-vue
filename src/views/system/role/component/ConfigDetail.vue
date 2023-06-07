@@ -54,7 +54,7 @@
                   <div class="flex-shrink-0">指定部门：</div>
                   <div>{{
                     row.dataScopeDepts
-                      .map((item) => `${item.name}(${item.component || item.code})`)
+                      .map((item) => item.componentName || `${item.name}(${item.code})`)
                       .join('、')
                   }}</div>
                 </div>
