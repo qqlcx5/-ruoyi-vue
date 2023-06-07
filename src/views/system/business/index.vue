@@ -53,7 +53,7 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button type="primary" @click="openModal()" v-if="state.needAddBtn">
+          <a-button type="primary" @click="openModal()" v-if="state.isSuperAdmin">
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -249,7 +249,7 @@
             @change="majorIndividualTypeChange"
           >
             <a-radio
-              v-for="item in state.majorIndividualTypeOptions"
+              v-for="item in state.majorIndividualTypeOptionsClone"
               :value="item.value"
               :key="item.value"
             >
@@ -742,16 +742,13 @@
           }}
           {{ state.tableStatusChangeInfo.record.name }} 吗？</div
         >
-        <div
-          v-if="state.tableStatusChangeInfo.record?.children?.length > 0"
-          class="status-text-info"
-        >
+        <div v-if="state.tableStatusChangeInfo?.tempTreeNum > 0" class="status-text-info">
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
           <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
           个子项{{ state.tableStatusChangeInfo?.type }}将同步
-          {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          {{ state.tableStatusChangeInfo?.statusText }}，请谨慎操作。
         </div>
       </div>
     </div>
@@ -770,7 +767,7 @@
     destroyOnClose
     title="提示"
     wrapClassName="date-status-change-modal"
-    width="518px"
+    width="528px"
     :bodyStyle="{
       width: '100%',
       height: '129px',
@@ -999,6 +996,7 @@ const { toClipboard } = useClipboard()
 
 import isBetween from 'dayjs/plugin/isBetween'
 import {
+  getMemberNum,
   getOrganizationTypeList,
   updateOrganizationStatus,
   updateOrganizationStoreStatus
@@ -1186,7 +1184,7 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
-  needAddBtn: false, //仅超管 有新增 btn
+  isSuperAdmin: false, //仅超管 有新增 btn
   belongTenantId: null, //上级主体编号 新增门店
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1234,6 +1232,7 @@ const state = reactive({
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
   majorIndividualTypeOptions: [], //适用主体类型Options
+  majorIndividualTypeOptionsClone: [], //适用主体类型Options Clone
   formState: {
     majorIndividualType: '', //主体类型
     belongTenantId: null, //上级主体编号
@@ -1605,6 +1604,7 @@ const openModal = async (record = {}) => {
     return
   }
   const res = await getSimpleTenantList()
+  state.record = record
 
   // let menuTree = []
   // let menu = {}
@@ -1615,13 +1615,27 @@ const openModal = async (record = {}) => {
 
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
 
+  console.log('record', record)
+  console.log('state.majorIndividualTypeOptions', state.majorIndividualTypeOptions)
+  if (state.isSuperAdmin) {
+    //  超管 新增子项
+    state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions
+  } else {
+    //  非超管 新增子项  主体类型为厂家时，主体类型只能为经销商，上级主体只能为自己
+    if (record.type === 'manufacturer') {
+      state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions.filter(
+        (item) => item.value === 'dealer'
+      )
+    }
+  }
+
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     //上级主体
     if (!state.formState.majorIndividualType) {
       state.formState.belongTenantId = null
     } else {
-      state.formState.belongTenantId = record.belongTenantId
+      state.formState.belongTenantId = record.id
     }
   } else {
     // state.formState.belongTenantId = state?.optionalMenuTree[0]
@@ -1948,6 +1962,29 @@ const addMajorIndividualFN = async () => {
       //配置权限
       openPermissionModal(state.addSuccessId)
     } else {
+      //前置校验改为后置
+      // if (
+      //   dayjs().isBetween(
+      //     state.formState.effectiveStartEndTime[0],
+      //     state.formState.effectiveStartEndTime[1],
+      //     'day',
+      //     []
+      //   ) &&
+      //   state.permissionRecord.statusSwitch === false
+      // ) {
+      //   state.dateTime = {
+      //     startTime: state.formState.effectiveStartEndTime[0].format('YYYY-MM-DD'),
+      //     endTime: state.formState.effectiveStartEndTime[1].format('YYYY-MM-DD')
+      //   }
+      //   openDateModal()
+      //   closeModal()
+      //   return
+      // }
+
+      params['id'] = state.formState.id
+      res = await updateEditMajorIndividual(params)
+      message.success('修改成功')
+
       if (
         dayjs().isBetween(
           state.formState.effectiveStartEndTime[0],
@@ -1962,13 +1999,7 @@ const addMajorIndividualFN = async () => {
           endTime: state.formState.effectiveStartEndTime[1].format('YYYY-MM-DD')
         }
         openDateModal()
-        closeModal()
-        return
       }
-
-      params['id'] = state.formState.id
-      res = await updateEditMajorIndividual(params)
-      message.success('修改成功')
     }
 
     closeModal()
@@ -2115,6 +2146,15 @@ const setTableStatusChangeInfo = (value, record) => {
     state.tableStatusChangeInfo['statusText'] = `关闭`
     state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
     state.tableStatusChangeInfo['type'] = record?.type === null ? '机构' : '主体'
+  }
+
+  console.log('record', record)
+  if (record.type === null) {
+    // 门店
+    state.tableStatusChangeInfo['tempTreeNum'] = getMemberNum({
+      id: record.id,
+      tenantId: record.belongTenantId
+    })
   }
 
   //过滤得到父级项
@@ -2677,20 +2717,36 @@ const getAllType = async () => {
 
   //适用主体类型
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
+  //适用主体类型
+  state.majorIndividualTypeOptionsClone = dictRes.filter((item) => item.dictType === 'tenant_type')
 }
 
 // 新增、修改 主体类型
 const majorIndividualTypeChange = () => {
-  if (state.formState.majorIndividualType === 'manufacturer') {
-    //  厂家
-    //  厂家 - -只有顶层
-    state.optionalMenuTreeChange = state.optionalMenuList.filter((item) => item.id === 0)
+  console.log('state.optionalMenuList=====', state.optionalMenuList)
+
+  if (state.isSuperAdmin) {
+    //  超管
+    if (state.formState.majorIndividualType === 'manufacturer') {
+      //  厂家
+      //  厂家 - -只有顶层
+      state.optionalMenuTreeChange = state.optionalMenuList.filter((item) => item.id === 0)
+    } else {
+      //  经销商 - -顶层 跟厂家
+      state.optionalMenuTreeChange = state.optionalMenuList.filter(
+        (item) => item.id === 0 || item.type === 'manufacturer'
+      )
+    }
   } else {
-    //  经销商 - -顶层 跟厂家
+    // 非超管 新增子项  主体类型为厂家时，主体类型只能为经销商，上级主体只能为自己
     state.optionalMenuTreeChange = state.optionalMenuList.filter(
-      (item) => item.id === 0 || item.type === 'manufacturer'
+      (item) => item.id === state.record.id
     )
+    state.formState.belongTenantId = state.record.id
   }
+
+  console.log('state.formState.majorIndividualType', state.formState.majorIndividualType)
+  console.log('state.optionalMenuTreeChange', state.optionalMenuTreeChange)
 
   state.optionalMenuTreeChange = handleTree(
     state.optionalMenuTreeChange,
@@ -2759,7 +2815,7 @@ onMounted(async () => {
   await getList()
   //仅超管 有新增 btn
   const { roles = [] } = wsCache.get(CACHE_KEY.USER)
-  state.needAddBtn = roles.includes('super_admin')
+  state.isSuperAdmin = roles.includes('super_admin')
 })
 </script>
 

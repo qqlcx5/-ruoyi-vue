@@ -1047,6 +1047,7 @@
                 <a-rate
                   v-if="childItem?.startRating"
                   v-model:value="childItem.startRating"
+                  disabled
                   allow-half
                 />
 

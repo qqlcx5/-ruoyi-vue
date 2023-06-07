@@ -93,6 +93,7 @@
             <a-rate
               v-if="childItem?.startRating"
               v-model:value="childItem.startRating"
+              disabled
               allow-half
             />
 
@@ -150,6 +151,12 @@
                 <div>{{ itemTag?.value }}</div>
               </div>
             </div>
+
+            <div v-if="childItem?.generalArr">
+              <div v-for="itemNoticeLetter in childItem?.generalArr">{{
+                itemNoticeLetter.fileName
+              }}</div>
+            </div>
           </template>
         </div>
       </div>
@@ -197,10 +204,34 @@
                 <div>{{ itemTag?.value }}</div>
               </div>
             </div>
+
+            <div v-if="childItem?.generalArr">
+              <div v-for="itemNoticeLetter in childItem?.generalArr">{{
+                itemNoticeLetter.fileName
+              }}</div>
+            </div>
           </template>
         </div>
       </div>
     </div>
+  </a-modal>
+
+  <!--  上传图片预览  -->
+  <a-modal
+    :visible="previewVisible"
+    destroyOnClose
+    :title="previewTitle"
+    :footer="null"
+    @cancel="handleCancel"
+    :bodyStyle="{
+      width: `100%`,
+      height: `100%`,
+      margin: '0',
+      padding: '0',
+      overflow: 'auto'
+    }"
+  >
+    <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
   </a-modal>
 </template>
 
@@ -248,6 +279,10 @@ const state = reactive({
   memberOptions: [] //新增修改 负责人list
 })
 
+const previewVisible = ref(false)
+const previewImage = ref('')
+const previewTitle = ref('')
+
 //详情(打开)
 const detailsInfo = async (record) => {
   state.detailsRecord = record
@@ -266,7 +301,7 @@ const detailsInfo = async (record) => {
 
   //主体列表
   const majorIndividualRes = await getSimpleTenantList()
-  const tempParentMajorIndividual = majorIndividualRes.find((item) => item.id === res.parentId)
+  const tempParentMajorIndividual = majorIndividualRes.find((item) => item.id === res.tenantId)
 
   //数据字典
   const dictRes = await getOrganizationTypeList()
@@ -389,6 +424,8 @@ const detailsInfo = async (record) => {
   })
 
   const tempContactName = state.memberOptions.find((item) => item.value === res?.contactId)
+  console.log('res', res)
+  console.log('res.relVO?.trialOperationTime', res.relVO?.trialOperationTime)
 
   state.detailsInfo = [
     {
@@ -400,7 +437,7 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '上级机构：',
-          text: tempItem[0]?.name
+          text: tempItem.length === 0 ? '顶层机构' : tempItem[0]?.name
         },
         {
           textSpan: '机构类型：',
@@ -541,7 +578,9 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '通知函：',
-          text: ''
+          text: '',
+          isFull: true,
+          generalArr: relVO?.noticeLetters
         }
       ]
     }
@@ -583,7 +622,9 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '告知函：',
-          text: ''
+          text: '',
+          isFull: true,
+          generalArr: relVO?.notificationLetters
         }
       ]
     }
@@ -641,6 +682,19 @@ const closeStoreDetailsModal = () => {
 //详情 修改
 const edit = () => {
   emit('editStoreDetails', props.currentRecord)
+}
+
+//详情modal 预览图片
+const setPreviewImage = (imgUrl = '') => {
+  previewImage.value = imgUrl
+  previewTitle.value = '预览'
+  previewVisible.value = true
+}
+
+//上传的 预览 关闭modal
+const handleCancel = () => {
+  previewVisible.value = false
+  previewTitle.value = ''
 }
 
 onMounted(async () => {

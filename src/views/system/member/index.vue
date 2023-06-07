@@ -535,7 +535,7 @@
                           :size="10"
                           class="margin-right-4"
                           v-if="record.phoneType === '1'"
-                        />手机</a-radio-button
+                        />手机号</a-radio-button
                       >
                       <a-radio-button value="2" style="border-radius: 4px" class="radio-btn"
                         ><Icon
@@ -2525,6 +2525,7 @@ const detailsInfo = async (record) => {
   state.detailsRecord = record
   //获取成员详情
   const res = await getMemberDetails({ id: record.id })
+  console.log('res ', res )
   const { roleVOList = [] } = record
   const { userHistoryVOList = [], phoneVOList = [], postVOList = [] } = res
   let sexText = '男'
