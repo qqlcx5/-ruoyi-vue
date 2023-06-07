@@ -103,7 +103,7 @@ const openDialog = async (data?: TenantInfo[], defaultTenantId?, loginData?) => 
 const onConfirm = () => {
   const activeTenant = tenantList.value.find((item) => item.tenantId == activeTenantId.value)
   if (activeTenant) authUtil.setTenantData(activeTenant)
-  emit('confirm', activeTenantId.value)
+  emit('confirm', activeTenant)
   dialogVisible.value = false
 }
 
@@ -112,43 +112,51 @@ defineExpose({ openDialog }) // 提供 openModal 方法，用于打开弹窗
 
 <style lang="scss" scoped>
 .item-box {
-  font-size: 14px;
   padding: 14px 12px 14px 16px;
+  font-size: 14px;
   line-height: 1;
   border: 1px solid $border-color;
   border-radius: 6px;
+
   &.active {
     border: 1px solid var(--el-color-primary);
+
     &::after {
-      content: '';
-      font-family: iconfont;
       position: absolute;
       right: 0;
       bottom: 0;
       width: 24px;
       height: 24px;
+      font-family: iconfont;
+      content: '';
     }
+
     .item-name {
       color: var(--el-color-primary);
     }
   }
+
   .item-name {
     color: $title-color;
   }
+
   .default-item,
   .new-login {
-    font-size: 12px;
     padding: 4px 8px;
+    font-size: 12px;
     border-radius: 4px;
   }
+
   .default-item {
     color: $error-color;
     background-color: #ffe8e8;
   }
+
   .new-login {
     color: $text-color;
     background-color: #f6f6f6;
   }
+
   .set-default-item {
     color: var(--el-color-primary);
   }

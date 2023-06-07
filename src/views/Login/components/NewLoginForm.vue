@@ -252,8 +252,8 @@ const getTenantByUser = async (data) => {
 
 // 选择主体完确定
 const onSwitchBodyConfirm = (data) => {
-  authUtil.setTenantId(data)
-  handleLogin()
+  authUtil.setTenantId(data.tenantId)
+  handleLogin(data)
 }
 
 // 登录
@@ -334,38 +334,42 @@ onMounted(() => {
 .qrcode-box i {
   color: var(--el-color-primary);
 }
+
 .qrcode-box {
   div {
     color: var(--el-color-primary);
     background-color: #e8f2ff;
   }
+
   .qrcode-tip::after {
-    content: '';
     position: absolute;
-    right: -4px;
     top: 50%;
+    right: -4px;
     width: 10px;
     height: 10px;
     background-color: #e8f2ff;
+    content: '';
     transform: translateY(-50%) rotate(45deg);
   }
 }
+
 :deep(.anticon) {
   &:hover {
     color: var(--el-color-primary) !important;
   }
 }
+
 .login-code {
+  float: right;
   width: 100%;
   height: 38px;
-  float: right;
 
   img {
-    cursor: pointer;
     width: 100%;
-    max-width: 100px;
     height: auto;
+    max-width: 100px;
     vertical-align: middle;
+    cursor: pointer;
   }
 }
 </style>
