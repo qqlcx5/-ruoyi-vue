@@ -4,46 +4,50 @@
     <div class="grid grid-cols-3">
       <div class="grid-item">
         <div class="info-title">部门</div>
-        <el-tree
-          class="max-h-560px"
-          ref="treeRef"
-          node-key="id"
-          show-checkbox
-          highlight-current
-          default-expand-all
-          :check-strictly="props.mode === 'single'"
-          :default-checked-keys="defaultCheckedKeys"
-          :props="{ ...defaultProps, class: customNodeClass }"
-          :data="treeData"
-          @check="onTreeCheck"
-          @node-click="onTreeNodeClick"
-        />
+        <el-scrollbar height="480">
+          <el-tree
+            ref="treeRef"
+            node-key="id"
+            show-checkbox
+            highlight-current
+            default-expand-all
+            :check-strictly="props.mode === 'single'"
+            :default-checked-keys="defaultCheckedKeys"
+            :props="{ ...defaultProps, class: customNodeClass }"
+            :data="treeData"
+            @check="onTreeCheck"
+            @node-click="onTreeNodeClick"
+          />
+        </el-scrollbar>
       </div>
       <div class="grid-item">
         <div class="info-title">成员</div>
-        <el-checkbox-group v-model="currentNode.userIds" class="!flex !flex-col">
-          <el-checkbox
-            class="!h-26px !block"
-            v-for="item in currentNodeUsers"
-            :value="item.id"
-            :label="item.id"
-            :key="item.id"
-            @change="onCheckboxChange($event, item)"
-            >{{ item.name }}</el-checkbox
-          >
-        </el-checkbox-group>
+        <el-scrollbar height="480">
+          <el-checkbox-group v-model="currentNode.userIds" class="!flex !flex-col">
+            <el-checkbox
+              class="!h-26px !block"
+              v-for="item in currentNodeUsers"
+              :value="item.id"
+              :label="item.id"
+              :key="item.id"
+              @change="onCheckboxChange($event, item)"
+              >{{ item.name }}</el-checkbox
+            >
+          </el-checkbox-group>
+        </el-scrollbar>
       </div>
       <div class="grid-item">
         <div class="info-title">已选信息</div>
-        <el-tree
-          class="max-h-560px"
-          ref="selectedTreeRef"
-          node-key="id"
-          highlight-current
-          default-expand-all
-          :props="defaultProps"
-          :data="selectedTreeData"
-        />
+        <el-scrollbar height="480">
+          <el-tree
+            ref="selectedTreeRef"
+            node-key="id"
+            highlight-current
+            default-expand-all
+            :props="defaultProps"
+            :data="selectedTreeData"
+          />
+        </el-scrollbar>
       </div>
     </div>
 
@@ -166,7 +170,7 @@ const submitForm = async () => {
 <style lang="scss" scoped>
 .grid-item {
   padding-left: 16px;
-  overflow: hidden;
+  //overflow: hidden;
 
   &:not(:last-child) {
     border-right: 1px solid $border-color;

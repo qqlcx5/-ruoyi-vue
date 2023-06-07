@@ -60,7 +60,7 @@ export default defineComponent({
     const permissionStore = usePermissionStoreWithOut()
     const switchTenantRef = ref()
     const tenantName = computed(() => {
-      return getTenantData().tenantName
+      return getTenantData()?.tenantName || ''
     })
     // 切换主体
     const switchTenant = async () => {
@@ -167,25 +167,26 @@ $prefix-cls: #{$namespace}-tool-header;
 }
 
 .company-content {
+  font-family: $font-family;
+  font-size: $font-size;
   color: $header-icon-color;
   cursor: pointer;
-  font-size: $font-size;
-  font-family: $font-family;
+
   .company-text {
     color: $header-text-color;
   }
+
   .el-icon {
     color: var(--top-header-text-color);
-    color: var(--top-header-text-color);
   }
+
   .company {
-    color: var(--top-header-text-color);
     margin-right: 4px;
+    color: var(--top-header-text-color);
   }
 }
 
 .hover-trigger {
-  color: #8291a9;
   color: #8291a9;
 }
 
@@ -195,8 +196,8 @@ $prefix-cls: #{$namespace}-tool-header;
 }
 
 .vertical-line {
-  height: 23px;
   width: 0;
-  border-right: 1px solid rgb(235, 235, 235);
+  height: 23px;
+  border-right: 1px solid rgb(235 235 235);
 }
 </style>
