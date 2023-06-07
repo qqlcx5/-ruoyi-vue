@@ -207,12 +207,12 @@
               <a-popover placement="bottom">
                 <template #content>
                   <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
-                  <div
-                    class="text-color margin-right-5"
-                    v-if="record.type === null"
-                    @click="openModal(record)"
-                    >新增子门店</div
-                  >
+                  <!--                  <div-->
+                  <!--                    class="text-color margin-right-5"-->
+                  <!--                    v-if="record.type === null"-->
+                  <!--                    @click="openModal(record)"-->
+                  <!--                    >新增子门店</div-->
+                  <!--                  >-->
                 </template>
                 <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
               </a-popover>
@@ -598,7 +598,6 @@
     v-model:visible="state.isShowPermission"
     destroyOnClose
     title="配置权限"
-    @ok="closePermissionModal"
     @cancel="closePermissionModal"
     :width="'665px'"
     :bodyStyle="{ height: '700px', margin: '0', padding: '0', overflow: 'auto' }"
@@ -1698,6 +1697,7 @@ const closeModal = () => {
   delete state.formState?.id
   state.modalTitle = '新增'
   state.modalType = 'add'
+  state.selectTree = []
 }
 
 //关闭 新增/编辑门店
@@ -2024,10 +2024,12 @@ const cascadeChange = (value, selectedOptions) => {
 
 //关闭功能配置 modal
 const closePermissionModal = () => {
+  state.record = {}
   state.isShowPermission = false
   state.PermissionType = 'add'
   state.addSuccessId = undefined
   state.selectTree = []
+  state.idArr = []
   state.checkedKeys = []
   state.selectAll = false
   state.isExpandAllTab = false
@@ -2136,7 +2138,7 @@ const closeStatusModal = () => {
 }
 
 //表格状态开关
-const setTableStatusChangeInfo = (value, record) => {
+const setTableStatusChangeInfo = async (value, record) => {
   state.tableStatusChangeInfo = {
     value,
     record
@@ -2157,9 +2159,10 @@ const setTableStatusChangeInfo = (value, record) => {
   }
 
   console.log('record', record)
+  console.log('state.tableStatusChangeInfo', state.tableStatusChangeInfo)
   if (record.type === null) {
     // 门店
-    state.tableStatusChangeInfo['tempTreeNum'] = getMemberNum({
+    state.tableStatusChangeInfo['tempTreeNum'] = await getMemberNum({
       id: record.id,
       tenantId: record.belongTenantId
     })

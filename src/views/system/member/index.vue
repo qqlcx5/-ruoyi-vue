@@ -104,6 +104,17 @@
               </div>
 
               <div class="search-item">
+                <div class="item-label">入职时间：</div>
+                <div class="item-condition item-condition-date">
+                  <a-range-picker
+                    v-model:value="queryParams.startEndTime"
+                    format="YYYY/MM/DD"
+                    :placeholder="['开始时间', '结束时间']"
+                  />
+                </div>
+              </div>
+
+              <div class="search-item">
                 <div class="item-label">配置角色：</div>
                 <div class="item-condition">
                   <a-select
@@ -1220,6 +1231,7 @@ const queryParams = reactive({
   memberPhone: null, //联系电话
   postType: null, //岗位类型
   partPost: null, //是否有兼岗 主岗 兼岗
+  startEndTime: [], //入职时间
   post: null, //岗位
   department: null, //部门
   configureRoles: [], //配置角色
@@ -1740,6 +1752,14 @@ const getList = async (page, isRefresh = false) => {
     roleExist: roleExist //配置角色为空时 传'1'
   }
 
+  console.log('queryParams?.startEndTime', queryParams?.startEndTime)
+  if (queryParams?.startEndTime && queryParams?.startEndTime[0] && queryParams?.startEndTime[1]) {
+    params.onboardingTime = [
+      queryParams?.startEndTime[0]?.format('YYYY-MM-DD'),
+      queryParams?.startEndTime[1]?.format('YYYY-MM-DD')
+    ]
+  }
+
   try {
     const res = await getMemberList(params)
 
@@ -1862,6 +1882,7 @@ const resetQuery = () => {
   queryParams.memberPhone = null //联系电话
   queryParams.postType = null //岗位类型
   queryParams.partPost = null //是否有兼岗 主岗 兼岗
+  queryParams.startEndTime = []
   queryParams.post = null //岗位
   queryParams.department = null //部门
   queryParams.configureRoles = [] //配置角色
@@ -2651,10 +2672,26 @@ const detailsInfo = async (record) => {
       // operator: '操作人：张三（010005）'
     }
 
+    tempItem.beforeChange = ''
+    tempItem.afterChange = ''
+    tempItem.needBeforeChange = !(Object.keys(temp1).length === 0)
+
     switch (item?.historyType) {
       case 'update':
         //修改
         tempItem.type = '修改'
+        if (temp1?.onboardingTime) {
+          tempItem.beforeChange += `在职状态-在职、在职时间-${temp1?.onboardingTime}`
+        }
+        if (temp2?.onboardingTime) {
+          tempItem.afterChange += `在职状态-在职、在职时间-${temp2?.onboardingTime}`
+        }
+        if (temp1?.departureTime) {
+          tempItem.beforeChange += `在职状态-离职、离职时间-${temp1?.departureTime}`
+        }
+        if (temp2?.departureTime) {
+          tempItem.afterChange += `在职状态-离职、离职时间-${temp2?.departureTime}`
+        }
         break
       case 'entry':
         //入职
@@ -2665,9 +2702,7 @@ const detailsInfo = async (record) => {
         tempItem.type = '离职'
         break
     }
-    tempItem.beforeChange = ''
-    tempItem.afterChange = ''
-    tempItem.needBeforeChange = !(Object.keys(temp1).length === 0)
+
     if (temp1?.userStatus === 0) {
       tempItem.beforeChange = '在职状态-在职'
       if (temp1?.onboardingTime) {
@@ -3785,6 +3820,10 @@ onMounted(async () => {
 
 .item-condition {
   width: 180px;
+}
+
+.item-condition-date {
+  width: 240px;
 }
 
 .flex-style {
