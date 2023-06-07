@@ -81,11 +81,11 @@ export default defineComponent({
         background: 'rgba(0, 0, 0, 0.7)'
       })
       // 重新设置token信息
-      await handoffTenant({ tenantId: data }).then((res) => {
+      await handoffTenant({ tenantId: data.tenantId }).then((res) => {
         if (!res) return messageBox.error('获取新主体token失败')
         authUtil.setToken(res)
       })
-      setTenantId(data)
+      setTenantId(data.tenantId)
       // 设置登录信息
       wsCache.delete(CACHE_KEY.USER)
       wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
