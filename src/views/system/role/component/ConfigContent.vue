@@ -312,7 +312,6 @@ const onSelectOrgAndStaffConfirm = (dataScopeDepts, dataScopeUsers) => {
   currentNode.value.users = dataScopeUsers.map((item) => {
     return { id: item.id, deptId: item.parentId }
   })
-  console.log(currentNode.value)
 }
 // 选择经销商
 const openMemberModal = () => {
