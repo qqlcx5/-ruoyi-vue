@@ -3751,9 +3751,8 @@ onMounted(async () => {
   } else if ($router.options.history.state?.back === '/system/post') {
     //岗位管理 页面跳转进来
     const { isOnJob = '0', postId = null, postTypeId = null } = $route?.query || {}
-
     await postTypeChange(postTypeId)
-    if (queryParams.postType != null) {
+    if (postTypeId != null) {
       queryParams.postType = postTypeId
       queryParams.isOnJob = isOnJob
     }
