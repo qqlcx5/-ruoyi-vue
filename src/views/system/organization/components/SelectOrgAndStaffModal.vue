@@ -15,7 +15,6 @@
           :default-checked-keys="defaultCheckedKeys"
           :props="{ ...defaultProps, class: customNodeClass }"
           :data="treeData"
-          :filter-node-method="filterNode"
           @check="onTreeCheck"
           @node-click="onTreeNodeClick"
         />
@@ -86,16 +85,12 @@ const currentNodeUsers = computed(() => {
 const onTreeCheck = (node) => {
   currentNode.value = node
   treeRef.value!.setCurrentKey(node.id, true)
-  setCurrentNodeStatus()
+  setCurrentNodeStatus(node.id)
   getSelectedTreeData()
 }
 const onTreeNodeClick = async (node) => {
   currentNode.value = node
-  setCurrentNodeStatus()
-}
-const filterNode = (value: string, data: any) => {
-  if (!value) return true
-  return data.type !== value
+  setCurrentNodeStatus(node.id)
 }
 const customNodeClass = (data) => {
   if (data.type === 'user') {
@@ -105,9 +100,17 @@ const customNodeClass = (data) => {
 }
 
 // --------------- 成员 ---------------
-const setCurrentNodeStatus = () => {
-  const status = treeRef.value!.getCheckedNodes().find((item) => item.id === currentNode.value.id)
-  currentNode.value.userIds = status ? currentNodeUsers.value.map((item) => item.id) : []
+const setCurrentNodeStatus = (key) => {
+  const node = treeRef.value!.getNode(key)
+  if (node.checked) {
+    currentNode.value.userIds = currentNodeUsers.value.map((item) => item.id)
+  } else if (node.indeterminate) {
+    currentNode.value.userIds = treeRef.value!.getCheckedKeys(true)
+  } else {
+    currentNode.value.userIds = []
+  }
+  // const status = treeRef.value!.getCheckedNodes().find((item) => item.id === currentNode.value.id)
+  // currentNode.value.userIds = status ? currentNodeUsers.value.map((item) => item.id) : []
 }
 const onCheckboxChange = (value, data) => {
   treeRef.value!.setChecked(data.id, value, true)
@@ -185,9 +188,5 @@ const submitForm = async () => {
   &:hover {
     background-color: var(--el-fill-color-light);
   }
-}
-
-:deep(.el-tree .el-tree-node.custom-highlight) {
-  display: none;
 }
 </style>
