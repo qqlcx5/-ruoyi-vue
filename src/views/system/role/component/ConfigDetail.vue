@@ -53,7 +53,7 @@
                 <div v-if="row.dataScopeDepts && row.dataScopeDepts.length > 0" class="flex">
                   <div class="flex-shrink-0">指定部门：</div>
                   <div>{{
-                    row.dataScopeDepts.map((item) => `${item.name}(${item.code})`).join('、')
+                    row.dataScopeDepts.map((item) => `${item.name}(${item.component})`).join('、')
                   }}</div>
                 </div>
                 <div v-if="row.dataScopeUsers && row.dataScopeUsers.length > 0" class="flex">
@@ -159,16 +159,14 @@ const dataAccess = (data): string => {
       (dataScopeUser && dataScopeUser.length > 0)
     ) {
       return (
-        dataScopeDept.join('、') +
-        '、' +
+        (dataScopeDept ? dataScopeDept.join('、') + '、' : '') +
         (dataScopeUser
           ? dataScopeUser.map((item) => `${item.nickname}(${item.username})`).join('、')
           : '')
       )
     } else if ((dataScopeStore && dataScopeStore.length > 0) || (dealers && dealers.length > 0)) {
       return (
-        (dataScopeStore ? dataScopeStore.join('、') : '') +
-        '、' +
+        (dataScopeStore ? dataScopeStore.join('、') + '、' : '') +
         (dealers ? dealers.join('、') : '')
       )
     } else {
@@ -178,12 +176,13 @@ const dataAccess = (data): string => {
     if (dataScope === 2) {
       // 指定部门
       return (
-        dataScopeDepts
-          .map((item) => {
-            return item.name
-          })
-          .join('、') +
-        '、' +
+        (dataScopeDepts
+          ? dataScopeDepts
+              .map((item) => {
+                return item.name
+              })
+              .join('、') + '、'
+          : '') +
         dataScopeUsers
           .map((item) => {
             return item.name
@@ -193,12 +192,13 @@ const dataAccess = (data): string => {
     } else if (dataScope === 6) {
       // 指定门店
       return (
-        dataScopeStores
-          .map((item) => {
-            return item.name
-          })
-          .join('、') +
-        '、' +
+        (dataScopeStores
+          ? dataScopeStores
+              .map((item) => {
+                return item.name
+              })
+              .join('、') + '、'
+          : '') +
         dataScopeDealers
           .map((item) => {
             return item.name
