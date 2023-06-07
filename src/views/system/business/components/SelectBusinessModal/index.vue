@@ -12,7 +12,6 @@
         :default-checked-keys="defaultCheckedKeys"
         :props="defaultProps"
         :data="treeData"
-        empty-text="加载中，请稍后"
         @check="onTreeCheck"
       />
       <div class="selected-info">
@@ -25,7 +24,6 @@
           default-expand-all
           :props="defaultProps"
           :data="selectedBusinessData"
-          empty-text="请选择"
         />
       </div>
     </div>
@@ -60,10 +58,7 @@ const defaultCheckedKeys = ref<string[] | number[]>([])
 
 const onTreeCheck = (node, list) => {
   selectedBusinessData.value = handleTree(
-    [
-      ...unref(list.checkedNodes.filter((item) => !item.type)),
-      ...unref(list.halfCheckedNodes.filter((item) => !item.type))
-    ],
+    [...unref(list.checkedNodes), ...unref(list.halfCheckedNodes)],
     'id',
     'belongTenantId'
   )
@@ -103,6 +98,7 @@ const submitForm = async () => {
   } else {
     emit(
       'confirm',
+      checkedNodes.filter((item) => item.type),
       checkedNodes.filter((item) => !item.type)
     )
   }
@@ -113,10 +109,12 @@ const submitForm = async () => {
 .selected-info {
   padding-left: 16px;
   border-left: 1px solid $divider-color;
+
   .info-title {
     font-weight: bold;
   }
 }
+
 :deep(.vxe-modal--content .el-scrollbar__view) {
   height: 100% !important;
 }

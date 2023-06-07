@@ -66,31 +66,40 @@
               <el-radio :label="5">仅看自己</el-radio>
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
-              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">
+              <el-radio v-if="tenantType === TenantMap.dealer" :label="2" class="flex items-center">
                 指定部门
-                <div
-                  v-if="currentNode.dataScope === 2"
-                  class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
-                  @click="openDepartModal"
-                  >{{
-                    (currentNode.dataScopeDeptIds && currentNode.dataScopeDeptIds.length > 0) ||
-                    (currentNode.dataScopeUserIds && currentNode.dataScopeUserIds.length) > 0
-                      ? `已选${currentNode.dataScopeDeptIds.length}个部门,${currentNode.dataScopeUserIds.length}个人`
-                      : '请选择'
-                  }}
-                </div>
+                <el-tooltip placement="top">
+                  <template #content>
+                    <div class="max-w-300px">
+                      {{ departPlaceholder }}
+                    </div>
+                  </template>
+                  <div
+                    v-if="currentNode.dataScope === 2"
+                    class="depart relative inline-block w-160px pl-8px pr-16px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)] overflow-hidden"
+                    @click="openDepartModal"
+                  >
+                    {{ departPlaceholder }}
+                  </div>
+                </el-tooltip>
               </el-radio>
               <el-radio v-if="tenantType === TenantMap.manufacturer" :label="6">
-                指定经销商
-                <div
-                  v-if="currentNode.dataScope === 6"
-                  class="depart relative inline-block w-160px px-8px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)]"
-                  @click="openMemberModal"
-                  >{{
-                    currentNode.dataScopeStoreIds && currentNode.dataScopeStoreIds.length > 0
-                      ? `已选${currentNode.dataScopeStoreIds.length}个门店`
-                      : '请选择'
-                  }}
+                <div class="flex items-center">
+                  指定经销商
+                  <el-tooltip placement="top">
+                    <template #content>
+                      <div class="max-w-300px">
+                        {{ dealerPlaceholder }}
+                      </div>
+                    </template>
+                    <div
+                      v-if="currentNode.dataScope === 6"
+                      class="depart relative inline-block w-160px pl-8px pr-16px py-2px ml-6px border-1px rounded-4px text-[var(--el-radio-text-color)] overflow-hidden"
+                      @click="openMemberModal"
+                    >
+                      {{ dealerPlaceholder }}
+                    </div>
+                  </el-tooltip>
                 </div>
               </el-radio>
               <el-radio :label="1">看所有人</el-radio>
@@ -176,6 +185,21 @@ const treeRef = ref<InstanceType<typeof ElTree>>()
 const treeNodeAll = ref(false)
 const treeNodeExpand = ref(true)
 const checkedNodes = ref()
+
+const departPlaceholder = computed(() => {
+  const { dataScopeDeptIds, dataScopeUserIds } = currentNode.value
+  return (dataScopeDeptIds && dataScopeDeptIds.length > 0) ||
+    (dataScopeUserIds && dataScopeUserIds.length > 0)
+    ? `已选${dataScopeDeptIds.length}个部门,${dataScopeUserIds.length}个人`
+    : '请选择'
+})
+const dealerPlaceholder = computed(() => {
+  const { dataScopeDealerIds, dataScopeStoreIds } = currentNode.value
+  return (dataScopeDealerIds && dataScopeDealerIds.length > 0) ||
+    (dataScopeStoreIds && dataScopeStoreIds.length > 0)
+    ? `已选${dataScopeDealerIds.length}个经销商,${dataScopeStoreIds.length}个门店`
+    : '请选择'
+})
 watch(
   () => checkedNodes.value,
   (data) => {
@@ -284,12 +308,19 @@ const onSelectOrgAndStaffConfirm = (dataScopeDepts, dataScopeUsers) => {
 }
 // 选择经销商
 const openMemberModal = () => {
-  const { dataScopeStoreIds, dataScopeStores } = currentNode.value
-  selectBusinessModalRef.value.openModal(dataScopeStoreIds, dataScopeStores)
+  const { dataScopeStoreIds, dataScopeDealerIds } = currentNode.value
+  selectBusinessModalRef.value.openModal([...dataScopeDealerIds, ...dataScopeStoreIds])
 }
-const onSelectBusinessConfirm = (data) => {
-  currentNode.value.dataScopeStoreIds = data.map((item) => item.id)
-  currentNode.value.dataScopeStores = data.map((item) => {
+const onSelectBusinessConfirm = (dealers, stores) => {
+  currentNode.value.dataScopeStoreIds = stores.map((item) => item.id)
+  currentNode.value.dataScopeStores = stores.map((item) => {
+    return {
+      id: item.id,
+      name: item.name
+    }
+  })
+  currentNode.value.dataScopeDealerIds = dealers.map((item) => item.id)
+  currentNode.value.dataScopeDealers = dealers.map((item) => {
     return {
       id: item.id,
       name: item.name
@@ -329,6 +360,8 @@ const init = async () => {
           menu.dataScopeStoreIds = roleData?.dataScopeStoreIds || []
           menu.dataScopeStores = roleData?.dataScopeStores || []
           menu.dataScopeBrandIds = roleData?.dataScopeBrandIds || []
+          menu.dataScopeDealerIds = roleData?.dataScopeDealerIds || []
+          menu.dataScopeDealers = roleData?.dataScopeDealers || []
           menu.databrandScope =
             roleData?.dataScopeBrandIds && roleData?.dataScopeBrandIds.length > 0 ? 2 : 1
         }
@@ -367,6 +400,8 @@ const getParams = () => {
     if (item.dataScope === 2) {
       item.dataScopeStoreIds = []
       item.dataScopeStores = []
+      item.dataScopeDealerIds = []
+      item.dataScopeDealers = []
     } else if (item.dataScope === 6) {
       // 指定人清空部门
       // 部门清空指定人
@@ -390,35 +425,42 @@ defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
     border: 1px solid #eaebef;
     border-radius: 2px;
   }
+
   .box-header {
     padding: 10px 14px;
     background-color: var(--table-bg-color);
   }
+
   .box-tool {
     border-bottom: 1px solid #eaebef;
   }
+
   .box-content .el-radio-group {
     align-items: normal;
-    flex-direction: column;
-    flex-wrap: nowrap;
+    flex-flow: column nowrap;
   }
+
   .depart {
+    text-overflow: ellipsis;
     border-color: #eaebef;
-    &:after {
-      content: '\e68f';
-      font-family: iconfont;
-      font-size: 12px;
-      color: var(--el-color-info);
+
+    &::after {
       position: absolute;
       top: 50%;
       right: 8px;
+      font-family: iconfont;
+      font-size: 12px;
+      color: var(--el-color-info);
+      content: '\e68f';
       transform: translateY(-50%);
     }
   }
+
   :deep(.el-tree .el-tree-node.custom-highlight > .el-tree-node__content) {
     color: var(--el-color-primary);
     background-color: #ebf5ff;
   }
+
   :deep(.el-tree .el-tree-node.is-current > .el-tree-node__content) {
     background-color: #c1e0ff;
   }

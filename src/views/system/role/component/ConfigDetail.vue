@@ -50,25 +50,49 @@
           <el-tooltip placement="top">
             <template #content>
               <div v-if="row.dataScope === 2" class="max-w-300px">
-                <div v-if="row.dataScopeUsers && row.dataScopeUsers.length > 0" class="flex">
-                  <div class="flex-shrink-0">指定人：</div>
-                  <div>{{
-                    row.dataScopeUsers
-                      .map((item) => `${item.nickname}(${item.username})`)
-                      .join('、')
-                  }}</div>
-                </div>
                 <div v-if="row.dataScopeDepts && row.dataScopeDepts.length > 0" class="flex">
                   <div class="flex-shrink-0">指定部门：</div>
                   <div>{{
                     row.dataScopeDepts.map((item) => `${item.name}(${item.code})`).join('、')
                   }}</div>
                 </div>
+                <div v-if="row.dataScopeUsers && row.dataScopeUsers.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定成员：</div>
+                  <div>{{
+                    row.dataScopeUsers
+                      .map((item) => `${item.nickname}(${item.username})`)
+                      .join('、')
+                  }}</div>
+                </div>
               </div>
               <div v-else-if="row.dataScope === 6" class="max-w-300px">
-                <div class="flex">
+                <div v-if="row.dataScopeDealers && row.dataScopeDealers.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定经销商：</div>
+                  <div>{{ row.dataScopeDealers.map((item) => item.name).join('、') }}</div>
+                </div>
+                <div v-if="row.dataScopeStores && row.dataScopeStores.length > 0" class="flex">
                   <div class="flex-shrink-0">指定门店：</div>
                   <div>{{ row.dataScopeStores.map((item) => item.name).join('、') }}</div>
+                </div>
+              </div>
+              <div v-else-if="showDetailsTooltip(row)" class="max-w-300px">
+                <div v-if="row.dealers && row.dealers.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定经销商：</div>
+                  <div>{{ row.dealers.join('、') }}</div>
+                </div>
+                <div v-if="row.dataScopeStore && row.dataScopeStore.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定门店：</div>
+                  <div>{{ row.dataScopeStore.join('、') }}</div>
+                </div>
+                <div v-if="row.dataScopeDept && row.dataScopeDept.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定部门：</div>
+                  <div>{{ row.dataScopeDept.join('、') }}</div>
+                </div>
+                <div v-if="row.dataScopeUser && row.dataScopeUser.length > 0" class="flex">
+                  <div class="flex-shrink-0">指定成员：</div>
+                  <div>{{
+                    row.dataScopeUser.map((item) => `${item.nickname}(${item.username})`).join('、')
+                  }}</div>
                 </div>
               </div>
               <div v-else class="max-w-300px">
@@ -117,33 +141,72 @@ const operationAccess = (data): string => {
   return '-'
 }
 const dataAccess = (data): string => {
+  const {
+    dataScopeDept,
+    dataScopeUser,
+    dataScopeStore,
+    dealers,
+    dataScope,
+    dataScopeName,
+    dataScopeDepts,
+    dataScopeUsers,
+    dataScopeStores,
+    dataScopeDealers
+  } = data
   if (props.origin === 'detail') {
-    if (data.dataScopeDept && data.dataScopeDept.length > 0) {
-      return data.dataScopeDept.join('、')
-    } else if (data.dataScopeUser && data.dataScopeUser.length > 0) {
-      return data.dataScopeUser.join('、')
-    } else if (data.dataScopeStore && data.dataScopeStore.length > 0) {
-      return data.dataScopeStore.join('、')
+    if (
+      (dataScopeDept && dataScopeDept.length > 0) ||
+      (dataScopeUser && dataScopeUser.length > 0)
+    ) {
+      return (
+        dataScopeDept.join('、') +
+        '、' +
+        (dataScopeUser
+          ? dataScopeUser.map((item) => `${item.nickname}(${item.username})`).join('、')
+          : '')
+      )
+    } else if ((dataScopeStore && dataScopeStore.length > 0) || (dealers && dealers.length > 0)) {
+      return (
+        (dataScopeStore ? dataScopeStore.join('、') : '') +
+        '、' +
+        (dealers ? dealers.join('、') : '')
+      )
     } else {
-      return data.dataScopeName
+      return dataScopeName || ''
     }
   } else {
-    if (data.dataScope === 2) {
+    if (dataScope === 2) {
       // 指定部门
-      return data.dataScopeDepts
-        .map((item) => {
-          return item.name
-        })
-        .join('、')
-    } else if (data.dataScope === 6) {
+      return (
+        dataScopeDepts
+          .map((item) => {
+            return item.name
+          })
+          .join('、') +
+        '、' +
+        dataScopeUsers
+          .map((item) => {
+            return item.name
+          })
+          .join('、')
+      )
+    } else if (dataScope === 6) {
       // 指定门店
-      return data.dataScopeStores
-        .map((item) => {
-          return item.name
-        })
-        .join('、')
+      return (
+        dataScopeStores
+          .map((item) => {
+            return item.name
+          })
+          .join('、') +
+        '、' +
+        dataScopeDealers
+          .map((item) => {
+            return item.name
+          })
+          .join('、')
+      )
     } else {
-      return DATA_ACCESS_MAP[data.dataScope]
+      return DATA_ACCESS_MAP[dataScope]
     }
   }
 }
@@ -156,22 +219,34 @@ const brandAccess = (data) => {
         .join('、')
     : ''
 }
+const showDetailsTooltip = (row) => {
+  const { dataScopeDept, dataScopeUser, dataScopeStore, dealers } = row
+  return (
+    (dataScopeDept && dataScopeDept.length > 0) ||
+    (dataScopeUser && dataScopeUser.length > 0) ||
+    (dataScopeStore && dataScopeStore.length > 0) ||
+    (dealers && dealers.length > 0)
+  )
+}
 </script>
 <style lang="scss" scoped>
 .table-box {
   padding: 15px;
   margin-bottom: 10px;
+
   :deep(.el-table th.el-table__cell) {
     background-color: #f3f8ff !important;
   }
+
   .config-table {
-    box-sizing: border-box;
     border: 1px solid #eaebef;
+    box-sizing: border-box;
   }
 }
+
 .text-ellipsis {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
