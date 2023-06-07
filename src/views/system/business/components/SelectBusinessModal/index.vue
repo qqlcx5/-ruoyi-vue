@@ -1,6 +1,6 @@
 <template>
   <!-- 弹窗 -->
-  <XModal title="选择经销商" v-model="modelVisible" width="508px" class="business-modal">
+  <XModal title="选择经销商" v-model="modelVisible" width="508px">
     <div class="h-full grid grid-cols-2">
       <el-tree
         class="px-6px py-10px max-h-560px"
@@ -86,7 +86,7 @@ const init = async () => {
   setSelectedData()
 }
 // 打开弹窗
-const openModal = async (ids?: string[] | number[], data?) => {
+const openModal = async (ids?: string[] | number[]) => {
   if (ids && ids.length > 0) defaultCheckedKeys.value = ids
   modelVisible.value = true
   await init()

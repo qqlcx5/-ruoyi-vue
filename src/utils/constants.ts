@@ -218,7 +218,8 @@ export const PayRefundStatusEnum = {
 }
 
 export const organizationType = {
-  store: '3' //门店
+  store: '3', //门店
+  branchCompany: '2' //分公司
 }
 
 //定制列缓存 页面pageKey

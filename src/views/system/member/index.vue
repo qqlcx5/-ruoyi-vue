@@ -525,8 +525,26 @@
                       name="radioPhoneTypeGroup"
                       @change="() => clearPhoneNum(record)"
                     >
-                      <a-radio-button value="1" style="margin-right: 5px">手机</a-radio-button>
-                      <a-radio-button value="2">座机</a-radio-button>
+                      <a-radio-button
+                        value="1"
+                        style="margin-right: 5px; border-radius: 4px"
+                        class="radio-btn"
+                      >
+                        <Icon
+                          icon="svg-icon:check"
+                          :size="10"
+                          class="margin-right-4"
+                          v-if="record.phoneType === '1'"
+                        />手机</a-radio-button
+                      >
+                      <a-radio-button value="2" style="border-radius: 4px" class="radio-btn"
+                        ><Icon
+                          icon="svg-icon:check"
+                          :size="10"
+                          class="margin-right-4"
+                          v-if="record.phoneType === '2'"
+                        />座机</a-radio-button
+                      >
                     </a-radio-group>
                   </div>
                 </template>
@@ -550,18 +568,32 @@
                 <template v-if="column.key === 'useType'">
                   <div>
                     <a-radio-group v-model:value="record.useType" name="radioUseTypeGroup">
-                      <a-radio-button value="1" style="margin-right: 5px">私人</a-radio-button>
-                      <a-radio-button value="2">公司</a-radio-button>
+                      <a-radio-button
+                        value="1"
+                        size="small"
+                        style="margin-right: 5px; border-radius: 4px"
+                        class="radio-btn"
+                        ><Icon
+                          icon="svg-icon:check"
+                          :size="10"
+                          class="margin-right-4"
+                          v-if="record.useType === '1'"
+                        />私人</a-radio-button
+                      >
+                      <a-radio-button value="2" style="border-radius: 4px" class="radio-btn"
+                        ><Icon
+                          icon="svg-icon:check"
+                          :size="10"
+                          class="margin-right-4"
+                          v-if="record.useType === '2'"
+                        />公司</a-radio-button
+                      >
                     </a-radio-group>
                   </div>
                 </template>
 
                 <template v-if="column.key === 'isService'">
                   <div>
-                    <!--                    <a-radio-group v-model:value="record.isService" name="radioIsServiceGroup">-->
-                    <!--                      <a-radio value="0">是</a-radio>-->
-                    <!--                      <a-radio value="1">否</a-radio>-->
-                    <!--                    </a-radio-group>-->
                     <a-switch
                       v-model:checked="record.isService"
                       checked-children="开启"
@@ -573,7 +605,7 @@
                 <!--  操作   -->
                 <template v-if="column?.key === 'operation'">
                   <div class="operation-content">
-                    <div class="text-color margin-right-5" @click="addColumns(index)">新增</div>
+                    <div class="text-color margin-right-5" @click="addColumns(index)">增加</div>
                     <div
                       class="text-color margin-right-5"
                       @click="deleteColumns(index)"
@@ -714,7 +746,7 @@
               <!--  操作   -->
               <template v-if="column?.key === 'operation'">
                 <div class="operation-content">
-                  <div class="text-color margin-right-5" @click="addPostColumns(index)">新增</div>
+                  <div class="text-color margin-right-5" @click="addPostColumns(index)">增加</div>
                   <div
                     class="text-color margin-right-5"
                     @click="deletePostColumns(index)"
@@ -858,7 +890,9 @@
     </div>
 
     <template #footer>
-      <a-button type="primary" html-type="submit" @click="PermissionOk">确定</a-button>
+      <a-button type="primary" html-type="submit" @click="PermissionOk" :loading="state.btnLoading"
+        >确定</a-button
+      >
       <a-button @click="closePermissionModal">暂不设置</a-button>
     </template>
   </a-modal>
@@ -1339,6 +1373,7 @@ const state = reactive({
   configureRolesNewOptions: [], //分配角色 Options tree
   configureRolesNewTreeOptions: [], //分配角色 Options tree  Modal 已删除 已关闭 包括
   configureRolesNewList: [], //分配角色 数组 没有 关闭跟删除
+  btnLoading: false, //分配角色 btn
   memberTypeOptions: [
     {
       value: 'full_members',
@@ -2249,7 +2284,9 @@ const PermissionOk = async () => {
     userId: state.permissionRecord?.id || state.addSuccessId,
     roleIds: state.roleId
   }
+  state.btnLoading = true
   await aassignUserRoleApi(params)
+  state.btnLoading = false
   await getList()
   closePermissionModal()
 }
@@ -2708,7 +2745,7 @@ const detailsInfo = async (record) => {
       sort: 3
     },
     {
-      title: '是否开通云服务',
+      title: '是否开通云录音',
       width: 120,
       dataIndex: 'isService',
       key: 'isService',
@@ -3174,10 +3211,11 @@ const sendCurrentSelect = (currentKey) => {
     })
     queryParams.organization = tempArr
   } else {
-    state.organizationList.map((item) => {
-      tempArr.push(item.id)
-    })
-    queryParams.organization = tempArr
+    // state.organizationList.map((item) => {
+    //   tempArr.push(item.id)
+    // })
+    // queryParams.organization = tempArr
+    queryParams.organization = null
   }
   getList(1)
 }
@@ -4194,7 +4232,7 @@ onMounted(async () => {
 }
 
 .adress-input {
-  width: 530px;
+  width: 570px;
 }
 
 //table 联系电话
@@ -4436,6 +4474,18 @@ onMounted(async () => {
   color: rgba(210, 210, 210, 1) !important;
   font-size: 14px;
   font-family: PingFangSC-Regular;
+}
+.margin-right-4 {
+  margin-right: 4px;
+}
+.radio-btn {
+  width: 60px;
+  height: 26px;
+  padding: 0;
+  line-height: 26px;
+  text-align: center;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 1);
 }
 </style>
 

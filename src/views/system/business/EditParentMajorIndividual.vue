@@ -168,7 +168,7 @@ const checkConfirm = async () => {
     state.isShowMessage = true
   } else {
     //不可以迁移
-    message.warning('修改不成功！原因为：修改的主体下有同名的门店名称/编码，请重新修改。')
+    message.error('修改不成功！原因为：修改的主体下有同名的门店名称/编码，请重新修改。')
   }
 }
 

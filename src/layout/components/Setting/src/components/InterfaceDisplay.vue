@@ -58,7 +58,7 @@ const messageBox = useMessage()
 const userStore = useUserStoreWithOut()
 
 const canEditWatermark = computed(() => {
-  return userStore.getRoles.includes('super_admin')
+  return userStore.getRoles.includes('super_admin') || userStore.getRoles.includes('tenant_admin')
 })
 
 const water = ref(userStore.getTenant.watermark || '')

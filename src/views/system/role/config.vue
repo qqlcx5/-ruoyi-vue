@@ -74,21 +74,26 @@ const frontConfigRef = ref()
 const backstageConfigRef = ref()
 const handleOk = async () => {
   loading.value = true
-  const params = {
-    menuDataScopeItemList:
-      activeName.value === 'front'
-        ? frontConfigRef.value.getParams()
-        : backstageConfigRef.value.getParams(),
-    roleId: query.id
-  }
-  const result = await RoleApi.assignRoleMenuDataScope(params).finally(
-    () => (loading.value = false)
-  )
-  if (result) {
-    message.success('保存成功')
-    handleCancel()
-  } else {
-    message.error('保存失败')
+  try {
+    const params = {
+      menuDataScopeItemList:
+        activeName.value === 'front'
+          ? frontConfigRef.value.getParams()
+          : backstageConfigRef.value.getParams(),
+      roleId: query.id
+    }
+    const result = await RoleApi.assignRoleMenuDataScope(params).finally(
+      () => (loading.value = false)
+    )
+    if (result) {
+      message.success('保存成功')
+      handleCancel()
+    } else {
+      message.error('保存失败')
+    }
+  } catch (err: any) {
+    loading.value = false
+    console.error(err?.message)
   }
 }
 const handleCancel = () => {

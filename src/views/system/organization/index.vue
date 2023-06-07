@@ -271,6 +271,7 @@
         >
           <a-tree-select
             v-model:value="state.formState.organizationType"
+            @change="organizationTypeChange"
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -308,11 +309,7 @@
           />
         </a-form-item>
 
-        <a-form-item
-          :label="`机构简称`"
-          name="abbreviate"
-          :rules="[{ validator: chineseValidator }]"
-        >
+        <a-form-item :label="`机构简称`" name="abbreviate">
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -412,7 +409,7 @@
         html-type="submit"
         @click="addMajorIndividualFN"
         :loading="state.addEditLoading"
-        >{{ state.modalType === 'add' ? '下一步' : '确认' }}</a-button
+        >{{ state.addEditBtn }}</a-button
       >
       <a-button @click="closeModal">取消</a-button>
     </template>
@@ -520,7 +517,7 @@
 
           <a-form-item
             label="销售品牌"
-            name="isSale"
+            name="saleBrand"
             class="width-50"
             :rules="[{ required: true, message: `销售品牌不能为空` }]"
             v-if="state.formAttributeState.isSale === 0"
@@ -959,6 +956,7 @@
     wrapClassName="details-modal set-attribute-modal"
     width="763px"
     :bodyStyle="{ overflow: 'auto' }"
+    :footer="null"
   >
     <!--  机构信息  -->
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
@@ -1338,6 +1336,7 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
 const state = reactive({
+  addEditBtn: '下一步', //新增 修改 确认 bnt text
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
   messageText: '为了保护您的机构公司业务数据安全，请通过安全验证：',
@@ -1767,7 +1766,17 @@ const closeModal = () => {
   state.record = {}
   state.modalTitle = '新增'
   state.modalType = 'add'
+  state.addEditBtn = '下一步'
   state.currentType = '-1' //新增/修改/设置属性 机构类型(门店/分公司)
+}
+
+//新增 编辑 机构类型 为分公司时  btn 为下一步 else 为确认
+const organizationTypeChange = (value) => {
+  if (state.modalType === 'add' && value === organizationType.branchCompany) {
+    state.addEditBtn = '下一步'
+  } else {
+    state.addEditBtn = '确认'
+  }
 }
 
 /** 添加/修改操作 */
@@ -1803,6 +1812,7 @@ const edit = async (record, isCloseDetails = false) => {
 
   state.modalType = 'edit'
   state.modalTitle = '编辑'
+  state.addEditBtn = '确认'
   //赋值 回显
   state.formState = {
     id: record.id,
@@ -2009,7 +2019,6 @@ const PermissionOk = async () => {
   // 校验表单
   if (!formAttributeRef) return
   const valid = await formAttributeRef.value.validate()
-  state.addEditLoading = true
 
   if (state.formAttributeState.type?.length === 0 || !state.formAttributeState.type) {
     return message.warning('类型不能为空')
@@ -2051,22 +2060,24 @@ const PermissionOk = async () => {
   }
 
   //省市区
-  if (state.formAttributeState?.cascadeInfo[0]) {
-    params['province'] = state.formAttributeState.cascadeInfo[0].label
-    params['provinceCode'] = state.formAttributeState.cascadeInfo[0].value
+  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[0]) {
+    params['province'] = state.formAttributeState.cascadeInfo[0]?.label
+    params['provinceCode'] = state.formAttributeState.cascadeInfo[0]?.value
   }
-  if (state.formAttributeState?.cascadeInfo[1]) {
-    params['city'] = state.formAttributeState.cascadeInfo[1].label
-    params['cityCode'] = state.formAttributeState.cascadeInfo[1].value
+  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[1]) {
+    params['city'] = state.formAttributeState.cascadeInfo[1]?.label
+    params['cityCode'] = state.formAttributeState.cascadeInfo[1]?.value
   }
-  if (state.formAttributeState?.cascadeInfo[2]) {
-    params['county'] = state.formAttributeState.cascadeInfo[2].label
-    params['countyCode'] = state.formAttributeState.cascadeInfo[2].value
+  if (state.formAttributeState?.cascadeInfo && state.formAttributeState?.cascadeInfo[2]) {
+    params['county'] = state.formAttributeState.cascadeInfo[2]?.label
+    params['countyCode'] = state.formAttributeState.cascadeInfo[2]?.value
   }
 
   if (state.formAttributeState.establishDate) {
     params['establishDate'] = state.formAttributeState.establishDate?.format('YYYY-MM-DD') //成立日期
   }
+
+  state.addEditLoading = true
 
   // if (state.PermissionType === 'add') {
   //relVO null则没有属性

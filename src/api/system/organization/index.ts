@@ -55,6 +55,11 @@ export const updateOrganizationStatus = (data) => {
   return request.put({ url: '/system/organization/update-status', data })
 }
 
+// 更改机构状态 门店 主体管理页面
+export const updateOrganizationStoreStatus = (data) => {
+  return request.put({ url: '/system/organization/update-store-status', data })
+}
+
 // 设置(新增)属性
 export const addAttribute = (data) => {
   return request.post({ url: '/system/organization/create_rel', data })

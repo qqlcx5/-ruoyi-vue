@@ -99,7 +99,7 @@
           <el-input
             v-model="form.code"
             placeholder="请输入角色编码"
-            @input="(val) => (form.code = val.replace(/[^a-zA-Z0-9]/g, ''))"
+            @input="(val) => (form.code = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
           />
         </template>
         <template #status="form">

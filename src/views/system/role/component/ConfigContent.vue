@@ -66,8 +66,7 @@
               <el-radio :label="5">仅看自己</el-radio>
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
-              <!--              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">-->
-              <el-radio :label="2">
+              <el-radio v-if="tenantType === TenantMap.dealer" :label="2">
                 指定部门
                 <div
                   v-if="currentNode.dataScope === 2"
@@ -101,7 +100,7 @@
         </div>
       </div>
       <div>
-        <div class="box-header"> 请选择数据权限 </div>
+        <div class="box-header"> 请选择品牌权限 </div>
         <div class="box-content px-14px py-10px">
           <div v-if="currentNode && currentNode.type === 2">
             <el-radio-group
@@ -110,7 +109,7 @@
               @change="onBrandScopeChange"
             >
               <el-radio :label="1">不限品牌</el-radio>
-              <el-radio :label="2">指定品牌</el-radio>
+              <el-radio :label="2"> 指定品牌 </el-radio>
               <el-checkbox
                 v-if="currentNode.databrandScope === 2"
                 class="!absolute right-0 bottom-0"
@@ -121,6 +120,9 @@
               </el-checkbox>
             </el-radio-group>
             <div v-show="currentNode.databrandScope === 2" class="ml-24px">
+              <span v-if="selectedBrands.length === 0" class="text-error -ml-24px"
+                >(请至少选择一个指定品牌)</span
+              >
               <el-checkbox-group v-model="selectedBrands">
                 <el-checkbox v-for="item in dictBrand" :key="item.value" :label="item.value">{{
                   item.label
@@ -150,6 +152,7 @@ import { getDictOptions } from '@/utils/dict'
 import { getTenantData } from '@/utils/auth'
 
 const { query } = useRoute()
+const message = useMessage()
 
 const props = defineProps({
   stage: {
@@ -349,6 +352,15 @@ watch(
 const getParams = () => {
   const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes(false, true))
   return menuDataScopeItemList.map((item) => {
+    if (item.databrandScope === 2 && item.dataScopeBrandIds.length === 0) {
+      message.error(`${item.name} 菜单未选择指定品牌`)
+      throw new Error(`${item.name} 菜单未选择指定品牌`)
+    }
+    // type === 2 菜单
+    if (item.type === 2 && !item.dataScope) {
+      message.error(`${item.name} 菜单未选择数据权限`)
+      throw new Error(`${item.name} 菜单未选择数据权限`)
+    }
     item['menuId'] = item.id
     item['menuParentId'] = item.parentId
     delete item.children

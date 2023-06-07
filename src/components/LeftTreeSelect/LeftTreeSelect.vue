@@ -20,6 +20,7 @@
         :auto-expand-parent="autoExpandParent"
         :tree-data="state.treeData"
         v-model:selectedKeys="state.selectedKeys"
+        @select="selectTree"
         @expand="onExpand"
       >
         <template #title="{ title }">
@@ -201,21 +202,24 @@ watch(searchValue, (value) => {
   autoExpandParent.value = true
 })
 
-watch(
-  () => state.selectedKeys,
-  (val) => {
-    if (val[0]) {
-      //选中的值向上发送
-      emit('sendCurrentSelect', val[0])
-    } else {
-      //选中的值向上发送
-      emit('sendCurrentSelect', '')
-    }
-  },
-  {
-    immediate: true
-  }
-)
+// watch(
+//   () => state.selectedKeys,
+//   (val) => {
+//     if (val[0]) {
+//       //选中的值向上发送
+//       console.log('向上发送')
+//       emit('sendCurrentSelect', val[0])
+//     } else {
+//       //选中的值向上发送
+//       console.log('向上空')
+//       emit('sendCurrentSelect', '')
+//     }
+//   }
+// )
+
+const selectTree = (selectedKeys) => {
+  emit('sendCurrentSelect', selectedKeys)
+}
 
 watch(
   () => props.treeData,
