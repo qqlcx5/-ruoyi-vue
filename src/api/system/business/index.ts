@@ -21,6 +21,11 @@ export const getMajorIndividualList = (params: MajorIndividual) => {
   return request.get({ url: '/system/tenant/list', params })
 }
 
+// 查询门店顶层的手机号
+export const getTopPhone = (params) => {
+  return request.get({ url: '/system/tenant/get-top-phone', params })
+}
+
 // 查询 门店 修改上级主体 是否能迁移
 export const getCheckMajorIndividual = (params: MajorIndividual) => {
   return request.get({ url: '/system/organization/check-migrate', params })

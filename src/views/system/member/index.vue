@@ -207,7 +207,12 @@
               @click="fullScreen"
             />
             <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-            <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
+            <Icon
+              icon="svg-icon:refresh"
+              :size="50"
+              class="cursor-pointer"
+              @click="getList(queryParams.current, true)"
+            />
             <Icon
               icon="svg-icon:custom-column"
               :size="50"
@@ -1694,7 +1699,7 @@ const allColumns = [
 ]
 
 /** 查询列表 */
-const getList = async (page) => {
+const getList = async (page, isRefresh = false) => {
   state.loading = true
 
   if (page) {
@@ -1818,6 +1823,9 @@ const getList = async (page) => {
     })
 
     state.total = res.total
+    if (isRefresh) {
+      message.success('刷新成功')
+    }
   } finally {
     state.loading = false
   }
@@ -2630,8 +2638,10 @@ const detailsInfo = async (record) => {
   changeRecord = []
   //变更记录
   userHistoryVOList.map((item) => {
-    const temp1 = item.beforeData ? JSON.parse(item.beforeData) : []
-    const temp2 = item.afterData ? JSON.parse(item.afterData) : []
+    const temp1 = item.beforeData ? JSON.parse(item.beforeData) : {}
+    const temp2 = item.afterData ? JSON.parse(item.afterData) : {}
+    console.log('变更前', temp1)
+    console.log('变更后', temp2)
     let tempItem = {
       date: dayjs(item?.createTime)?.format('YYYY-MM-DD'),
       time: dayjs(item?.createTime)?.format('HH:mm:ss')
@@ -2645,61 +2655,120 @@ const detailsInfo = async (record) => {
       case 'update':
         //修改
         tempItem.type = '修改'
-        tempItem.beforeChange = '部门/岗位-'
-        tempItem.afterChange = `部门/岗位-`
-        tempItem.needBeforeChange = true
-        temp1?.map((item) => {
-          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-          tempItem.beforeChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
-        })
-
-        temp2?.map((item) => {
-          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-          tempItem.afterChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
-        })
-
-        tempItem.operator = `${item.createName}`
         break
       case 'entry':
         //入职
         tempItem.type = '入职'
-        tempItem.beforeChange = `离职时间-${temp1[0]?.departureTime}、`
-        tempItem.afterChange = `入职时间-${temp2[0]?.onboardingTime}、`
-        // temp1?.map((item) => {
-        //   const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-        //   tempItem.beforeChange += `${item?.updateTime?.year}-${item?.updateTime?.month}-${item?.updateTime?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
-        // })
-        tempItem.needBeforeChange = temp1.length > 0
-        temp1?.map((item) => {
-          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-
-          // tempItem.beforeChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
-          tempItem.beforeChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
-        })
-
-        temp2?.map((item) => {
-          const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
-
-          // tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
-          tempItem.afterChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
-        })
-
-        // tempItem.beforeChange = `变更前：入职时间-${temp1?.updateTime?.year}-${temp1?.updateTime?.month}-${temp1?.updateTime?.day}、部门/岗位-${temp1?.componentName}/ ${temp1?.postName}`
-        // tempItem.afterChange = `变更后：入职时间-${temp2?.updateTime?.year}-${temp2?.updateTime?.month}-${temp2?.updateTime?.day}、部门/岗位-${temp2?.componentName}/ ${temp2?.postName}`
-        tempItem.operator = `${item.createName}`
         break
       case 'depart':
         //离职
         tempItem.type = '离职'
-        tempItem.beforeChange = `在职状态-在职`
-        // tempItem.afterChange = `在职状态-离职、离职时间-${dayjs(temp1?.createTime)?.format(
-        //   'YYYY-MM-DD'
-        // )}`
-        tempItem.needBeforeChange = true
-        tempItem.afterChange = `在职状态-离职、离职时间-${temp2[0]?.departureTime}`
-        tempItem.operator = `${item.createName}`
         break
     }
+    tempItem.beforeChange = ''
+    tempItem.afterChange = ''
+    tempItem.needBeforeChange = !(Object.keys(temp1).length === 0)
+    if (temp1?.userStatus === 0) {
+      tempItem.beforeChange = '在职状态-在职'
+      if (temp1?.onboardingTime) {
+        tempItem.beforeChange += `、入职时间-${temp1?.onboardingTime}`
+      }
+    } else if (temp1?.userStatus === 1) {
+      tempItem.beforeChange = '在职状态-离职'
+      if (temp1?.departureTime) {
+        tempItem.beforeChange += `、离职时间-${temp1?.departureTime}`
+      }
+    }
+
+    const { postVOList = [] } = temp1
+    if (postVOList.length > 0) {
+      tempItem.beforeChange += `部门/岗位-`
+      postVOList.map((postItem) => {
+        tempItem.beforeChange += `${postItem.componentName}/${postItem.postName} `
+      })
+    }
+    tempItem.operator = `${item.createName}`
+
+    if (temp2?.userStatus === 0) {
+      tempItem.afterChange = '在职状态-在职'
+      if (temp2?.onboardingTime) {
+        tempItem.afterChange += `、入职时间-${temp2?.onboardingTime}`
+      }
+    } else if (temp2?.userStatus === 1) {
+      tempItem.afterChange = '在职状态-离职'
+      if (temp2?.departureTime) {
+        tempItem.afterChange += `、离职时间-${temp2?.departureTime}`
+      }
+    }
+
+    if (temp2?.postVOList && temp2?.postVOList.length > 0) {
+      tempItem.afterChange += `部门/岗位-`
+      temp2?.postVOList.map((postItem) => {
+        tempItem.afterChange += `${postItem.componentName}/${postItem.postName} `
+      })
+    }
+
+    // switch (item?.historyType) {
+    //   case 'update':
+    //     //修改
+    //     tempItem.type = '修改'
+    //     tempItem.beforeChange = '部门/岗位-'
+    //     tempItem.afterChange = `部门/岗位-`
+    //     tempItem.needBeforeChange = true
+    //     temp1?.map((item) => {
+    //       const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+    //       tempItem.beforeChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+    //     })
+    //
+    //     temp2?.map((item) => {
+    //       const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+    //       tempItem.afterChange += `${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+    //     })
+    //
+    //     tempItem.operator = `${item.createName}`
+    //     break
+    //   case 'entry':
+    //     //入职
+    //     tempItem.type = '入职'
+    //     tempItem.beforeChange = `离职时间-${temp1[0]?.departureTime}、`
+    //     tempItem.afterChange = `入职时间-${temp2[0]?.onboardingTime}、`
+    //     // temp1?.map((item) => {
+    //     //   const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+    //     //   tempItem.beforeChange += `${item?.updateTime?.year}-${item?.updateTime?.month}-${item?.updateTime?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+    //     // })
+    //     tempItem.needBeforeChange = temp1.length > 0
+    //     temp1?.map((item) => {
+    //       const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+    //
+    //       // tempItem.beforeChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+    //       tempItem.beforeChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+    //     })
+    //
+    //     temp2?.map((item) => {
+    //       const tempPostText = item?.type === 'main_post' ? '主岗' : '兼岗'
+    //
+    //       // tempItem.afterChange += `${item?.updateTime?.date?.year}-${item?.updateTime?.date?.month}-${item?.updateTime?.date?.day}、部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+    //       tempItem.afterChange += `部门/岗位-${item?.componentName}/ ${item?.postName}(${tempPostText})      `
+    //     })
+    //
+    //     // tempItem.beforeChange = `变更前：入职时间-${temp1?.updateTime?.year}-${temp1?.updateTime?.month}-${temp1?.updateTime?.day}、部门/岗位-${temp1?.componentName}/ ${temp1?.postName}`
+    //     // tempItem.afterChange = `变更后：入职时间-${temp2?.updateTime?.year}-${temp2?.updateTime?.month}-${temp2?.updateTime?.day}、部门/岗位-${temp2?.componentName}/ ${temp2?.postName}`
+    //     tempItem.operator = `${item.createName}`
+    //     break
+    //   case 'depart':
+    //     //离职
+    //     tempItem.type = '离职'
+    //     tempItem.beforeChange = `在职状态-在职`
+    //     // tempItem.afterChange = `在职状态-离职、离职时间-${dayjs(temp1?.createTime)?.format(
+    //     //   'YYYY-MM-DD'
+    //     // )}`
+    //     tempItem.needBeforeChange = true
+    //     tempItem.afterChange = `在职状态-离职、离职时间-${temp2[0]?.departureTime}`
+    //     tempItem.operator = `${item.createName}`
+    //     break
+    // }
+    //
+    //
 
     changeRecord.push(tempItem)
   })

@@ -953,8 +953,6 @@ const resetQuery = () => {
   handleQuery()
 }
 
-getList()
-
 //一键 展开 折叠 全部
 const toggleExpandAll = () => {
   //由于antdV只提供了初始化时默认展开全部的 API 因此 此处利用v-if 来实现重新初始化
@@ -1650,8 +1648,6 @@ const getAllType = async () => {
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
 }
 
-getAllType()
-
 watch(
   () => state.columns,
   (columns) => {
@@ -1663,6 +1659,11 @@ watch(
     deep: true
   }
 )
+
+onMounted(async () => {
+  await getAllType()
+  await getList()
+})
 </script>
 
 <style lang="scss" scoped>

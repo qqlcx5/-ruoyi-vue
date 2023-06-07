@@ -973,6 +973,7 @@ import {
   getMajorIndividualList,
   getSimpleTenantList,
   getTenantPackage,
+  getTopPhone,
   putResetPassWord,
   updateEditMajorIndividual,
   updateEditMajorIndividualStatus
@@ -2185,16 +2186,8 @@ const tableStatusChange = async (value, record) => {
   }
 
   if (record.type === null) {
-    const tempRes = await getMajorIndividualList()
-    const tempItem = tempRes.find((item) => item.id === record.belongTenantId)
-    if (tempItem.belongTenantId !== 0) {
-      const tempItemSecond = tempRes.find((item) => item.id === tempItem.belongTenantId)
-      //获取门店的 顶层主体的 手机号  max2层
-      state.messageContactMobile = tempItemSecond.contactMobile
-    } else {
-      //获取门店的 顶层主体的 手机号  max2层
-      state.messageContactMobile = tempItem.contactMobile
-    }
+    //门店 获取 顶层主体手机号
+    state.messageContactMobile = await getTopPhone({ id: record.id })
   } else {
     state.messageContactMobile = record.contactMobile
   }
@@ -2360,6 +2353,8 @@ const detailsInfo = async (record) => {
 
   const tempRes = await getSimpleTenantList()
   const tempItem = tempRes.filter((item) => item.id === record.belongTenantId)
+  console.log('tempRes', tempRes)
+  console.log('tempItem', tempItem)
 
   const tempType = state.majorIndividualTypeOptions.filter((item) => item.value === res.type)
 
@@ -2369,7 +2364,7 @@ const detailsInfo = async (record) => {
       infoArr: [
         {
           textSpan: '上级主体：',
-          text: tempItem[0]?.name
+          text: tempItem.length === 0 ? '顶层主体' : tempItem[0]?.name
         },
         {
           textSpan: '主体名称：',
@@ -2730,8 +2725,6 @@ const getAllType = async () => {
 
 // 新增、修改 主体类型
 const majorIndividualTypeChange = () => {
-  console.log('state.optionalMenuList=====', state.optionalMenuList)
-
   //  超管
   if (state.formState.majorIndividualType === 'manufacturer') {
     //  厂家
@@ -2751,9 +2744,6 @@ const majorIndividualTypeChange = () => {
     )
     state.formState.belongTenantId = state.record.id
   }
-
-  console.log('state.formState.majorIndividualType', state.formState.majorIndividualType)
-  console.log('state.optionalMenuTreeChange', state.optionalMenuTreeChange)
 
   state.optionalMenuTreeChange = handleTree(
     state.optionalMenuTreeChange,

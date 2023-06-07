@@ -112,6 +112,7 @@ import {
   getCheckMajorIndividual,
   getMajorIndividualList,
   getSimpleTenantList,
+  getTopPhone,
   updateEditMajorIndividualStatus,
   updateParentMajorIndividual
 } from '@/api/system/business'
@@ -221,18 +222,8 @@ onMounted(async () => {
   let res = await getSimpleTenantList()
   console.log('res', res)
   console.log('props.currentRecord', props.currentRecord)
-  const tempRes = await getMajorIndividualList()
-  console.log('tempRes ', tempRes)
-  const tempItem = tempRes.find((item) => item.id === props.currentRecord.belongTenantId)
-  console.log('tempItem', tempItem)
-  if (tempItem.belongTenantId !== 0) {
-    const tempItemSecond = tempRes.find((item) => item.id === tempItem.belongTenantId)
-    //获取门店的 顶层主体的 手机号  max2层
-    state.contactMobile = tempItemSecond.contactMobile
-  } else {
-    //获取门店的 顶层主体的 手机号  max2层
-    state.contactMobile = tempItem.contactMobile
-  }
+
+  state.contactMobile = await getTopPhone({ id: props.currentRecord.id })
 
   //contactMobile
   //去除顶层机构以及厂家 只保留经销商
