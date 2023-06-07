@@ -189,10 +189,10 @@ const treeNodeExpand = ref(true)
 const checkedNodes = ref()
 
 const departPlaceholder = computed(() => {
-  const { dataScopeDeptIds, dataScopeUserIds } = currentNode.value
+  const { dataScopeDeptIds, userIdsSelected } = currentNode.value
   return (dataScopeDeptIds && dataScopeDeptIds.length > 0) ||
-    (dataScopeUserIds && dataScopeUserIds.length > 0)
-    ? `已选${dataScopeDeptIds.length}个部门,${dataScopeUserIds.length}个人`
+    (userIdsSelected && userIdsSelected.length > 0)
+    ? `已选${dataScopeDeptIds.length}个部门,${userIdsSelected.length}个人`
     : '请选择'
 })
 const dealerPlaceholder = computed(() => {
@@ -299,14 +299,20 @@ const selectedBrands = computed({
 }) // 选中select操作权限
 // 指定部门选择
 const openDepartModal = () => {
-  const { dataScopeDeptIds, dataScopeUsers } = currentNode.value
-  selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, dataScopeUsers)
+  const { dataScopeDeptIds, userIdsSelected } = currentNode.value
+  selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, userIdsSelected)
 }
 const onSelectOrgAndStaffConfirm = (dataScopeDepts, dataScopeUsers) => {
   currentNode.value.dataScopeDeptIds = dataScopeDepts.map((item) => item.id)
   currentNode.value.dataScopeDepts = dataScopeDepts
-  currentNode.value.dataScopeUserIds = dataScopeUsers.map((item) => item.id)
-  currentNode.value.dataScopeUsers = dataScopeUsers
+  currentNode.value.dataScopeUsers = dataScopeUsers.map((item) => {
+    return { id: item.id, nickname: item.name, username: item.account }
+  })
+  currentNode.value.userIdsSelected = dataScopeUsers.map((item) => item.id)
+  currentNode.value.users = dataScopeUsers.map((item) => {
+    return { id: item.id, deptId: item.parentId }
+  })
+  console.log(currentNode.value)
 }
 // 选择经销商
 const openMemberModal = () => {
@@ -357,8 +363,9 @@ const init = async () => {
           menu.dataScope = roleData?.dataScope || ''
           menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
           menu.dataScopeDepts = roleData?.dataScopeDepts || []
-          menu.dataScopeUserIds = roleData?.dataScopeUserIds || []
+          menu.userIdsSelected = roleData?.userIdsSelected || []
           menu.dataScopeUsers = roleData?.dataScopeUsers || []
+          menu.users = roleData?.users || []
           menu.dataScopeStoreIds = roleData?.dataScopeStoreIds || []
           menu.dataScopeStores = roleData?.dataScopeStores || []
           menu.dataScopeBrandIds = roleData?.dataScopeBrandIds || []
@@ -407,7 +414,8 @@ const getParams = () => {
     } else if (item.dataScope === 6) {
       // 指定人清空部门
       // 部门清空指定人
-      item.dataScopeUserIds = []
+      item.userIdsSelected = []
+      item.users = []
       item.dataScopeUsers = []
       item.dataScopeDeptIds = []
       item.dataScopeDepts = []
