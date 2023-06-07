@@ -53,7 +53,9 @@
                 <div v-if="row.dataScopeDepts && row.dataScopeDepts.length > 0" class="flex">
                   <div class="flex-shrink-0">指定部门：</div>
                   <div>{{
-                    row.dataScopeDepts.map((item) => `${item.name}(${item.component})`).join('、')
+                    row.dataScopeDepts
+                      .map((item) => `${item.name}(${item.component || item.code})`)
+                      .join('、')
                   }}</div>
                 </div>
                 <div v-if="row.dataScopeUsers && row.dataScopeUsers.length > 0" class="flex">
@@ -211,13 +213,15 @@ const dataAccess = (data): string => {
   }
 }
 const brandAccess = (data) => {
-  return data.dataScopeBrandIds
-    ? data.dataScopeBrandIds
-        .map((item) => {
-          return getDictLabel('brand', item)
-        })
-        .join('、')
-    : ''
+  if (data.dataScopeBrandIds && data.dataScopeBrandIds.length > 0) {
+    return data.dataScopeBrandIds
+      .map((item) => {
+        return getDictLabel('brand', item)
+      })
+      .join('、')
+  } else {
+    return '不限品牌'
+  }
 }
 const showDetailsTooltip = (row) => {
   const { dataScopeDept, dataScopeUser, dataScopeStore, dealers } = row

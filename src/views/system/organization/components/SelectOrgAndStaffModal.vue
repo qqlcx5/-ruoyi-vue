@@ -13,8 +13,9 @@
           default-expand-all
           :check-strictly="props.mode === 'single'"
           :default-checked-keys="defaultCheckedKeys"
-          :props="defaultProps"
+          :props="{ ...defaultProps, class: customNodeClass }"
           :data="treeData"
+          :filter-node-method="filterNode"
           @check="onTreeCheck"
           @node-click="onTreeNodeClick"
         />
@@ -23,37 +24,27 @@
         <div class="info-title">成员</div>
         <el-checkbox-group v-model="currentNode.userIds" class="!flex !flex-col">
           <el-checkbox
-            class="!h-26px"
-            v-for="item in currentNode.userList"
+            class="!h-26px !block"
+            v-for="item in currentNodeUsers"
             :value="item.id"
             :label="item.id"
             :key="item.id"
-            >{{ item.nickname }}</el-checkbox
+            @change="onCheckboxChange($event, item)"
+            >{{ item.name }}</el-checkbox
           >
         </el-checkbox-group>
       </div>
       <div class="grid-item">
         <div class="info-title">已选信息</div>
-        <template v-if="selectedTreeData && selectedTreeData.length">
-          <div>部门</div>
-          <el-tree
-            class="max-h-560px"
-            ref="selectedTreeRef"
-            node-key="id"
-            highlight-current
-            default-expand-all
-            :props="defaultProps"
-            :data="selectedTreeData"
-          />
-        </template>
-        <template v-if="selectedStaffData && selectedStaffData.length">
-          <div>成员</div>
-          <div>
-            <div class="staff-item" v-for="item in selectedStaffData" :key="item.id">
-              {{ item.nickname }}-{{ item.username }}
-            </div>
-          </div>
-        </template>
+        <el-tree
+          class="max-h-560px"
+          ref="selectedTreeRef"
+          node-key="id"
+          highlight-current
+          default-expand-all
+          :props="defaultProps"
+          :data="selectedTreeData"
+        />
       </div>
     </div>
 
@@ -68,11 +59,10 @@
 <script setup lang="ts">
 import { handleTree, defaultProps } from '@/utils/tree'
 import { ElTree } from 'element-plus'
-import { getSimpleOrganizationList } from '@/api/system/organization'
-import { getUserListByOrg } from '@/api/system/member'
-import { CommonStatusEnum } from '@/utils/constants'
 import { message } from 'ant-design-vue'
 import { TreeNodeData } from 'element-plus/es/components/tree/src/tree.type'
+import { cloneDeep } from 'lodash-es'
+import { getListDeptUser } from '@/api/system/role'
 
 const { t } = useI18n() // 国际化
 const props = defineProps({
@@ -88,63 +78,70 @@ const treeRef = ref<InstanceType<typeof ElTree>>()
 const treeData = ref<any[]>([])
 const defaultCheckedKeys = ref<any[]>([])
 const currentNode = ref<TreeNodeData>({})
+const currentNodeUsers = computed(() => {
+  if (!currentNode.value.children) return []
+  return currentNode.value?.children.filter((i) => i.type === 'user') || []
+})
 
-const onTreeCheck = (node, list) => {
+const onTreeCheck = (node) => {
   currentNode.value = node
   treeRef.value!.setCurrentKey(node.id, true)
-  // const nodeSelectStatus = list.checkedKeys.includes(node.id)
-  setNodeUserInfo(node)
-  selectedTreeData.value = treeData.value.filter((t) => list.checkedKeys.includes(t.id))
-  if (props.mode === 'single') {
-    if (list.checkedKeys.length === 2) treeRef.value!.setCheckedKeys([node.id])
-  }
+  setCurrentNodeStatus()
+  getSelectedTreeData()
 }
 const onTreeNodeClick = async (node) => {
   currentNode.value = node
-  setNodeUserInfo(node)
+  setCurrentNodeStatus()
 }
-const setNodeUserInfo = async (node) => {
-  currentNode.value.userList =
-    (await getUserListByOrg({ orgId: node.id })).map((item) => {
-      item['deptId'] = node.id
-      return item
-    }) || []
+const filterNode = (value: string, data: any) => {
+  if (!value) return true
+  return data.type !== value
 }
+const customNodeClass = (data) => {
+  if (data.type === 'user') {
+    return 'hidden'
+  }
+  return null
+}
+
 // --------------- 成员 ---------------
+const setCurrentNodeStatus = () => {
+  const status = treeRef.value!.getCheckedNodes().find((item) => item.id === currentNode.value.id)
+  currentNode.value.userIds = status ? currentNodeUsers.value.map((item) => item.id) : []
+}
+const onCheckboxChange = (value, data) => {
+  treeRef.value!.setChecked(data.id, value, true)
+  getSelectedTreeData()
+}
 
 // --------------- 已选信息 ---------------
 const selectedTreeData = ref<any[]>([])
-const selectedStaffData = ref()
-watch(
-  () => treeData.value,
-  (data) => {
-    selectedStaffData.value = data
-      .filter((i) => i.userIds && i.userIds.length > 0)
-      .map((item) => {
-        return item.userList.filter((u) => item.userIds.includes(u.id))
-      })
-      .flat()
-  },
-  { deep: true }
-)
+// 获取已选信息
+const getSelectedTreeData = () => {
+  selectedTreeData.value = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
+}
 
-const init = async (dataScopeUsers) => {
-  const result = await getSimpleOrganizationList({ status: CommonStatusEnum.ENABLE })
-  if (dataScopeUsers && dataScopeUsers.length > 0) {
-    result.forEach((item) => {
-      item['userList'] = dataScopeUsers.filter((u) => item.id === u.deptId)
-      item['userIds'] = item['userList'].map((u) => u.id)
-    })
-  }
-  treeData.value = handleTree(result)
-  selectedTreeData.value = treeData.value.filter((t) => defaultCheckedKeys.value.includes(t.id))
+const init = async () => {
+  const { orgList, userList } = await getListDeptUser()
+  const users = userList.map((item) => {
+    return {
+      id: item.id,
+      name: item.nickname,
+      account: item.username,
+      parentId: item.deptId,
+      type: 'user'
+    }
+  })
+  treeData.value = handleTree([...cloneDeep(orgList), ...cloneDeep(users)])
 }
 
 // 打开弹窗
 const openModal = async (deptIds?: any[], dataScopeUsers?) => {
-  if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = deptIds
+  if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = [...deptIds, ...dataScopeUsers]
+  await init()
   modelVisible.value = true
-  await init(dataScopeUsers)
+  await nextTick()
+  getSelectedTreeData()
 }
 defineExpose({ openModal }) // 提供 openModal 方法，用于打开弹窗
 
@@ -156,7 +153,9 @@ const submitForm = async () => {
     if (checkedNodes.length === 0) return message.warning('请勾选')
     emit('confirm', checkedNodes[0])
   } else {
-    emit('confirm', checkedNodes, selectedStaffData.value)
+    const selectedData = checkedNodes.filter((i) => i.type !== 'user')
+    const selectedStaffData = checkedNodes.filter((i) => i.type === 'user')
+    emit('confirm', selectedData, selectedStaffData)
   }
   modelVisible.value = false
 }
@@ -186,5 +185,9 @@ const submitForm = async () => {
   &:hover {
     background-color: var(--el-fill-color-light);
   }
+}
+
+:deep(.el-tree .el-tree-node.custom-highlight) {
+  display: none;
 }
 </style>

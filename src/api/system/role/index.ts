@@ -76,3 +76,8 @@ export const getRoleMenuDataScope = async (params) => {
 export const getActiveUsersCount = async (id) => {
   return await request.get({ url: '/system/role/active_users?id=' + id })
 }
+
+//获得指定部门和人员列表
+export const getListDeptUser = async () => {
+  return await request.get({ url: '/system/permission/list-dept-user' })
+}
