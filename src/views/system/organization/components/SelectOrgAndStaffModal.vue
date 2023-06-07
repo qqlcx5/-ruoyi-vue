@@ -15,7 +15,6 @@
           :default-checked-keys="defaultCheckedKeys"
           :props="defaultProps"
           :data="treeData"
-          empty-text="加载中，请稍后"
           @check="onTreeCheck"
           @node-click="onTreeNodeClick"
         />
@@ -44,7 +43,6 @@
           default-expand-all
           :props="defaultProps"
           :data="selectedTreeData"
-          empty-text=""
         />
         <div>成员</div>
         <div>
@@ -163,20 +161,24 @@ const submitForm = async () => {
 <style lang="scss" scoped>
 .grid-item {
   padding-left: 16px;
+
   &:not(:last-child) {
     border-right: 1px solid $border-color;
   }
 }
+
 .info-title {
-  color: $title-color;
   margin-bottom: 16px;
   font-size: 14px;
   font-weight: bold;
+  color: $title-color;
 }
+
 .staff-item {
   padding-left: 24px;
   line-height: 26px;
   cursor: pointer;
+
   &:hover {
     background-color: var(--el-fill-color-light);
   }

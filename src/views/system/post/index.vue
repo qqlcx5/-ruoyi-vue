@@ -25,18 +25,6 @@
                 />
               </el-form-item>
             </el-col>
-            <!--            <el-col :span="8">-->
-            <!--              <el-form-item label="状态">-->
-            <!--                <el-select class="w-full" v-model="postTypeSearchForm.status" placeholder="请选择">-->
-            <!--                  <el-option-->
-            <!--                    v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
-            <!--                    :key="item.value"-->
-            <!--                    :label="item.label"-->
-            <!--                    :value="item.value"-->
-            <!--                  />-->
-            <!--                </el-select>-->
-            <!--              </el-form-item>-->
-            <!--            </el-col>-->
 
             <el-col :span="8" class="!flex flex-column justify-between">
               <div>
@@ -54,25 +42,9 @@
               type="primary"
               iconFont="icon-xinzeng"
               :title="t('action.add')"
-              v-hasPermi="['system:post:create']"
+              v-hasPermi="['system:post-type:create']"
               @click="openModal('create', 'type')"
             />
-            <!--            <XButton-->
-            <!--              type="primary"-->
-            <!--              plain-->
-            <!--              iconFont="icon-daoru"-->
-            <!--              :title="t('action.import')"-->
-            <!--              v-hasPermi="['system:post:create']"-->
-            <!--              @click="openModal('create', 'type')"-->
-            <!--            />-->
-            <!--            <XButton-->
-            <!--              type="primary"-->
-            <!--              plain-->
-            <!--              iconFont="icon-daochu"-->
-            <!--              :title="t('action.export')"-->
-            <!--              v-hasPermi="['system:post:export']"-->
-            <!--              @click="postTypeExport('岗位类型.xls')"-->
-            <!--            />-->
           </template>
           <template #user_count="{ row }">
             <el-link type="primary" @click="goto(row, 'postType')">{{ row.userCount }}</el-link>
@@ -81,13 +53,13 @@
             <!-- 操作：修改数据 -->
             <XTextButton
               :title="t('action.modify')"
-              v-hasPermi="['system:post:update']"
+              v-hasPermi="['system:post-type:update']"
               @click="openModal('update', 'type', row?.id)"
             />
             <!-- 操作：删除 -->
             <XTextButton
               :title="t('action.delete')"
-              v-hasPermi="['system:post:delete']"
+              v-hasPermi="['system:post-type:delete']"
               @click="onPostDel(row, 'type')"
             />
           </template>
@@ -159,27 +131,11 @@
                 v-hasPermi="['system:post:create']"
                 @click="openModal('create', 'info', postParent?.code)"
               />
-              <!--              <XButton-->
-              <!--                type="primary"-->
-              <!--                plain-->
-              <!--                iconFont="icon-daoru"-->
-              <!--                :title="t('action.import')"-->
-              <!--                v-hasPermi="['system:post:create']"-->
-              <!--                @click="openModal('create', 'info')"-->
-              <!--              />-->
-              <!--              <XButton-->
-              <!--                type="primary"-->
-              <!--                plain-->
-              <!--                iconFont="icon-daochu"-->
-              <!--                :title="t('action.export')"-->
-              <!--                v-hasPermi="['system:post:export']"-->
-              <!--                @click="postInfoExport('岗位信息.xls')"-->
-              <!--              />-->
               <XButton
                 color="#666666"
                 plain
                 title="批量分配角色"
-                v-hasPermi="['system:post:create']"
+                v-hasPermi="['system:post-role:create-batch']"
                 @click="openDistributeModal(false, 'multi')"
               />
             </template>
@@ -201,6 +157,7 @@
             </template>
             <template #status_default="{ row }">
               <el-switch
+                v-hasPermi="['system:post:update']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"
@@ -221,7 +178,7 @@
               <!-- 操作：分配角色 -->
               <XTextButton
                 title="分配角色"
-                v-hasPermi="['system:post:delete']"
+                v-hasPermi="['system:post-role:update']"
                 @click="openDistributeModal(row, 'single')"
               />
               <!-- 操作：删除 -->
@@ -497,28 +454,33 @@ const goto = ({ code, typeCode, id }, type) => {
 .post-container {
   :deep(.el-card__header) {
     border: none;
-    box-shadow: 0 2px 4px 0 rgba(218, 218, 218, 0.5);
+    box-shadow: 0 2px 4px 0 rgb(218 218 218 / 50%);
   }
+
   .role-tag-box {
     margin: 4px 0;
+
     &:not(:last-child) {
       margin-bottom: 2px;
     }
   }
+
   .role-tag {
     width: fit-content;
-    font-size: 12px;
     padding: 4px 8px;
+    font-size: 12px;
     line-height: 1;
     color: $wg-primary-color;
     background-color: #f0f8ff;
     border: 1px solid $wg-primary-color;
     border-radius: 4px;
+
     &.close {
       color: #71b9ff;
       background-color: #f0f8ff;
       border: 1px solid #71b9ff;
     }
+
     &.delete {
       color: #b5b7bd;
       background-color: #eaebef;

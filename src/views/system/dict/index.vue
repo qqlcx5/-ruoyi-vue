@@ -87,16 +87,9 @@
               @click="handleTypeCreate()"
             />
           </template>
-          <!--        <template #toolbar_tools>-->
-          <!--          &lt;!&ndash; 操作：新增 &ndash;&gt;-->
-          <!--          <XButton-->
-          <!--            type="primary"-->
-          <!--            preIcon="ep:zoom-in"-->
-          <!--            title="dddddasd"-->
-          <!--          />-->
-          <!--        </template>-->
           <template #status_default="{ row }">
             <el-switch
+              v-hasPermi="['system:dict:update']"
               v-model="row.status"
               :active-value="0"
               :inactive-value="1"
@@ -170,6 +163,7 @@
             </template>
             <template #status_default="{ row }">
               <el-switch
+                v-hasPermi="['system:dict:update']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"
@@ -323,6 +317,7 @@
         </template>
         <template #status_default="{ row }">
           <el-switch
+            v-hasPermi="['system:dict:update']"
             v-model="row.status"
             :active-value="0"
             :inactive-value="1"
@@ -367,41 +362,36 @@ const message = useMessage() // 消息弹窗
 const typeSearchForm = ref({
   createTime: []
 })
-const [registerType, { reload: typeGetList, deleteData: typeDeleteData, search: typeSearch }] =
-  useXTable({
-    tableKey: 'dict-type-table',
-    allSchemas: DictTypeSchemas.allSchemas,
-    params: typeSearchForm,
-    getListApi: DictTypeApi.getDictTypePageApi,
-    deleteApi: DictTypeApi.deleteDictTypeApi,
-    border: true,
-    height: 660
-  })
+const [registerType, { reload: typeGetList, search: typeSearch }] = useXTable({
+  tableKey: 'dict-type-table',
+  allSchemas: DictTypeSchemas.allSchemas,
+  params: typeSearchForm,
+  getListApi: DictTypeApi.getDictTypePageApi,
+  deleteApi: DictTypeApi.deleteDictTypeApi,
+  border: true,
+  height: 660
+})
 
 const queryParams = reactive({
   parentId: 0,
   dictType: null,
   label: ''
 })
-const [registerData, { reload: dataGetList, deleteData: dataDeleteData, search: dataSearch }] =
-  useXTable({
-    tableKey: 'dict-data-table',
-    allSchemas: DictDataSchemas.allSchemas,
-    params: queryParams,
-    getListApi: DictDataApi.getDictDataPageApi,
-    deleteApi: DictDataApi.deleteDictDataApi,
-    border: true,
-    height: 606
-  })
+const [registerData, { reload: dataGetList, search: dataSearch }] = useXTable({
+  tableKey: 'dict-data-table',
+  allSchemas: DictDataSchemas.allSchemas,
+  params: queryParams,
+  getListApi: DictDataApi.getDictDataPageApi,
+  deleteApi: DictDataApi.deleteDictDataApi,
+  border: true,
+  height: 606
+})
 
 const dataLevel3queryParams = reactive({
   parentId: null,
   label: ''
 })
-const [
-  registerDataLevel3,
-  { reload: dataLevel3GetList, deleteData: dataLevel3DeleteData, search: dataLevel3Search }
-] = useXTable({
+const [registerDataLevel3, { reload: dataLevel3GetList, search: dataLevel3Search }] = useXTable({
   tableKey: 'dict-level3data-table',
   allSchemas: DictDataLevel3Schemas.allSchemas,
   params: dataLevel3queryParams,

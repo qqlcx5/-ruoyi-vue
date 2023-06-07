@@ -81,6 +81,7 @@
           <template #toolbar_buttons></template>
           <template #status_default="{ row }">
             <el-switch
+              v-hasPermi="['system:tenant-dict-data:update']"
               v-model="row.status"
               :active-value="0"
               :inactive-value="1"
@@ -93,7 +94,7 @@
             <!-- 操作：编辑类型 -->
             <XTextButton
               :title="t('action.edit')"
-              v-hasPermi="['system:tenant-dict-type:update']"
+              v-hasPermi="['system:tenant-dict-data:update']"
               @click="handleTypeUpdate(row.id)"
             />
           </template>
@@ -142,12 +143,13 @@
                 type="primary"
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
-                v-hasPermi="['system:tenant-dict-type:create']"
+                v-hasPermi="['system:tenant-dict-data:create']"
                 @click="handleDataCreate()"
               />
             </template>
             <template #status_default="{ row }">
               <el-switch
+                v-hasPermi="['system:tenant-dict-data:update']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"
@@ -158,7 +160,7 @@
             <template #actionbtns_default="{ row }">
               <!-- 操作：修改数据 -->
               <XTextButton
-                v-hasPermi="['system:tenant-dict-type:update']"
+                v-hasPermi="['system:tenant-dict-data:update']"
                 :title="t('action.edit')"
                 @click="handleDataUpdate(row.id)"
               />
@@ -291,12 +293,13 @@
             type="primary"
             iconFont="icon-xinzeng"
             :title="t('action.add')"
-            v-hasPermi="['system:tenant-dict-type:create']"
+            v-hasPermi="['system:tenant-dict-data:create']"
             @click="handleDataCreate('dataLevel3Create')"
           />
         </template>
         <template #status_default="{ row }">
           <el-switch
+            v-hasPermi="['system:tenant-dict-data:update']"
             v-model="row.status"
             :active-value="0"
             :inactive-value="1"
@@ -307,7 +310,7 @@
         <template #actionbtns_default="{ row }">
           <!-- 操作：修改数据 -->
           <XTextButton
-            v-hasPermi="['system:tenant-dict-type:update']"
+            v-hasPermi="['system:tenant-dict-data:update']"
             :title="t('action.edit')"
             @click="handleDataUpdate(row.id, 'dataLevel3Update')"
           />
@@ -356,25 +359,21 @@ const queryParams = reactive({
   dictType: null,
   label: ''
 })
-const [registerData, { reload: dataGetList, deleteData: dataDeleteData, search: dataSearch }] =
-  useXTable({
-    tableKey: 'dict-tenant-data-table',
-    allSchemas: DictDataSchemas.allSchemas,
-    params: queryParams,
-    getListApi: DictDataApi.getDictDataPageApi,
-    deleteApi: DictDataApi.deleteDictDataApi,
-    border: true,
-    height: 606
-  })
+const [registerData, { reload: dataGetList, search: dataSearch }] = useXTable({
+  tableKey: 'dict-tenant-data-table',
+  allSchemas: DictDataSchemas.allSchemas,
+  params: queryParams,
+  getListApi: DictDataApi.getDictDataPageApi,
+  deleteApi: DictDataApi.deleteDictDataApi,
+  border: true,
+  height: 606
+})
 
 const dataLevel3queryParams = reactive({
   parentId: null,
   label: ''
 })
-const [
-  registerDataLevel3,
-  { reload: dataLevel3GetList, deleteData: dataLevel3DeleteData, search: dataLevel3Search }
-] = useXTable({
+const [registerDataLevel3, { reload: dataLevel3GetList, search: dataLevel3Search }] = useXTable({
   tableKey: 'dict-tenant-level3data-table',
   allSchemas: DictDataLevel3Schemas.allSchemas,
   params: dataLevel3queryParams,

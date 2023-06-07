@@ -82,6 +82,7 @@
       </template>
       <template #visible_default="{ row }">
         <el-switch
+          v-hasPermi="['system:tenant:config:update']"
           v-model="row.visible"
           :active-value="true"
           :inactive-value="false"
