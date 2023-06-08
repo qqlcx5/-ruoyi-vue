@@ -125,8 +125,6 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 // 上传成功提示
 const uploadSuccess = (res: any): void => {
-  console.log(res)
-
   message.success('上传成功')
   emit('update:modelValue', res.data.store)
 }
@@ -196,7 +194,7 @@ const uploadRequest = async (options: UploadRequestOptions) => {
       height: v-bind(height);
       overflow: hidden;
       border: 1px dashed var(--el-border-color-darker);
-      border-radius: v-bind(borderradius);
+      border-radius: v-bind(borderRadius);
       transition: var(--el-transition-duration-fast);
 
       &:hover {
@@ -217,7 +215,7 @@ const uploadRequest = async (options: UploadRequestOptions) => {
         overflow: hidden;
         background-color: #f8f8f8;
         border: 1px dashed var(--el-border-color-darker);
-        border-radius: v-bind(borderradius);
+        border-radius: v-bind(borderRadius);
 
         &:hover {
           border: 1px dashed var(--el-color-primary);
