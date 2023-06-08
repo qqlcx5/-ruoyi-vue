@@ -14,6 +14,7 @@ module.exports = {
         ignorePseudoClasses: ['global', 'deep']
       }
     ],
+    'value-keyword-case': null,
     'function-no-unknown': [
       true,
       {
