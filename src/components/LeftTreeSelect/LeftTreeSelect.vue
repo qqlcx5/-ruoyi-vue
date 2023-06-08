@@ -23,13 +23,16 @@
         @select="selectTree"
         @expand="onExpand"
       >
-        <template #title="{ title }">
-          <span v-if="title.indexOf(searchValue) > -1">
-            {{ title.substr(0, title.indexOf(searchValue)) }}
-            <span style="color: #f50">{{ searchValue }}</span>
-            {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
-          </span>
-          <span v-else>{{ title }}</span>
+        <template #title="{ title, tagText, needTag }">
+          <div class="tree-node">
+            <span v-if="title.indexOf(searchValue) > -1">
+              {{ title.substr(0, title.indexOf(searchValue)) }}
+              <span style="color: #f50">{{ searchValue }}</span>
+              {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
+            </span>
+            <span v-else>{{ title }}</span>
+            <div class="has-transferred" v-if="needTag">{{ tagText }}</div>
+          </div>
         </template>
       </a-tree>
     </div>
@@ -43,12 +46,15 @@ import { cloneDeep } from 'lodash-es'
 interface treeDataType {
   key: string | number
   title: string
+  tagText?: string
   children?: treeDataType[]
 }
 
 interface TreeDataProps {
   treeData?: Array<treeDataType>
   selectedKeys?: Array<any>
+  isShow?: boolean
+  needTag?: boolean
   testArr?: Array<any>
 }
 
@@ -197,25 +203,9 @@ watch(searchValue, (value) => {
     //搜索为空 时 收起整颗树
     expandedKeys.value = []
   }
-  console.log('expandedKeys.value', expandedKeys.value)
   searchValue.value = value
   autoExpandParent.value = true
 })
-
-// watch(
-//   () => state.selectedKeys,
-//   (val) => {
-//     if (val[0]) {
-//       //选中的值向上发送
-//       console.log('向上发送')
-//       emit('sendCurrentSelect', val[0])
-//     } else {
-//       //选中的值向上发送
-//       console.log('向上空')
-//       emit('sendCurrentSelect', '')
-//     }
-//   }
-// )
 
 const selectTree = (selectedKeys) => {
   emit('sendCurrentSelect', selectedKeys)
@@ -225,9 +215,6 @@ watch(
   () => props.treeData,
   () => {
     state.treeData = cloneDeep(props.treeData)
-    // state.selectedKeys = [cloneDeep(props.treeData[0]?.key)]
-    // console.log('props.treeData[0]?.key',  props.treeData[0]?.key)
-    // console.log('typeof props.treeData[0]?.key', typeof props.treeData[0]?.key)
   },
   {
     immediate: true
@@ -269,5 +256,22 @@ watch(
 }
 .tree-select-content {
   padding: 18px 15px 0 15px;
+}
+.tree-node {
+  display: flex;
+}
+.has-transferred {
+  margin-left: 10px;
+  width: 52px;
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  background-color: rgba(255, 65, 65, 0.05);
+  color: rgba(255, 65, 65, 1);
+  font-size: 12px;
+  text-align: right;
+  font-family: PingFangSC-Regular;
 }
 </style>

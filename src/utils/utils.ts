@@ -9,7 +9,7 @@ const { wsCache } = useCache()
  *
  * */
 export const reconstructedTreeData = (treeData, reconstructedKey = []) => {
-  if (Array.isArray(reconstructedKey) && reconstructedKey.length !== 2) {
+  if (Array.isArray(reconstructedKey) && reconstructedKey.length < 2) {
     //非数组
     console.log('请传入正确的reconstructedKey')
     return []

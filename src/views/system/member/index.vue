@@ -3343,10 +3343,13 @@ const getOrganizationListFN = async () => {
   res.map((item) => {
     if (item.migrated === 1) {
       //0没迁移 1迁移
-      item.name = item.migrated === 1 ? `${item.name}(关闭)(已转移)` : item.name
+      item.name = item.migrated === 1 ? `${item.name}(关闭)` : item.name
+      item.tagText = '已转移'
+      item.needTag = true
     } else {
       //0开启 1关闭
-      item.name = item.status == 1 ? `${item.name}(关闭)` : item.name
+      item.name = item.status === 1 ? `${item.name}(关闭)` : item.name
+      item.needTag = false
     }
   })
 
@@ -3360,10 +3363,13 @@ const getOrganizationListFN = async () => {
   // ]
   let needReplaceIDKey = [
     ['title', 'name'],
-    ['key', 'id']
+    ['key', 'id'],
+    ['tagText', 'tagText'],
+    ['needTag', 'needTag']
   ]
   //...TODO:这里有空再换 冗余了 本来是用 component 后面又换成id了
   state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
+  console.log('state.organizationOptions', state.organizationOptions)
   state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   return res
 }
