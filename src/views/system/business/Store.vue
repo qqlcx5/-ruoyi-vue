@@ -178,9 +178,9 @@
               label="分公司类型"
               :rules="[{ required: true, message: `分公司类型不能为空` }]"
               v-if="
-                state.currentType === '2' ||
+                state.currentType === organizationType.branchCompany ||
                 state.currentType === '分公司' ||
-                state.detailsRecord?.type === '2'
+                state.detailsRecord?.type === organizationType.branchCompany
               "
             >
               <a-radio-group v-model:value="state.formState.type">

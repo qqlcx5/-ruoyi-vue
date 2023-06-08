@@ -473,9 +473,9 @@
           label="分公司类型"
           :rules="[{ required: true, message: `分公司类型不能为空` }]"
           v-if="
-            state.currentType === '2' ||
+            state.currentType === organizationType.branchCompany ||
             state.currentType === '分公司' ||
-            state.detailsRecord?.type === '2'
+            state.detailsRecord?.type === organizationType.branchCompany
           "
         >
           <!--          <a-checkbox-group v-model:value="state.formAttributeState.type">-->
@@ -1494,7 +1494,7 @@ const state = reactive({
   ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   detailsRecord: {}, //当前点击的表格record后获取到的机构详情(包括属性)
-  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '3'门店
+  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  'store' 分公司 'branchCompany'门店
   memberOptions: [], //新增修改 负责人list
   memberPhoneOptions: [] //新增修改 负责人电话list
 })
@@ -1991,8 +1991,11 @@ const addMajorIndividualFN = async () => {
 
       nextTick(() => {
         state.currentType = tempCurrentType
-        // '2'分公司 '3'门店
-        if (state.currentType === '2' || state.currentType === organizationType.store) {
+        // 'store'分公司 'branchCompany'门店
+        if (
+          state.currentType === organizationType.branchCompany ||
+          state.currentType === organizationType.store
+        ) {
           // 配置权限
           openPermissionModal()
         }
@@ -2432,7 +2435,7 @@ const detailsInfo = async (record) => {
 
   //类型
   let tempArrTypeString = ''
-  if (res.organizationType === '2') {
+  if (res.organizationType === organizationType.branchCompany) {
     //分公司
     // const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
     const tempArrTypeF = state.branchCompanyTypeOptions.filter((topItem) => {

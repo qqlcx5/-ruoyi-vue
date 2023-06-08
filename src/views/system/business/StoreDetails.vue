@@ -311,7 +311,7 @@ const detailsInfo = async (record) => {
 
   //类型
   let tempArrTypeString = ''
-  if (res.organizationType === '2') {
+  if (res.organizationType === organizationType.branchCompany) {
     //分公司
     // const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
     const tempArrTypeF = state.branchCompanyTypeOptions.filter((topItem) => {

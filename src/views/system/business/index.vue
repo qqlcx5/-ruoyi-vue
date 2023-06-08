@@ -53,7 +53,12 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button type="primary" @click="openModal()" v-if="state.isSuperAdmin">
+          <a-button
+            type="primary"
+            @click="openModal()"
+            v-if="state.isSuperAdmin"
+            v-hasPermi="['system:tenant:create']"
+          >
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -175,6 +180,7 @@
           <template v-if="column?.key === 'operation'">
             <div class="operation-content">
               <div
+                v-hasPermi="['system:tenant:update']"
                 class="text-color margin-right-5"
                 @click="edit(record, false, record.type === null)"
                 >修改</div
@@ -187,6 +193,7 @@
               >
               <div
                 v-else
+                v-hasPermi="['system:tenant:parentUpdate']"
                 class="text-color margin-right-5"
                 @click="openEditParentMajorIndividual(record)"
                 >修改上级主体</div
@@ -962,7 +969,7 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
+import { PageKeyObj } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
@@ -1005,28 +1012,10 @@ import isBetween from 'dayjs/plugin/isBetween'
 import {
   getMemberNum,
   getOrganizationTypeList,
-  updateOrganizationStatus,
   updateOrganizationStoreStatus
 } from '@/api/system/organization'
-import { getMajorIndividualSimpleMenusList } from '@/api/system/menu'
+import { State } from '@/views/system/business/business'
 dayjs.extend(isBetween)
-
-interface FormState {
-  id?: number
-  name: string
-  type: number
-  parentId: number
-  icon: string
-  path: string
-  sort: number
-  status: number
-  visible: boolean
-  alwaysShow?: boolean
-  component: string
-  componentName: string
-  permission: string
-  keepAlive: boolean
-}
 
 const queryParams = reactive({
   current: 1, //当前页码
@@ -1039,23 +1028,6 @@ const queryParams = reactive({
 })
 
 const queryFormRef = ref() // 搜索的表单
-
-//路由地址校验规则
-const routeValidator = (rule, value) => {
-  return new Promise<void>((resolve, reject) => {
-    if (value) {
-      //目录必须以/开头
-      if (state.formState.type === SystemMenuTypeEnum.DIR && !value.startsWith('/')) {
-        reject('路由地址必须以/开头')
-      } else if (state.formState.type === SystemMenuTypeEnum.MENU && value.startsWith('/')) {
-        //菜单不能以/开头
-        reject('路由地址不能以/开头')
-      } else {
-        resolve()
-      }
-    }
-  })
-}
 
 //手机号码正则校验 -  简单校验没有全按国内的号码段来  -
 const isValidPhoneNumber = (phoneNumber) => {
@@ -1101,22 +1073,6 @@ const codeValidator = (rule, value) => {
       const regExp = /^[a-zA-Z0-9]+$/
       if (!regExp.test(value)) {
         reject('只能输入字母跟数字')
-      } else {
-        resolve()
-      }
-    } else {
-      resolve()
-    }
-  })
-}
-
-//限制中文
-const chineseValidator = (rule, value) => {
-  return new Promise<void>((resolve, reject) => {
-    if (value) {
-      const regExp = /^[\u4e00-\u9fa5]*$/
-      if (!regExp.test(value)) {
-        reject('请输入中文')
       } else {
         resolve()
       }
@@ -1190,7 +1146,7 @@ const uploadHeaders = ref({
 const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
-const state = reactive({
+const state: State = reactive({
   isSuperAdmin: false, //仅超管 有新增 btn
   belongTenantId: null, //上级主体编号 新增门店
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
@@ -1231,7 +1187,6 @@ const state = reactive({
     { required: true, message: `绑定域名不能为空` },
     { validator: bindingDomainNameValidator }
   ],
-  routerRules: [{ required: true }, { validator: routeValidator }],
   contactMobileRules: [
     { required: true, message: `负责人电话不能为空` },
     { validator: contactMobileValidator }
@@ -1512,23 +1467,30 @@ const getList = async (isRefresh = false) => {
     const res = await getMajorIndividualList(params)
     state.rawData = res
     state.tableDataArr = res
-    state.tableDataList = res
-    state.tableDataList.map((item) => {
+
+    res.map((item) => {
       item.statusSwitch = item.status === 0
       item.bindingDomainName = item.domain
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
 
-      const tempType = state.majorIndividualTypeOptions.filter(
-        (typeItem) => typeItem.value === item.type
+      const tempType = state.majorIndividualTypeOptions?.filter(
+        (typeItem) => (typeItem as Record<string, any>).value === item.type
       )
 
-      item.majorIndividualType = tempType[0]?.label || ''
+      item.majorIndividualType = (tempType?.[0] as { label?: string } | undefined)?.label ?? ''
 
       item.store = item.type === null ? '门店' : ''
     })
 
-    state.tableDataList = handleTree(state.tableDataList, 'id', 'belongTenantId', 'children')
+    state.tableDataList = res
+
+    state.tableDataList = handleTree(
+      state.tableDataList as any[],
+      'id',
+      'belongTenantId',
+      'children'
+    )
     state.total = res.total
     console.log('state.tableDataList ', state.tableDataList)
 
