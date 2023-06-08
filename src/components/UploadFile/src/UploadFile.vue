@@ -24,12 +24,11 @@
         </div>
       </template>
     </el-upload>
-    <preview-dialog v-model="showDialog" title="通知函" />
+    <preview-dialog v-model="showDialog" :title="previewTitle" :url="previewUrl" />
   </div>
 </template>
 <script setup lang="ts" name="UploadFile">
-import { PropType } from 'vue'
-import { propTypes } from '@/utils/propTypes'
+import { withDefaults } from 'vue'
 import type {
   UploadInstance,
   UploadUserFile,
@@ -38,27 +37,42 @@ import type {
   UploadRequestOptions
 } from 'element-plus'
 import { uploadFile } from '@/api/common'
+import { FileUnit } from './helper'
 
-const props = defineProps({
-  modelValue: {
-    type: Array as PropType<UploadUserFile[]>,
-    required: true
-  },
-  title: propTypes.string.def('文件上传'),
-  updateUrl: propTypes.string.def(import.meta.env.VITE_UPLOAD_URL),
-  fileType: propTypes.string.def('.doc, .docx, .pdf, .jpg'), // 文件类型
-  fileSize: propTypes.number.def(5), // 大小限制(MB)
-  limit: propTypes.number.def(5), // 数量限制
-  autoUpload: propTypes.bool.def(true), // 自动上传
-  drag: propTypes.bool.def(false), // 拖拽上传
-  isShowTip: propTypes.bool.def(true) // 是否显示提示
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: UploadUserFile[]
+    title?: string
+    fileType?: string // 文件类型
+    fileSize?: number // 大小限制(MB)
+    limit?: number // 数量限制
+    autoUpload?: boolean // 自动上传
+    drag?: boolean // 拖拽上传
+    isShowTip?: boolean // 是否显示提示
+    fileUnit?: FileUnit // 文件大小单位
+    preivew?: boolean // 是否支持点击预览
+  }>(),
+  {
+    title: '文件上传',
+    fileType: '.doc, .docx, .pdf, .jpg',
+    fileSize: 5,
+    limit: 5,
+    autoUpload: true,
+    drag: false,
+    isShowTip: true,
+    fileUnit: FileUnit.MB,
+    preivew: true
+  }
+)
 
 const showDialog = ref(false)
 const message = useMessage() // 消息弹窗
 const loading = ref(false)
 const emit = defineEmits(['update:modelValue'])
 const fileTypeToArray = computed(() => props.fileType.trimAll().replaceAll('.', '').split(','))
+// 文件大小单位转小写
+const fileUnit = computed(() => props.fileUnit.toLowerCase())
+
 // ========== 上传相关 ==========
 const uploadRef = ref<UploadInstance>()
 const uploadList = ref<UploadUserFile[]>([])
@@ -80,13 +94,14 @@ const beforeUpload: UploadProps['beforeUpload'] = (file: UploadRawFile) => {
     if (file.type.indexOf(type) > -1) return true
     return !!(fileExtension && fileExtension.indexOf(type) > -1)
   })
-  const isLimit = file.size < props.fileSize * 1024 * 1024
+  const isLimit =
+    (fileUnit.value === FileUnit.KB ? file.size / 1024 : file.size / 1024 / 1024) < props.fileSize
   if (!isTrueFormat) {
     message.error(`文件格式不正确, 请上传${fileTypeToArray.value.join('/')}格式!`)
     return false
   }
   if (!isLimit) {
-    message.error(`上传文件大小不能超过${props.fileSize}MB!`)
+    message.error(`上传文件大小不能超过${props.fileSize}${fileUnit}!`)
     return false
   }
   uploadNumber.value++
@@ -116,10 +131,14 @@ const excelUploadError = () => {
 const handleRemove = () => {
   emit('update:modelValue', fileList.value)
 }
-// 添加查看文件
-const handlePreview: UploadProps['onPreview'] = () => {
-  //TODO: 添加预览功能
-  showDialog.value = !showDialog.value
+// 预览文件
+const previewUrl = ref('')
+const previewTitle = ref('')
+const handlePreview: UploadProps['onPreview'] = (file: any) => {
+  if (!props.preivew) return
+  previewUrl.value = file.url
+  previewTitle.value = file.name
+  showDialog.value = true
 }
 
 // 自定义上传方法

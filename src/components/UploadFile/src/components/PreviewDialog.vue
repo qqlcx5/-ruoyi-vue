@@ -1,22 +1,29 @@
 <template>
-  <XModal :title="title" v-model="show" width="500px">
-    <span>test </span>
+  <XModal :title="title" v-model="show" width="950px">
+    <div class="dialog-box">
+      <iframe class="dialor-iframe" :src="previewUrl" frameborder="0"></iframe>
+    </div>
+    <template #footer>
+      <XButton :title="t('dialog.close')" @click="show = false" />
+    </template>
   </XModal>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, withDefaults } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { encode } from 'js-base64'
+
+const { t } = useI18n() // 国际化
 const show = ref(false)
-const props = withDefaults(
-  defineProps<{
-    modelValue: boolean
-    title: string
-  }>(),
-  {
-    title: '测试'
-  }
-)
+const props = defineProps<{
+  modelValue: boolean
+  title: string
+  url: string
+}>()
 const emits = defineEmits<{ (e: 'update:modelValue', show: boolean): void }>()
+
+const previewBaseUrl = import.meta.env.VITE_PREVIEW_URL
+const previewUrl = computed(() => `${previewBaseUrl}?url=${encodeURIComponent(encode(props.url))}`)
 
 watch(
   () => props.modelValue,
@@ -30,4 +37,16 @@ watch(show, (val) => {
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.dialog-box {
+  position: relative;
+  min-height: 80vh;
+}
+
+.dialog-iframe {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+</style>

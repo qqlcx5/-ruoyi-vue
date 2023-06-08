@@ -52,34 +52,46 @@
 <script setup lang="ts" name="UploadImg">
 import type { UploadProps, UploadRequestOptions } from 'element-plus'
 import { generateUUID } from '@/utils'
-import { propTypes } from '@/utils/propTypes'
 import { uploadFile } from '@/api/common'
+import { FileUnit } from './helper'
+import { withDefaults } from 'vue'
 
-const props = defineProps({
-  modelValue: propTypes.string.def(''),
-  updateUrl: propTypes.string.def(import.meta.env.VITE_UPLOAD_URL),
-  drag: propTypes.bool.def(true), // 是否支持拖拽上传 ==> 非必传（默认为 true）
-  disabled: propTypes.bool.def(false), // 是否禁用上传组件 ==> 非必传（默认为 false）
-  fileSize: propTypes.number.def(300), // 图片大小限制 ==> 非必传（默认为 300kb 单位kb）
-  fileType: propTypes.string.def('.jpg, .png'), // 图片类型限制 ==> 非必传（默认为 ["image/jpg", "image/png"]）
-  height: propTypes.string.def('80px'), // 组件高度 ==> 非必传（默认为 150px）
-  width: propTypes.string.def('80px'), // 组件宽度 ==> 非必传（默认为 150px）
-  borderRadius: propTypes.string.def('4px'), // 组件边框圆角 ==> 非必传（默认为 8px）
-  uploadName: propTypes.string.def('上传') // 组件上传框里的提示文字 ==> 非必传（默认为 上传）
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: string
+    drag?: boolean //  ==> 非必传（默认为 true）
+    disabled?: boolean // 是否禁用上传组件 ==> 非必传（默认为 false）
+    fileSize?: number // 图片大小限制 ==> 非必传（默认为 300kb 单位kb）
+    fileType?: string // 图片类型限制 ==> 非必传（默认为 ["image/jpg", "image/png"]）
+    height?: string // 组件高度 ==> 非必传（默认为 150px）
+    width?: string // 组件宽度 ==> 非必传（默认为 150px）
+    borderRadius?: string // 组件边框圆角 ==> 非必传（默认为 8px）
+    uploadName?: string // 组件上传框里的提示文字 ==> 非必传（默认为 上传）
+    fileUnit?: FileUnit // 文件大小单位
+  }>(),
+  {
+    drag: true,
+    disabled: false,
+    fileSize: 300,
+    fileType: '.jpg, .png',
+    height: '80px',
+    width: '80px',
+    borderRadius: '4px',
+    uploadName: '上传',
+    fileUnit: FileUnit.MB
+  }
+)
+const emit = defineEmits(['update:modelValue'])
 const message = useMessage() // 消息弹窗
 // 生成组件唯一id
 const uuid = ref('id-' + generateUUID())
 // 查看图片
 const imgViewVisible = ref(false)
-
 const fileTypeToArray = computed(() => props.fileType.trimAll().replaceAll('.', '').split(','))
-
+// 文件大小单位转小写
+const fileUnit = computed(() => props.fileUnit.toLowerCase())
 const upload = ref()
-
 const loading = ref(false)
-
-const emit = defineEmits(['update:modelValue'])
 
 const deleteFile = () => {
   emit('update:modelValue', '')
@@ -87,7 +99,9 @@ const deleteFile = () => {
 }
 
 const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  const imgSize = rawFile.size / 1024 < props.fileSize
+  const imgSize =
+    (fileUnit.value === FileUnit.KB ? rawFile.size / 1024 : rawFile.size / 1024 / 1024) <
+    props.fileSize
   loading.value = true
 
   let fileExtension = ''
@@ -103,12 +117,16 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
   if (!isTrueFormat)
     message.error(`仅支持${fileTypeToArray.value.join('/')}格式`), (loading.value = false)
 
-  if (!imgSize) message.notifyWarning(`图片不能超过 ${props.fileSize}kb`), (loading.value = false)
+  if (!imgSize)
+    message.notifyWarning(`图片不能超过 ${props.fileSize}${fileUnit.value}`),
+      (loading.value = false)
   return isTrueFormat && imgSize
 }
 
 // 上传成功提示
 const uploadSuccess = (res: any): void => {
+  console.log(res)
+
   message.success('上传成功')
   emit('update:modelValue', res.data.store)
 }
