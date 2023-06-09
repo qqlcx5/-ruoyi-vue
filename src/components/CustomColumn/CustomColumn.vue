@@ -22,15 +22,22 @@
           <!-- v-if="state.columnsCheckList.length > 0"-->
           <VueDraggableNext
             :list="state.columnsCheckList"
+            filter=".unMover"
+            :move="onMove"
             @dragend="dragEnd(state.columnsCheckList)"
           >
             <!--拖拽过渡 -->
             <transition-group type="transition" name="flip-list">
-              <div v-for="item in state.columnsCheckList" :key="item.key" class="checkbox-content">
+              <div
+                v-for="item in state.columnsCheckList"
+                :key="item.key"
+                class="checkbox-content"
+                :class="[{ unMover: item.key === 'operation' }]"
+              >
                 <a-checkbox :value="item.key" style="width: 100%" :disabled="item?.disabled">
                   {{ item.title }}
                 </a-checkbox>
-                <img :src="dragImg" alt="" />
+                <img :src="dragImg" alt="" v-if="item.key !== 'operation'" />
               </div>
             </transition-group>
           </VueDraggableNext>
@@ -91,7 +98,7 @@ const emit = defineEmits(['changeColumn'])
 //ALL columns 用于定制列过滤 排序 直接拷贝了 懒得改代码了 - -
 const allColumns = cloneDeep(props.allColumns)
 
-const state = reactive({
+const state: any = reactive({
   checkAll: false, //是否全选
   columns: [],
   defaultKeys: [...props.defaultKeys], //默认的keys
@@ -102,13 +109,13 @@ const { wsCache } = useCache()
 //定制列
 //全选checkbox onchange
 const onCheckAllChange = (e) => {
-  const tempArr = []
+  const tempArr: any = []
   if (e.target.checked === true) {
-    state.columnsCheckList.map((item) => {
+    state.columnsCheckList.map((item: any) => {
       tempArr.push(item.key)
     })
   } else {
-    state.columnsCheckList.map((item) => {
+    state.columnsCheckList.map((item: any) => {
       if (item.disabled) {
         tempArr.push(item.key)
       }
@@ -182,7 +189,7 @@ const setDefaultColumns = () => {
 //获取默认的columns
 const getColumns = () => {
   state.checkedList = [...state.defaultKeys]
-  const currentColumns = allColumns.filter((columnsItem) => {
+  const currentColumns = allColumns.filter((columnsItem: any) => {
     return state.defaultKeys.some((item) => columnsItem.key === item)
   })
   return currentColumns
@@ -204,6 +211,13 @@ if (currentColumnsCheckList.length > 0) {
   state.checkedList = currentCheckedList
   //复选框列表
   state.columnsCheckList = cloneDeep(props.changedColumnsObj.currentColumnsCheckList) //定制列 复选框
+}
+
+const onMove = (e) => {
+  //不允许停靠
+  if (e.relatedContext.element.key === 'operation') return false
+  //不允许拖拽
+  return e.draggedContext.element.key !== 'operation'
 }
 
 //复选框 全选中 全选checkbox 勾选

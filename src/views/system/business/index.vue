@@ -1014,10 +1014,9 @@ import {
   getOrganizationTypeList,
   updateOrganizationStoreStatus
 } from '@/api/system/organization'
-import { State } from '@/views/system/business/business'
 dayjs.extend(isBetween)
 
-const queryParams = reactive({
+const queryParams: any = reactive({
   current: 1, //当前页码
   pageSize: 10, //显示条数
   keyword: undefined,
@@ -1146,7 +1145,8 @@ const uploadHeaders = ref({
 const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
-const state: State = reactive({
+//TODO 有空补吧
+const state: any = reactive({
   isSuperAdmin: false, //仅超管 有新增 btn
   belongTenantId: null, //上级主体编号 新增门店
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
@@ -1284,7 +1284,8 @@ const state: State = reactive({
 
 //存放功能配置 选中的所有keys(包括父节点id)
 const checkedKeysBack = ref([])
-const checkedKeysBackNew = ref([])
+// const checkedKeysBackNew = ref([])
+const checkedKeysBackNew: Ref<(string | number)[]> = ref([])
 
 //获取子节点的 父节点id
 const testCheck = (checkedKeys, e) => {
@@ -1434,6 +1435,7 @@ const allColumns = [
     width: 240,
     dataIndex: 'operation',
     key: 'operation',
+    fixed: 'right',
     resizable: true,
     ellipsis: true,
     sort: 13
@@ -1564,10 +1566,15 @@ const openEditParentMajorIndividual = (record) => {
 //打开Modal
 const openModal = async (record = {}) => {
   //新增门店
-  if (record.type === 'dealer' && state.modalType === 'add') {
+  // if (record.type === 'dealer' && state.modalType === 'add') {
+  if (
+    (record as { type: string; [key: string]: any }).type === 'dealer' &&
+    state.modalType === 'add'
+  ) {
     if (!(Object.keys(record).length === 0)) {
       //非空对象判断 新增子项时回显
-      state.belongTenantId = record.id
+      // state.belongTenantId = record.id
+      state.belongTenantId = (record as { id: string; [key: string]: any }).id ?? null
       state.isShowStore = true
       console.log('新增门店')
     }
@@ -1588,11 +1595,18 @@ const openModal = async (record = {}) => {
   console.log('record', record)
   console.log('state.majorIndividualTypeOptions', state.majorIndividualTypeOptions)
 
-  if (record.type === 'manufacturer' && state.modalType === 'add') {
+  // if (record.type === 'manufacturer' && state.modalType === 'add') {
+  if (
+    (record as { type: string; [key: string]: any }).type === 'manufacturer' &&
+    state.modalType === 'add'
+  ) {
     // 厂家 新增子项 主体类型只能为经销商，上级主体只能为自己
-    state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions.filter(
-      (item) => item.value === 'dealer'
-    )
+    // state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions.filter(
+    //   (item) => item.value === 'dealer'
+    // )
+    state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions?.filter(
+      (item: { label: string; value: string }) => item.value === 'dealer'
+    ) as { label: string; value: string }[] | undefined
   } else {
     state.majorIndividualTypeOptionsClone = state.majorIndividualTypeOptions
   }
@@ -1600,17 +1614,18 @@ const openModal = async (record = {}) => {
   if (!(Object.keys(record).length === 0)) {
     //非空对象判断 新增子项时回显
     //上级主体
-    if (!state.formState.majorIndividualType) {
+    if (state.formState && !state.formState.majorIndividualType) {
       state.formState.belongTenantId = null
-    } else {
-      state.formState.belongTenantId = record.belongTenantId
+    } else if (state.formState && 'belongTenantId' in record) {
+      state.formState.belongTenantId = record.belongTenantId as string | number | null
     }
   } else {
     // state.formState.belongTenantId = state?.optionalMenuTree[0]
     //   ? state?.optionalMenuTree[0]?.id
     //   : null
     //不再取第一项了
-    state.formState.belongTenantId = null
+    // state.formState.belongTenantId = null
+    state.formState!.belongTenantId = null
   }
   state.isShow = true
 }
@@ -1620,7 +1635,7 @@ const closeModal = () => {
   state.isShow = false
   formRef.value.resetFields()
   //级联选择器 需要单独清空
-  state.formState.companyAddress = []
+  state.formState!.companyAddress = []
   state.formState = {
     majorIndividualType: '', //主体类型
     belongTenantId: null, //上级主体
@@ -1642,7 +1657,7 @@ const closeModal = () => {
     legalRepresentative: '', //法定代表人
     legalMobile: '', //法人联系电话
     legalIdentityUrl: '', //法人身份证
-    establishDate: '', //成立日期
+    establishDate: null, //成立日期
     companyAddress: [], //公司地址
     cascadeInfo: [], //选中的省市区全部信息
     detailedAddress: '', //公司地址 详细地址
@@ -1763,14 +1778,14 @@ const edit = async (
     // businessLicenseUrl: res.businessLicenseUrl //营业执照
   }
   console.log('state.optionalMenuTree', state.optionalMenuTree)
-  console.log('state.formState.belongTenantId', state.formState.belongTenantId)
+  console.log('state.formState.belongTenantId', state.formState!.belongTenantId)
 
   if (res.domain.startsWith('http://')) {
-    state.formState.bindingDomainNameBefore = 'http://'
-    state.formState.bindingDomainName = res.domain.substring(7)
+    state.formState!.bindingDomainNameBefore = 'http://'
+    state.formState!.bindingDomainName = res.domain.substring(7)
   } else if (res.domain.startsWith('https://')) {
-    state.formState.bindingDomainNameBefore = 'https://'
-    state.formState.bindingDomainName = res.domain.substring(8)
+    state.formState!.bindingDomainNameBefore = 'https://'
+    state.formState!.bindingDomainName = res.domain.substring(8)
   }
 
   if (res.logoUrl) {
@@ -1801,35 +1816,36 @@ const edit = async (
   }
 
   if (res.establishDate) {
-    state.formState['establishDate'] = dayjs(res.establishDate) //成立日期
+    state.formState!.establishDate = dayjs(res.establishDate) //成立日期
   }
 
   //永久有效 起始时间为当前时间 结束时间为2099-12-31
   // state.formState.forever = res.expireTime === '2099-12-31'
 
   //状态0 开启 1关闭
-  state.formState.status = res.status === 0
+  state.formState!.status = res.status === 0
 
   //省市区
-  state.formState.companyAddress = []
-  state.formState.cascadeInfo = []
+  state.formState!.companyAddress = []
+  state.formState!.cascadeInfo = []
+
   if (res?.provinceCode) {
-    state.formState.companyAddress.push(res?.provinceCode)
-    state.formState.cascadeInfo.push({
+    state.formState!.companyAddress.push(res?.provinceCode)
+    state.formState!.cascadeInfo.push({
       label: res?.province,
       value: res?.provinceCode
     })
   }
   if (res?.cityCode) {
-    state.formState.companyAddress.push(res?.cityCode)
-    state.formState.cascadeInfo.push({
+    state.formState!.companyAddress.push(res?.cityCode)
+    state.formState!.cascadeInfo.push({
       label: res?.city,
       value: res?.cityCode
     })
   }
   if (res?.countyCode) {
-    state.formState.companyAddress.push(res?.countyCode)
-    state.formState.cascadeInfo.push({
+    state.formState!.companyAddress.push(res?.countyCode)
+    state.formState!.cascadeInfo.push({
       label: res?.county,
       value: res?.countyCode
     })
@@ -1848,7 +1864,7 @@ const onChange = ({ pageSize, current }) => {
 
 //处理省市区数据
 // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
-let needReplaceKey = [
+let needReplaceKey: any = [
   ['label', 'fullname'],
   ['value', 'code']
 ]
@@ -1858,30 +1874,31 @@ state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needRe
 const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
-  const valid = await formRef.value.validate()
+  await formRef.value.validate()
   state.addEditLoading = true
   let params = {
-    type: state.formState.majorIndividualType, //主体类型
-    belongTenantId: state.formState.belongTenantId, //上级主体
-    code: state.formState.code, //主体编码
-    name: state.formState.name, //主体名称
-    abbreviate: state.formState.abbreviate, //主体简称
-    systemName: state.formState.systemName, //系统名称
+    type: state.formState!.majorIndividualType, //主体类型
+    belongTenantId: state.formState!.belongTenantId, //上级主体
+    code: state.formState!.code, //主体编码
+    name: state.formState!.name, //主体名称
+    abbreviate: state.formState!.abbreviate, //主体简称
+    systemName: state.formState!.systemName, //系统名称
     logoUrl: state.logoUrlSuccess, //系统logo
-    contactName: state.formState.contactName, //负责人
-    contactMobile: state.formState.contactMobile, //负责人电话
-    effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
-    expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY-MM-DD'), //有效期 结束时间
+    contactName: state.formState!.contactName, //负责人
+    contactMobile: state.formState!.contactMobile, //负责人电话
+    // effectiveStartDate: state.formState!.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
+    effectiveStartDate: state.formState?.effectiveStartEndTime?.[0]?.format('YYYY-MM-DD') ?? null,
+    expireTime: state.formState?.effectiveStartEndTime?.[1]?.format('YYYY-MM-DD') ?? null, //有效期 结束时间
     // effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY/MM/DD'), //有效期 开始时间
     // expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY/MM/DD'), //有效期 结束时间
-    accountCount: state.formState.accountCount, //可用名额
-    domain: `${state.formState.bindingDomainNameBefore}${state.formState.bindingDomainName}`, //绑定域名
-    creditCode: state.formState.creditCode, //统一社会信用代码
+    accountCount: state.formState!.accountCount, //可用名额
+    domain: `${state.formState!.bindingDomainNameBefore}${state.formState!.bindingDomainName}`, //绑定域名
+    creditCode: state.formState!.creditCode, //统一社会信用代码
     // organizationCode: state.formState.organizationCode, //组织机构代码
-    legalRepresentative: state.formState.legalRepresentative, //法定代表人
-    legalMobile: state.formState.legalMobile, //法人联系电话
+    legalRepresentative: state.formState!.legalRepresentative, //法定代表人
+    legalMobile: state.formState!.legalMobile, //法人联系电话
     legalIdentityUrl: state.legalPersonUrlSuccess, //法人身份证
-    address: state.formState.detailedAddress, //公司地址 详细地址
+    address: state.formState!.detailedAddress, //公司地址 详细地址
     //
     businessLicenseUrl: state.businessLicenseSuccess //营业执照
   }
@@ -1902,7 +1919,7 @@ const addMajorIndividualFN = async () => {
   } else {
     //状态0 开启 1关闭
     //修改 原路返回
-    if (state.formState.status) {
+    if (state.formState!.status) {
       params['status'] = 0
     } else {
       params['status'] = 1
@@ -1910,26 +1927,26 @@ const addMajorIndividualFN = async () => {
   }
 
   //省市区
-  if (state.formState?.cascadeInfo[0]) {
+  if (state.formState?.cascadeInfo?.[0]) {
     params['province'] = state.formState.cascadeInfo[0].label
     params['provinceCode'] = state.formState.cascadeInfo[0].value
   }
-  if (state.formState?.cascadeInfo[1]) {
+  if (state.formState?.cascadeInfo?.[1]) {
     params['city'] = state.formState.cascadeInfo[1].label
     params['cityCode'] = state.formState.cascadeInfo[1].value
   }
-  if (state.formState?.cascadeInfo[2]) {
+  if (state.formState?.cascadeInfo?.[2]) {
     params['county'] = state.formState.cascadeInfo[2].label
     params['countyCode'] = state.formState.cascadeInfo[2].value
   }
 
-  if (state.formState.establishDate) {
+  if (state.formState?.establishDate) {
     params['establishDate'] = state.formState.establishDate?.format('YYYY-MM-DD') //成立日期
     // establishDate: state.formState.establishDate.format('YYYY/MM/DD'), //成立日期
   }
 
   try {
-    let res = []
+    let res = ''
     if (state.modalType === 'add') {
       res = await addMajorIndividual(params)
       state.addSuccessId = res
@@ -1957,22 +1974,22 @@ const addMajorIndividualFN = async () => {
       //   return
       // }
 
-      params['id'] = state.formState.id
+      params['id'] = state.formState!.id
       res = await updateEditMajorIndividual(params)
       message.success('修改成功')
 
       if (
         dayjs().isBetween(
-          state.formState.effectiveStartEndTime[0],
-          state.formState.effectiveStartEndTime[1],
+          state.formState!.effectiveStartEndTime?.[0],
+          state.formState!.effectiveStartEndTime?.[1],
           'day',
           []
         ) &&
-        state.permissionRecord.statusSwitch === false
+        state.permissionRecord!.statusSwitch === false
       ) {
         state.dateTime = {
-          startTime: state.formState.effectiveStartEndTime[0].format('YYYY-MM-DD'),
-          endTime: state.formState.effectiveStartEndTime[1].format('YYYY-MM-DD')
+          startTime: state.formState!.effectiveStartEndTime?.[0].format('YYYY-MM-DD'),
+          endTime: state.formState!.effectiveStartEndTime?.[1].format('YYYY-MM-DD')
         }
         openDateModal()
       }
@@ -1987,7 +2004,7 @@ const addMajorIndividualFN = async () => {
 
 //级联选择器选中的内容 改变
 const cascadeChange = (value, selectedOptions) => {
-  state.formState.cascadeInfo = selectedOptions
+  state.formState!.cascadeInfo = selectedOptions
 }
 
 //关闭功能配置 modal
@@ -2022,7 +2039,7 @@ const openPermissionModal = async (id) => {
 const PermissionOk = async () => {
   const params = {
     menuIds: state.idArr,
-    tenantId: state.addSuccessId || state.permissionRecord.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
+    tenantId: state.addSuccessId || state.permissionRecord!.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
     status: 0
   }
   if (state.permissionRecord?.packageId === null) {
@@ -2040,24 +2057,24 @@ const PermissionOk = async () => {
   closePermissionModal()
 }
 
-const findParent = (childrenId, arr, path) => {
-  if (path === undefined) {
-    path = []
-  }
-  for (let i = 0; i < arr.length; i++) {
-    let tmpPath = path.concat()
-    tmpPath.push(arr[i].id)
-    if (childrenId == arr[i].id) {
-      return tmpPath
-    }
-    if (arr[i].children) {
-      let findResult = findParent(childrenId, arr[i].children, tmpPath)
-      if (findResult) {
-        return findResult
-      }
-    }
-  }
-}
+// const findParent = (childrenId, arr, path) => {
+//   if (path === undefined) {
+//     path = []
+//   }
+//   for (let i = 0; i < arr.length; i++) {
+//     let tmpPath = path.concat()
+//     tmpPath.push(arr[i].id)
+//     if (childrenId == arr[i].id) {
+//       return tmpPath
+//     }
+//     if (arr[i].children) {
+//       let findResult = findParent(childrenId, arr[i].children, tmpPath)
+//       if (findResult) {
+//         return findResult
+//       }
+//     }
+//   }
+// }
 
 const assignPermission = async (record) => {
   state.permissionRecord = record
@@ -2137,8 +2154,11 @@ const setTableStatusChangeInfo = async (value, record) => {
   }
 
   //过滤得到父级项
-  const parentItem = state.rawData.filter((item) => item.id === record.belongTenantId)
-  if (parentItem.length > 0 && parentItem[0]?.status === 1) {
+  // const parentItem = state.rawData.filter((item) => item.id === record.belongTenantId)
+  const parentItem: any[] =
+    state.rawData?.filter((item) => (item as Record<string, any>).id === record.belongTenantId) ||
+    []
+  if (parentItem!.length > 0 && parentItem?.[0]?.status === 1) {
     record.statusSwitch = !record.statusSwitch
     return message.warning('请先开启父级状态')
   }
@@ -2179,12 +2199,12 @@ const senCodeFN = () => {
   //TODO:发送短信请求
   if (true) {
     message.success(
-      `验证码已发送至${state.messageContactMobile.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')}`
+      `验证码已发送至${state.messageContactMobile!.replace(/^(.{3})(?:\d+)(.{4})$/, '$1****$2')}`
     )
   }
   state.canSendCode = false
   let codeIn = setInterval(() => {
-    state.codeCountdown -= 1
+    ;(state.codeCountdown as number) -= 1
     if (state.codeCountdown === 0) {
       state.canSendCode = true
       state.codeCountdown = 60
@@ -2212,7 +2232,7 @@ const statusOk = async () => {
     return
   }
   try {
-    if (state.record.type === null) {
+    if (state.record?.type === null) {
       //门店 TODO 短信
       // await updateOrganizationStatus({
       //   id: state.record.id,
@@ -2220,16 +2240,16 @@ const statusOk = async () => {
       // })
 
       await updateOrganizationStoreStatus({
-        tenantId: state.record.belongTenantId, //上级主体
-        id: state.record.id,
-        status: state.record.statusSwitch === true ? 0 : 1
+        tenantId: state.record!.belongTenantId, //上级主体
+        id: state.record!.id,
+        status: state.record!.statusSwitch === true ? 0 : 1
       })
     } else {
       //主体
       const params = {
-        id: state.record.id,
+        id: state.record!.id,
         code: state.messageCode,
-        status: state.record.statusSwitch === true ? 0 : 1
+        status: state.record!.statusSwitch === true ? 0 : 1
       }
 
       await updateEditMajorIndividualStatus(params)
@@ -2254,7 +2274,7 @@ const closeDateModal = () => {
 }
 //关闭修改 modal 时 有效期与状态 判断 modal  确认开启
 const dateOkModal = () => {
-  state.permissionRecord.statusSwitch = true
+  state.permissionRecord!.statusSwitch = true
   tableStatusChange(true, state.permissionRecord)
   closeDateModal()
 }
@@ -2288,19 +2308,19 @@ const expandAllFN = ({ target }) => {
   }
 }
 
-// 定义childArr存放所有子节点
-const childArr = ref([])
-// 遍历获取所有子节点
-function getChildArr(data) {
-  data.forEach((res) => {
-    if (res.children && res.children.length > 0) {
-      getChildArr(res.children)
-    } else {
-      childArr.value.push(res.id)
-    }
-  })
-  return childArr.value
-}
+// // 定义childArr存放所有子节点
+// const childArr = ref([])
+// // 遍历获取所有子节点
+// function getChildArr(data) {
+//   data.forEach((res) => {
+//     if (res.children && res.children.length > 0) {
+//       getChildArr(res.children)
+//     } else {
+//       childArr.value.push(res.id)
+//     }
+//   })
+//   return childArr.value
+// }
 
 //详情(打开)
 const detailsInfo = async (record) => {
@@ -2328,7 +2348,7 @@ const detailsInfo = async (record) => {
   console.log('tempRes', tempRes)
   console.log('tempItem', tempItem)
 
-  const tempType = state.majorIndividualTypeOptions.filter((item) => item.value === res.type)
+  const tempType = state.majorIndividualTypeOptions!.filter((item) => item?.value === res.type)
 
   state.detailsInfo = [
     {
@@ -2472,7 +2492,7 @@ const resetPassword = () => {
 }
 //重置密码 请求
 const resetPasswordFN = async () => {
-  state.resetPasswordSuccessInfo = await putResetPassWord({ id: state.record.contactUserId })
+  state.resetPasswordSuccessInfo = await putResetPassWord({ id: state.record!.contactUserId })
   state.resetPasswordTitle = ''
   state.closable = false
   state.resetModalStyle = {
@@ -2528,8 +2548,8 @@ const handlePreview = async (file) => {
 const checkImageWH = (file, width, height) => {
   return new Promise((resolve, reject) => {
     let filereader = new FileReader()
-    let isTrue = false
-    filereader.onload = (e) => {
+    // let isTrue = false
+    filereader.onload = (e: any) => {
       let src = e.target.result
       const image = new Image()
       image.onload = function () {
@@ -2770,7 +2790,7 @@ watch(
 watch(
   () => state.columns,
   (columns) => {
-    const needItem = columns.find((item) => item.key === 'name')
+    const needItem = columns!.find((item) => item.key === 'name')
     state.treeIconIndex = needItem.sort - 1
   },
   {

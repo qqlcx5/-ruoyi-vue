@@ -1,3 +1,5 @@
+import { Dayjs } from 'dayjs'
+
 interface InfoItem {
   textSpan: string
   text: string
@@ -16,9 +18,24 @@ interface DetailsInfoItem {
   treeArr?: TreeItem[]
 }
 
+interface ICascadeInfo {
+  label?: string
+  value?: string
+}
+
+export interface QueryParams {
+  current?: number
+  pageSize?: number
+  keyword?: string
+  systemName?: string
+  startEndTime?: any[]
+  status?: string
+  type?: string | null
+}
+
 interface FormState {
   majorIndividualType?: string
-  belongTenantId?: null
+  belongTenantId?: null | string | number
   code?: string
   name?: string
   abbreviate?: string
@@ -26,7 +43,7 @@ interface FormState {
   logoUrl?: string
   contactName?: string
   contactMobile?: string
-  effectiveStartEndTime?: string[]
+  effectiveStartEndTime?: Dayjs[]
   accountCount?: number | undefined
   bindingDomainName?: string
   bindingDomainNameBefore?: string
@@ -35,16 +52,26 @@ interface FormState {
   legalRepresentative?: string
   legalMobile?: string
   legalIdentityUrl?: string
-  establishDate?: string
+  establishDate?: Dayjs | null
   companyAddress?: string[]
-  cascadeInfo?: string[]
+  cascadeInfo?: ICascadeInfo[]
   detailedAddress?: string
   businessLicenseUrl?: string
 }
 
+export interface MenuTreeNode {
+  id?: number
+  name?: string
+  parentId?: number | null
+  type?: number
+  children?: MenuTreeNode[]
+}
+
+export type MenuTreeList = MenuTreeNode[]
+
 export interface State {
   isSuperAdmin?: boolean
-  belongTenantId?: null
+  belongTenantId?: null | string | number
   record?: Record<string, unknown>
   messageContactMobile?: string
   messageText?: string
@@ -55,7 +82,7 @@ export interface State {
   total?: number
   statusOptions?: { value: number; label: string }[]
   loading?: boolean
-  rawData?: unknown[]
+  rawData?: any[]
   tableDataList?: unknown[]
   tableDataArr?: unknown[]
   treeIconIndex?: number
@@ -85,11 +112,11 @@ export interface State {
   majorIndividualTypeOptions?: unknown[]
   majorIndividualTypeOptionsClone?: unknown[]
   formState?: FormState
-  addSuccessId?: number
+  addSuccessId?: number | string
   activeKey?: string
   selectAll?: boolean
   isExpandAllTab?: boolean
-  menuTreeList?: unknown[]
+  menuTreeList?: MenuTreeList[]
   fieldNames?: Record<string, string>
   selectedKeys?: unknown[]
   checkedKeys?: unknown[]

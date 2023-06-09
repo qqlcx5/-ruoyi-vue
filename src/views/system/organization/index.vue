@@ -139,7 +139,7 @@
             </div>
           </template>
 
-          <!--  员工数  -->
+          <!--  在职成员  -->
           <template v-if="column?.key === 'employeesNumber'">
             <div class="employees-Number" @click="jumpToMember(record)">{{
               record.staffCount
@@ -1365,7 +1365,8 @@ const uploadHeaders = ref({
 const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
-const state = reactive({
+//TODO 有空补吧
+const state: any = reactive({
   addEditBtn: '下一步', //新增 修改 确认 bnt text
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1575,7 +1576,7 @@ const allColumns = [
     sort: 3
   },
   {
-    title: '员工数',
+    title: '在职成员',
     width: 100,
     dataIndex: 'employeesNumber',
     key: 'employeesNumber',
@@ -1672,6 +1673,7 @@ const allColumns = [
     width: 240,
     dataIndex: 'operation',
     key: 'operation',
+    fixed: 'right',
     resizable: true,
     ellipsis: true,
     sort: 12
@@ -2984,7 +2986,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { getMemberAllList, getMemberList } from '@/api/system/member'
 const $router = useRouter() // 这是路由跳转的
 const $route = useRoute() // 用于接收路由参数的
-//员工数 跳转到成员管理
+//在职成员 跳转到成员管理
 const jumpToMember = (record) => {
   $router.push({
     path: '/system/member',
@@ -3446,7 +3448,7 @@ watch(
 .width-full {
   width: 100%;
 }
-//员工数
+//在职成员
 .employees-Number {
   color: rgba(0, 129, 255, 100);
   cursor: pointer;
