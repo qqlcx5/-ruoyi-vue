@@ -153,9 +153,12 @@
             </div>
 
             <div v-if="childItem?.generalArr">
-              <div v-for="itemNoticeLetter in childItem?.generalArr">{{
-                itemNoticeLetter.fileName
-              }}</div>
+              <div
+                v-for="(itemNoticeLetter, itemNoticeLetterIndex) in childItem?.generalArr"
+                @click="previewFile(itemNoticeLetter)"
+                :key="`noticeLetter${itemNoticeLetterIndex}`"
+                >{{ itemNoticeLetter.fileName }}</div
+              >
             </div>
           </template>
         </div>
@@ -206,9 +209,12 @@
             </div>
 
             <div v-if="childItem?.generalArr">
-              <div v-for="itemNoticeLetter in childItem?.generalArr">{{
-                itemNoticeLetter.fileName
-              }}</div>
+              <div
+                v-for="(itemNoticeLetter, itemNoticeLetterIndex) in childItem?.generalArr"
+                @click="previewFile(itemNoticeLetter)"
+                :key="`noticeLetterFile${itemNoticeLetterIndex}`"
+                >{{ itemNoticeLetter.fileName }}</div
+              >
             </div>
           </template>
         </div>
@@ -233,12 +239,18 @@
   >
     <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
   </a-modal>
+
+  <!--  上传文件预览  -->
+  <preview-dialog
+    v-model="state.isShowDialog"
+    :title="state.previewTitle"
+    :url="state.previewUrl"
+  />
 </template>
 
 <script lang="ts" setup>
 import { reactive } from 'vue'
 import {
-  getOrganizationDetails,
   getOrganizationStoreDetails,
   getOrganizationTypeList,
   getSimpleOrganizationList
@@ -247,14 +259,16 @@ import { organizationType } from '@/utils/constants'
 import { getMemberAllList } from '@/api/system/member'
 import { reconstructionArrayObject } from '@/utils/utils'
 import editImg from '@/assets/imgs/system/editImg.png'
-import { getSimpleTenantList } from '@/api/system/business'
+import { getSimpleTenantList, getStoreDetails } from '@/api/system/business'
 
 interface Props {
   currentRecord?: object
+  fromPage?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currentRecord: {}
+  currentRecord: {},
+  fromPage: 'business' //默认为主体管理 由于 主体管理与机构管理的门店要走 不同接口(...出入参一样) 因此加个mark
 })
 
 const emit = defineEmits<{
@@ -262,7 +276,7 @@ const emit = defineEmits<{
   (e: 'editStoreDetails', key: object): void
 }>()
 
-const state = reactive({
+const state: any = reactive({
   isShowDetails: true, //详情modal
   detailsInfo: [], //详情内容
   detailsInfoSecond: [], //
@@ -276,7 +290,10 @@ const state = reactive({
   saleBrandOptions: [], //销售品牌List 设置属性
   rescueBrandOptions: [], //救援品牌List 设置属性
   maintenanceBrandOptions: [], //销售品牌List 设置属性
-  memberOptions: [] //新增修改 负责人list
+  memberOptions: [], //新增修改 负责人list
+  isShowDialog: false,
+  previewTitle: '',
+  previewUrl: ''
 })
 
 const previewVisible = ref(false)
@@ -288,10 +305,25 @@ const detailsInfo = async (record) => {
   state.detailsRecord = record
   //获取机构详情
   // const res = await getOrganizationDetails({ id: record.id })
-  const res = await getOrganizationStoreDetails({
+  const params: any = {
     id: record.id,
     tenantId: record.belongTenantId || record.tenantId
-  })
+  }
+  let res: any
+  // const res = await getOrganizationStoreDetails({
+  //   id: record.id,
+  //   tenantId: record.belongTenantId || record.tenantId
+  // })
+  switch (props.fromPage) {
+    case 'business':
+      //主体管理 门店 详情
+      res = await getStoreDetails(params)
+      break
+    default:
+      //机构管理
+      res = await getOrganizationStoreDetails(params)
+  }
+
   const { relVO = {} } = res
 
   //上级机构
@@ -311,7 +343,7 @@ const detailsInfo = async (record) => {
 
   //类型
   let tempArrTypeString = ''
-  if (res.organizationType === '2') {
+  if (res.organizationType === organizationType.branchCompany) {
     //分公司
     // const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
     const tempArrTypeF = state.branchCompanyTypeOptions.filter((topItem) => {
@@ -698,6 +730,12 @@ const setPreviewImage = (imgUrl = '') => {
 const handleCancel = () => {
   previewVisible.value = false
   previewTitle.value = ''
+}
+
+const previewFile = (item) => {
+  state.isShowDialog = !state.isShowDialog
+  state.previewTitle = item.fileName
+  state.previewUrl = item.fileUrl
 }
 
 onMounted(async () => {

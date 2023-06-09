@@ -249,7 +249,7 @@
           class="table-list"
           :columns="state.columns"
           :data-source="state.tableDataList"
-          :scroll="{ x: '100%' }"
+          :scroll="{ x: 'max-content' }"
           row-key="id"
           :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
           :loading="state.loading"
@@ -1161,20 +1161,9 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
-import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
-import {
-  addMajorIndividual,
-  addTenantPackage,
-  editTenantPackage,
-  getMajorIndividualDetails,
-  getMajorIndividualList,
-  getSimpleTenantList,
-  getTenantPackage,
-  putResetPassWord,
-  updateEditMajorIndividual,
-  updateEditMajorIndividualStatus
-} from '@/api/system/business'
+import { PageKeyObj } from '@/utils/constants'
+import { useCache } from '@/hooks/web/useCache'
+import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { aassignUserRoleApi } from '@/api/system/permission'
 import { getRoleApi } from '@/api/system/role'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
@@ -1206,11 +1195,14 @@ import {
   updateMember,
   updateMemberStatus
 } from '@/api/system/member'
-import { getOrganizationTypeList, getSimpleOrganizationList } from '@/api/system/organization'
-import { accessSync } from 'fs'
+import {
+  getDeptList,
+  getOrganizationTypeList,
+  getSimpleOrganizationList
+} from '@/api/system/organization'
+import { fullScreen } from '@/utils/utils'
 import BatchChangePostModal from './components/BatchChangePostModal.vue'
 import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
-import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer.vue'
 import { cloneDeep } from 'lodash-es'
 
@@ -1223,7 +1215,7 @@ const $router = useRouter() // 这是路由跳转的
 const $route = useRoute() // 用于接收路由参数的
 
 //查询
-const queryParams = reactive({
+const queryParams: any = reactive({
   current: 1, //当前页码
   pageSize: 10, //显示条数
   organization: null, //机构 左侧tree
@@ -1241,7 +1233,7 @@ const queryParams = reactive({
   userType: null //账号类型
 })
 //新增编辑
-const formState = reactive({
+const formState: any = reactive({
   memberNum: null, //成员工号
   memberName: null, //成员姓名
   sex: '1', //性别
@@ -1258,7 +1250,7 @@ const formState = reactive({
   cascadeInfo: [] //选中的省市区全部信息
 })
 
-const queryFormRef = ref() // 搜索的表单
+// const queryFormRef = ref() // 搜索的表单
 const configDetailDrawerRef = ref()
 
 //手机号码正则校验 -  简单校验没有全按国内的号码段来  -
@@ -1368,7 +1360,8 @@ const uploadHeaders = ref({
 const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
-const state = reactive({
+//TODO 有空补吧
+const state: any = reactive({
   postTypeOptions: [], //岗位类型Options
   postTypeSpecifyOptions: [], //岗位类型 对应的岗位Options
   barnOptions: [], //所属品牌Options
@@ -1517,7 +1510,6 @@ const state = reactive({
   isExpandAllTab: false, //权限配置 展开折叠
   menuTreeList: [], //权限配置 前台列表
   fieldNames: { children: 'children', title: 'name', key: 'id' }, //权限配置 前台列表 tree的对应字段替换
-  selectedKeys: [], //权限配置 前台列表 设置选中的树节点
   checkedKeys: [], //权限配置 前台列表 选中复选框的树节点
   parentCheckedKeys: [], //权限配置 前台列表 所有一级菜单ID 用于 全选全不选
   defaultExpandAll: false, //权限配置 前台列表 默认展开折叠
@@ -1568,11 +1560,11 @@ const state = reactive({
 //存放功能配置 选中的所有keys(包括父节点id)
 const checkedKeysBack = ref([])
 
-//获取子节点的 父节点id
-const testCheck = (checkedKeys, e) => {
-  //存放功能配置 选中的所有keys(包括父节点id)
-  checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
-}
+// //获取子节点的 父节点id
+// const testCheck = (checkedKeys, e) => {
+//   //存放功能配置 选中的所有keys(包括父节点id)
+//   checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
+// }
 
 //ALL columns 用于定制列过滤 排序
 const allColumns = [
@@ -1704,7 +1696,7 @@ const allColumns = [
     width: 240,
     dataIndex: 'operation',
     key: 'operation',
-    resizable: true,
+    fixed: 'right',
     ellipsis: true,
     sort: 13
   }
@@ -1719,7 +1711,7 @@ const getList = async (page, isRefresh = false) => {
   }
 
   let tempConfigureRoles = []
-  let roleExist = null
+  let roleExist: any = null
   queryParams.configureRoles.map((item) => {
     if (item === 'all') {
       roleExist = null
@@ -1733,7 +1725,7 @@ const getList = async (page, isRefresh = false) => {
     (item) => item !== 'all' && item !== 'empty'
   )
 
-  const params = {
+  const params: any = {
     pageNo: queryParams.current,
     pageSize: queryParams.pageSize,
     // component: queryParams.organization, //机构 左侧tree
@@ -1766,9 +1758,9 @@ const getList = async (page, isRefresh = false) => {
     state.rawData = res.list
     state.tableDataList = res.list
     state.tableDataList.map((item) => {
-      const tempPhoneList = []
-      const tempDepartmentPost = []
-      const tempRoleVOList = []
+      const tempPhoneList: any = []
+      const tempDepartmentPost: any = []
+      const tempRoleVOList: any = []
       //联系电话
       item?.phoneVOList?.map((phoneItem) => {
         // '0'公司 '1'私人
@@ -1907,23 +1899,8 @@ const toggleExpandAll = () => {
   })
 }
 
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
-}
-
 //打开Modal
-const openModal = async (record = {}) => {
+const openModal = async () => {
   state.isShow = true
 }
 //关闭Modal
@@ -2011,8 +1988,8 @@ const edit = async (record, isCloseDetails = false) => {
   state.modalType = 'edit'
   state.modalTitle = '编辑'
 
-  const tempPhoneList = []
-  const tempPostList = []
+  const tempPhoneList: any = []
+  const tempPostList: any = []
   // addDataSource.addEditTableData.map((item) => {
   record?.phoneVOList?.map((item, index) => {
     tempPhoneList.push({
@@ -2153,8 +2130,8 @@ const addMajorIndividualFN = async () => {
   if (!formRef) return
   const valid = await formRef.value.validate()
 
-  const tempPhoneList = []
-  const tempPostList = []
+  const tempPhoneList: any = []
+  const tempPostList: any = []
   let mark = false
   let markDep = false
   let markPost = false
@@ -2187,7 +2164,7 @@ const addMajorIndividualFN = async () => {
     return message.warning('请输入手机号')
   }
 
-  addPostDataSource.addEditTableData.map((item) => {
+  addPostDataSource.addEditTableData.map((item: any) => {
     let tempBrandString = ''
 
     tempBrandString = item.brand.join()
@@ -2321,17 +2298,17 @@ const PermissionOk = async () => {
 }
 
 //数组对象去重
-const uniqueFunc = (arr, uniId) => {
+const uniqueFunc = (arr: any, uniId: any) => {
   const res = new Map()
   return arr.filter((item) => !res.has(item[uniId]) && res.set(item[uniId], 1))
 }
 
 const assignPermission = async (record) => {
   const { postVOList = [], roleVOList = [] } = record
-  const tempArr = uniqueFunc(postVOList, 'postId')
+  const tempArr: any = uniqueFunc(postVOList, 'postId')
   record.postVOListDeal = tempArr
 
-  let postIdArr = []
+  let postIdArr: any = []
   tempArr.map((item) => {
     postIdArr.push(item.postId)
   })
@@ -2591,9 +2568,9 @@ const detailsInfo = async (record) => {
       operator: '张三（010005）'
     }
   ]
-  let tableData = []
-  let tablePostData = []
-  const tempRoleVOList = []
+  let tableData: any = []
+  let tablePostData: any = []
+  const tempRoleVOList: any = []
 
   roleVOList?.map((roleItem) => {
     //0开启 1关闭
@@ -2663,7 +2640,7 @@ const detailsInfo = async (record) => {
     const temp2 = item.afterData ? JSON.parse(item.afterData) : {}
     console.log('变更前', temp1)
     console.log('变更后', temp2)
-    let tempItem = {
+    let tempItem: any = {
       date: dayjs(item?.createTime)?.format('YYYY-MM-DD'),
       time: dayjs(item?.createTime)?.format('HH:mm:ss')
       // type: '离职',
@@ -2810,7 +2787,7 @@ const detailsInfo = async (record) => {
 
   changeRecord?.reverse()
 
-  let tableColumns = [
+  let tableColumns: any = [
     {
       title: '序号',
       width: 50,
@@ -3295,7 +3272,7 @@ state.columns = getColumns(state, PageKeyObj.member, allColumns, state.defaultKe
  *  type 为指定想要搜索的字段名，array格式 ["name", "number"];
  */
 function filterOne(dataList, value, type) {
-  var s = dataList.filter(function (item, index, arr) {
+  let s = dataList.filter(function (item) {
     for (let j = 0; j < type.length; j++) {
       if (item[type[j]] != undefined || item[type[j]] != null) {
         if (item[type[j]].indexOf(value) >= 0) {
@@ -3312,7 +3289,7 @@ const sendCurrentSelect = (currentKey) => {
   const tempItem = state.organizationList.filter((item) => item.id === Number(currentKey))
   const tempComponent = tempItem[0]?.component
   const needArr = filterOne(state.organizationList, tempComponent, ['component'])
-  const tempArr = []
+  const tempArr: any = []
   if (currentKey) {
     needArr.map((item) => {
       tempArr.push(item.id)
@@ -3328,17 +3305,19 @@ const sendCurrentSelect = (currentKey) => {
   getList(1)
 }
 
-interface DataItem {
-  key: number
-  name: string
-  age: number
-  address: string
-  children?: DataItem[]
-}
+// interface DataItem {
+//   key: number
+//   name: string
+//   age: number
+//   address: string
+//   children?: DataItem[]
+// }
 
 //获取部门列表
 const getOrganizationListFN = async () => {
-  const res = await getSimpleOrganizationList()
+  const selectRes = await getSimpleOrganizationList()
+
+  const res = await getDeptList()
 
   res.map((item) => {
     if (item.migrated === 1) {
@@ -3355,21 +3334,24 @@ const getOrganizationListFN = async () => {
 
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
 
+  const tempOrganizationList = handleTree(selectRes, 'id', 'parentId', 'children')
+
   state.organizationList = res
   // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
   // let needReplaceKey = [
   //   ['title', 'name'],
   //   ['key', 'component']
   // ]
-  let needReplaceIDKey = [
+  let needReplaceIDKey: any = [
     ['title', 'name'],
     ['key', 'id'],
     ['tagText', 'tagText'],
     ['needTag', 'needTag']
   ]
-  //...TODO:这里有空再换 冗余了 本来是用 component 后面又换成id了
-  state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
+  //左侧树 机构(部门)
+  state.organizationOptions = reconstructedTreeData(tempOrganizationList, needReplaceIDKey)
   console.log('state.organizationOptions', state.organizationOptions)
+  //新增修改内 上级机构
   state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   return res
 }
@@ -3495,7 +3477,6 @@ const addEditColumns = [
     width: 80,
     dataIndex: 'operation',
     key: 'operation',
-    resizable: true,
     ellipsis: true,
     sort: 13
   }
@@ -3604,7 +3585,6 @@ const addEditPostColumns = [
     width: 80,
     dataIndex: 'operation',
     key: 'operation',
-    resizable: true,
     ellipsis: true,
     sort: 13
   }

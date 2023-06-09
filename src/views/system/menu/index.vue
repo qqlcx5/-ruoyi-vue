@@ -30,7 +30,11 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card :bordered="false" style="min-width: 1710px; height: 100%" id="card-content">
+    <a-card
+      :bordered="false"
+      style="min-width: 1710px; height: 100%; overflow: auto"
+      id="card-content"
+    >
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -59,7 +63,12 @@
         <!--  右侧操作  -->
         <div class="operation-content">
           <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-          <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
+          <Icon
+            icon="svg-icon:full-screen"
+            :size="50"
+            class="cursor-pointer"
+            @click="fullScreen()"
+          />
           <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
           <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
           <Icon
@@ -74,7 +83,7 @@
       <a-table
         :columns="state.columns"
         :data-source="list"
-        :scroll="{ x: '100%' }"
+        :scroll="{ x: 'max-content' }"
         :row-key="(record) => record.id"
         :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
         :defaultExpandAllRows="state.isExpandAll"
@@ -126,7 +135,7 @@
             <span v-show="record.type === 2">菜单</span>
             <span v-show="record.type === 3">按钮</span>
           </template>
-          <!--  员工数   -->
+          <!--  在职成员  -->
           <template v-if="column.key === 'employeesNumber'">
             <div class="employees-Number" @click="openDetails(record)">{{ record?.userCount }}</div>
           </template>
@@ -517,12 +526,12 @@
     </div>
   </a-modal>
 
-  <!-- 员工数modal  -->
+  <!-- 在职成员modal  -->
   <a-modal
     v-model:visible="state.isShowEmployees"
     destroyOnClose
     wrapClassName="details-modal"
-    title="员工数"
+    title="在职成员"
     :width="state.employeesModalInfo.width"
     :bodyStyle="{
       margin: '0',
@@ -636,7 +645,6 @@
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
-import * as TenantMenuApi from '@/api/system/TenantMenu'
 import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { message } from 'ant-design-vue'
@@ -645,20 +653,15 @@ import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
-import {
-  getMajorIndividualDetails,
-  getMajorIndividualList,
-  getSimpleTenantList,
-  updateEditMajorIndividualStatus
-} from '@/api/system/business'
-import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
+import { getColumns, reconstructionArrayObject, toTreeCount, fullScreen } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
-import { getPostList, getPostTypeList, getRolesList } from '@/api/system/member'
+import { getPostList, getRolesList } from '@/api/system/member'
 import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 import { getOrganizationTypeList } from '@/api/system/organization'
+import { useAppStore } from '@/store/modules/app'
+// const appStore = useAppStore()
 
 const queryParams = reactive({
   name: undefined,
@@ -722,7 +725,7 @@ const allColumns = [
     sort: 2
   },
   {
-    title: '员工数',
+    title: '在职成员',
     width: 100,
     dataIndex: 'employeesNumber',
     key: 'employeesNumber',
@@ -797,13 +800,14 @@ const allColumns = [
     width: 200,
     dataIndex: 'operation',
     key: 'operation',
-    resizable: true,
+    fixed: 'right',
     ellipsis: true,
     sort: 11
   }
 ]
 
-const state = reactive({
+//TODO 有空补吧
+const state: any = reactive({
   currentRecord: {}, //当前点击的table item
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
@@ -812,7 +816,7 @@ const state = reactive({
   isFullScreen: false, //全屏
   isShow: false,
   isShowDetails: false, //详情modal
-  isShowEmployees: false, //员工数modal
+  isShowEmployees: false, //在职成员modal
   currentMenu: '目录',
   routerRules: [{ required: true }, { validator: routeValidator }],
   isShowStatus: false, //table 状态开启关闭 modal
@@ -855,10 +859,10 @@ const state = reactive({
     'operation'
   ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
-  configureRolesOptions: [], //角色 Options tree  员工数 modal
-  postListOptions: [], //岗位 Options tree  员工数 modal
-  postList: [], //岗位  选中  员工数 modal
-  configureRoles: [], //角色 选中  员工数 modal
+  configureRolesOptions: [], //角色 Options tree  在职成员modal
+  postListOptions: [], //岗位 Options tree  在职成员modal
+  postList: [], //岗位  选中  在职成员modal
+  configureRoles: [], //角色 选中  在职成员modal
   employeesInfo: [
     {
       role: '角色：销售顾问 - 仅看本部门及以下',
@@ -916,7 +920,7 @@ const state = reactive({
     }
   ],
   testArr: [],
-  memberName: '', //员工数 modal 姓名
+  memberName: '', //在职成员modal 姓名
   post: '', //岗位 modal 姓名
   employeesModalInfo: {
     width: '940px',
@@ -926,7 +930,7 @@ const state = reactive({
     btnText: '',
     employeesNum: 0,
     needRole: false
-  } //员工数modal配置信息
+  } //在职成员modal配置信息
 })
 
 const layout = {
@@ -1000,20 +1004,22 @@ const toggleExpandAll = () => {
   })
 }
 
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
-}
+// //全屏/退出
+// const fullScreen = () => {
+//   const elem = document.getElementById('card-content')
+//
+//   if (state.isFullScreen === false) {
+//     if (elem?.requestFullscreen) {
+//       elem?.requestFullscreen()
+//       state.isFullScreen = !state.isFullScreen
+//       appStore.setIsFullScreen(state.isFullScreen)
+//     }
+//   } else {
+//     document.exitFullscreen()
+//     state.isFullScreen = !state.isFullScreen
+//     appStore.setIsFullScreen(state.isFullScreen)
+//   }
+// }
 
 //打开Modal
 const openModal = (record = {}) => {
@@ -1494,7 +1500,7 @@ const addEditStatusChange = (checked: boolean, event: Event) => {
   }
 }
 
-//员工数打开 弹窗
+//在职成员打开 弹窗
 const openDetails = async (record) => {
   state.currentRecord = record
   // 1 目录 2菜单 3按钮
@@ -1509,7 +1515,7 @@ const openDetails = async (record) => {
         btnText: '',
         employeesNum: record.userCount,
         needRole: false
-      } //员工数modal配置信息
+      } //在职成员modal配置信息
       break
     case 2:
       //菜单
@@ -1522,7 +1528,7 @@ const openDetails = async (record) => {
         btnText: '',
         employeesNum: record.userCount,
         needRole: true
-      } //员工数modal配置信息
+      } //在职成员modal配置信息
       break
     case 3:
       const menuItem = state.menuArr.find((item) => item.id === record.parentId)
@@ -1536,7 +1542,7 @@ const openDetails = async (record) => {
         btnText: `-${record.name}`,
         employeesNum: record.userCount,
         needRole: false
-      } //员工数modal配置信息
+      } //在职成员modal配置信息
       break
   }
   //角色信息
@@ -1553,7 +1559,7 @@ const openDetails = async (record) => {
   search()
 }
 
-//员工数 高亮搜索
+//在职成员高亮搜索
 const search = async () => {
   switch (state.currentRecord.type) {
     case 2:
@@ -1683,7 +1689,7 @@ const search = async () => {
     })
   })
 }
-//员工数 modal 重置
+//在职成员modal 重置
 const employeesReset = () => {
   state.configureRoles = []
   state.postList = []
@@ -1692,11 +1698,11 @@ const employeesReset = () => {
   search()
 }
 
-//员工数modal
+//在职成员modal
 const closeEmployees = () => {
   state.employeesInfo = []
   state.testArr = []
-  state.memberName = '' //员工数 modal 姓名
+  state.memberName = '' //在职成员modal 姓名
   state.configureRoles = [] //角色
   state.postList = [] //岗位
 }
@@ -1795,7 +1801,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
 }
-//员工数
+//在职成员
 .employees-Number {
   color: rgba(0, 129, 255, 100);
   cursor: pointer;
@@ -1973,7 +1979,7 @@ onMounted(async () => {
 .icon-tip {
   margin-left: 8px;
 }
-//========================== 员工数 modal search start ==================================
+//========================== 在职成员modal search start ==================================
 .total-search-content {
   display: flex;
   //justify-content: space-between;
@@ -2037,7 +2043,7 @@ onMounted(async () => {
   width: 100%;
 }
 
-//========================== 员工数 modal search end ==================================
+//========================== 在职成员modal search end ==================================
 .employees-content {
   margin-top: 40px;
   width: 100%;

@@ -33,7 +33,7 @@ export const listSimpleRolesApi = async () => {
 }
 
 // 查询角色详情
-export const getRoleApi = async (id: number) => {
+export const getRoleApi = async (id: number | string) => {
   return await request.get({ url: '/system/role/get?id=' + id })
 }
 

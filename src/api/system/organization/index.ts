@@ -25,6 +25,11 @@ export const getSimpleOrganizationList = (params) => {
   return request.get({ url: '/system/organization/list-all-simple', params })
 }
 
+// 获取上级机构列表() 成员管理 左侧 部门
+export const getDeptList = (params) => {
+  return request.get({ url: '/system/user/extra/list-org', params })
+}
+
 // 新增机构
 export const addOrganization = (data) => {
   return request.post({ url: '/system/organization/create', data })
@@ -45,10 +50,10 @@ export const updateOrganizationStore = (data) => {
   return request.put({ url: '/system/organization/tenant-update-store', data })
 }
 
-// 查询机构列表
-export const getMemberNum = (params) => {
-  return request.get({ url: '/system/organization/tenant-child-store-count', params })
-}
+// // 查询机构列表
+// export const getMemberNum = (params) => {
+//   return request.get({ url: '/system/organization/tenant-child-store-count', params })
+// }
 
 // 获取机构在职状态开启的员工
 export const getActiveEmployeesNumber = (params) => {

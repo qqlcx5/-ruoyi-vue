@@ -91,7 +91,7 @@
         v-if="state.refreshTable"
         :columns="state.columns"
         :data-source="state.tableDataList"
-        :scroll="{ x: '100%' }"
+        :scroll="{ x: 'max-content' }"
         :pagination="false"
         @change="onChange"
         :row-key="(record) => record.id"
@@ -139,7 +139,7 @@
             </div>
           </template>
 
-          <!--  员工数  -->
+          <!--  在职成员  -->
           <template v-if="column?.key === 'employeesNumber'">
             <div class="employees-Number" @click="jumpToMember(record)">{{
               record.staffCount
@@ -473,9 +473,9 @@
           label="分公司类型"
           :rules="[{ required: true, message: `分公司类型不能为空` }]"
           v-if="
-            state.currentType === '2' ||
+            state.currentType === organizationType.branchCompany ||
             state.currentType === '分公司' ||
-            state.detailsRecord?.type === '2'
+            state.detailsRecord?.type === organizationType.branchCompany
           "
         >
           <!--          <a-checkbox-group v-model:value="state.formAttributeState.type">-->
@@ -1156,14 +1156,12 @@ import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum, PageKeyObj, organizationType } from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
-import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
-  filterTree,
-  getAllIds,
   reconstructedTreeData,
   getColumns,
-  reconstructionArrayObject
+  reconstructionArrayObject,
+  fullScreen
 } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -1173,7 +1171,6 @@ import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import Store from '@/views/system/business/Store.vue'
 import StoreDetails from '@/views/system/business/StoreDetails.vue'
-import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 import {
   addAttribute,
   addOrganization,
@@ -1365,7 +1362,8 @@ const uploadHeaders = ref({
 const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 
-const state = reactive({
+//TODO 有空补吧
+const state: any = reactive({
   addEditBtn: '下一步', //新增 修改 确认 bnt text
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1494,7 +1492,7 @@ const state = reactive({
   ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
   detailsRecord: {}, //当前点击的表格record后获取到的机构详情(包括属性)
-  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  '2'分公司 '3'门店
+  currentType: '-1', //新增/修改/设置属性 机构类型(门店/分公司)  'store' 分公司 'branchCompany'门店
   memberOptions: [], //新增修改 负责人list
   memberPhoneOptions: [] //新增修改 负责人电话list
 })
@@ -1575,7 +1573,7 @@ const allColumns = [
     sort: 3
   },
   {
-    title: '员工数',
+    title: '在职成员',
     width: 100,
     dataIndex: 'employeesNumber',
     key: 'employeesNumber',
@@ -1672,7 +1670,7 @@ const allColumns = [
     width: 240,
     dataIndex: 'operation',
     key: 'operation',
-    resizable: true,
+    fixed: 'right',
     ellipsis: true,
     sort: 12
   }
@@ -1736,21 +1734,6 @@ const toggleExpandAll = () => {
   nextTick(() => {
     state.refreshTable = true
   })
-}
-
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
 }
 
 //打开Modal
@@ -1991,8 +1974,11 @@ const addMajorIndividualFN = async () => {
 
       nextTick(() => {
         state.currentType = tempCurrentType
-        // '2'分公司 '3'门店
-        if (state.currentType === '2' || state.currentType === organizationType.store) {
+        // 'store'分公司 'branchCompany'门店
+        if (
+          state.currentType === organizationType.branchCompany ||
+          state.currentType === organizationType.store
+        ) {
           // 配置权限
           openPermissionModal()
         }
@@ -2432,7 +2418,7 @@ const detailsInfo = async (record) => {
 
   //类型
   let tempArrTypeString = ''
-  if (res.organizationType === '2') {
+  if (res.organizationType === organizationType.branchCompany) {
     //分公司
     // const tempArrTypeF = state.organizationTypeOptions.filter((topItem) => {
     const tempArrTypeF = state.branchCompanyTypeOptions.filter((topItem) => {
@@ -2981,7 +2967,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { getMemberAllList, getMemberList } from '@/api/system/member'
 const $router = useRouter() // 这是路由跳转的
 const $route = useRoute() // 用于接收路由参数的
-//员工数 跳转到成员管理
+//在职成员 跳转到成员管理
 const jumpToMember = (record) => {
   $router.push({
     path: '/system/member',
@@ -3443,7 +3429,7 @@ watch(
 .width-full {
   width: 100%;
 }
-//员工数
+//在职成员
 .employees-Number {
   color: rgba(0, 129, 255, 100);
   cursor: pointer;

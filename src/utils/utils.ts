@@ -1,5 +1,8 @@
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
+import { MenuTreeList } from '@/views/system/business/business'
+import { useAppStore } from '@/store/modules/app'
+const appStore = useAppStore()
 
 /**
  * 过滤树形结构 更改对应的属性值
@@ -87,7 +90,12 @@ export const getAllIds = (tree) => {
 }
 
 //过滤树结构 获取新树
-export function filterTree(tree = [], map = [], arr = []) {
+// export function filterTree(tree = [], map = [], arr = []) {
+export function filterTree(
+  tree: MenuTreeList[] = [],
+  map: number[] = [],
+  arr: MenuTreeList[] = []
+) {
   if (!tree.length) return []
   for (let item of tree) {
     if (!map.includes(item.id)) continue
@@ -126,4 +134,24 @@ export const getColumns = (state, pageKey, allColumns, defaultKeys) => {
  * @param  countField  计数名 默认为count
  * */
 // 设置每个节点的统计字段,并返回所有节点总数。
-export const toTreeCount = (data=[], countField='count')=>data.reduce((total,cur)=>(total+(cur[countField] = toTreeCount(cur.children||[], countField))),data.length);
+export const toTreeCount = (data = [], countField = 'count') =>
+  data.reduce(
+    (total, cur) => total + (cur[countField] = toTreeCount(cur.children || [], countField)),
+    data.length
+  )
+
+//全屏/退出
+export const fullScreen = () => {
+  const elem = document.getElementById('card-content')
+  // TODO ESC 与F11  退出全屏需要监听
+  // if (state.isFullScreen === false) {
+  if (!appStore.getIsFullScreen) {
+    if (elem?.requestFullscreen) {
+      elem?.requestFullscreen()
+      appStore.setIsFullScreen(!appStore.getIsFullScreen)
+    }
+  } else {
+    document.exitFullscreen()
+    appStore.setIsFullScreen(!appStore.getIsFullScreen)
+  }
+}

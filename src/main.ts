@@ -68,6 +68,11 @@ if (isDevMode() == true) {
   import('element-plus/dist/index.css')
 }
 
+// 字符串去除空格
+String.prototype['trimAll'] = function () {
+  return this.replace(/\s+/g, '')
+}
+
 // 创建实例
 const setupAll = async () => {
   const app = createApp(App)

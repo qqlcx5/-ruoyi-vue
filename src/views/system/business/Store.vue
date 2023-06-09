@@ -178,9 +178,9 @@
               label="分公司类型"
               :rules="[{ required: true, message: `分公司类型不能为空` }]"
               v-if="
-                state.currentType === '2' ||
+                state.currentType === organizationType.branchCompany ||
                 state.currentType === '分公司' ||
-                state.detailsRecord?.type === '2'
+                state.detailsRecord?.type === organizationType.branchCompany
               "
             >
               <a-radio-group v-model:value="state.formState.type">
@@ -299,64 +299,77 @@
 
             <a-form-item label="系统logo" name="logoUrl">
               <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.logoListUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'logo')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'logo')
-                    }
-                  "
-                >
-                  <div v-if="state.logoListUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传logo</div>
-                  </div>
-                </a-upload>
+                <UploadImg
+                  v-model:modelValue="state.logoUrlSuccess"
+                  fileSize="300"
+                  :fileUnit="FileUnit.KB"
+                  :resolution="[400, 400]"
+                />
+                <!--                <a-upload-->
+                <!--                  v-model:file-list="state.logoListUrl"-->
+                <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
+                <!--                  list-type="picture-card"-->
+                <!--                  @preview="handlePreview"-->
+                <!--                  accept=".jpg, .png, .gif"-->
+                <!--                  class="avatar-uploader"-->
+                <!--                  :show-upload-list="true"-->
+                <!--                  :headers="uploadHeaders"-->
+                <!--                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"-->
+                <!--                  @change="-->
+                <!--                    (file, fileList) => {-->
+                <!--                      handleChange(file, fileList, 'logo')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                  @remove="-->
+                <!--                    (file) => {-->
+                <!--                      removeImg(file, 'logo')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                >-->
+                <!--                  <div v-if="state.logoListUrl.length < 1">-->
+                <!--                    <Icon icon="svg-icon:add-upload" :size="15" />-->
+                <!--                    <div style="margin-top: 8px">上传logo</div>-->
+                <!--                  </div>-->
+                <!--                </a-upload>-->
                 <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
               </div>
             </a-form-item>
 
             <a-form-item label="环境图片" name="environmentUrl">
               <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.environmentUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif , .jpeg"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'environment')"
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'environment')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'legalPerson')
-                    }
-                  "
-                >
-                  <div v-if="state.environmentUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传环境图片</div>
-                  </div>
-                </a-upload>
+                <UploadImg
+                  v-model:modelValue="state.environmentSuccess"
+                  :resolution="[1125, 633]"
+                  fileSize="5"
+                  width="160px"
+                  height="100px"
+                />
+                <!--                <a-upload-->
+                <!--                  v-model:file-list="state.environmentUrl"-->
+                <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
+                <!--                  list-type="picture-card"-->
+                <!--                  @preview="handlePreview"-->
+                <!--                  accept=".jpg, .png, .gif , .jpeg"-->
+                <!--                  class="avatar-uploader"-->
+                <!--                  :show-upload-list="true"-->
+                <!--                  :headers="uploadHeaders"-->
+                <!--                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'environment')"-->
+                <!--                  @change="-->
+                <!--                    (file, fileList) => {-->
+                <!--                      handleChange(file, fileList, 'environment')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                  @remove="-->
+                <!--                    (file) => {-->
+                <!--                      removeImg(file, 'legalPerson')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                >-->
+                <!--                  <div v-if="state.environmentUrl.length < 1">-->
+                <!--                    <Icon icon="svg-icon:add-upload" :size="15" />-->
+                <!--                    <div style="margin-top: 8px">上传环境图片</div>-->
+                <!--                  </div>-->
+                <!--                </a-upload>-->
 
                 <div class="upload-text"> 尺寸1125*633px，支持jpg/jpeg/png/gif格式，不超过5M </div>
               </div>
@@ -434,32 +447,37 @@
 
             <a-form-item label="法人身份证" name="legalIdentityUrl">
               <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.legalPersonListUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'legalPerson')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'legalPerson')
-                    }
-                  "
-                >
-                  <div v-if="state.legalPersonListUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传法人证件</div>
-                  </div>
-                </a-upload>
+                <UploadImg
+                  v-model:modelValue="state.legalPersonUrlSuccess"
+                  width="160px"
+                  height="100px"
+                />
+                <!--                <a-upload-->
+                <!--                  v-model:file-list="state.legalPersonListUrl"-->
+                <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
+                <!--                  list-type="picture-card"-->
+                <!--                  @preview="handlePreview"-->
+                <!--                  accept=".jpg, .png, .gif"-->
+                <!--                  class="avatar-uploader"-->
+                <!--                  :show-upload-list="true"-->
+                <!--                  :headers="uploadHeaders"-->
+                <!--                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"-->
+                <!--                  @change="-->
+                <!--                    (file, fileList) => {-->
+                <!--                      handleChange(file, fileList, 'legalPerson')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                  @remove="-->
+                <!--                    (file) => {-->
+                <!--                      removeImg(file, 'legalPerson')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                >-->
+                <!--                  <div v-if="state.legalPersonListUrl.length < 1">-->
+                <!--                    <Icon icon="svg-icon:add-upload" :size="15" />-->
+                <!--                    <div style="margin-top: 8px">上传法人证件</div>-->
+                <!--                  </div>-->
+                <!--                </a-upload>-->
 
                 <div class="upload-text">
                   请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
@@ -469,34 +487,39 @@
 
             <a-form-item label="营业执照" name="businessLicenseUrl">
               <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.businessLicenseListUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  list-type="picture-card"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="
-                    (file, fileList) => beforeUpload(file, fileList, 'businessLicense')
-                  "
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'businessLicense')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'businessLicense')
-                    }
-                  "
-                >
-                  <div v-if="state.businessLicenseListUrl.length < 1">
-                    <Icon icon="svg-icon:add-upload" :size="15" />
-                    <div style="margin-top: 8px">上传营业执照</div>
-                  </div>
-                </a-upload>
+                <UploadImg
+                  v-model:modelValue="state.businessLicenseSuccess"
+                  width="160px"
+                  height="100px"
+                />
+                <!--                <a-upload-->
+                <!--                  v-model:file-list="state.businessLicenseListUrl"-->
+                <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
+                <!--                  list-type="picture-card"-->
+                <!--                  @preview="handlePreview"-->
+                <!--                  accept=".jpg, .png, .gif"-->
+                <!--                  class="avatar-uploader"-->
+                <!--                  :show-upload-list="true"-->
+                <!--                  :headers="uploadHeaders"-->
+                <!--                  :before-upload="-->
+                <!--                    (file, fileList) => beforeUpload(file, fileList, 'businessLicense')-->
+                <!--                  "-->
+                <!--                  @change="-->
+                <!--                    (file, fileList) => {-->
+                <!--                      handleChange(file, fileList, 'businessLicense')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                  @remove="-->
+                <!--                    (file) => {-->
+                <!--                      removeImg(file, 'businessLicense')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                >-->
+                <!--                  <div v-if="state.businessLicenseListUrl.length < 1">-->
+                <!--                    <Icon icon="svg-icon:add-upload" :size="15" />-->
+                <!--                    <div style="margin-top: 8px">上传营业执照</div>-->
+                <!--                  </div>-->
+                <!--                </a-upload>-->
 
                 <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
               </div>
@@ -539,29 +562,30 @@
 
             <a-form-item label="通知函" name="noticeLetter">
               <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.noticeLetterUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'noticeLetter')"
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'noticeLetter')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'noticeLetter')
-                    }
-                  "
-                >
-                  <a-button> 上传文件 </a-button>
-                </a-upload>
-                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg</div>
+                <UploadFile v-model:modelValue="state.noticeLetterSuccess" class="upload-file" />
+                <!--                <a-upload-->
+                <!--                  v-model:file-list="state.noticeLetterUrl"-->
+                <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
+                <!--                  @preview="handlePreview"-->
+                <!--                  accept=".jpg, .png, .gif"-->
+                <!--                  class="avatar-uploader"-->
+                <!--                  :show-upload-list="true"-->
+                <!--                  :headers="uploadHeaders"-->
+                <!--                  :before-upload="(file, fileList) => beforeUpload(file, fileList, 'noticeLetter')"-->
+                <!--                  @change="-->
+                <!--                    (file, fileList) => {-->
+                <!--                      handleChange(file, fileList, 'noticeLetter')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                  @remove="-->
+                <!--                    (file) => {-->
+                <!--                      removeImg(file, 'noticeLetter')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                >-->
+                <!--                  <a-button> 上传文件 </a-button>-->
+                <!--                </a-upload>-->
+                <!--                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg</div>-->
               </div>
             </a-form-item>
 
@@ -618,32 +642,36 @@
 
             <a-form-item label="告知函" name="legalIdentityUrl">
               <div style="height: 131px">
-                <a-upload
-                  v-model:file-list="state.notificationLetterUrl"
-                  :action="updateUrl + '?updateSupport=' + updateSupport"
-                  @preview="handlePreview"
-                  accept=".jpg, .png, .gif"
-                  class="avatar-uploader"
-                  :show-upload-list="true"
-                  :headers="uploadHeaders"
-                  :before-upload="
-                    (file, fileList) => beforeUpload(file, fileList, 'notificationLetter')
-                  "
-                  @change="
-                    (file, fileList) => {
-                      handleChange(file, fileList, 'notificationLetter')
-                    }
-                  "
-                  @remove="
-                    (file) => {
-                      removeImg(file, 'notificationLetter')
-                    }
-                  "
-                >
-                  <a-button> 上传文件 </a-button>
-                </a-upload>
+                <UploadFile
+                  v-model:modelValue="state.notificationLetterSuccess"
+                  class="upload-file"
+                />
+                <!--                <a-upload-->
+                <!--                  v-model:file-list="state.notificationLetterUrl"-->
+                <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
+                <!--                  @preview="handlePreview"-->
+                <!--                  accept=".jpg, .png, .gif"-->
+                <!--                  class="avatar-uploader"-->
+                <!--                  :show-upload-list="true"-->
+                <!--                  :headers="uploadHeaders"-->
+                <!--                  :before-upload="-->
+                <!--                    (file, fileList) => beforeUpload(file, fileList, 'notificationLetter')-->
+                <!--                  "-->
+                <!--                  @change="-->
+                <!--                    (file, fileList) => {-->
+                <!--                      handleChange(file, fileList, 'notificationLetter')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                  @remove="-->
+                <!--                    (file) => {-->
+                <!--                      removeImg(file, 'notificationLetter')-->
+                <!--                    }-->
+                <!--                  "-->
+                <!--                >-->
+                <!--                  <a-button> 上传文件 </a-button>-->
+                <!--                </a-upload>-->
 
-                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg </div>
+                <!--                <div class="upload-text"> 支持扩展名：.doc .docx .pdf .jpg </div>-->
               </div>
             </a-form-item>
           </a-tab-pane>
@@ -686,24 +714,23 @@
 <script lang="ts" setup>
 import { reactive } from 'vue'
 import {
-  addOrganization,
   addOrganizationStore,
-  getOrganizationDetails,
   getOrganizationStoreDetails,
   getOrganizationTypeList,
   getSimpleOrganizationList,
-  updateOrganization,
   updateOrganizationStore
 } from '@/api/system/organization'
 import { getMemberAllList, getMemberPhoneList } from '@/api/system/member'
 import { reconstructedTreeData, reconstructionArrayObject } from '@/utils/utils'
-import { cloneDeep } from 'lodash-es'
 import { message, Upload, UploadChangeParam, UploadProps } from 'ant-design-vue'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import { provincesMunicipalitiesArea } from '@/constant/pr'
-import { getSimpleTenantList } from '@/api/system/business'
+import { addStore, getSimpleTenantList, getStoreDetails, updateStore } from '@/api/system/business'
 import { handleTree } from '@/utils/tree'
 import { organizationType } from '@/utils/constants'
+import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
+import UploadFile from '@/components/UploadFile/src/UploadFile.vue'
+import { FileUnit } from '@/components/UploadFile/src/helper.ts'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -712,6 +739,7 @@ interface Props {
   editRecord?: object
   storeType?: string
   needBelongTenantId?: boolean
+  fromPage?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -720,7 +748,8 @@ const props = withDefaults(defineProps<Props>(), {
   // eslint-disable-next-line vue/require-valid-default-prop
   editRecord: {},
   storeType: 'store',
-  needBelongTenantId: true
+  needBelongTenantId: true,
+  fromPage: 'business' //默认为主体管理 由于 主体管理与机构管理的门店要走 不同接口(...出入参一样) 因此加个mark
 })
 
 const emit = defineEmits<{
@@ -838,7 +867,7 @@ const layout = {
 }
 
 const formRef = ref()
-const state = reactive({
+const state: any = reactive({
   activeKey: 'basicInformation',
   modalType: 'add',
   addEditLoading: false,
@@ -960,6 +989,7 @@ const getPhoneList = async (value) => {
 
 //新增机构
 const addMajorIndividualFN = async () => {
+  console.log('state.noticeLetterSuccess', state.noticeLetterSuccess)
   if (
     state.activeKey !== 'basicInformation' &&
     (!state.formState.name ||
@@ -990,20 +1020,20 @@ const addMajorIndividualFN = async () => {
 
   console.log('state.formState.saleBrand', state.formState.saleBrand)
   state.addEditLoading = true
-  const tempNoticeLetter = []
-  const tempNotificationLetter = []
+  const tempNoticeLetter: any = []
+  const tempNotificationLetter: any = []
 
   state.noticeLetterSuccess.map((item) => {
     tempNoticeLetter.push({
-      fileName: item.fileName,
-      fileUrl: item.fileUrl //通知函
+      fileName: item.fileName || item.name,
+      fileUrl: item.fileUrl || item.url //通知函
     })
   })
 
   state.notificationLetterSuccess.map((item) => {
     tempNotificationLetter.push({
-      fileName: item.fileName,
-      fileUrl: item.fileUrl //告知函
+      fileName: item.fileName || item.name,
+      fileUrl: item.fileUrl || item.url //告知函
     })
   })
 
@@ -1095,20 +1125,35 @@ const addMajorIndividualFN = async () => {
   try {
     if (state.modalType === 'add') {
       // await addOrganization(params)
-      await addOrganizationStore(params)
+      switch (props.fromPage) {
+        case 'business':
+          //主体管理新增门店
+          await addStore(params)
+          break
+        default:
+          //机构管理
+          await addOrganizationStore(params)
+      }
 
       message.success('新增成功')
     } else {
       params['id'] = state.formState.id
       params.organizationRel['id'] = state.formState.attributeId
       params.organizationRel['organizationId'] = state.formState.id
-      // await updateOrganization(params)
-      await updateOrganizationStore(params)
+      switch (props.fromPage) {
+        case 'business':
+          //主体管理新增门店
+          await updateStore(params)
+          break
+        default:
+          //机构管理
+          await updateOrganizationStore(params)
+      }
+
       message.success('修改成功')
     }
 
     closeModal()
-    // await getList()
   } finally {
     state.addEditLoading = false
   }
@@ -1524,13 +1569,28 @@ const getOrganizationDetailsFN = async () => {
 
   //获取机构详情
   // const res = await getOrganizationDetails({ id: props.editRecord.id })
-  const res = await getOrganizationStoreDetails({
+  const params: any = {
     id: props.editRecord.id,
     tenantId: props.editRecord.belongTenantId || props.editRecord.tenantId
-  })
+  }
+  let res: any
+  // const res = await getOrganizationStoreDetails({
+  //   id: props.editRecord.id,
+  //   tenantId: props.editRecord.belongTenantId || props.editRecord.tenantId
+  // })
+
+  switch (props.fromPage) {
+    case 'business':
+      //主体管理 门店 详情
+      res = await getStoreDetails(params)
+      break
+    default:
+      //机构管理
+      res = await getOrganizationStoreDetails(params)
+  }
 
   //... res 可能为null
-  let tempType = [] || ''
+  // let tempType = [] || ''
   console.log('详情res', res)
 
   // if (record.organizationType == '分公司') {
@@ -1610,7 +1670,7 @@ const getOrganizationDetailsFN = async () => {
   }
 
   //联系方式 设置属性
-  const tempArr = []
+  const tempArr: any = []
   if (res?.relVO?.contact) {
     res?.relVO?.contact.map((item) => {
       tempArr.push({
@@ -1775,5 +1835,15 @@ state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needRe
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+}
+</style>
+<style lang="scss">
+//新增 编辑 modal
+.add-edit-modal {
+  .upload-file {
+    .el-upload__input {
+      display: none;
+    }
+  }
 }
 </style>

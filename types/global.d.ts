@@ -1,4 +1,5 @@
-import type { CSSProperties } from 'vue'
+export {}
+
 declare global {
   declare interface Fn<T = any> {
     (...arg: T[]): T
@@ -46,5 +47,9 @@ declare global {
     id: number
     name: string
     children?: Tree[] | any[]
+  }
+
+  interface String {
+    trimAll: () => string
   }
 }

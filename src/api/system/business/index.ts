@@ -26,13 +26,9 @@ export const getTopPhone = (params) => {
   return request.get({ url: '/system/tenant/get-top-phone', params })
 }
 
-// 查询 门店 修改上级主体 是否能迁移
-export const getCheckMajorIndividual = (params: MajorIndividual) => {
-  return request.get({ url: '/system/organization/check-migrate', params })
-}
-// 门店 修改上级主体 迁移
-export const updateParentMajorIndividual = (data) => {
-  return request.put({ url: '/system/organization/migrate', data })
+// 查询门店子机构数
+export const getChildStoreNum = (params) => {
+  return request.get({ url: '/system/tenant/tenant-child-store-count', params })
 }
 
 // 获取上级主体列表
@@ -85,35 +81,35 @@ export const putResetPassWord = (data) => {
   return request.put({ url: '/system/tenant/update-password', data })
 }
 
-// // 查询主体列表
-// export const getMajorIndividualList = (params: MajorIndividual) => {
-//   return request.get({ url: '/system/tenant/page', params })
-// }
+// 新增机构 门店 主体管理页面
+export const addStore = (data) => {
+  return request.post({ url: '/system/tenant/create-tenant-store', data })
+}
 
-// // 查询菜单列表
-// export const getMenuList = (params) => {
-//   return request.get({ url: '/system/menu/list', params })
-// }
-//
-// // 获取菜单详情
-// export const getMenu = (id: number) => {
-//   return request.get({ url: '/system/menu/get?id=' + id })
-// }
-//
-// // 新增菜单
-// export const createMenu = (data: MenuVO) => {
-//   return request.post({ url: '/system/menu/create', data })
-// }
-//
-// // 修改菜单
-// export const updateMenu = (data: MenuVO) => {
-//   return request.put({ url: '/system/menu/update', data })
-// }
-//
-// // 删除菜单
-// export const deleteMenu = (id: number) => {
-//   return request.delete({ url: '/system/menu/delete?id=' + id })
-// }
+// 编辑机构 门店 主体管理页面
+export const updateStore = (data) => {
+  return request.put({ url: '/system/tenant/tenant-update-store', data })
+}
+
+// 更改机构状态 门店 主体管理页面
+export const updateStoreStatus = (data) => {
+  return request.put({ url: '/system/tenant/update-store-status', data })
+}
+
+// 查询 门店 修改上级主体 是否能迁移
+export const getCheckMajorIndividual = (params: MajorIndividual) => {
+  return request.get({ url: '/system/tenant/check-migrate', params })
+}
+
+// 门店 修改上级主体 迁移
+export const updateParentMajorIndividual = (data) => {
+  return request.put({ url: '/system/tenant/migrate', data })
+}
+
+// 查询机构详情 门店 主体管理页面
+export const getStoreDetails = (params) => {
+  return request.get({ url: '/system/tenant/get-tenant-store', params })
+}
 
 // 获取经销商门店精简信息列表
 export const getListDealerStore = () => {
