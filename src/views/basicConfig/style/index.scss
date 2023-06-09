@@ -1,0 +1,73 @@
+$btnWrapHeight: 86px;
+
+@mixin flex($alignItems: flex-start, $justifyContent: flex-start) {
+  display: flex;
+  align-items: $alignItems;
+  justify-content: $justifyContent;
+}
+
+.basic-config-content {
+  padding: 22px 30px;
+  background-color: var(--page-bg-color);
+  .el-switch {
+    height: 25px
+  }
+  .el-radio {
+    height: 20px;
+    margin-right: 20px;
+  }
+  .part-title {
+    @include flex($alignItems: center);
+    line-height: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 20px;
+    .main-text {
+      font-size: 18px;
+      font-weight: bold;
+      color: $title-color;
+      margin-right: 6px;
+    }
+    .sub-text {
+      font-size: 14px;
+      color: $tip-color;
+    }
+  }
+  .config-form-item {
+    @include flex($alignItems: center);
+    font-size: 14px;
+    font-weight: bold;
+    color: $title-color;
+  }
+  .config-form-item-tip {
+    line-height: 20px;
+    font-size: 14px;
+    color: $tip-color;
+    margin: 10px 0 30px;
+  }
+  .number-input {
+    width: 120px;
+    margin: 0 8px;
+    :deep(.el-input__inner) {
+      text-align: left;
+    }
+  }
+  .custom-table {
+    --el-table-header-bg-color: var(--table-bg-color);
+    --el-table-header-text-color: $title-color;
+    border: 1px solid $border-color;
+    :deep(.el-table__inner-wrapper)::before {
+      content: none;
+    }
+    :deep(.el-table__row):last-child {
+      td.el-table__cell {
+        border-bottom: none;
+      }
+    }
+    :deep(.el-table__cell) {
+      padding: 14px 0;
+    }
+  }
+}
+
+
