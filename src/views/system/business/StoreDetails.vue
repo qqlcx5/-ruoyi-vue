@@ -247,14 +247,16 @@ import { organizationType } from '@/utils/constants'
 import { getMemberAllList } from '@/api/system/member'
 import { reconstructionArrayObject } from '@/utils/utils'
 import editImg from '@/assets/imgs/system/editImg.png'
-import { getSimpleTenantList } from '@/api/system/business'
+import { getSimpleTenantList, getStoreDetails } from '@/api/system/business'
 
 interface Props {
   currentRecord?: object
+  fromPage?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currentRecord: {}
+  currentRecord: {},
+  fromPage: 'business' //默认为主体管理 由于 主体管理与机构管理的门店要走 不同接口(...出入参一样) 因此加个mark
 })
 
 const emit = defineEmits<{
@@ -288,10 +290,25 @@ const detailsInfo = async (record) => {
   state.detailsRecord = record
   //获取机构详情
   // const res = await getOrganizationDetails({ id: record.id })
-  const res = await getOrganizationStoreDetails({
+  const params: any = {
     id: record.id,
     tenantId: record.belongTenantId || record.tenantId
-  })
+  }
+  let res: any
+  // const res = await getOrganizationStoreDetails({
+  //   id: record.id,
+  //   tenantId: record.belongTenantId || record.tenantId
+  // })
+  switch (props.fromPage) {
+    case 'business':
+      //主体管理 门店 详情
+      res = await getStoreDetails(params)
+      break
+    default:
+      //机构管理
+      res = await getOrganizationStoreDetails(params)
+  }
+
   const { relVO = {} } = res
 
   //上级机构

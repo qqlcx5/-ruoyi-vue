@@ -1,6 +1,8 @@
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 import { MenuTreeList } from '@/views/system/business/business'
+import { useAppStore } from '@/store/modules/app'
+const appStore = useAppStore()
 
 /**
  * 过滤树形结构 更改对应的属性值
@@ -137,3 +139,19 @@ export const toTreeCount = (data = [], countField = 'count') =>
     (total, cur) => total + (cur[countField] = toTreeCount(cur.children || [], countField)),
     data.length
   )
+
+//全屏/退出
+export const fullScreen = () => {
+  const elem = document.getElementById('card-content')
+  // TODO ESC 与F11  退出全屏需要监听
+  // if (state.isFullScreen === false) {
+  if (!appStore.getIsFullScreen) {
+    if (elem?.requestFullscreen) {
+      elem?.requestFullscreen()
+      appStore.setIsFullScreen(!appStore.getIsFullScreen)
+    }
+  } else {
+    document.exitFullscreen()
+    appStore.setIsFullScreen(!appStore.getIsFullScreen)
+  }
+}

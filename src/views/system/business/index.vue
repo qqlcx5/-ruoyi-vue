@@ -78,7 +78,12 @@
         <!--  右侧操作  -->
         <div class="operation-content">
           <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-          <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
+          <Icon
+            icon="svg-icon:full-screen"
+            :size="50"
+            class="cursor-pointer"
+            @click="fullScreen()"
+          />
           <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
           <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
           <Icon
@@ -105,7 +110,7 @@
         v-if="state.refreshTable"
         :columns="state.columns"
         :data-source="state.tableDataList"
-        :scroll="{ x: '100%' }"
+        :scroll="{ x: 'max-content' }"
         :pagination="false"
         @change="onChange"
         :row-key="(record) => record.id"
@@ -345,32 +350,38 @@
 
         <a-form-item label="系统logo" name="logoUrl">
           <div style="height: 131px">
-            <a-upload
-              v-model:file-list="state.logoListUrl"
-              :action="updateUrl + '?updateSupport=' + updateSupport"
-              list-type="picture-card"
-              @preview="handlePreview"
-              accept=".jpg, .png, .gif"
-              class="avatar-uploader"
-              :show-upload-list="true"
-              :headers="uploadHeaders"
-              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-              @change="
-                (file, fileList) => {
-                  handleChange(file, fileList, 'logo')
-                }
-              "
-              @remove="
-                (file) => {
-                  removeImg(file, 'logo')
-                }
-              "
-            >
-              <div v-if="state.logoListUrl.length < 1">
-                <Icon icon="svg-icon:add-upload" :size="15" />
-                <div style="margin-top: 8px">上传logo</div>
-              </div>
-            </a-upload>
+            <UploadImg
+              v-model:modelValue="state.logoUrlSuccess"
+              fileSize="300"
+              :fileUnit="FileUnit.KB"
+              :resolution="[400, 400]"
+            />
+            <!--            <a-upload-->
+            <!--              v-model:file-list="state.logoListUrl"-->
+            <!--              :action="updateUrl + '?updateSupport=' + updateSupport"-->
+            <!--              list-type="picture-card"-->
+            <!--              @preview="handlePreview"-->
+            <!--              accept=".jpg, .png, .gif"-->
+            <!--              class="avatar-uploader"-->
+            <!--              :show-upload-list="true"-->
+            <!--              :headers="uploadHeaders"-->
+            <!--              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"-->
+            <!--              @change="-->
+            <!--                (file, fileList) => {-->
+            <!--                  handleChange(file, fileList, 'logo')-->
+            <!--                }-->
+            <!--              "-->
+            <!--              @remove="-->
+            <!--                (file) => {-->
+            <!--                  removeImg(file, 'logo')-->
+            <!--                }-->
+            <!--              "-->
+            <!--            >-->
+            <!--              <div v-if="state.logoListUrl.length < 1">-->
+            <!--                <Icon icon="svg-icon:add-upload" :size="15" />-->
+            <!--                <div style="margin-top: 8px">上传logo</div>-->
+            <!--              </div>-->
+            <!--            </a-upload>-->
             <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
           </div>
         </a-form-item>
@@ -491,32 +502,37 @@
 
         <a-form-item label="法人身份证" name="legalIdentityUrl">
           <div style="height: 131px">
-            <a-upload
-              v-model:file-list="state.legalPersonListUrl"
-              :action="updateUrl + '?updateSupport=' + updateSupport"
-              list-type="picture-card"
-              @preview="handlePreview"
-              accept=".jpg, .png, .gif"
-              class="avatar-uploader"
-              :show-upload-list="true"
-              :headers="uploadHeaders"
-              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-              @change="
-                (file, fileList) => {
-                  handleChange(file, fileList, 'legalPerson')
-                }
-              "
-              @remove="
-                (file) => {
-                  removeImg(file, 'legalPerson')
-                }
-              "
-            >
-              <div v-if="state.legalPersonListUrl.length < 1">
-                <Icon icon="svg-icon:add-upload" :size="15" />
-                <div style="margin-top: 8px">上传法人证件</div>
-              </div>
-            </a-upload>
+            <UploadImg
+              v-model:modelValue="state.legalPersonUrlSuccess"
+              width="160px"
+              height="100px"
+            />
+            <!--            <a-upload-->
+            <!--              v-model:file-list="state.legalPersonListUrl"-->
+            <!--              :action="updateUrl + '?updateSupport=' + updateSupport"-->
+            <!--              list-type="picture-card"-->
+            <!--              @preview="handlePreview"-->
+            <!--              accept=".jpg, .png, .gif"-->
+            <!--              class="avatar-uploader"-->
+            <!--              :show-upload-list="true"-->
+            <!--              :headers="uploadHeaders"-->
+            <!--              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"-->
+            <!--              @change="-->
+            <!--                (file, fileList) => {-->
+            <!--                  handleChange(file, fileList, 'legalPerson')-->
+            <!--                }-->
+            <!--              "-->
+            <!--              @remove="-->
+            <!--                (file) => {-->
+            <!--                  removeImg(file, 'legalPerson')-->
+            <!--                }-->
+            <!--              "-->
+            <!--            >-->
+            <!--              <div v-if="state.legalPersonListUrl.length < 1">-->
+            <!--                <Icon icon="svg-icon:add-upload" :size="15" />-->
+            <!--                <div style="margin-top: 8px">上传法人证件</div>-->
+            <!--              </div>-->
+            <!--            </a-upload>-->
 
             <div class="upload-text">
               请上传法人的清晰正面人头像身份证照片，支持png/jpg格式的照片
@@ -545,32 +561,37 @@
 
         <a-form-item label="营业执照" name="businessLicenseUrl">
           <div style="height: 131px">
-            <a-upload
-              v-model:file-list="state.businessLicenseListUrl"
-              :action="updateUrl + '?updateSupport=' + updateSupport"
-              list-type="picture-card"
-              @preview="handlePreview"
-              accept=".jpg, .png, .gif"
-              class="avatar-uploader"
-              :show-upload-list="true"
-              :headers="uploadHeaders"
-              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"
-              @change="
-                (file, fileList) => {
-                  handleChange(file, fileList, 'businessLicense')
-                }
-              "
-              @remove="
-                (file) => {
-                  removeImg(file, 'businessLicense')
-                }
-              "
-            >
-              <div v-if="state.businessLicenseListUrl.length < 1">
-                <Icon icon="svg-icon:add-upload" :size="15" />
-                <div style="margin-top: 8px">上传营业执照</div>
-              </div>
-            </a-upload>
+            <UploadImg
+              v-model:modelValue="state.businessLicenseSuccess"
+              width="160px"
+              height="100px"
+            />
+            <!--            <a-upload-->
+            <!--              v-model:file-list="state.businessLicenseListUrl"-->
+            <!--              :action="updateUrl + '?updateSupport=' + updateSupport"-->
+            <!--              list-type="picture-card"-->
+            <!--              @preview="handlePreview"-->
+            <!--              accept=".jpg, .png, .gif"-->
+            <!--              class="avatar-uploader"-->
+            <!--              :show-upload-list="true"-->
+            <!--              :headers="uploadHeaders"-->
+            <!--              :before-upload="(file, fileList) => beforeUpload(file, fileList, 'businessLicense')"-->
+            <!--              @change="-->
+            <!--                (file, fileList) => {-->
+            <!--                  handleChange(file, fileList, 'businessLicense')-->
+            <!--                }-->
+            <!--              "-->
+            <!--              @remove="-->
+            <!--                (file) => {-->
+            <!--                  removeImg(file, 'businessLicense')-->
+            <!--                }-->
+            <!--              "-->
+            <!--            >-->
+            <!--              <div v-if="state.businessLicenseListUrl.length < 1">-->
+            <!--                <Icon icon="svg-icon:add-upload" :size="15" />-->
+            <!--                <div style="margin-top: 8px">上传营业执照</div>-->
+            <!--              </div>-->
+            <!--            </a-upload>-->
 
             <div class="upload-text"> 请上传企业的营业执照，支持png/jpg格式的照片</div>
           </div>
@@ -975,6 +996,7 @@ import {
   addMajorIndividual,
   addTenantPackage,
   editTenantPackage,
+  getChildStoreNum,
   getMajorIndividualDetails,
   getMajorIndividualList,
   getSimpleTenantList,
@@ -982,7 +1004,8 @@ import {
   getTopPhone,
   putResetPassWord,
   updateEditMajorIndividual,
-  updateEditMajorIndividualStatus
+  updateEditMajorIndividualStatus,
+  updateStoreStatus
 } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
@@ -990,7 +1013,8 @@ import {
   getAllIds,
   getColumns,
   reconstructedTreeData,
-  toTreeCount
+  toTreeCount,
+  fullScreen
 } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -1003,17 +1027,15 @@ import { cloneDeep } from 'lodash-es'
 import Store from '@/views/system/business/Store.vue'
 import StoreDetails from '@/views/system/business/StoreDetails.vue'
 import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
+import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
+import { FileUnit } from '@/components/UploadFile/src/helper.ts'
 
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
 
 import isBetween from 'dayjs/plugin/isBetween'
-import {
-  getMemberNum,
-  getOrganizationTypeList,
-  updateOrganizationStoreStatus
-} from '@/api/system/organization'
+import { getOrganizationTypeList, updateOrganizationStoreStatus } from '@/api/system/organization'
 dayjs.extend(isBetween)
 
 const queryParams: any = reactive({
@@ -1436,7 +1458,6 @@ const allColumns = [
     dataIndex: 'operation',
     key: 'operation',
     fixed: 'right',
-    resizable: true,
     ellipsis: true,
     sort: 13
   }
@@ -1540,21 +1561,6 @@ const toggleExpandAll = () => {
   nextTick(() => {
     state.refreshTable = true
   })
-}
-
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
 }
 
 //打开 修改上级主体 门店
@@ -1872,6 +1878,7 @@ state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needRe
 
 //新增主体
 const addMajorIndividualFN = async () => {
+  console.log('state.logoListUrl', state.logoListUrl)
   // 校验表单
   if (!formRef) return
   await formRef.value.validate()
@@ -2147,7 +2154,7 @@ const setTableStatusChangeInfo = async (value, record) => {
   console.log('state.tableStatusChangeInfo', state.tableStatusChangeInfo)
   if (record.type === null) {
     // 门店
-    state.tableStatusChangeInfo['tempTreeNum'] = await getMemberNum({
+    state.tableStatusChangeInfo['tempTreeNum'] = await getChildStoreNum({
       id: record.id,
       tenantId: record.belongTenantId
     })
@@ -2238,12 +2245,17 @@ const statusOk = async () => {
       //   id: state.record.id,
       //   status: state.record.statusSwitch === true ? 0 : 1
       // })
-
-      await updateOrganizationStoreStatus({
+      const params = {
         tenantId: state.record!.belongTenantId, //上级主体
         id: state.record!.id,
         status: state.record!.statusSwitch === true ? 0 : 1
-      })
+      }
+      await updateStoreStatus(params)
+      // await updateOrganizationStoreStatus({
+      //   tenantId: state.record!.belongTenantId, //上级主体
+      //   id: state.record!.id,
+      //   status: state.record!.statusSwitch === true ? 0 : 1
+      // })
     } else {
       //主体
       const params = {

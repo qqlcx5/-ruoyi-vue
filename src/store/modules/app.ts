@@ -10,6 +10,7 @@ import { ThemeTypes } from '@/types/theme'
 const { wsCache } = useCache()
 
 interface AppState {
+  isFullScreen: boolean
   breadcrumb: boolean
   breadcrumbIcon: boolean
   collapse: boolean
@@ -51,6 +52,7 @@ export const useAppStore = defineStore('app', {
       isShowEditUserInfo: false, //修改系统名/logo
       pageLoading: false, // 路由跳转loading
 
+      isFullScreen: false, //  id="card-content" -全屏
       breadcrumb: true, // 面包屑
       breadcrumbIcon: true, // 面包屑图标
       collapse: false, // 折叠菜单
@@ -111,6 +113,9 @@ export const useAppStore = defineStore('app', {
   getters: {
     getBreadcrumb(): boolean {
       return this.breadcrumb
+    },
+    getIsFullScreen(): boolean {
+      return this.isFullScreen
     },
     getBreadcrumbIcon(): boolean {
       return this.breadcrumbIcon
@@ -198,6 +203,9 @@ export const useAppStore = defineStore('app', {
     }
   },
   actions: {
+    setIsFullScreen(isFullScreen: boolean) {
+      this.isFullScreen = isFullScreen
+    },
     setBreadcrumb(breadcrumb: boolean) {
       this.breadcrumb = breadcrumb
     },

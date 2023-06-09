@@ -249,7 +249,7 @@
           class="table-list"
           :columns="state.columns"
           :data-source="state.tableDataList"
-          :scroll="{ x: '100%' }"
+          :scroll="{ x: 'max-content' }"
           row-key="id"
           :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
           :loading="state.loading"
@@ -1161,20 +1161,9 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
-import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
-import {
-  addMajorIndividual,
-  addTenantPackage,
-  editTenantPackage,
-  getMajorIndividualDetails,
-  getMajorIndividualList,
-  getSimpleTenantList,
-  getTenantPackage,
-  putResetPassWord,
-  updateEditMajorIndividual,
-  updateEditMajorIndividualStatus
-} from '@/api/system/business'
+import { PageKeyObj } from '@/utils/constants'
+import { useCache } from '@/hooks/web/useCache'
+import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { aassignUserRoleApi } from '@/api/system/permission'
 import { getRoleApi } from '@/api/system/role'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
@@ -1206,11 +1195,14 @@ import {
   updateMember,
   updateMemberStatus
 } from '@/api/system/member'
-import { getOrganizationTypeList, getSimpleOrganizationList } from '@/api/system/organization'
-import { accessSync } from 'fs'
+import {
+  getDeptList,
+  getOrganizationTypeList,
+  getSimpleOrganizationList
+} from '@/api/system/organization'
+import { fullScreen } from '@/utils/utils'
 import BatchChangePostModal from './components/BatchChangePostModal.vue'
 import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
-import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer.vue'
 import { cloneDeep } from 'lodash-es'
 
@@ -1705,7 +1697,6 @@ const allColumns = [
     dataIndex: 'operation',
     key: 'operation',
     fixed: 'right',
-    resizable: true,
     ellipsis: true,
     sort: 13
   }
@@ -1906,21 +1897,6 @@ const toggleExpandAll = () => {
   nextTick(() => {
     state.refreshTable = true
   })
-}
-
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
 }
 
 //打开Modal
@@ -3339,7 +3315,9 @@ const sendCurrentSelect = (currentKey) => {
 
 //获取部门列表
 const getOrganizationListFN = async () => {
-  const res = await getSimpleOrganizationList()
+  const selectRes = await getSimpleOrganizationList()
+
+  const res = await getDeptList()
 
   res.map((item) => {
     if (item.migrated === 1) {
@@ -3356,21 +3334,24 @@ const getOrganizationListFN = async () => {
 
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
 
+  const tempOrganizationList = handleTree(selectRes, 'id', 'parentId', 'children')
+
   state.organizationList = res
   // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
   // let needReplaceKey = [
   //   ['title', 'name'],
   //   ['key', 'component']
   // ]
-  let needReplaceIDKey = [
+  let needReplaceIDKey: any = [
     ['title', 'name'],
     ['key', 'id'],
     ['tagText', 'tagText'],
     ['needTag', 'needTag']
   ]
-  //...TODO:这里有空再换 冗余了 本来是用 component 后面又换成id了
-  state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
+  //左侧树 机构(部门)
+  state.organizationOptions = reconstructedTreeData(tempOrganizationList, needReplaceIDKey)
   console.log('state.organizationOptions', state.organizationOptions)
+  //新增修改内 上级机构
   state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
   return res
 }
@@ -3496,7 +3477,6 @@ const addEditColumns = [
     width: 80,
     dataIndex: 'operation',
     key: 'operation',
-    resizable: true,
     ellipsis: true,
     sort: 13
   }
@@ -3605,7 +3585,6 @@ const addEditPostColumns = [
     width: 80,
     dataIndex: 'operation',
     key: 'operation',
-    resizable: true,
     ellipsis: true,
     sort: 13
   }

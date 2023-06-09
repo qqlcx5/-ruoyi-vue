@@ -30,7 +30,11 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card :bordered="false" style="min-width: 1710px; height: 100%" id="card-content">
+    <a-card
+      :bordered="false"
+      style="min-width: 1710px; height: 100%; overflow: auto"
+      id="card-content"
+    >
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -59,7 +63,12 @@
         <!--  右侧操作  -->
         <div class="operation-content">
           <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-          <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
+          <Icon
+            icon="svg-icon:full-screen"
+            :size="50"
+            class="cursor-pointer"
+            @click="fullScreen()"
+          />
           <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
           <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
           <Icon
@@ -74,7 +83,7 @@
       <a-table
         :columns="state.columns"
         :data-source="list"
-        :scroll="{ x: '100%' }"
+        :scroll="{ x: 'max-content' }"
         :row-key="(record) => record.id"
         :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
         :defaultExpandAllRows="state.isExpandAll"
@@ -636,7 +645,6 @@
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
-import * as TenantMenuApi from '@/api/system/TenantMenu'
 import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { message } from 'ant-design-vue'
@@ -645,20 +653,15 @@ import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
-import {
-  getMajorIndividualDetails,
-  getMajorIndividualList,
-  getSimpleTenantList,
-  updateEditMajorIndividualStatus
-} from '@/api/system/business'
-import { updateMenuStatus } from '@/api/system/TenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
+import { getColumns, reconstructionArrayObject, toTreeCount, fullScreen } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
-import { getPostList, getPostTypeList, getRolesList } from '@/api/system/member'
+import { getPostList, getRolesList } from '@/api/system/member'
 import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 import { getOrganizationTypeList } from '@/api/system/organization'
+import { useAppStore } from '@/store/modules/app'
+// const appStore = useAppStore()
 
 const queryParams = reactive({
   name: undefined,
@@ -798,7 +801,6 @@ const allColumns = [
     dataIndex: 'operation',
     key: 'operation',
     fixed: 'right',
-    resizable: true,
     ellipsis: true,
     sort: 11
   }
@@ -1002,20 +1004,22 @@ const toggleExpandAll = () => {
   })
 }
 
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
-}
+// //全屏/退出
+// const fullScreen = () => {
+//   const elem = document.getElementById('card-content')
+//
+//   if (state.isFullScreen === false) {
+//     if (elem?.requestFullscreen) {
+//       elem?.requestFullscreen()
+//       state.isFullScreen = !state.isFullScreen
+//       appStore.setIsFullScreen(state.isFullScreen)
+//     }
+//   } else {
+//     document.exitFullscreen()
+//     state.isFullScreen = !state.isFullScreen
+//     appStore.setIsFullScreen(state.isFullScreen)
+//   }
+// }
 
 //打开Modal
 const openModal = (record = {}) => {

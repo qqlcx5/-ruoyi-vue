@@ -613,15 +613,9 @@ import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
-import {
-  getMajorIndividualDetails,
-  getSimpleTenantList,
-  updateEditMajorIndividualStatus
-} from '@/api/system/business'
-import { updateMenuStatus } from '@/api/system/tenantMenu'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns, reconstructionArrayObject, toTreeCount } from '@/utils/utils'
+import { getColumns, reconstructionArrayObject, toTreeCount, fullScreen } from '@/utils/utils'
 import { getPostList, getRolesList } from '@/api/system/member'
 import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 import { cloneDeep } from 'lodash-es'
@@ -763,7 +757,6 @@ const allColumns = [
     dataIndex: 'operation',
     key: 'operation',
     fixed: 'right',
-    resizable: true,
     ellipsis: true,
     sort: 11
   }
@@ -963,21 +956,6 @@ const toggleExpandAll = () => {
   nextTick(() => {
     state.refreshTable = true
   })
-}
-
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
 }
 
 //打开Modal

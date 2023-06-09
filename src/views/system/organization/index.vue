@@ -91,7 +91,7 @@
         v-if="state.refreshTable"
         :columns="state.columns"
         :data-source="state.tableDataList"
-        :scroll="{ x: '100%' }"
+        :scroll="{ x: 'max-content' }"
         :pagination="false"
         @change="onChange"
         :row-key="(record) => record.id"
@@ -1156,14 +1156,12 @@ import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
 import { SystemMenuTypeEnum, PageKeyObj, organizationType } from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
-import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
-  filterTree,
-  getAllIds,
   reconstructedTreeData,
   getColumns,
-  reconstructionArrayObject
+  reconstructionArrayObject,
+  fullScreen
 } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -1173,7 +1171,6 @@ import { getAccessToken, getTenantId } from '@/utils/auth'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import Store from '@/views/system/business/Store.vue'
 import StoreDetails from '@/views/system/business/StoreDetails.vue'
-import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 import {
   addAttribute,
   addOrganization,
@@ -1674,7 +1671,6 @@ const allColumns = [
     dataIndex: 'operation',
     key: 'operation',
     fixed: 'right',
-    resizable: true,
     ellipsis: true,
     sort: 12
   }
@@ -1738,21 +1734,6 @@ const toggleExpandAll = () => {
   nextTick(() => {
     state.refreshTable = true
   })
-}
-
-//全屏/退出
-const fullScreen = () => {
-  const elem = document.getElementById('card-content')
-
-  if (state.isFullScreen === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      state.isFullScreen = !state.isFullScreen
-    }
-  } else {
-    document.exitFullscreen()
-    state.isFullScreen = !state.isFullScreen
-  }
 }
 
 //打开Modal

@@ -33,11 +33,17 @@ const setDefaultTheme = () => {
 setDefaultTheme()
 
 const getPopupContainer = () => {
-  return document.getElementById('card-content') || document.body
+  if (state.needGetPopupContainer) {
+    //全屏才需要 'card-content'
+    return document.getElementById('card-content') || document.body
+  } else {
+    return document.body
+  }
 }
 
 const state = reactive({
-  isDark: false
+  isDark: false,
+  needGetPopupContainer: false
 })
 
 watchEffect(() => {
@@ -45,6 +51,16 @@ watchEffect(() => {
   DarkMode(appStore.isDark)
   state.isDark = appStore.isDark
 })
+
+watch(
+  () => appStore.getIsFullScreen,
+  (isFullScreen) => {
+    state.needGetPopupContainer = isFullScreen
+  },
+  {
+    immediate: true
+  }
+)
 
 // 清空，从而触发刷新 菜单 路由
 wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
