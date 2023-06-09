@@ -55,6 +55,7 @@ import { generateUUID } from '@/utils'
 import { uploadFile } from '@/api/common'
 import { FileUnit } from './helper'
 import { withDefaults } from 'vue'
+import { isEmpty } from 'lodash-es'
 
 const props = withDefaults(
   defineProps<{
@@ -68,14 +69,15 @@ const props = withDefaults(
     borderRadius?: string // 组件边框圆角 ==> 非必传（默认为 8px）
     uploadName?: string // 组件上传框里的提示文字 ==> 非必传（默认为 上传）
     fileUnit?: FileUnit // 文件大小单位
+    resolution?: number[] // 图片分辨率，数字类型，如[400, 200], 第一个值宽，第二个值高
   }>(),
   {
     drag: true,
     disabled: false,
-    fileSize: 300,
     fileType: '.jpg, .png',
     height: '80px',
     width: '80px',
+    resolution: () => [],
     borderRadius: '4px',
     uploadName: '上传',
     fileUnit: FileUnit.MB
@@ -98,10 +100,10 @@ const deleteFile = () => {
   upload.value.clearFiles()
 }
 
-const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  const imgSize =
-    (fileUnit.value === FileUnit.KB ? rawFile.size / 1024 : rawFile.size / 1024 / 1024) <
-    props.fileSize
+const beforeUpload: UploadProps['beforeUpload'] = async (rawFile) => {
+  let imgSize = true,
+    isResolution = true
+
   loading.value = true
 
   let fileExtension = ''
@@ -109,18 +111,35 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
     fileExtension = rawFile.name.slice(rawFile.name.lastIndexOf('.') + 1)
   }
 
+  // 是否格式正确
   const isTrueFormat = fileTypeToArray.value.some((type: string) => {
     if (rawFile.type.indexOf(type) > -1) return true
     return !!(fileExtension && fileExtension.indexOf(type) > -1)
   })
 
-  if (!isTrueFormat)
-    message.error(`仅支持${fileTypeToArray.value.join('/')}格式`), (loading.value = false)
+  if (!isTrueFormat) {
+    message.error(`仅支持${fileTypeToArray.value.join('/')}格式`)
+    loading.value = false
+    return false
+  }
 
-  if (!imgSize)
-    message.notifyWarning(`图片不能超过 ${props.fileSize}${fileUnit.value}`),
-      (loading.value = false)
-  return isTrueFormat && imgSize
+  if (props.fileSize) {
+    imgSize =
+      (fileUnit.value === FileUnit.KB ? rawFile.size / 1024 : rawFile.size / 1024 / 1024) <
+      props.fileSize
+    if (!imgSize) {
+      message.error(`图片不能超过 ${props.fileSize}${fileUnit.value}`)
+      loading.value = false
+      return false
+    }
+  }
+
+  if (!isEmpty(props.resolution)) {
+    // 是否图片分辨率正确
+    isResolution = await checkImageResolution(rawFile)
+    loading.value = false
+    return isResolution
+  }
 }
 
 // 上传成功提示
@@ -148,6 +167,28 @@ const uploadRequest = async (options: UploadRequestOptions) => {
     uploadError()
     loading.value = false
   }
+}
+
+// 判断图片分辨率
+const checkImageResolution = (file): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    const filereader = new FileReader()
+    filereader.onload = (e) => {
+      const src = e.target?.result as string
+      const image = new Image()
+      image.onload = function () {
+        if (image.width !== props.resolution[0] || image.height !== props.resolution[1]) {
+          message.error('请上传' + props.resolution[0] + 'px*' + props.resolution[1] + 'px的图片')
+          resolve(false)
+        } else {
+          resolve(true)
+        }
+      }
+      image.onerror = reject
+      image.src = src
+    }
+    filereader.readAsDataURL(file)
+  })
 }
 </script>
 <style scoped lang="scss">
