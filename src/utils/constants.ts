@@ -224,6 +224,7 @@ export const organizationType = {
 
 //定制列缓存 页面pageKey
 export const PageKeyObj = {
+  dcc: 'dcc', // 基础配置-dcc设置
   organization: 'organization', //机构管理
   menu: 'menu', //菜单管理
   tenant: 'tenant', //租户菜单
