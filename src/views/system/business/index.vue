@@ -905,6 +905,7 @@
     :title="state.resetPasswordTitle"
     :closable="state.closable"
     :footer="null"
+    @cancel="closePasswordModal"
     wrapClassName="reset-PassWord"
     :width="`${state.resetModalStyle.width}px`"
     :bodyStyle="{

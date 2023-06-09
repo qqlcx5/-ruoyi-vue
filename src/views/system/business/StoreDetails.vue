@@ -153,9 +153,12 @@
             </div>
 
             <div v-if="childItem?.generalArr">
-              <div v-for="itemNoticeLetter in childItem?.generalArr">{{
-                itemNoticeLetter.fileName
-              }}</div>
+              <div
+                v-for="(itemNoticeLetter, itemNoticeLetterIndex) in childItem?.generalArr"
+                @click="previewFile(itemNoticeLetter)"
+                :key="`noticeLetter${itemNoticeLetterIndex}`"
+                >{{ itemNoticeLetter.fileName }}</div
+              >
             </div>
           </template>
         </div>
@@ -206,9 +209,12 @@
             </div>
 
             <div v-if="childItem?.generalArr">
-              <div v-for="itemNoticeLetter in childItem?.generalArr">{{
-                itemNoticeLetter.fileName
-              }}</div>
+              <div
+                v-for="(itemNoticeLetter, itemNoticeLetterIndex) in childItem?.generalArr"
+                @click="previewFile(itemNoticeLetter)"
+                :key="`noticeLetterFile${itemNoticeLetterIndex}`"
+                >{{ itemNoticeLetter.fileName }}</div
+              >
             </div>
           </template>
         </div>
@@ -233,12 +239,18 @@
   >
     <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
   </a-modal>
+
+  <!--  上传文件预览  -->
+  <preview-dialog
+    v-model="state.isShowDialog"
+    :title="state.previewTitle"
+    :url="state.previewUrl"
+  />
 </template>
 
 <script lang="ts" setup>
 import { reactive } from 'vue'
 import {
-  getOrganizationDetails,
   getOrganizationStoreDetails,
   getOrganizationTypeList,
   getSimpleOrganizationList
@@ -264,7 +276,7 @@ const emit = defineEmits<{
   (e: 'editStoreDetails', key: object): void
 }>()
 
-const state = reactive({
+const state: any = reactive({
   isShowDetails: true, //详情modal
   detailsInfo: [], //详情内容
   detailsInfoSecond: [], //
@@ -278,7 +290,10 @@ const state = reactive({
   saleBrandOptions: [], //销售品牌List 设置属性
   rescueBrandOptions: [], //救援品牌List 设置属性
   maintenanceBrandOptions: [], //销售品牌List 设置属性
-  memberOptions: [] //新增修改 负责人list
+  memberOptions: [], //新增修改 负责人list
+  isShowDialog: false,
+  previewTitle: '',
+  previewUrl: ''
 })
 
 const previewVisible = ref(false)
@@ -715,6 +730,12 @@ const setPreviewImage = (imgUrl = '') => {
 const handleCancel = () => {
   previewVisible.value = false
   previewTitle.value = ''
+}
+
+const previewFile = (item) => {
+  state.isShowDialog = !state.isShowDialog
+  state.previewTitle = item.fileName
+  state.previewUrl = item.fileUrl
 }
 
 onMounted(async () => {

@@ -1,7 +1,7 @@
 <template>
   <XModal :title="title" v-model="show" width="950px">
     <div class="dialog-box">
-      <iframe class="dialor-iframe" :src="previewUrl" frameborder="0"></iframe>
+      <iframe class="dialog-iframe" :src="previewUrl" frameborder="0"></iframe>
     </div>
     <template #footer>
       <XButton :title="t('dialog.close')" @click="show = false" />
