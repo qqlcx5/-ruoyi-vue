@@ -27,6 +27,7 @@
   .vxe-table--render-default.size--small .vxe-body--column.col--ellipsis {
     height: auto;
     > .vxe-cell {
+      padding: 8px 10px;
       max-height: unset;
     }
   }
