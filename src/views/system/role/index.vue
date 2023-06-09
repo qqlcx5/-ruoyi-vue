@@ -53,6 +53,7 @@
       </template>
       <template #status_default="{ row }">
         <el-switch
+          v-hasPermi="['system:role:update-status']"
           v-model="row.status"
           :active-value="0"
           :inactive-value="1"
@@ -76,7 +77,7 @@
         <!-- 操作：详情 -->
         <XTextButton
           :title="t('action.detail')"
-          v-hasPermi="['system:role:query']"
+          v-hasPermi="['system:role:detail']"
           @click="handleDetail(row.id)"
         />
         <!-- 操作：删除 -->
@@ -152,7 +153,8 @@ const [registerTable, { reload, deleteReq, search }] = useXTable({
   allSchemas: allSchemas,
   params: searchForm,
   getListApi: RoleApi.getRolePageApi,
-  deleteApi: RoleApi.deleteRoleApi
+  deleteApi: RoleApi.deleteRoleApi,
+  border: true
 })
 const getRoleList = () => {
   searchForm.value = { ...queryParams.value }
