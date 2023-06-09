@@ -5,7 +5,10 @@
         <el-card class="role-container" :gutter="12" shadow="never">
           <template #header>
             <div class="card-header">
-              <span class="font-medium text-18px">配置权限</span>
+              <span class="font-medium text-18px">
+                {{ roleInfo.name }}-{{ roleInfo.code }}
+                <span class="ml-12px">配置权限</span>
+              </span>
             </div>
           </template>
           <el-tabs class="-mt-16px" v-model="activeName">
@@ -57,6 +60,7 @@ const { query } = useRoute()
 const message = useMessage()
 const tagsViewStore = useTagsViewStore()
 
+const roleInfo = ref({})
 const activeName = ref('backstage')
 const frontTableData = ref<any[]>([]) // 前台已选权限
 const backstageTableData = ref<any[]>([]) // 后台已选权限
@@ -100,19 +104,32 @@ const handleCancel = () => {
   tagsViewStore.delView(unref(router.currentRoute))
   router.replace('/system/role')
 }
+
+const getRoleInfo = async () => {
+  if (!query.id) return
+  await RoleApi.getRoleApi(query.id as string).then((res) => {
+    roleInfo.value = res
+  })
+}
+
+onMounted(() => {
+  getRoleInfo()
+})
 </script>
 <style lang="scss" scoped>
 .role-config {
   .el-card {
     border: none;
   }
+
   .role-container {
     :deep(.el-card__body) {
       min-height: 74vh;
     }
   }
 }
+
 .footer {
-  box-shadow: 0px -5px 8px 0px rgba(210, 210, 210, 0.2);
+  box-shadow: 0 -5px 8px 0 rgb(210 210 210 / 20%);
 }
 </style>
