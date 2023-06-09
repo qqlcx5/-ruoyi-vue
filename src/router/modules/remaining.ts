@@ -1,7 +1,5 @@
 import { Layout } from '@/utils/routerHelper'
 
-import basicConfig from '@/router/modules/basicConfig'
-
 const { t } = useI18n()
 /**
 * redirect: noredirect        当设置 noredirect 的时候该路由在面包屑导航中不可被点击
@@ -296,8 +294,7 @@ const remainingRouter: AppRouteRecordRaw[] = [
         }
       }
     ]
-  },
-  basicConfig // 基础配置
+  }
 ]
 
 export default remainingRouter
