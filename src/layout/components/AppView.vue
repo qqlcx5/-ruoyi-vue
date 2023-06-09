@@ -86,5 +86,6 @@ watch(
     border: none;
     margin-bottom: 12px !important;
   }
+  overflow: auto;
 }
 </style>
