@@ -2,7 +2,7 @@
   <div class="upload-file">
     <el-upload
       ref="uploadRef"
-      :multiple="props.limit > 1"
+      multiple
       v-model:file-list="fileList"
       :show-file-list="true"
       :auto-upload="autoUpload"
@@ -55,8 +55,6 @@ const props = withDefaults(
   {
     title: '文件上传',
     fileType: '.doc, .docx, .pdf, .jpg',
-    fileSize: 5,
-    limit: 5,
     autoUpload: true,
     drag: false,
     isShowTip: true,
@@ -80,11 +78,6 @@ const fileList = ref<UploadUserFile[]>(props.modelValue)
 const uploadNumber = ref<number>(0)
 // 文件上传之前判断
 const beforeUpload: UploadProps['beforeUpload'] = (file: UploadRawFile) => {
-  if (fileList.value.length >= props.limit) {
-    message.error(`上传文件数量不能超过${props.limit}个!`)
-    return false
-  }
-
   let fileExtension = ''
   if (file.name.lastIndexOf('.') > -1) {
     fileExtension = file.name.slice(file.name.lastIndexOf('.') + 1)
@@ -94,15 +87,25 @@ const beforeUpload: UploadProps['beforeUpload'] = (file: UploadRawFile) => {
     if (file.type.indexOf(type) > -1) return true
     return !!(fileExtension && fileExtension.indexOf(type) > -1)
   })
-  const isLimit =
-    (fileUnit.value === FileUnit.KB ? file.size / 1024 : file.size / 1024 / 1024) < props.fileSize
+
+  if (props.limit) {
+    if (fileList.value.length >= props.limit) {
+      message.error(`上传文件数量不能超过${props.limit}个!`)
+      return false
+    }
+  }
+
   if (!isTrueFormat) {
     message.error(`文件格式不正确, 请上传${fileTypeToArray.value.join('/')}格式!`)
     return false
   }
-  if (!isLimit) {
-    message.error(`上传文件大小不能超过${props.fileSize}${fileUnit}!`)
-    return false
+  if (props.fileSize) {
+    const isLimit =
+      (fileUnit.value === FileUnit.KB ? file.size / 1024 : file.size / 1024 / 1024) < props.fileSize
+    if (!isLimit) {
+      message.error(`上传文件大小不能超过${props.fileSize}${fileUnit}!`)
+      return false
+    }
   }
   uploadNumber.value++
 }
