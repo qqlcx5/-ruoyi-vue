@@ -11,16 +11,20 @@
         @click="showColumnDialog"
       />
     </div>
+    <slot name="tip"></slot>
     <el-table
       :data="[
         { a1: 3, a2: 4 },
         { a1: 3, a2: 4 }
       ]"
+      @selection-change="handleSelectionChange"
       max-height="calc(100% + 40px)"
-      class="wg-custom-table"
+      class="custom-table"
     >
       <template v-for="column in curColumns" :key="column.prop">
+        <el-table-column v-if="column.type === 'selection'" type="selection" />
         <el-table-column
+          v-else
           :label="column.title"
           :prop="column.prop"
           :width="column.width"
@@ -81,6 +85,16 @@ const props = withDefaults(defineProps<IProps>(), {
   data: () => [],
   columns: () => []
 })
+
+interface IEmit {
+  (event: 'selectionChange', checkedList: object[]): void
+}
+const emit = defineEmits<IEmit>()
+
+const handleSelectionChange = (value) => {
+  emit('selectionChange', value)
+}
+
 let defaultKeys = ref(
   props.columns.reduce((arr: string[], item: { key: string }) => {
     if (item.key) arr.push(item.key)
@@ -104,17 +118,5 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 </script>
 
 <style scoped lang="scss">
-.wg-custom-table {
-  --el-table-header-bg-color: var(--table-bg-color);
-  --el-table-header-text-color: $title-color;
-  border: 1px solid $border-color;
-  :deep(.el-table__inner-wrapper)::before {
-    content: none;
-  }
-  :deep(.el-table__row):last-child {
-    td.el-table__cell {
-      border-bottom: none;
-    }
-  }
-}
+@import '../../style/index';
 </style>

@@ -15,18 +15,22 @@
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
     </WgTable>
+
+    <!-- 首次跟进率新增/编辑弹框 -->
+    <EditFirstFollowRate v-model="visible" @success="" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import WgTable from '../components/WgTable/index.vue'
-const router = useRouter() // 路由
+import EditFirstFollowRate from '../components/EditFirstFollowRate/index.vue'
 
+const visible = ref<boolean>(false)
 const tableConfig = reactive({
   columns: [
     {
       sort: 1,
-      title: 'DCC规则名称',
+      title: '规则名称',
       key: 'a1',
       resizable: true,
       ellipsis: true,
@@ -41,15 +45,17 @@ const tableConfig = reactive({
       ellipsis: true,
       disabled: false
     },
-    { sort: 3, title: '启用状态', key: 'a3', resizable: true, ellipsis: true, disabled: false },
-    { sort: 4, title: '创建人', key: 'a4', resizable: true, ellipsis: true, disabled: false },
-    { sort: 5, title: '创建时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
+    { sort: 3, title: '最低跟进率', key: 'a3', resizable: true, ellipsis: true, disabled: false },
+    { sort: 4, title: '计算周期', key: 'a3', resizable: true, ellipsis: true, disabled: false },
+    { sort: 5, title: '参与岗位', key: 'a3', resizable: true, ellipsis: true, disabled: false },
+    { sort: 6, title: '创建人', key: 'a4', resizable: true, ellipsis: true, disabled: false },
+    { sort: 7, title: '创建时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
     {
-      sort: 6,
+      sort: 8,
       title: '操作',
       key: 'operate',
       width: 120,
-      fixed: null,
+      fixed: 'right',
       resizable: true,
       ellipsis: true,
       disabled: false,
@@ -70,7 +76,7 @@ const tableConfig = reactive({
 })
 
 const handleCreate = () => {
-  router.push('/clue/basic-config/edit-dcc')
+  visible.value = true
 }
 const handleDccEdit = (row) => {
   console.log(row)

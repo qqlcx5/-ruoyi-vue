@@ -1,51 +1,61 @@
 <template>
   <div class="basic-config-page-container">
-    <div class="top-search mb-12px">
-      <dive>
-        <span class="mr-8px">门店</span>
-        <el-select value="1">
-          <el-option label="1" value="1" />
-        </el-select>
-        <el-button type="primary" class="ml-12px">确定</el-button>
-        <el-button>重置</el-button>
-      </dive>
-    </div>
-    <WgTable class="table-wrap" :columns="tableConfig.columns">
+    <WgTable class="table-wrap" :columns="tableConfig.columns" @selectionChange="getCheckedList">
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
+        <el-button @click="handleDelete">删除</el-button>
+      </template>
+      <template #tip>
+        <div class="mb-12px" style="line-height: 20px; font-size: 14px; color: #ff4141"
+          >注：线索周期只可启用一条</div
+        >
       </template>
     </WgTable>
+    <EditRepetitionPeriod v-model="visible" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import WgTable from '../components/WgTable/index.vue'
-const router = useRouter() // 路由
+import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
 
 const tableConfig = reactive({
   columns: [
     {
-      sort: 1,
-      title: 'DCC规则名称',
+      sort: 0,
+      title: '',
       key: 'a1',
+      type: 'selection',
+      width: 50,
+      resizable: false,
+      ellipsis: false,
+      disabled: true
+    },
+    {
+      sort: 1,
+      title: '线索重复判断维度',
+      key: 'a1',
+      minWidth: 150,
       resizable: true,
       ellipsis: true,
       disabled: false
     },
     {
       sort: 2,
-      title: '适用门店',
+      title: '周期',
       key: 'a2',
       minWidth: 400,
       resizable: true,
       ellipsis: true,
       disabled: false
     },
-    { sort: 3, title: '启用状态', key: 'a3', resizable: true, ellipsis: true, disabled: false },
+    { sort: 3, title: '状态', key: 'a3', resizable: true, ellipsis: true, disabled: false },
     { sort: 4, title: '创建人', key: 'a4', resizable: true, ellipsis: true, disabled: false },
     { sort: 5, title: '创建时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
+    { sort: 6, title: '最近操作人', key: 'a5', resizable: true, ellipsis: true, disabled: false },
+    { sort: 7, title: '最近操作时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
     {
-      sort: 6,
+      sort: 8,
       title: '操作',
       key: 'operate',
       width: 120,
@@ -56,7 +66,7 @@ const tableConfig = reactive({
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleDccEdit(row)}>
+            <el-button type="primary" link onclick={() => handleEdit(row)}>
               编辑
             </el-button>
             <el-button type="primary" link>
@@ -69,11 +79,15 @@ const tableConfig = reactive({
   ]
 })
 
+const visible = ref<boolean>(false)
 const handleCreate = () => {
-  router.push('/clue/basic-config/edit-dcc')
+  visible.value = true
 }
-const handleDccEdit = (row) => {
-  console.log(row)
+const handleEdit = () => {}
+const checkedList = ref<object[]>([])
+const getCheckedList = (value) => {
+  checkedList.value = value
+  console.log(checkedList)
 }
 </script>
 
