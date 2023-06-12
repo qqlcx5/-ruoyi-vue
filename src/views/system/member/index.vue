@@ -464,6 +464,7 @@
               show-count
               :maxlength="20"
               placeholder="请输入成员真实姓名"
+              @change="changeToPinYin"
             />
           </a-form-item>
 
@@ -478,8 +479,7 @@
           >
             <a-input
               v-model:value="formState.namePhoneticize"
-              show-count
-              :maxlength="20"
+              disabled
               placeholder="请输入姓名拼音全拼"
             />
           </a-form-item>
@@ -1284,6 +1284,7 @@ import BatchChangePostModal from './components/BatchChangePostModal.vue'
 import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
 import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer.vue'
 import { cloneDeep } from 'lodash-es'
+import Pinyin from 'js-pinyin'
 
 const { wsCache } = useCache()
 
@@ -2250,7 +2251,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWXWork: item.existWXWork, //是否开通微企
+        existWXWork: item.existWXWork, //是否开通企微
         userId: formState.id,
         id: item.id
       })
@@ -2260,7 +2261,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWXWork: item.existWXWork //是否开通微企
+        existWXWork: item.existWXWork //是否开通企微
       })
     }
 
@@ -2729,7 +2730,7 @@ const detailsInfo = async (record) => {
       phoneNum: item?.phone,
       useType: item?.usageType === '1' ? '私人' : '公司',
       isService: item?.recordEnable ? '是' : '否',
-      existWXWork: item?.existWXWork ? '是' : '否' //是否开通微企
+      existWXWork: item?.existWXWork ? '已开通' : '未开通' //是否开通企微
     })
   })
 
@@ -2952,7 +2953,7 @@ const detailsInfo = async (record) => {
       sort: 4
     },
     {
-      title: '是否开通微企',
+      title: '是否开通企微',
       width: 100,
       dataIndex: 'existWXWork',
       key: 'existWXWork',
@@ -3595,7 +3596,7 @@ const addEditColumns = [
     sort: 4
   },
   {
-    title: '是否开通微企',
+    title: '是否开通企微',
     width: 100,
     dataIndex: 'existWXWork',
     key: 'existWXWork',
@@ -3826,6 +3827,11 @@ const limitInput = (value, currentValue) => {
 
 const clearPhoneNum = (record) => {
   record.phoneNum = ''
+}
+
+//转拼音
+const changeToPinYin = () => {
+  formState.namePhoneticize = Pinyin.getFullChars(formState.memberName)
 }
 
 //监听  左侧选中数据  更新 右侧展示数据
