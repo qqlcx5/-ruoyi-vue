@@ -77,7 +77,7 @@ watch(
     </router-view>
   </section>
   <Footer v-if="footer" />
-  <EditUserInfo v-if="state.isShow" />
+  <EditUserInfo v-if="state.isShow" v-hasPermi="['system:tenant:update-system']" />
 </template>
 
 <style lang="scss" scoped>

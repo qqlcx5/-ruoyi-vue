@@ -11,7 +11,7 @@ const appStore = useAppStore()
  * @returns  result array           result为传进来处理后的树 其中 children属性值至少为空数组
  *
  * */
-export const reconstructedTreeData = (treeData, reconstructedKey = []) => {
+export const reconstructedTreeData = (treeData: any, reconstructedKey: any = []) => {
   if (Array.isArray(reconstructedKey) && reconstructedKey.length < 2) {
     //非数组
     console.log('请传入正确的reconstructedKey')
@@ -26,10 +26,10 @@ export const reconstructedTreeData = (treeData, reconstructedKey = []) => {
       return []
     }
   }
-  const mapTree = (org) => {
+  const mapTree = (org: any) => {
     //children为非空数组
     const haveChildren = Array.isArray(org.children) && org.children.length > 0
-    let treeObj = {}
+    const treeObj = {}
     reconstructedKey.map((item) => {
       treeObj[item[0]] = org[item[1]]
       treeObj['children'] = haveChildren ? org.children.map((i) => mapTree(i)) : []
@@ -49,7 +49,7 @@ export const reconstructedTreeData = (treeData, reconstructedKey = []) => {
  */
 export const reconstructionArrayObject = (arr, reconstructedKey) => {
   return arr.map((item) => {
-    let treeObj = {}
+    const treeObj = {}
     reconstructedKey.map((reconstructedKeyItem) => {
       treeObj[reconstructedKeyItem[0]] = item[reconstructedKeyItem[1]]
     })
@@ -63,10 +63,11 @@ export const reconstructionArrayObject = (arr, reconstructedKey) => {
  * @param  {String} keyWord  查询的关键词
  * @return {Array}           查询的结果
  */
-export const fuzzyQuery = (list, keyWord) => {
-  let arr = []
+export const fuzzyQuery = (list: any, keyWord) => {
+  const arr = []
   for (let i = 0; i < list.length; i++) {
     if (list[i].text.indexOf(keyWord) >= 0) {
+      // @ts-ignore
       arr.push(list[i])
     }
   }
@@ -154,4 +155,13 @@ export const fullScreen = () => {
     document.exitFullscreen()
     appStore.setIsFullScreen(!appStore.getIsFullScreen)
   }
+}
+
+/**
+ * @param  permission   要判断的权限
+ * @return  true/false
+ * */
+export const hasPermission = (permission: string) => {
+  const permissionsList = wsCache.get(CACHE_KEY.USER).permissions
+  return permissionsList.includes(permission)
 }

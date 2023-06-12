@@ -34,7 +34,13 @@
             :options="state.majorIndividualTypeOptions"
           />
         </a-form-item>
-        <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
+        <a-button
+          type="primary"
+          html-type="submit"
+          @click="getList()"
+          v-hasPermi="['system:tenant:query']"
+          >查询</a-button
+        >
         <a-button @click="resetQuery">重置</a-button>
       </a-form>
     </a-card>
@@ -42,7 +48,7 @@
     <!--  表格  -->
     <a-card
       :bordered="false"
-      style="min-width: 1710px; height: 100%; padding-bottom: 30px"
+      style="min-width: 1700px; height: 100%; padding-bottom: 30px"
       id="card-content"
     >
       <!--  <ContentWrap>-->
@@ -170,19 +176,101 @@
           <!--  状态   -->
           <template v-if="column?.key === 'statusSwitch'">
             <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
-            <!-- <div class="employees-Number">{{ record.status }}</div>-->
-            <!--          <a-switch-->
-            <!--            v-model:checked="record.statusSwitch"-->
-            <!--            @change="(value) => tableStatusChange(value, record)"-->
-            <!--          />-->
+            <!--  门店  -->
             <a-switch
-              :disabled="record.level === 1"
+              v-if="record.type === null"
+              :disabled="record.level === 1 || !state.storeHasPermission"
+              v-model:checked="record.statusSwitch"
+              @change="(value) => setTableStatusChangeInfo(value, record)"
+            />
+            <!-- 主体  -->
+            <a-switch
+              v-else
+              :disabled="record.level === 1 || !state.majorIndividualHasPermission"
               v-model:checked="record.statusSwitch"
               @change="(value) => setTableStatusChangeInfo(value, record)"
             />
           </template>
+
           <!--  操作   -->
           <template v-if="column?.key === 'operation'">
+            <!--  门店  -->
+            <div class="operation-content" v-if="record.type === null">
+              <XTextButton
+                title="修改"
+                v-hasPermi="['system:tenant:update-store']"
+                @click="edit(record, false, record.type === null)"
+              />
+              <XTextButton
+                title="修改上级主体"
+                v-hasPermi="['system:tenant:change-parent-tenant']"
+                @click="openEditParentMajorIndividual(record)"
+              />
+
+              <XTextButton
+                title="设置属性"
+                v-hasPermi="['system:tenant:set-attribute']"
+                @click="edit(record, false, record.type === null, 'underlyingAttribute')"
+              />
+
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <div>
+                    <XTextButton
+                      title="详情"
+                      v-hasPermi="['system:tenant:store-detail']"
+                      @click="detailsInfo(record)"
+                    />
+                  </div>
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+            <!--  主体  -->
+            <div class="operation-content" v-else>
+              <XTextButton
+                title="修改"
+                v-hasPermi="['system:tenant:update']"
+                @click="edit(record, false, record.type === null)"
+              />
+
+              <XTextButton
+                title="新增门店"
+                v-if="record.type === majorIndividualType.dealer"
+                v-hasPermi="['system:tenant:create-store']"
+                @click="openModal(record)"
+              />
+
+              <XTextButton
+                title="新增子项"
+                v-if="record.type === majorIndividualType.manufacturer"
+                v-hasPermi="['system:tenant:create-child']"
+                @click="openModal(record)"
+              />
+
+              <XTextButton
+                title="配置菜单"
+                v-hasPermi="['system:tenant:auth']"
+                @click="assignPermission(record)"
+              />
+
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <div>
+                    <XTextButton
+                      title="详情"
+                      v-hasPermi="['system:tenant:detail']"
+                      @click="detailsInfo(record)"
+                    />
+                  </div>
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+          </template>
+
+          <!--  操作   -->
+          <template v-if="false && column?.key === 'operation'">
             <div class="operation-content">
               <div
                 v-hasPermi="['system:tenant:update']"
@@ -208,7 +296,7 @@
                 v-if="record.type !== null"
                 class="text-color margin-right-5"
                 @click="assignPermission(record)"
-                >功能配置</div
+                >配置菜单</div
               >
               <div
                 v-else
@@ -844,7 +932,10 @@
     :bodyStyle="{ overflow: 'auto' }"
     :footer="null"
   >
-    <div class="details-edit" @click="edit(state.record, true)"
+    <div
+      class="details-edit"
+      @click="edit(state.record, true)"
+      v-hasPermi="['system:tenant:update']"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
     >
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
@@ -1017,7 +1108,8 @@ import {
   getColumns,
   reconstructedTreeData,
   toTreeCount,
-  fullScreen
+  fullScreen,
+  hasPermission
 } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -1034,6 +1126,7 @@ import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
 import { FileUnit } from '@/components/UploadFile/src/helper'
 import isBetween from 'dayjs/plugin/isBetween'
 import { getOrganizationTypeList } from '@/api/system/organization'
+import { majorIndividualType } from '@/utils/constants'
 
 const { wsCache } = useCache()
 
@@ -1172,6 +1265,8 @@ const imageUrl = ref<string>('')
 
 //TODO 有空补吧
 const state: any = reactive({
+  majorIndividualHasPermission: false, //table 状态switch 是否禁用 权限关禁用  主体状态权限
+  storeHasPermission: false, //table 状态switch 是否禁用 权限关禁用 门店状态权限
   isSuperAdmin: false, //仅超管 有新增 btn
   belongTenantId: null, //上级主体编号 新增门店
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
@@ -2055,7 +2150,7 @@ const openPermissionModal = async (id) => {
   state.menuTreeList = handleTree(tempArr)
 }
 
-//功能配置 Modal 确认
+//配置菜单 Modal 确认
 const PermissionOk = async () => {
   const params = {
     menuIds: state.idArr,
@@ -2304,7 +2399,7 @@ const dateOkModal = () => {
   closeDateModal()
 }
 
-//功能配置 前台 全选全不选
+//配置菜单 前台 全选全不选
 const selectAll = ({ target }) => {
   if (target.checked) {
     //全选
@@ -2316,7 +2411,7 @@ const selectAll = ({ target }) => {
     checkedKeysBack.value = []
   }
 }
-//功能配置 前台 展开折叠
+//配置菜单 前台 展开折叠
 const expandAllFN = ({ target }) => {
   if (target.checked) {
     state.isShowTree = false
@@ -2791,6 +2886,11 @@ allColumns.map((item, index) => {
 })
 state.columns = getColumns(state, PageKeyObj.business, allColumns, state.defaultKeys)
 
+//主体状态权限
+state.majorIndividualHasPermission = hasPermission('system:tenant:update-status')
+//门店状态权限
+state.storeHasPermission = hasPermission('system:tenant:update-store-status')
+
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value, checkedKeysBackNew.value],
@@ -2835,7 +2935,7 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .search-card {
-  min-width: 1710px;
+  min-width: 1700px;
   min-height: 72px;
   padding: 20px;
   margin-bottom: 20px;
@@ -2924,6 +3024,10 @@ onMounted(async () => {
 .margin-right-5 {
   margin-right: 5px;
   cursor: pointer;
+}
+
+.margin-left-14 {
+  margin-left: 14px;
 }
 
 //功能配置弹窗

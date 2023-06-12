@@ -24,7 +24,13 @@
           />
         </a-form-item>
         <!-- TODO:权限-->
-        <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
+        <a-button
+          type="primary"
+          html-type="submit"
+          @click="getList()"
+          v-hasPermi="['system:menu:query']"
+          >查询</a-button
+        >
         <a-button @click="resetQuery">重置</a-button>
       </a-form>
     </ContentWrap>
@@ -43,7 +49,7 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button type="primary" @click="openModal">
+          <a-button type="primary" @click="openModal" v-hasPermi="['system:menu:create']">
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -143,6 +149,7 @@
           <template v-if="column.key === 'status'">
             <a-switch
               v-model:checked="record.statusSwitch"
+              :disabled="!state.menuStatusHasPermission"
               @change="(value) => tableStatusChange(value, record)"
             />
           </template>
@@ -150,15 +157,31 @@
           <template v-if="column.key === 'visible'">
             <a-switch
               v-model:checked="record.visible"
+              :disabled="!state.menuVisibleHasPermission"
               @change="(value) => tableVisibleChange(value, record)"
             />
           </template>
           <!--  操作   -->
           <template v-if="column.key === 'operation'">
             <div class="operation-content">
-              <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-              <div class="text-color margin-right-5" @click="openModal(record)">新增子项</div>
-              <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+              <div
+                class="text-color margin-right-5"
+                @click="edit(record)"
+                v-hasPermi="['system:menu:update']"
+                >修改</div
+              >
+              <div
+                class="text-color margin-right-5"
+                @click="openModal(record)"
+                v-hasPermi="['system:menu:create-child']"
+                >新增子项</div
+              >
+              <div
+                class="text-color margin-right-5"
+                @click="detailsInfo(record)"
+                v-hasPermi="['system:menu:query-detail']"
+                >详情</div
+              >
               <a-popover placement="bottom">
                 <template #content>
                   <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
@@ -509,7 +532,10 @@
     }"
     :footer="null"
   >
-    <div class="details-edit" @click="edit(state.currentRecord, true)"
+    <div
+      class="details-edit"
+      @click="edit(state.currentRecord, true)"
+      v-hasPermi="['system:menu:update']"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
     >
     <div class="details-content">
@@ -655,10 +681,16 @@ import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns, reconstructionArrayObject, toTreeCount, fullScreen } from '@/utils/utils'
+import {
+  getColumns,
+  reconstructionArrayObject,
+  toTreeCount,
+  fullScreen,
+  hasPermission
+} from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
 import { getPostList, getRolesList } from '@/api/system/member'
-import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
+import { getMemberNumList, getMemberNumRoleList, updateMenuVisibleStatus } from '@/api/system/menu'
 import { getOrganizationTypeList } from '@/api/system/organization'
 import { useAppStore } from '@/store/modules/app'
 // const appStore = useAppStore()
@@ -808,6 +840,8 @@ const allColumns = [
 
 //TODO 有空补吧
 const state: any = reactive({
+  menuStatusHasPermission: false, //table 状态switch 是否禁用 权限关禁用  菜单状态
+  menuVisibleHasPermission: false, //table 状态switch 是否禁用 权限关禁用  显示状态
   currentRecord: {}, //当前点击的table item
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
@@ -1265,7 +1299,8 @@ const tableVisibleChange = async (value, record) => {
   }
 
   try {
-    await MenuApi.updateMenuStatus(params)
+    // await MenuApi.updateMenuStatus(params)
+    await MenuApi.updateMenuVisibleStatus(params)
     message.success('修改显示状态成功')
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
@@ -1715,6 +1750,11 @@ const getAllType = async () => {
   //适用主体类型
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
 }
+
+//菜单状态
+state.menuStatusHasPermission = hasPermission('system:menu:update:status')
+//显示状态
+state.menuVisibleHasPermission = hasPermission('system:menu:update:visible')
 
 watch(
   () => state.formState.type,

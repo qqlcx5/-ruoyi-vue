@@ -4,6 +4,7 @@ import { PropType } from 'vue'
 
 const props = defineProps({
   modelValue: propTypes.bool.def(false),
+  disabled: propTypes.bool.def(false),
   loading: propTypes.bool.def(false),
   preIcon: propTypes.string.def(''),
   postIcon: propTypes.string.def(''),
@@ -29,7 +30,13 @@ const getBindValue = computed(() => {
 </script>
 
 <template>
-  <el-button link v-bind="getBindValue" @click="onClick">
+  <el-button
+    link
+    v-bind="getBindValue"
+    @click="onClick"
+    :disabled="disabled"
+    :class="[{ 'disabled-color': disabled }]"
+  >
     <iconfont :name="iconFont" v-if="iconFont" class="mr-1px" />
     <Icon :icon="preIcon" v-if="preIcon" class="mr-1px" />
     {{ title ? title : '' }}
@@ -44,5 +51,8 @@ const getBindValue = computed(() => {
 :deep(.el-button.is-link) {
   margin-left: 0;
   padding: 8px 4px;
+}
+.disabled-color {
+  color: gray !important;
 }
 </style>
