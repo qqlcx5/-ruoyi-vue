@@ -7,9 +7,9 @@
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
     :width="'665px'"
-    :bodyStyle="{ height: '520px', margin: '0', padding: '20px', overflow: 'auto' }"
+    :bodyStyle="{ padding: 0 }"
   >
-    <div class="base_info_content">
+    <div class="base_info_content" @scroll="handleModalScroll">
       <a-form
         :model="state.formState"
         ref="formRef"
@@ -439,6 +439,7 @@
 
             <a-form-item :label="`成立日期`" name="establishDate">
               <a-date-picker
+                ref="establishRef"
                 v-model:value="state.formState.establishDate"
                 format="YYYY/MM/DD"
                 placeholder="请选择时间"
@@ -554,6 +555,7 @@
 
             <a-form-item :label="`试运营时间`" name="trialOperationTime">
               <a-date-picker
+                ref="operationRef"
                 v-model:value="state.formState.trialOperationTime"
                 format="YYYY/MM/DD"
                 placeholder="请选择时间"
@@ -634,6 +636,7 @@
 
             <a-form-item :label="`验收通过时间`" name="acceptanceTime">
               <a-date-picker
+                ref="acceptanceRef"
                 v-model:value="state.formState.acceptanceTime"
                 format="YYYY/MM/DD"
                 placeholder="请选择时间"
@@ -730,7 +733,7 @@ import { handleTree } from '@/utils/tree'
 import { organizationType } from '@/utils/constants'
 import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
 import UploadFile from '@/components/UploadFile/src/UploadFile.vue'
-import { FileUnit } from '@/components/UploadFile/src/helper.ts'
+import { FileUnit } from '@/components/UploadFile/src/helper'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -859,6 +862,19 @@ const numValidator = (rule, value) => {
       resolve()
     }
   })
+}
+
+// 成立日期组件
+const establishRef = ref()
+// 试运营时间组件
+const operationRef = ref()
+// 验收通过时间组件
+const acceptanceRef = ref()
+/** 弹窗滚动事件 */
+const handleModalScroll = () => {
+  establishRef.value.blur()
+  operationRef.value.blur()
+  acceptanceRef.value.blur()
 }
 
 const layout = {
@@ -1781,6 +1797,10 @@ state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needRe
   width: 100%;
   display: flex;
   flex-direction: column;
+  height: 520px;
+  margin: 0;
+  overflow: auto;
+  padding: 20px;
 }
 .width-50 {
   width: 50%;
