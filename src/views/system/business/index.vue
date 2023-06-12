@@ -244,9 +244,9 @@
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
     :width="'665px'"
-    :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
+    :bodyStyle="{ padding: 0 }"
   >
-    <div class="base_info_content">
+    <div class="base_info_content" @scroll="handleModalScroll">
       <a-form
         :model="state.formState"
         ref="formRef"
@@ -406,6 +406,7 @@
         >
           <div class="flex-content">
             <a-range-picker
+              ref="effectiveRef"
               v-model:value="state.formState.effectiveStartEndTime"
               format="YYYY/MM/DD"
               :placeholder="['开始时间', '结束时间']"
@@ -494,6 +495,7 @@
 
         <a-form-item :label="`成立日期`" name="establishDate">
           <a-date-picker
+            ref="establishRef"
             v-model:value="state.formState.establishDate"
             format="YYYY/MM/DD"
             placeholder="请选择时间"
@@ -1029,14 +1031,14 @@ import Store from '@/views/system/business/Store.vue'
 import StoreDetails from '@/views/system/business/StoreDetails.vue'
 import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
-import { FileUnit } from '@/components/UploadFile/src/helper.ts'
+import { FileUnit } from '@/components/UploadFile/src/helper'
+import isBetween from 'dayjs/plugin/isBetween'
+import { getOrganizationTypeList } from '@/api/system/organization'
 
 const { wsCache } = useCache()
 
 const { toClipboard } = useClipboard()
 
-import isBetween from 'dayjs/plugin/isBetween'
-import { getOrganizationTypeList, updateOrganizationStoreStatus } from '@/api/system/organization'
 dayjs.extend(isBetween)
 
 const queryParams: any = reactive({
@@ -1309,6 +1311,16 @@ const state: any = reactive({
 const checkedKeysBack = ref([])
 // const checkedKeysBackNew = ref([])
 const checkedKeysBackNew: Ref<(string | number)[]> = ref([])
+
+// 有效期组件
+const effectiveRef = ref()
+// 成立日期组件
+const establishRef = ref()
+/** 弹窗滚动事件 */
+const handleModalScroll = () => {
+  effectiveRef.value.blur()
+  establishRef.value.blur()
+}
 
 //获取子节点的 父节点id
 const testCheck = (checkedKeys, e) => {
@@ -2894,6 +2906,10 @@ onMounted(async () => {
   width: 100%;
   display: flex;
   flex-direction: column;
+  height: 600px;
+  margin: auto;
+  overflow: auto;
+  padding: 24px;
 }
 //上传
 .avatar-uploader > .ant-upload {
