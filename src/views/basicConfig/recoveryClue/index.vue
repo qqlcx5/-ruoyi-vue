@@ -1,19 +1,18 @@
 <template>
   <div class="basic-config-page-container">
-    <WgTable class="table-wrap" :columns="tableConfig.columns" @selectionChange="getCheckedList">
+    <WgTable class="table-wrap" :tableConfig="tableConfig" @selectionChange="getCheckedList">
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增回收计划</el-button>
       </template>
     </WgTable>
-    <EditRepetitionPeriod v-model="visible" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import WgTable from '../components/WgTable/index.vue'
-import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
 
 const tableConfig = reactive({
+  pageKey: 'recoveryClue',
   columns: [
     {
       sort: 1,

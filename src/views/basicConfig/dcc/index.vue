@@ -10,7 +10,7 @@
         <el-button>重置</el-button>
       </dive>
     </div>
-    <WgTable class="table-wrap" :columns="tableConfig.columns">
+    <WgTable class="table-wrap" :tableConfig="tableConfig">
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
@@ -23,6 +23,7 @@ import WgTable from '../components/WgTable/index.vue'
 const router = useRouter() // 路由
 
 const tableConfig = reactive({
+  pageKey: 'dcc',
   columns: [
     {
       sort: 1,

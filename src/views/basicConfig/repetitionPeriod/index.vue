@@ -1,6 +1,6 @@
 <template>
   <div class="basic-config-page-container">
-    <WgTable class="table-wrap" :columns="tableConfig.columns" @selectionChange="getCheckedList">
+    <WgTable class="table-wrap" :tableConfig="tableConfig" @selectionChange="getCheckedList">
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
         <el-button @click="handleDelete">删除</el-button>
@@ -20,6 +20,7 @@ import WgTable from '../components/WgTable/index.vue'
 import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
 
 const tableConfig = reactive({
+  pageKey: 'repetitionPeriod',
   columns: [
     {
       sort: 0,

@@ -10,7 +10,7 @@
         <el-button>重置</el-button>
       </dive>
     </div>
-    <WgTable class="table-wrap" :columns="tableConfig.columns">
+    <WgTable class="table-wrap" :tableConfig="tableConfig">
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
@@ -27,6 +27,7 @@ import EditFirstFollowRate from '../components/EditFirstFollowRate/index.vue'
 
 const visible = ref<boolean>(false)
 const tableConfig = reactive({
+  pageKey: 'firstFollowRate',
   columns: [
     {
       sort: 1,
