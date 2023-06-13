@@ -13,7 +13,7 @@
             v-model:value="queryParams.organizationType"
             placeholder="请选择机构类型"
             style="width: 200px"
-            :options="state.organizationTypeOptions"
+            :options="[...state.organizationTypeOptions, ...state.childStoreOptions]"
           />
         </a-form-item>
 
@@ -153,16 +153,24 @@
           </template>
           <!--  状态   -->
           <template v-if="column?.key === 'statusSwitch'">
-            <!--  门店全部禁用  其他机构依据权限禁用且顶层机构禁用 -->
+            <!--  门店全部禁用  其他机构依据权限禁用且顶层机构禁用 子门店也全部禁用-->
+            <!--  门店  -->
             <a-switch
-              v-if="record.organizationType === organizationType.store"
+              v-if="record.organizationCategory === organizationCategory.store"
               :disabled="true"
               v-model:checked="record.statusSwitch"
               @change="(value) => setTableStatusChangeInfo(value, record)"
             />
+            <!--  非门店与子门店的 其他机构  -->
             <a-switch
-              v-else
+              v-if="record.organizationCategory === organizationCategory.organization"
               :disabled="record.level === 1 || !state.organizationHasPermission"
+              v-model:checked="record.statusSwitch"
+              @change="(value) => setTableStatusChangeInfo(value, record)"
+            />
+            <a-switch
+              v-if="record.organizationCategory === organizationCategory.childStore"
+              :disabled="true"
               v-model:checked="record.statusSwitch"
               @change="(value) => setTableStatusChangeInfo(value, record)"
             />
@@ -256,9 +264,14 @@
               </a-popover>
             </div>
             <!--  门店 -->
+            <!--  且不为子门店  -->
             <div
               class="operation-content"
-              v-if="record.organizationType === organizationType.store"
+              v-if="
+                record.organizationType === organizationType.store &&
+                record.storeSubtyping !== storeSubType.popStore &&
+                record.storeSubtyping !== storeSubType.cityHall
+              "
             >
               <XTextButton
                 title="修改"
@@ -308,6 +321,54 @@
                           record?.organizationType === organizationType.store
                         )
                       "
+                    />
+                  </div>
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+
+            <!--  子门店  -->
+            <div
+              class="operation-content"
+              v-if="
+                record.storeSubtyping === storeSubType.popStore ||
+                record.storeSubtyping === storeSubType.cityHall
+              "
+            >
+              <XTextButton
+                title="修改"
+                v-hasPermi="['system:organization:update-child-store']"
+                :disabled="record?.statusSwitch === false"
+                @click="edit(record)"
+              />
+              <XTextButton
+                title="新增子项"
+                v-hasPermi="['system:organization:create-child']"
+                :disabled="record?.statusSwitch === false"
+                @click="openModal(record, record?.statusSwitch === false, true)"
+              />
+              <XTextButton
+                title="设置属性"
+                v-hasPermi="['system:organization:set-child-store-attribute']"
+                :disabled="record?.statusSwitch === false"
+                @click="
+                  assignPermission(
+                    record,
+                    false,
+                    record?.statusSwitch === false,
+                    'underlyingAttribute'
+                  )
+                "
+              />
+
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <div>
+                    <XTextButton
+                      title="详情"
+                      v-hasPermi="['system:organization:child-store-detail']"
+                      @click="detailsInfo(record)"
                     />
                   </div>
                 </template>
@@ -456,6 +517,7 @@
         <a-form-item :label="`上级机构`" name="parentId">
           <a-tree-select
             v-model:value="state.formState.parentId"
+            :disabled="state.isAddOrganizationFromChildStore"
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -621,12 +683,18 @@
   <!--  修改门店  -->
   <Store
     v-if="state.isShowStore"
-    @closeStore="closeStore()"
+    @closeStore="closeStore"
     :belongTenantId="state.belongTenantId"
+    :parentId="state.parentId"
     :editRecord="state.record"
     :tabsActiveKey="state.currentTabs"
-    :needBelongTenantId="false"
+    :needBelongTenantId="state.needBelongTenantId"
+    :needParentId="state.needParentId"
+    :needOrganizationType="state.needOrganizationType"
+    :needStoreSubtyping="state.needStoreSubtyping"
+    :useStoreList="state.useStoreList"
     :storeType="state.storeType"
+    fromPage="organization"
   />
 
   <!-- 设置属性 Modal -->
@@ -1350,7 +1418,13 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { SystemMenuTypeEnum, PageKeyObj, organizationType } from '@/utils/constants'
+import {
+  SystemMenuTypeEnum,
+  PageKeyObj,
+  organizationType,
+  storeSubType,
+  organizationCategory
+} from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
@@ -1561,9 +1635,21 @@ const imageUrl = ref<string>('')
 
 //TODO 有空补吧
 const state: any = reactive({
+  belongTenantId: null, //上级主体编号 编辑门店
+  useStoreList: {
+    needUseStore: false,
+    belongTenantId: '0'
+  }, //新增子门店 上级机构需要取 当前父级主体下所有的门店
+  needBelongTenantId: true, //是否需要上级主体 门店需要 子门店不需要
+  needParentId: false, //是否需要上级机构 门店不需要 子门店需要
+  needOrganizationType: true, //是否需要 基本属性 机构类型 分公司/门店 才有
+  needStoreSubtyping: false, //是否需要子门店类型 子门店需要
+  storeType: organizationType.store, //门店 or 子门店
+  isAddOrganizationFromChildStore: false, //是否为 机构管理 子门店的 新增子项 是的话禁用 上级机构
+  parentId: null, //上级机构ID 新增子门店
+  record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   organizationHasPermission: false, //table 状态switch 是否禁用 权限关禁用
   addEditBtn: '下一步', //新增 修改 确认 bnt text
-  record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
   messageText: '为了保护您的机构公司业务数据安全，请通过安全验证：',
   total: 0, //总条数
@@ -1572,6 +1658,7 @@ const state: any = reactive({
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
   organizationTypeOptions: [], //机构类型列表
+  childStoreOptions: [], //机构类型 子门店类型
   branchCompanyTypeOptions: [], //分公司类型列表
   contactInformationOptions: [], //联系方式类型列表
   storeTypeOptions: [], //门店类型
@@ -1613,11 +1700,11 @@ const state: any = reactive({
   }, //新增表单
   formAttributeState: {
     type: [], //分公司类型 门店类型
-    isSale: '0', //是否有销售
+    isSale: '1', //是否有销售
     saleBrand: [], //销售品牌
-    isRescue: '0', //是否提供救援
+    isRescue: '1', //是否提供救援
     rescueBrand: [], //救援品牌
-    isMaintenance: '0', //是否提供维保
+    isMaintenance: '1', //是否提供维保
     maintenanceBrand: [], //维保品牌
     startRating: 0, //星级
     logoUrl: '', //系统logo
@@ -1632,7 +1719,6 @@ const state: any = reactive({
         id: Date.now()
       }
     ], //联系方式 设置属性
-    belongTenantId: null, //上级主体编号 编辑门店
     currentTabs: 'basicInformation', //门店 设置属性&&修改 current Tab
     status: true, //状态
     creditCode: '', //统一社会信用代码
@@ -1700,6 +1786,8 @@ const getOrganizationTypeListFN = async () => {
   const res = await getOrganizationTypeList()
   //机构类型
   state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
+  //子门店类型
+  state.childStoreOptions = res.filter((item) => item.dictType === 'store_subtyping')
   //分公司类型
   state.branchCompanyTypeOptions = res.filter((item) => item.dictType === 'branch_company_type')
   //门店类型
@@ -1911,10 +1999,21 @@ const getList = async (isRefresh = false) => {
           item.organizationTypeText = organizationType.companyText
           break
       }
+
+      //子门店类型
+      switch (item.storeSubtyping) {
+        case storeSubType.popStore:
+          item.organizationTypeText = storeSubType.popStoreText
+          break
+        case storeSubType.cityHall:
+          item.organizationTypeText = storeSubType.cityHallText
+          break
+      }
     })
 
     state.tableDataArr = res
     state.tableDataList = handleTree(state.tableDataList, 'id', 'parentId', 'children')
+    console.log('state.tableDataList', state.tableDataList)
 
     state.total = res.total
     if (isRefresh) {
@@ -1949,7 +2048,11 @@ const toggleExpandAll = () => {
 }
 
 //打开Modal
-const openModal = async (record = {}, disabled = false) => {
+const openModal = async (
+  record = {},
+  disabled = false,
+  isAddOrganizationFromChildStore = false
+) => {
   if (disabled) {
     return
   }
@@ -1968,6 +2071,7 @@ const openModal = async (record = {}, disabled = false) => {
 
   state.optionalMenuTree = menuTree
 
+  state.isAddOrganizationFromChildStore = isAddOrganizationFromChildStore
   state.isShow = true
 }
 //关闭Modal
@@ -1991,6 +2095,8 @@ const closeModal = () => {
     sort: 0, //排序
     status: true //状态
   }
+  //是否为 机构管理 子门店的 新增子项 是的话禁用 上级机构
+  state.isAddOrganizationFromChildStore = false
   delete state.formState?.id
   state.record = {}
   state.modalTitle = '新增'
@@ -2000,12 +2106,25 @@ const closeModal = () => {
 }
 
 //关闭 编辑门店
-const closeStore = () => {
+const closeStore = (isRefresh = false) => {
+  console.log('isRefresh=====>', isRefresh)
   state.isShowStore = false
   state.belongTenantId = null
+  state.parentId = null
+  state.needBelongTenantId = true
+  state.needParentId = false
+  state.needOrganizationType = true
+  state.needStoreSubtyping = false
+  state.storeType = organizationType.store
+  state.useStoreList = {
+    needUseStore: false,
+    belongTenantId: '0'
+  } //新增子门店 上级机构需要取 当前父级主体下所有的门店
   state.modalType = 'add'
   state.record = {}
-  getList()
+  if (isRefresh) {
+    getList()
+  }
 }
 
 //关闭 详情 门店
@@ -2061,6 +2180,24 @@ const edit = async (record, isCloseDetails = false, currentTabs = 'basicInformat
     state.currentTabs = currentTabs
     state.isShowStore = true
     state.record = res
+    if (
+      record.storeSubtyping === storeSubType.popStore ||
+      record.storeSubtyping === storeSubType.cityHall
+    ) {
+      // 子门店
+      state.parentId = record.id
+      state.belongTenantId = record.belongTenantId
+      state.needBelongTenantId = false
+      state.needParentId = true
+      state.needOrganizationType = false
+      state.needStoreSubtyping = true
+      //这里随便了 只要不是 store 就判定为子门店
+      state.storeType = storeSubType.popStore
+      state.useStoreList = {
+        needUseStore: true,
+        belongTenantId: res?.tenantId
+      }
+    }
     return
   }
   //菜单状态 0开启 1关闭
@@ -2365,7 +2502,7 @@ const assignPermission = async (
   if (disabled) {
     return
   }
-
+  console.log('record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -2377,7 +2514,28 @@ const assignPermission = async (
   state.PermissionType = 'edit'
   if (record.id) {
     const res = await getOrganizationDetails({ id: record.id })
+    console.log('res', res)
+    //门店
     if (res?.organizationType === organizationType.store) {
+      if (
+        record.storeSubtyping === storeSubType.popStore ||
+        record.storeSubtyping === storeSubType.cityHall
+      ) {
+        // 子门店
+        state.parentId = record.id
+        state.belongTenantId = record.belongTenantId
+        state.needBelongTenantId = false
+        state.needParentId = true
+        state.needOrganizationType = false
+        state.needStoreSubtyping = true
+        //这里随便了 只要不是 store 就判定为子门店
+        state.storeType = storeSubType.popStore
+        state.useStoreList = {
+          needUseStore: true,
+          belongTenantId: res?.tenantId
+        }
+      }
+
       //门店
       state.currentTabs = currentTabs
       state.isShowStore = true

@@ -5,7 +5,7 @@
     destroyOnClose
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
-    @cancel="closeModal"
+    @cancel="closeModal()"
     :width="'665px'"
     :bodyStyle="{ padding: 0 }"
   >
@@ -19,6 +19,25 @@
       >
         <a-tabs v-model:activeKey="state.activeKey">
           <a-tab-pane key="basicInformation" tab="基础信息">
+            <a-form-item
+              v-if="props.needStoreSubtyping"
+              label="子门店类型"
+              name="storeSubtyping"
+              :rules="[{ required: true, message: `子门店类型不能为空` }]"
+            >
+              <a-radio-group
+                v-model:value="state.formState.storeSubtyping"
+                :disabled="state.modalType === 'edit'"
+              >
+                <a-radio
+                  :value="item.value"
+                  :key="`storeSubtyping${index}`"
+                  v-for="(item, index) in state.childStoreOptions"
+                  >{{ item.label }}</a-radio
+                >
+              </a-radio-group>
+            </a-form-item>
+
             <a-form-item :label="`上级主体`" name="belongTenantId" v-if="props.needBelongTenantId">
               <a-tree-select
                 v-model:value="state.formState.belongTenantId"
@@ -26,16 +45,17 @@
                 show-search
                 style="width: 100%"
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                placeholder="请选择上级目录"
+                placeholder="请选择上级主体"
                 :tree-data="state.majorIndividualOption"
                 :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
                 treeNodeFilterProp="name"
               />
             </a-form-item>
 
-            <a-form-item :label="`上级机构`" name="parentId">
+            <a-form-item :label="`上级机构`" name="parentId" v-if="props.needParentId">
               <a-tree-select
                 v-model:value="state.formState.parentId"
+                :disabled="props.storeType !== organizationType.store"
                 show-search
                 style="width: 100%"
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -43,6 +63,26 @@
                 :tree-data="state.optionalMenuTree"
                 :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
                 treeNodeFilterProp="name"
+              />
+            </a-form-item>
+
+            <a-form-item
+              :label="`专营店编码`"
+              name="specialtyCode"
+              :rules="[
+                { required: true, message: `专营店编码不能为空` },
+                { validator: enNumValidator }
+              ]"
+            >
+              <!--  门店不禁 子门店 主体管理进不禁 机构管理进 禁 -->
+              <a-input
+                v-model:value="state.formState.specialtyCode"
+                :disabled="
+                  state.storeType !== organizationType.store && props.fromPage === 'organization'
+                "
+                show-count
+                :maxlength="20"
+                placeholder="请输入专营店编码"
               />
             </a-form-item>
 
@@ -178,9 +218,10 @@
               label="分公司类型"
               :rules="[{ required: true, message: `分公司类型不能为空` }]"
               v-if="
-                state.currentType === organizationType.branchCompany ||
-                state.currentType === '分公司' ||
-                state.detailsRecord?.type === organizationType.branchCompany
+                props.needOrganizationType &&
+                (state.currentType === organizationType.branchCompany ||
+                  state.currentType === '分公司' ||
+                  state.detailsRecord?.type === organizationType.branchCompany)
               "
             >
               <a-radio-group v-model:value="state.formState.type">
@@ -193,7 +234,17 @@
                 >
               </a-radio-group>
             </a-form-item>
-            <a-form-item label="门店类型" v-else>
+            <a-form-item
+              label="门店类型"
+              v-if="
+                props.needOrganizationType &&
+                !(
+                  state.currentType === organizationType.branchCompany ||
+                  state.currentType === '分公司' ||
+                  state.detailsRecord?.type === organizationType.branchCompany
+                )
+              "
+            >
               <a-checkbox-group v-model:value="state.formState.type">
                 <a-checkbox
                   v-for="(item, index) in state.storeTypeOptions"
@@ -691,7 +742,7 @@
       >
         确认</a-button
       >
-      <a-button @click="closeModal">取消</a-button>
+      <a-button @click="closeModal()">取消</a-button>
     </template>
   </a-modal>
 
@@ -721,6 +772,7 @@ import {
   getOrganizationStoreDetails,
   getOrganizationTypeList,
   getSimpleOrganizationList,
+  getStoreList,
   updateOrganizationStore
 } from '@/api/system/organization'
 import { getMemberAllList, getMemberPhoneList } from '@/api/system/member'
@@ -728,7 +780,13 @@ import { reconstructedTreeData, reconstructionArrayObject } from '@/utils/utils'
 import { message, Upload, UploadChangeParam, UploadProps } from 'ant-design-vue'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import { provincesMunicipalitiesArea } from '@/constant/pr'
-import { addStore, getSimpleTenantList, getStoreDetails, updateStore } from '@/api/system/business'
+import {
+  addChildStore,
+  addStore,
+  getSimpleTenantList,
+  getStoreDetails,
+  updateStore
+} from '@/api/system/business'
 import { handleTree } from '@/utils/tree'
 import { organizationType } from '@/utils/constants'
 import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
@@ -739,24 +797,37 @@ import dayjs from 'dayjs'
 interface Props {
   tabsActiveKey?: string
   belongTenantId?: string
-  editRecord?: object
+  parentId?: string
+  editRecord?: any
   storeType?: string
   needBelongTenantId?: boolean
+  needParentId?: boolean
+  needStoreSubtyping?: boolean
+  needOrganizationType?: boolean
+  useStoreList?: any
   fromPage?: string
 }
 
+//needXXX 全部单独传进来 而不在组件内 通过门店 or 子门店判断 - - 免得到时候 产品又叠需求跟修改 到时候不好改
 const props = withDefaults(defineProps<Props>(), {
-  tabsActiveKey: 'basicInformation',
-  belongTenantId: '0',
-  // eslint-disable-next-line vue/require-valid-default-prop
-  editRecord: {},
-  storeType: 'store',
-  needBelongTenantId: true,
+  tabsActiveKey: 'basicInformation', //current tab
+  belongTenantId: '0', //上级主体
+  parentId: '0', //上级机构
+  editRecord: {}, //回显
+  storeType: organizationType.store, //门店 or 子门店
+  needBelongTenantId: true, //是否需要上级主体
+  needParentId: true, //是否需要上级机构
+  needStoreSubtyping: false, //是否需要子门店类型 子门店需要
+  needOrganizationType: true, //基本属性 机构类型 分公司/门店 才有
+  useStoreList: {
+    needUseStore: false,
+    belongTenantId: '0'
+  }, //新增子门店 上级机构需要取 当前父级主体下所有的门店
   fromPage: 'business' //默认为主体管理 由于 主体管理与机构管理的门店要走 不同接口(...出入参一样) 因此加个mark
 })
 
 const emit = defineEmits<{
-  (e: 'closeStore', key: boolean): void
+  (e: 'closeStore', key: boolean): boolean
 }>()
 
 //手机号码正则校验 -  简单校验没有全按国内的号码段来  -
@@ -891,9 +962,11 @@ const state: any = reactive({
   modalTitle: '新增门店', //modal title
   barnOptions: [],
   formState: {
+    storeSubtyping: null, //子门店类型
     belongTenantId: props.belongTenantId || null, //上级主体
-    parentId: 0, //上级机构ID
+    parentId: props.parentId || 0, //上级机构ID
     organizationType: organizationType.store, //机构类型
+    specialtyCode: undefined, //专营店编码
     name: '', //机构名称
     code: '', //机构编码
     abbreviate: '', //机构简称
@@ -905,11 +978,11 @@ const state: any = reactive({
     status: true, //状态
 
     type: [], //分公司类型 门店类型
-    isSale: '0', //是否有销售
+    isSale: '1', //是否有销售
     saleBrand: [], //销售品牌
-    isRescue: '0', //是否提供救援
+    isRescue: '1', //是否提供救援
     rescueBrand: [], //救援品牌
-    isMaintenance: '0', //是否提供维保
+    isMaintenance: '1', //是否提供维保
     maintenanceBrand: [], //维保品牌
     startRating: 0, //星级
     logoUrl: '', //系统logo
@@ -948,6 +1021,7 @@ const state: any = reactive({
   proMunAreaList: [], //省市区数据
   optionalMenuTree: [], //上级机构 treeList
   organizationTypeOptions: [], //机构类型列表
+  childStoreOptions: [], //子门店类型列表
   branchCompanyTypeOptions: [], //分公司类型列表
   majorIndividualOption: [], //上级主体
   memberOptions: [], //新增修改 负责人list
@@ -985,8 +1059,9 @@ const uploadHeaders = ref({
 })
 
 //关闭Modal
-const closeModal = () => {
-  emit('closeStore', false)
+const closeModal = (isRefresh = false) => {
+  console.log('isRefresh???/**/', isRefresh)
+  emit('closeStore', isRefresh)
 }
 
 const getPhoneList = async (value) => {
@@ -1011,7 +1086,8 @@ const addMajorIndividualFN = async () => {
     (!state.formState.name ||
       !state.formState.code ||
       !state.formState.brand.length > 0 ||
-      !state.formState.detailedAddress)
+      !state.formState.detailedAddress ||
+      !state.formState.specialtyCode)
   ) {
     //基础信息
     state.activeKey = 'basicInformation'
@@ -1061,6 +1137,7 @@ const addMajorIndividualFN = async () => {
     name: state.formState.name, //机构名称
     code: state.formState.code, //机构编码
     abbreviate: state.formState.abbreviate, //机构简称
+    specialtyCode: state.formState.specialtyCode, //专营店编码
     brandIds: state.formState.brand, //品牌
     address: state.formState.detailedAddress, //公司地址 详细地址
     contactId: state.formState.contactName, //负责人
@@ -1104,6 +1181,10 @@ const addMajorIndividualFN = async () => {
     }
   }
 
+  if (state.formState.belongTenantId) {
+    params['tenantId'] = state.formState.belongTenantId
+  }
+
   //状态0 开启 1关闭
   if (state.formState.status) {
     params['status'] = 0
@@ -1143,8 +1224,15 @@ const addMajorIndividualFN = async () => {
       // await addOrganization(params)
       switch (props.fromPage) {
         case 'business':
-          //主体管理新增门店
-          await addStore(params)
+          if (props.storeType != organizationType.store) {
+            //  非门店 判定为 子门店
+            params['storeSubtyping'] = state.formState.storeSubtyping
+            await addChildStore(params)
+          } else {
+            //主体管理新增门店
+            await addStore(params)
+          }
+
           break
         default:
           //机构管理
@@ -1169,7 +1257,7 @@ const addMajorIndividualFN = async () => {
       message.success('修改成功')
     }
 
-    closeModal()
+    closeModal(true)
   } finally {
     state.addEditLoading = false
   }
@@ -1527,6 +1615,8 @@ const getOrganizationTypeListFN = async () => {
   const res = await getOrganizationTypeList()
   //机构类型
   state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
+  //子门店类型
+  state.childStoreOptions = res.filter((item) => item.dictType === 'store_subtyping')
   //分公司类型
   state.branchCompanyTypeOptions = res.filter((item) => item.dictType === 'branch_company_type')
   //品牌
@@ -1561,25 +1651,40 @@ const getOrganizationTypeListFN = async () => {
 getOrganizationTypeListFN()
 
 const getOrganizationDetailsFN = async () => {
-  const majorIndividualRes = await getSimpleOrganizationList({ status: 0 })
-  let menuTree = []
-  // let menu = {}
-  let menu: Tree = { id: 0, name: '顶层机构', children: [] }
-  menu.children = handleTree(majorIndividualRes, 'id', 'parentId', 'children')
-  menuTree.push(menu)
-  // const menuTree = handleTree(res, 'id', 'parentId', 'children')
-  //上级机构
-  state.optionalMenuTree = menuTree
-  console.log('state.optionalMenuTree', state.optionalMenuTree)
+  if (props.useStoreList.needUseStore) {
+    //子门店 上级机构为 父级主体 底下所有门店
+    const storeListRes = await getStoreList({ tenantId: props.useStoreList.belongTenantId })
+    console.log('storeList', storeListRes)
+    state.optionalMenuTree = handleTree(storeListRes, 'id', 'parentId', 'children')
+  } else {
+    const majorIndividualRes = await getSimpleOrganizationList({ status: 0 })
+    let menuTree = []
+    // let menu = {}
+    let menu: Tree = { id: 0, name: '顶层机构', children: [] }
+    menu.children = handleTree(majorIndividualRes, 'id', 'parentId', 'children')
+    menuTree.push(menu)
+    // const menuTree = handleTree(res, 'id', 'parentId', 'children')
+    //上级机构
+    state.optionalMenuTree = menuTree
+    console.log('state.optionalMenuTree', state.optionalMenuTree)
+  }
 
   if (Object.keys(props.editRecord).length === 0) {
     //空对象判断
     state.modalType = 'add'
     state.modalTitle = '新增门店'
+    if (props.storeType != organizationType.store) {
+      //  非门店 判定为 子门店
+      state.modalTitle = '新增子门店'
+    }
     return
   } else {
     state.modalType = 'edit'
     state.modalTitle = '修改门店'
+    if (props.storeType != organizationType.store) {
+      //  非门店 判定为 子门店
+      state.modalTitle = '修改子门店'
+    }
     state.activeKey = props.tabsActiveKey
   }
 
@@ -1618,12 +1723,14 @@ const getOrganizationDetailsFN = async () => {
   //赋值 回显
   state.formState = {
     id: res.id, //机构id
+    storeSubtyping: res?.storeSubtyping, //子门店类型
     belongTenantId: res.tenantId, //上级主体
     parentId: res.parentId, //上级机构ID
     organizationType: res.organizationType, //机构类型
     name: res.name, //机构名称
     code: res.code, //机构编码
     abbreviate: res.abbreviate, //机构简称
+    specialtyCode: res?.specialtyCode, //专营店编码
     brand: res?.brandIds ? res?.brandIds : [], //品牌
     detailedAddress: res?.address, //地址 详细地址
     // contactName: res.contactName, //负责人

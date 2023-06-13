@@ -86,6 +86,11 @@ export const addStore = (data) => {
   return request.post({ url: '/system/tenant/create-tenant-store', data })
 }
 
+// 新增机构 子门店 主体管理页面
+export const addChildStore = (data) => {
+  return request.post({ url: '/system/tenant/create-tenant-child-store', data })
+}
+
 // 编辑机构 门店 主体管理页面
 export const updateStore = (data) => {
   return request.put({ url: '/system/tenant/tenant-update-store', data })

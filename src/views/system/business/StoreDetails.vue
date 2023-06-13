@@ -255,14 +255,14 @@ import {
   getOrganizationTypeList,
   getSimpleOrganizationList
 } from '@/api/system/organization'
-import { organizationType } from '@/utils/constants'
+import { organizationType, storeSubType } from '@/utils/constants'
 import { getMemberAllList } from '@/api/system/member'
 import { hasPermission, reconstructionArrayObject } from '@/utils/utils'
 import editImg from '@/assets/imgs/system/editImg.png'
 import { getSimpleTenantList, getStoreDetails } from '@/api/system/business'
 
 interface Props {
-  currentRecord?: object
+  currentRecord?: any
   fromPage?: string
 }
 
@@ -327,6 +327,10 @@ const detailsInfo = async (record) => {
   }
 
   const { relVO = {} } = res
+
+  //是否为子门店
+  const isChildStore =
+    res?.storeSubtyping === storeSubType.popStore || res?.storeSubtyping === storeSubType.cityHall
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
@@ -448,7 +452,7 @@ const detailsInfo = async (record) => {
   }
 
   //联系方式
-  const tempArrContactInformationArr = []
+  const tempArrContactInformationArr: any = []
   state.contactInformationOptions.filter((topItem) => {
     return relVO?.contact.some((item) => {
       if (topItem.value === item.contactType) {
@@ -475,6 +479,10 @@ const detailsInfo = async (record) => {
         {
           textSpan: '上级机构：',
           text: tempItem.length === 0 ? '顶层机构' : tempItem[0]?.name
+        },
+        {
+          textSpan: '专营店编码：',
+          text: res?.specialtyCode
         },
         {
           textSpan: '机构类型：',
@@ -533,11 +541,11 @@ const detailsInfo = async (record) => {
     {
       baseTitle: '基本属性',
       infoArr: [
-        {
-          textSpan: '类型：',
-          text: tempArrTypeString,
-          isFull: true
-        },
+        // {
+        //   textSpan: '类型：',
+        //   text: tempArrTypeString,
+        //   isFull: true
+        // },
         {
           textSpan: '是否有销售：',
           text: relVO?.isSale === 0 ? '是' : '否'
@@ -591,6 +599,16 @@ const detailsInfo = async (record) => {
       ]
     }
   ]
+
+  console.log('isChildStore', isChildStore)
+  if (!isChildStore) {
+    // 门店
+    state.detailsInfoSecond[0].infoArr.unshift({
+      textSpan: '类型：',
+      text: tempArrTypeString,
+      isFull: true
+    })
+  }
 
   //高级属性 试运营信息
   state.detailsInfoThree = [

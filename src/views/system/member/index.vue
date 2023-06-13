@@ -479,8 +479,7 @@
           >
             <a-input
               v-model:value="formState.namePhoneticize"
-              disabled
-              placeholder="请输入姓名拼音全拼"
+              placeholder="系统根据输入的姓名自动带出"
             />
           </a-form-item>
 
@@ -494,7 +493,7 @@
               v-model:value="formState.englishName"
               show-count
               :maxlength="20"
-              placeholder="请输入英文名"
+              placeholder="请输入成员英文名"
             />
           </a-form-item>
 
