@@ -10,7 +10,7 @@
         <el-button>重置</el-button>
       </dive>
     </div>
-    <WgTable class="table-wrap" :tableConfig="tableConfig">
+    <WgTable class="table-wrap" :data="tableData" :tableConfig="tableConfig">
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
@@ -32,7 +32,7 @@ const tableConfig = reactive({
     {
       sort: 1,
       title: '规则名称',
-      key: 'a1',
+      key: 'ruleName',
       resizable: true,
       ellipsis: true,
       disabled: false
@@ -40,19 +40,44 @@ const tableConfig = reactive({
     {
       sort: 2,
       title: '适用门店',
-      key: 'a2',
+      key: 'shopName',
       minWidth: 400,
       resizable: true,
       ellipsis: true,
       disabled: false
     },
-    { sort: 3, title: '最低跟进率', key: 'a3', resizable: true, ellipsis: true, disabled: false },
-    { sort: 4, title: '计算周期', key: 'a3', resizable: true, ellipsis: true, disabled: false },
-    { sort: 5, title: '参与岗位', key: 'a3', resizable: true, ellipsis: true, disabled: false },
-    { sort: 6, title: '创建人', key: 'a4', resizable: true, ellipsis: true, disabled: false },
-    { sort: 7, title: '创建时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
+    {
+      sort: 3,
+      title: '启用状态',
+      key: 'status',
+      resizable: true,
+      ellipsis: true,
+      disabled: false,
+      render: ({ row }) => {
+        return <el-switch v-model={row.status} active-value={1} inactive-value={0} />
+      }
+    },
+    {
+      sort: 4,
+      title: '最低跟进率',
+      key: 'minFollowRate',
+      resizable: true,
+      ellipsis: true,
+      disabled: false
+    },
+    { sort: 5, title: '计算周期', key: 'cycle', resizable: true, ellipsis: true, disabled: false },
+    { sort: 6, title: '参与岗位', key: 'a3', resizable: true, ellipsis: true, disabled: false },
+    { sort: 7, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
     {
       sort: 8,
+      title: '创建时间',
+      key: 'createTime',
+      resizable: true,
+      ellipsis: true,
+      disabled: false
+    },
+    {
+      sort: 9,
       title: '操作',
       key: 'operate',
       width: 120,
@@ -75,7 +100,7 @@ const tableConfig = reactive({
     }
   ]
 })
-
+const tableData = ref([{ status: 1 }])
 const handleCreate = () => {
   visible.value = true
 }

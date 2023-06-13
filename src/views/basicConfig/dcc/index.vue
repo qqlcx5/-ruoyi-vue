@@ -10,7 +10,7 @@
         <el-button>重置</el-button>
       </dive>
     </div>
-    <WgTable class="table-wrap" :tableConfig="tableConfig">
+    <WgTable class="table-wrap" :data="tableData" :tableConfig="tableConfig">
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
@@ -36,15 +36,32 @@ const tableConfig = reactive({
     {
       sort: 2,
       title: '适用门店',
-      key: 'a2',
+      key: 'departName',
       minWidth: 400,
       resizable: true,
       ellipsis: true,
       disabled: false
     },
-    { sort: 3, title: '启用状态', key: 'a3', resizable: true, ellipsis: true, disabled: false },
-    { sort: 4, title: '创建人', key: 'a4', resizable: true, ellipsis: true, disabled: false },
-    { sort: 5, title: '创建时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
+    {
+      sort: 3,
+      title: '启用状态',
+      key: 'status',
+      resizable: true,
+      ellipsis: true,
+      disabled: false,
+      render: ({ row }) => {
+        return <el-switch v-model={row.status} active-value={1} inactive-value={0} />
+      }
+    },
+    { sort: 4, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
+    {
+      sort: 5,
+      title: '创建时间',
+      key: 'createTime',
+      resizable: true,
+      ellipsis: true,
+      disabled: false
+    },
     {
       sort: 6,
       title: '操作',
@@ -69,6 +86,7 @@ const tableConfig = reactive({
     }
   ]
 })
+const tableData = ref([{ departName: 'zzz', status: 1 }])
 
 const handleCreate = () => {
   router.push('/clue/basic-config/edit-dcc')

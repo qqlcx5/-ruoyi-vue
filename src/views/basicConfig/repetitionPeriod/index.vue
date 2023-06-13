@@ -1,6 +1,11 @@
 <template>
   <div class="basic-config-page-container">
-    <WgTable class="table-wrap" :tableConfig="tableConfig" @selectionChange="getCheckedList">
+    <WgTable
+      class="table-wrap"
+      :data="tableData"
+      :tableConfig="tableConfig"
+      @selectionChange="getCheckedList"
+    >
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
         <el-button @click="handleDelete">删除</el-button>
@@ -21,21 +26,12 @@ import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
 
 const tableConfig = reactive({
   pageKey: 'repetitionPeriod',
+  type: 'selection',
   columns: [
-    {
-      sort: 0,
-      title: '',
-      key: 'a1',
-      type: 'selection',
-      width: 50,
-      resizable: false,
-      ellipsis: false,
-      disabled: true
-    },
     {
       sort: 1,
       title: '线索重复判断维度',
-      key: 'a1',
+      key: 'a221',
       minWidth: 150,
       resizable: true,
       ellipsis: true,
@@ -45,14 +41,28 @@ const tableConfig = reactive({
       sort: 2,
       title: '周期',
       key: 'a2',
-      minWidth: 400,
+      minWidth: 180,
+      resizable: true,
+      ellipsis: true,
+      disabled: false,
+      render: ({ row }) => {
+        return row.repetitionPeriod > 0 ? (
+          <span>线索{row.repetitionPeriod}天内不可重复</span>
+        ) : (
+          <span>线索不限时间重复</span>
+        )
+      }
+    },
+    { sort: 3, title: '状态', key: 'isEnable', resizable: true, ellipsis: true, disabled: false },
+    { sort: 4, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
+    {
+      sort: 5,
+      title: '创建时间',
+      key: 'createTime',
       resizable: true,
       ellipsis: true,
       disabled: false
     },
-    { sort: 3, title: '状态', key: 'a3', resizable: true, ellipsis: true, disabled: false },
-    { sort: 4, title: '创建人', key: 'a4', resizable: true, ellipsis: true, disabled: false },
-    { sort: 5, title: '创建时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
     { sort: 6, title: '最近操作人', key: 'a5', resizable: true, ellipsis: true, disabled: false },
     { sort: 7, title: '最近操作时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
     {
@@ -70,15 +80,13 @@ const tableConfig = reactive({
             <el-button type="primary" link onclick={() => handleEdit(row)}>
               编辑
             </el-button>
-            <el-button type="primary" link>
-              删除
-            </el-button>
           </div>
         )
       }
     }
   ]
 })
+const tableData = ref([{ repetitionPeriod: 22 }])
 
 const visible = ref<boolean>(false)
 const handleCreate = () => {

@@ -5,12 +5,13 @@
         <el-button type="primary" @click="handleCreate">新增回收计划</el-button>
       </template>
     </WgTable>
+    <CreateRecoveryPlan v-model="visible" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import WgTable from '../components/WgTable/index.vue'
-
+import CreateRecoveryPlan from '../components/CreateRecoveryPlan/index.vue'
 const tableConfig = reactive({
   pageKey: 'recoveryClue',
   columns: [
@@ -113,7 +114,7 @@ const visible = ref<boolean>(false)
 const handleCreate = () => {
   visible.value = true
 }
-const handleEdit = () => {}
+const handleEdit = (row) => {}
 const checkedList = ref<object[]>([])
 const getCheckedList = (value) => {
   checkedList.value = value
