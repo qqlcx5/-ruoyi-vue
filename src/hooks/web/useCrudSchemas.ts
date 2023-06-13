@@ -148,7 +148,7 @@ const filterSearchSchema = (crudSchema: CrudSchema[], allSchemas: AllSchemas): F
 
 // 过滤 table 结构
 const filterTableSchema = (crudSchema: CrudSchema[]): TableColumn[] => {
-  const tableColumns = treeMap<CrudSchema>(crudSchema, {
+  let tableColumns = treeMap<CrudSchema>(crudSchema, {
     conversion: (schema: CrudSchema) => {
       if (schema?.isTable !== false && schema?.table?.show !== false) {
         return {
@@ -158,6 +158,12 @@ const filterTableSchema = (crudSchema: CrudSchema[]): TableColumn[] => {
       }
     }
   })
+  tableColumns = tableColumns.map((item) => ({
+    ...item,
+    check: item.check || true,
+    disabled: item.disabled || false,
+    ...(item.field === 'action' ? { fixed: 'right' } : {})
+  }))
 
   // 第一次过滤会有 undefined 所以需要二次过滤
   return filter<TableColumn>(tableColumns as TableColumn[], (data) => {
