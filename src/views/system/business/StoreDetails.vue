@@ -14,7 +14,7 @@
     <div v-for="(item, index) in state.detailsInfo" :key="`info${index}`" class="details-content">
       <div class="flex-space">
         <div class="title-content"><div class="blue-line"></div>{{ item.baseTitle }}</div>
-        <div class="details-edit" @click="edit()"
+        <div class="details-edit" @click="edit()" v-hasPermi="[`${state.editPermission}`]"
           ><img :src="editImg" alt="" class="edit-Img" />修改</div
         >
       </div>
@@ -257,7 +257,7 @@ import {
 } from '@/api/system/organization'
 import { organizationType } from '@/utils/constants'
 import { getMemberAllList } from '@/api/system/member'
-import { reconstructionArrayObject } from '@/utils/utils'
+import { hasPermission, reconstructionArrayObject } from '@/utils/utils'
 import editImg from '@/assets/imgs/system/editImg.png'
 import { getSimpleTenantList, getStoreDetails } from '@/api/system/business'
 
@@ -293,7 +293,9 @@ const state: any = reactive({
   memberOptions: [], //新增修改 负责人list
   isShowDialog: false,
   previewTitle: '',
-  previewUrl: ''
+  previewUrl: '',
+  editPermission:
+    props.fromPage === 'business' ? 'system:tenant:update' : 'system:organization:update-store'
 })
 
 const previewVisible = ref(false)

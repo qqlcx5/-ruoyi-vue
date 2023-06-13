@@ -4,10 +4,10 @@ NODE_ENV=production
 VITE_DEV=false
 
 # 请求路径
-VITE_BASE_URL='http://192.168.6.169:48080'
+VITE_BASE_URL='http://gateway-server:48080'
 
 # 上传路径
-VITE_UPLOAD_URL='http://192.168.6.169:48080/admin-api/infra/file/upload'
+VITE_UPLOAD_URL='http://gateway-server:48080/admin-api/infra/file/upload'
 
 # 文件预览路径
 VITE_PREVIEW_URL='http://192.168.6.168:8012/onlinePreview'

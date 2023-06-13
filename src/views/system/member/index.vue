@@ -167,7 +167,13 @@
             </div>
 
             <div class="search-btn-content">
-              <a-button type="primary" html-type="submit" @click="getList(1)">查询</a-button>
+              <a-button
+                type="primary"
+                html-type="submit"
+                @click="getList(1)"
+                v-hasPermi="['system:user:list']"
+                >查询</a-button
+              >
               <a-button @click="resetQuery">重置</a-button>
             </div>
           </div>
@@ -179,7 +185,7 @@
         <div class="card-content">
           <!--  左侧按钮  -->
           <div class="button-content">
-            <a-button type="primary" @click="openModal()">
+            <a-button type="primary" @click="openModal()" v-hasPermi="['system:user:create']">
               <template #icon>
                 <Icon icon="svg-icon:add" class="btn-icon" :size="10" />
               </template>
@@ -200,11 +206,13 @@
             <a-button
               :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
               @click="batchChangePost()"
+              v-hasPermi="['system:user:post-adjustment']"
               >批量转岗
             </a-button>
             <a-button
               :disabled="state.selectedRowKeys && state.selectedRowKeys.length === 0"
               @click="batchAssignUserRole()"
+              v-hasPermi="['system:permission:assign-user-role-batch']"
               >批量设角色
             </a-button>
           </div>
@@ -347,25 +355,43 @@
               <a-switch
                 v-model:checked="record.statusSwitch"
                 @change="(value) => setTableStatusChangeInfo(value, record)"
-                :disabled="record.userStatus === 1"
+                :disabled="record.userStatus === 1 || !state.organizationHasPermission"
               />
             </template>
             <!--  操作   -->
             <template v-if="column?.key === 'operation'">
               <div class="operation-content">
-                <div class="text-color margin-right-5" @click="edit(record)">修改</div>
-                <div class="text-color margin-right-5" @click="assignPermission(record)"
+                <div
+                  class="text-color margin-right-5"
+                  @click="edit(record)"
+                  v-hasPermi="['system:user:update']"
+                  >修改</div
+                >
+                <div
+                  class="text-color margin-right-5"
+                  @click="assignPermission(record)"
+                  v-hasPermi="['system:permission:assign-user-role']"
                   >分配角色
                 </div>
-                <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+                <div
+                  class="text-color margin-right-5"
+                  @click="detailsInfo(record)"
+                  v-hasPermi="['system:user:query']"
+                  >详情</div
+                >
                 <a-popover placement="bottom">
                   <template #content>
                     <div
                       class="text-color margin-right-5"
                       @click="setTableStatusChangeInfo(false, record, 'delete')"
+                      v-hasPermi="['system:user:delete']"
                       >删除
                     </div>
-                    <div class="text-color margin-right-5" @click="resetPassword(record)">
+                    <div
+                      class="text-color margin-right-5"
+                      @click="resetPassword(record)"
+                      v-hasPermi="['system:user:update-password']"
+                    >
                       重置密码
                     </div>
                   </template>
@@ -397,8 +423,8 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'930px'"
-    :bodyStyle="{ height: '600px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
+    :width="'950px'"
+    :bodyStyle="{ height: '600px', margin: 'auto', padding: '14px', overflow: 'auto' }"
   >
     <div class="base_info_content">
       <a-form
@@ -438,6 +464,37 @@
               show-count
               :maxlength="20"
               placeholder="请输入成员真实姓名"
+              @change="changeToPinYin"
+            />
+          </a-form-item>
+
+          <a-form-item
+            :label="`姓名拼音全拼`"
+            name="namePhoneticize"
+            :rules="[
+              { required: true, message: `姓名拼音全拼不能为空` },
+              { validator: englishValidator }
+            ]"
+            class="width-50"
+          >
+            <a-input
+              v-model:value="formState.namePhoneticize"
+              disabled
+              placeholder="请输入姓名拼音全拼"
+            />
+          </a-form-item>
+
+          <a-form-item
+            :label="`英文名`"
+            name="englishName"
+            class="width-50"
+            :rules="[{ validator: englishValidator }]"
+          >
+            <a-input
+              v-model:value="formState.englishName"
+              show-count
+              :maxlength="20"
+              placeholder="请输入英文名"
             />
           </a-form-item>
 
@@ -618,6 +675,16 @@
                   </div>
                 </template>
 
+                <template v-if="column.key === 'existWXWork'">
+                  <div>
+                    <a-switch
+                      v-model:checked="record.existWXWork"
+                      checked-children="开启"
+                      un-checked-children="关闭"
+                    />
+                  </div>
+                </template>
+
                 <!--  操作   -->
                 <template v-if="column?.key === 'operation'">
                   <div class="operation-content">
@@ -636,32 +703,37 @@
 
           <a-form-item label="成员头像" name="legalIdentityUrl" class="width-100">
             <div style="height: 131px">
-              <a-upload
-                v-model:file-list="state.legalPersonListUrl"
-                :action="updateUrl + '?updateSupport=' + updateSupport"
-                list-type="picture-card"
-                @preview="handlePreview"
-                accept=".jpg, .png, .gif"
-                class="avatar-uploader"
-                :show-upload-list="true"
-                :headers="uploadHeaders"
-                :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"
-                @change="
-                  (file, fileList) => {
-                    handleChange(file, fileList, 'legalPerson')
-                  }
-                "
-                @remove="
-                  (file) => {
-                    removeImg(file, 'legalPerson')
-                  }
-                "
-              >
-                <div v-if="state.legalPersonListUrl.length < 1">
-                  <Icon icon="svg-icon:add-upload" :size="15" />
-                  <div style="margin-top: 8px">上传照片</div>
-                </div>
-              </a-upload>
+              <UploadImg
+                v-model:modelValue="state.legalPersonUrlSuccess"
+                width="72px"
+                height="100px"
+              />
+              <!--              <a-upload-->
+              <!--                v-model:file-list="state.legalPersonListUrl"-->
+              <!--                :action="updateUrl + '?updateSupport=' + updateSupport"-->
+              <!--                list-type="picture-card"-->
+              <!--                @preview="handlePreview"-->
+              <!--                accept=".jpg, .png, .gif"-->
+              <!--                class="avatar-uploader"-->
+              <!--                :show-upload-list="true"-->
+              <!--                :headers="uploadHeaders"-->
+              <!--                :before-upload="(file, fileList) => beforeUpload(file, fileList, 'legalPerson')"-->
+              <!--                @change="-->
+              <!--                  (file, fileList) => {-->
+              <!--                    handleChange(file, fileList, 'legalPerson')-->
+              <!--                  }-->
+              <!--                "-->
+              <!--                @remove="-->
+              <!--                  (file) => {-->
+              <!--                    removeImg(file, 'legalPerson')-->
+              <!--                  }-->
+              <!--                "-->
+              <!--              >-->
+              <!--                <div v-if="state.legalPersonListUrl.length < 1">-->
+              <!--                  <Icon icon="svg-icon:add-upload" :size="15" />-->
+              <!--                  <div style="margin-top: 8px">上传照片</div>-->
+              <!--                </div>-->
+              <!--              </a-upload>-->
 
               <div class="upload-text"> 请上传成员的头像，支持png/jpg格式。</div>
             </div>
@@ -684,7 +756,7 @@
               <template v-if="column.key === 'department'">
                 <div class="table_heard">
                   <span style="color: red">* </span>
-                  <span>所属部门</span>
+                  <span>所属公司/门店/部门</span>
                 </div>
               </template>
 
@@ -762,7 +834,9 @@
               <!--  操作   -->
               <template v-if="column?.key === 'operation'">
                 <div class="operation-content">
-                  <div class="text-color margin-right-5" @click="addPostColumns(index)">增加</div>
+                  <div class="text-color margin-right-5" @click="addPostColumns(index)"
+                    >增加兼岗</div
+                  >
                   <div
                     class="text-color margin-right-5"
                     @click="deletePostColumns(index)"
@@ -813,8 +887,8 @@
             <a-input v-model:value="formState.email" placeholder="请输入电子邮箱" />
           </a-form-item>
 
-          <a-form-item :label="`微信号`" class="width-50">
-            <a-input v-model:value="formState.wechat" placeholder="请输入微信号" />
+          <a-form-item :label="`个人微信号`" class="width-50">
+            <a-input v-model:value="formState.wechat" placeholder="请输入个人微信号" />
           </a-form-item>
         </div>
 
@@ -970,7 +1044,11 @@
           <div class="blue-line"></div>
           {{ item.baseTitle }}
         </div>
-        <div class="details-edit" @click="edit(state.detailsRecord, true)" v-if="item?.needEdit"
+        <div
+          class="details-edit"
+          @click="edit(state.detailsRecord, true)"
+          v-if="item?.needEdit"
+          v-hasPermi="['system:user:update']"
           ><img :src="editImg" alt="" class="edit-Img" />修改
         </div>
       </div>
@@ -1171,6 +1249,7 @@ import {
   filterTree,
   getAllIds,
   getColumns,
+  hasPermission,
   reconstructedTreeData,
   reconstructionArrayObject
 } from '@/utils/utils'
@@ -1205,6 +1284,7 @@ import BatchChangePostModal from './components/BatchChangePostModal.vue'
 import BatchAssignUserRoleModal from './components/BatchAssignUserRoleModal.vue'
 import ConfigDetailDrawer from '@/views/system/role/component/ConfigDetailDrawer.vue'
 import { cloneDeep } from 'lodash-es'
+import Pinyin from 'js-pinyin'
 
 const { wsCache } = useCache()
 
@@ -1236,6 +1316,8 @@ const queryParams: any = reactive({
 const formState: any = reactive({
   memberNum: null, //成员工号
   memberName: null, //成员姓名
+  namePhoneticize: null, //姓名拼音全拼
+  englishName: null, //英文名称
   sex: '1', //性别
   entryTime: dayjs(), //入职时间
   memberType: 'trial_members', //人员类型
@@ -1244,7 +1326,7 @@ const formState: any = reactive({
   birthDay: null, //出生日期
   qqNum: null, //QQ
   email: null, //电子邮箱
-  wechat: null, //微信号
+  wechat: null, //个人微信号
   companyAddress: [], //公司地址
   detailedAddress: '', //公司地址 详细地址
   cascadeInfo: [] //选中的省市区全部信息
@@ -1343,9 +1425,25 @@ const contactMailRulesValidator = (rule, value) => {
   })
 }
 
+//限制英文
+const englishValidator = (rule, value) => {
+  return new Promise<void>((resolve, reject) => {
+    if (value) {
+      const regExp = /^[a-zA-Z]+$/
+      if (!regExp.test(value)) {
+        reject('只能输入字母')
+      } else {
+        resolve()
+      }
+    } else {
+      resolve()
+    }
+  })
+}
+
 const layout = {
   labelCol: { span: 6 },
-  wrapperCol: { span: 14 }
+  wrapperCol: { span: 18 }
 }
 
 let updateUrl = import.meta.env.VITE_UPLOAD_URL
@@ -1362,6 +1460,7 @@ const imageUrl = ref<string>('')
 
 //TODO 有空补吧
 const state: any = reactive({
+  organizationHasPermission: false, //table 状态switch 是否禁用 权限关禁用
   postTypeOptions: [], //岗位类型Options
   postTypeSpecifyOptions: [], //岗位类型 对应的岗位Options
   barnOptions: [], //所属品牌Options
@@ -1871,6 +1970,8 @@ const resetQuery = () => {
   //重置不包括左侧部门
   // queryParams.organization = null //机构 左侧tree
   queryParams.memberName = null //成员姓名
+  queryParams.namePhoneticize = null //姓名拼音全拼
+  queryParams.englishName = null //英文名称
   queryParams.memberPhone = null //联系电话
   queryParams.postType = null //岗位类型
   queryParams.partPost = null //是否有兼岗 主岗 兼岗
@@ -1912,6 +2013,8 @@ const closeModal = () => {
 
   formState.memberNum = null //成员工号
   formState.memberName = null //成员姓名
+  formState.namePhoneticize = null //姓名拼音全拼
+  formState.englishName = null //英文名称
   formState.sex = '1' //性别
   formState.entryTime = dayjs() //入职时间
   formState.memberType = 'trial_members' //人员类型
@@ -1921,7 +2024,7 @@ const closeModal = () => {
   formState.departureTime = null //离职日期
   formState.qqNum = null //QQ
   formState.email = null //电子邮箱
-  formState.wechat = null //微信号
+  formState.wechat = null //个人微信号
   formState.companyAddress = [] //公司地址
   formState.cascadeInfo = [] //选中的省市区全部信息
   formState.detailedAddress = '' //公司地址 详细地址
@@ -1938,7 +2041,8 @@ const closeModal = () => {
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: true
+      isService: true,
+      existWXWork: true
     }
   ]
 
@@ -1998,7 +2102,8 @@ const edit = async (record, isCloseDetails = false) => {
       phoneType: item.phoneCategory,
       phoneNum: item.phone,
       useType: item.usageType,
-      isService: item.recordEnable
+      isService: item.recordEnable,
+      existWXWork: item.existWXWork
     })
   })
 
@@ -2024,7 +2129,8 @@ const edit = async (record, isCloseDetails = false) => {
       phoneType: '',
       phoneNum: '',
       useType: '',
-      isService: true
+      isService: true,
+      existWXWork: true
     })
   }
 
@@ -2044,6 +2150,8 @@ const edit = async (record, isCloseDetails = false) => {
   //赋值 回显
   formState.memberNum = record.username //成员工号
   formState.memberName = record.nickname ///成员姓名
+  formState.namePhoneticize = res?.namePhoneticize //姓名拼音全拼
+  formState.englishName = res?.englishName //英文名称
   formState.sex = String(record.sex) //性别
   formState.entryTime = record.onboardingTime ? dayjs(record.onboardingTime) : dayjs() //入职时间
   formState.memberType = String(record.userType) //人员类型
@@ -2055,7 +2163,7 @@ const edit = async (record, isCloseDetails = false) => {
   formState.departureTime = res.departureTime ? dayjs(res.departureTime) : null //离职日期
   formState.qqNum = record.qq //QQ
   formState.email = record.email //电子邮箱
-  formState.wechat = record.wechat //微信号
+  formState.wechat = record.wechat //个人微信号
   formState.detailedAddress = record.address //公司地址 详细地址
 
   if (record.avatar) {
@@ -2143,6 +2251,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
+        existWXWork: item.existWXWork, //是否开通企微
         userId: formState.id,
         id: item.id
       })
@@ -2151,7 +2260,8 @@ const addMajorIndividualFN = async () => {
         phoneCategory: item.phoneType, //号码类别
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
-        recordEnable: item.isService //是否开通云录音
+        recordEnable: item.isService, //是否开通云录音
+        existWXWork: item.existWXWork //是否开通企微
       })
     }
 
@@ -2208,6 +2318,8 @@ const addMajorIndividualFN = async () => {
   let params = {
     username: formState.memberNum, //成员工号
     nickname: formState.memberName, //成员姓名
+    namePhoneticize: formState.namePhoneticize, //姓名拼音全拼
+    englishName: formState.englishName, //英文名称
     sex: formState.sex, //性别
     onboardingTime: formState.entryTime?.format('YYYY-MM-DD'), //入职时间
     userType: formState.memberType, //人员类型
@@ -2219,7 +2331,7 @@ const addMajorIndividualFN = async () => {
     birthDay: formState.birthDay?.format('YYYY-MM-DD'), //出生日期
     qq: formState.qqNum, //QQ
     email: formState.email, //电子邮箱
-    wechat: formState.wechat, //微信号
+    wechat: formState.wechat, //个人微信号
     address: formState.detailedAddress //公司地址 详细地址
   }
 
@@ -2617,7 +2729,8 @@ const detailsInfo = async (record) => {
       phoneType: item?.phoneCategory === '1' ? '手机' : '座机',
       phoneNum: item?.phone,
       useType: item?.usageType === '1' ? '私人' : '公司',
-      isService: item?.recordEnable ? '是' : '否'
+      isService: item?.recordEnable ? '是' : '否',
+      existWXWork: item?.existWXWork ? '已开通' : '未开通' //是否开通企微
     })
   })
 
@@ -2801,7 +2914,7 @@ const detailsInfo = async (record) => {
     },
     {
       title: '号码类别',
-      width: 130,
+      width: 80,
       dataIndex: 'phoneType',
       key: 'phoneType',
       resizable: true,
@@ -2821,7 +2934,7 @@ const detailsInfo = async (record) => {
     },
     {
       title: '使用类型',
-      width: 130,
+      width: 80,
       dataIndex: 'useType',
       key: 'useType',
       resizable: true,
@@ -2838,6 +2951,16 @@ const detailsInfo = async (record) => {
       ellipsis: true,
       disabled: true,
       sort: 4
+    },
+    {
+      title: '是否开通企微',
+      width: 100,
+      dataIndex: 'existWXWork',
+      key: 'existWXWork',
+      resizable: true,
+      ellipsis: true,
+      disabled: true,
+      sort: 5
     }
   ]
 
@@ -2909,11 +3032,11 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '姓名拼音全拼：',
-          text: ''
+          text: res?.namePhoneticize
         },
         {
           textSpan: '英文名：',
-          text: ''
+          text: res?.englishName
         },
         {
           textSpan: '性别：',
@@ -2989,7 +3112,7 @@ const detailsInfo = async (record) => {
           text: record.qq
         },
         {
-          textSpan: '微信号：',
+          textSpan: '个人微信号：',
           text: record.wechat
         },
         {
@@ -3473,6 +3596,16 @@ const addEditColumns = [
     sort: 4
   },
   {
+    title: '是否开通企微',
+    width: 100,
+    dataIndex: 'existWXWork',
+    key: 'existWXWork',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 5
+  },
+  {
     title: '操作',
     width: 80,
     dataIndex: 'operation',
@@ -3507,7 +3640,8 @@ const addColumns = (index) => {
     phoneType: '1',
     phoneNum: '',
     useType: '1',
-    isService: true
+    isService: true,
+    existWXWork: true
   }
 
   addDataSource.addEditTableData.splice(index + 1, 0, tempObj)
@@ -3582,7 +3716,7 @@ const addEditPostColumns = [
   },
   {
     title: '操作',
-    width: 80,
+    width: 120,
     dataIndex: 'operation',
     key: 'operation',
     ellipsis: true,
@@ -3695,6 +3829,11 @@ const clearPhoneNum = (record) => {
   record.phoneNum = ''
 }
 
+//转拼音
+const changeToPinYin = () => {
+  formState.namePhoneticize = Pinyin.getFullChars(formState.memberName)
+}
+
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
@@ -3722,6 +3861,8 @@ const batchAssignUserRole = (): void => {
   batchAssignUserRoleModalRef.value.openModal(state.selectedRowKeys)
 }
 // 批量设角色
+
+state.organizationHasPermission = hasPermission('system:user:update-status')
 
 onMounted(async () => {
   state.organizationList = await getOrganizationListFN()

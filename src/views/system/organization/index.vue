@@ -25,7 +25,13 @@
             :options="state.statusOptions"
           />
         </a-form-item>
-        <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
+        <a-button
+          type="primary"
+          html-type="submit"
+          @click="getList()"
+          v-hasPermi="['system:organization:query']"
+          >查询</a-button
+        >
         <a-button @click="resetQuery">重置</a-button>
       </a-form>
     </ContentWrap>
@@ -44,7 +50,7 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button type="primary" @click="openModal()">
+          <a-button type="primary" @click="openModal()" v-hasPermi="['system:organization:create']">
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -145,25 +151,215 @@
               record.staffCount
             }}</div>
           </template>
-
-          <!--  可用名额   -->
-          <template v-if="column?.key === 'usableAmount'">
-            <div class="text-color">{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
-          </template>
-          <!--  有效期   -->
-          <template v-if="column?.key === 'validityPeriod'">
-            <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
-          </template>
           <!--  状态   -->
           <template v-if="column?.key === 'statusSwitch'">
+            <!--  门店全部禁用  其他机构依据权限禁用且顶层机构禁用 -->
             <a-switch
-              :disabled="record.level === 1 || record.organizationType === '门店'"
+              v-if="record.organizationType === organizationType.store"
+              :disabled="true"
               v-model:checked="record.statusSwitch"
               @change="(value) => setTableStatusChangeInfo(value, record)"
             />
+            <a-switch
+              v-else
+              :disabled="record.level === 1 || !state.organizationHasPermission"
+              v-model:checked="record.statusSwitch"
+              @change="(value) => setTableStatusChangeInfo(value, record)"
+            />
+            <!--            <a-switch-->
+            <!--              :disabled="record.level === 1 || record.organizationType === organizationType.store"-->
+            <!--              v-model:checked="record.statusSwitch"-->
+            <!--              @change="(value) => setTableStatusChangeInfo(value, record)"-->
+            <!--            />-->
           </template>
           <!--  操作   -->
           <template v-if="column?.key === 'operation'">
+            <!--  TODO 这几个方法后面有空改一下 - - 之前合一起 通过type判断  -->
+            <!--  这里需要根据类型 状态(状态/转移状态) 来控制 拆开吧  这里一直在叠加跟变更需求 不合一起写了 麻烦  -->
+            <!--  公司  -->
+            <div
+              class="operation-content"
+              v-if="record.organizationType === organizationType.company"
+            >
+              <XTextButton
+                title="修改"
+                v-hasPermi="['system:organization:update']"
+                @click="edit(record)"
+              />
+              <XTextButton
+                title="新增子项"
+                v-hasPermi="['system:organization:create-child']"
+                :disabled="record?.statusSwitch === false"
+                @click="openModal(record, record?.statusSwitch === false)"
+              />
+              <XTextButton
+                title="详情"
+                v-hasPermi="['system:organization:detail']"
+                @click="detailsInfo(record)"
+              />
+            </div>
+            <!--  分公司  -->
+            <div
+              class="operation-content"
+              v-if="record.organizationType === organizationType.branchCompany"
+            >
+              <XTextButton
+                title="修改"
+                v-hasPermi="['system:organization:update']"
+                @click="edit(record)"
+              />
+              <XTextButton
+                title="新增子项"
+                v-hasPermi="['system:organization:create-child']"
+                :disabled="record?.statusSwitch === false"
+                @click="openModal(record, record?.statusSwitch === false)"
+              />
+              <XTextButton
+                title="设置属性"
+                v-hasPermi="['system:organization:set-attribute']"
+                :disabled="record?.statusSwitch === false"
+                @click="
+                  assignPermission(
+                    record,
+                    false,
+                    record?.statusSwitch === false,
+                    'underlyingAttribute'
+                  )
+                "
+              />
+
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <div>
+                    <XTextButton
+                      title="详情"
+                      v-hasPermi="['system:organization:detail']"
+                      @click="detailsInfo(record)"
+                    />
+                  </div>
+                  <div>
+                    <XTextButton
+                      title="删除"
+                      v-hasPermi="['system:organization:delete']"
+                      @click="
+                        setTableStatusChangeInfo(
+                          false,
+                          record,
+                          'delete',
+                          record?.organizationType === organizationType.store
+                        )
+                      "
+                    />
+                  </div>
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+            <!--  门店 -->
+            <div
+              class="operation-content"
+              v-if="record.organizationType === organizationType.store"
+            >
+              <XTextButton
+                title="修改"
+                v-hasPermi="['system:organization:update-store']"
+                :disabled="record?.statusSwitch === false"
+                @click="edit(record)"
+              />
+              <XTextButton
+                title="新增子项"
+                v-hasPermi="['system:organization:create-child']"
+                :disabled="record?.statusSwitch === false"
+                @click="openModal(record, record?.statusSwitch === false)"
+              />
+              <XTextButton
+                title="设置属性"
+                v-hasPermi="['system:organization:set-store-attribute']"
+                :disabled="record?.statusSwitch === false"
+                @click="
+                  assignPermission(
+                    record,
+                    false,
+                    record?.statusSwitch === false,
+                    'underlyingAttribute'
+                  )
+                "
+              />
+
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <div>
+                    <XTextButton
+                      title="详情"
+                      v-hasPermi="['system:organization:store-detail']"
+                      @click="detailsInfo(record)"
+                    />
+                  </div>
+                  <div>
+                    <XTextButton
+                      title="删除"
+                      v-hasPermi="['system:organization:store-delete']"
+                      v-if="record?.statusSwitch === false"
+                      @click="
+                        setTableStatusChangeInfo(
+                          false,
+                          record,
+                          'delete',
+                          record?.organizationType === organizationType.store
+                        )
+                      "
+                    />
+                  </div>
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+
+            <!--  部门   -->
+            <div
+              class="operation-content"
+              v-if="record.organizationType === organizationType.department"
+            >
+              <XTextButton
+                title="修改"
+                v-hasPermi="['system:organization:update']"
+                @click="edit(record)"
+              />
+              <XTextButton
+                title="新增子项"
+                v-hasPermi="['system:organization:create-child']"
+                :disabled="record?.statusSwitch === false"
+                @click="openModal(record, record?.statusSwitch === false)"
+              />
+              <XTextButton
+                title="详情"
+                v-hasPermi="['system:organization:detail']"
+                @click="detailsInfo(record)"
+              />
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <div>
+                    <XTextButton
+                      title="删除"
+                      v-hasPermi="['system:organization:delete']"
+                      @click="
+                        setTableStatusChangeInfo(
+                          false,
+                          record,
+                          'delete',
+                          record?.organizationType === organizationType.store
+                        )
+                      "
+                    />
+                  </div>
+                </template>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </a-popover>
+            </div>
+          </template>
+
+          <!--  操作   -->
+          <template v-if="false && column?.key === 'operation'">
             <div class="operation-content" v-if="record.migrated !== 1">
               <div class="text-color margin-right-5" @click="edit(record)">修改</div>
               <div
@@ -1161,7 +1357,8 @@ import {
   reconstructedTreeData,
   getColumns,
   reconstructionArrayObject,
-  fullScreen
+  fullScreen,
+  hasPermission
 } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -1364,6 +1561,7 @@ const imageUrl = ref<string>('')
 
 //TODO 有空补吧
 const state: any = reactive({
+  organizationHasPermission: false, //table 状态switch 是否禁用 权限关禁用
   addEditBtn: '下一步', //新增 修改 确认 bnt text
   record: {}, //表格状态修改时存的整条数据 详细共用(修改)
   messageContactMobile: '18888888888', //短信验证手机号
@@ -1485,7 +1683,7 @@ const state: any = reactive({
     'code',
     'contactName',
     'employeesNumber',
-    'organizationType',
+    'organizationTypeText',
     'sort',
     'statusSwitch',
     'operation'
@@ -1583,8 +1781,8 @@ const allColumns = [
   {
     title: '机构类型',
     width: 100,
-    dataIndex: 'organizationType',
-    key: 'organizationType',
+    dataIndex: 'organizationTypeText',
+    key: 'organizationTypeText',
     resizable: true,
     ellipsis: true,
     sort: 5
@@ -1699,6 +1897,20 @@ const getList = async (isRefresh = false) => {
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
       item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD HH:mm:ss')
       //item?.migrated 0没迁移 1迁移
+      switch (item.organizationType) {
+        case organizationType.store:
+          item.organizationTypeText = organizationType.storeText
+          break
+        case organizationType.department:
+          item.organizationTypeText = organizationType.departmentText
+          break
+        case organizationType.branchCompany:
+          item.organizationTypeText = organizationType.branchCompanyText
+          break
+        case organizationType.company:
+          item.organizationTypeText = organizationType.companyText
+          break
+      }
     })
 
     state.tableDataArr = res
@@ -2979,6 +3191,8 @@ const jumpToMember = (record) => {
   })
 }
 
+state.organizationHasPermission = hasPermission('system:organization:update-status')
+
 watch(
   () => state.columns,
   (columns) => {
@@ -3071,6 +3285,10 @@ watch(
 .margin-right-5 {
   margin-right: 5px;
   cursor: pointer;
+}
+
+.margin-left-14 {
+  margin-left: 14px;
 }
 
 //设置属性弹窗

@@ -24,7 +24,13 @@
           />
         </a-form-item>
         <!-- TODO:权限-->
-        <a-button type="primary" html-type="submit" @click="getList()">查询</a-button>
+        <a-button
+          type="primary"
+          html-type="submit"
+          @click="getList()"
+          v-hasPermi="['system:tenant-menu:query']"
+          >查询</a-button
+        >
         <a-button @click="resetQuery">重置</a-button>
       </a-form>
     </ContentWrap>
@@ -151,7 +157,12 @@
               <div class="text-color margin-right-5" @click="openModal(record)" v-if="false"
                 >新增子项</div
               >
-              <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+              <div
+                class="text-color margin-right-5"
+                @click="detailsInfo(record)"
+                v-hasPermi="['system:tenant-menu:query-detail']"
+                >详情</div
+              >
               <a-popover placement="bottom" v-if="false">
                 <template #content>
                   <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
@@ -289,6 +300,7 @@
         >
           <a-switch
             v-model:checked="state.formState.statusSwitch"
+            :disabled="!state.menuStatusHasPermission"
             checked-children="开启"
             un-checked-children="关闭"
           />
@@ -302,6 +314,7 @@
         >
           <a-switch
             v-model:checked="state.formState.visible"
+            :disabled="!state.menuVisibleHasPermission"
             checked-children="开启"
             un-checked-children="关闭"
           />
@@ -615,9 +628,15 @@ import warningImg from '@/assets/imgs/system/warning.png'
 import editImg from '@/assets/imgs/system/editImg.png'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import dayjs from 'dayjs'
-import { getColumns, reconstructionArrayObject, toTreeCount, fullScreen } from '@/utils/utils'
+import {
+  getColumns,
+  reconstructionArrayObject,
+  toTreeCount,
+  fullScreen,
+  hasPermission
+} from '@/utils/utils'
 import { getPostList, getRolesList } from '@/api/system/member'
-import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
+import { getMemberNumList, getMemberNumRoleList, updateMenuVisibleStatus } from '@/api/system/menu'
 import { cloneDeep } from 'lodash-es'
 import { getOrganizationTypeList } from '@/api/system/organization'
 
@@ -764,6 +783,8 @@ const allColumns = [
 
 //TODO 有空补吧
 const state: any = reactive({
+  menuStatusHasPermission: false, //table 状态switch 是否禁用 权限关禁用  菜单状态
+  menuVisibleHasPermission: false, //table 状态switch 是否禁用 权限关禁用  显示状态
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
   treeIconIndex: 0,
@@ -1190,7 +1211,8 @@ const tableVisibleChange = async (value, record) => {
   }
 
   try {
-    await TenantMenuApi.updateMenuStatus(params)
+    // await TenantMenuApi.updateMenuStatus(params)
+    await updateMenuVisibleStatus(params)
     message.success('修改显示状态成功')
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
@@ -1627,6 +1649,11 @@ const getAllType = async () => {
   //适用主体类型
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
 }
+
+//菜单状态
+state.menuStatusHasPermission = hasPermission('system:tenant-menu:update:status')
+//显示状态
+state.menuVisibleHasPermission = hasPermission('system:tenant-menu:update:visible')
 
 watch(
   () => state.columns,

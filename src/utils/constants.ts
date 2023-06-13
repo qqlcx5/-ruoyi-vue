@@ -219,7 +219,20 @@ export const PayRefundStatusEnum = {
 
 export const organizationType = {
   store: 'store', //门店
-  branchCompany: 'branchCompany' //分公司
+  storeText: '门店',
+  department: 'department', //部门
+  departmentText: '部门',
+  branchCompany: 'branchCompany', //分公司
+  branchCompanyText: '分公司',
+  company: 'company', //公司
+  companyText: '公司'
+}
+
+export const majorIndividualType = {
+  dealer: 'dealer', //经销商
+  dealerText: '经销商',
+  manufacturer: 'manufacturer', //厂家
+  manufacturerText: '厂家'
 }
 
 //定制列缓存 页面pageKey
