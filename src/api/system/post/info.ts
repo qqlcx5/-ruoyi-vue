@@ -71,6 +71,11 @@ export const updatePostApi = async (data: PostInfoVO) => {
   return await request.put({ url: '/system/post/update', data })
 }
 
+// 修改岗位状态
+export const updateStatusApi = async (data) => {
+  return await request.put({ url: '/system/post/update-status', data })
+}
+
 // 删除岗位
 export const deletePostApi = async (id: number) => {
   return await request.delete({ url: '/system/post/delete?id=' + id })

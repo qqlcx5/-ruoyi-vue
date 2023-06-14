@@ -394,7 +394,7 @@ const postInfoStatusChange = async (row) => {
         }
       )
       .then(async () => {
-        const updateStatus = await PostInfoApi.updatePostApi({ ...row })
+        const updateStatus = await PostInfoApi.updateStatusApi({ id: row.id, status: row.status })
         await postTypeGet()
         if (updateStatus) {
           message.success(text + '成功')
