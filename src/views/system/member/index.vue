@@ -424,9 +424,9 @@
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
     :width="'950px'"
-    :bodyStyle="{ height: '600px', margin: 'auto', padding: '14px', overflow: 'auto' }"
+    :bodyStyle="{ padding: 0 }"
   >
-    <div class="base_info_content">
+    <div class="base_info_content" @scroll="handleModalScroll">
       <a-form
         :model="formState"
         ref="formRef"
@@ -516,6 +516,7 @@
             class="width-50"
           >
             <a-date-picker
+              ref="entryRef"
               placeholder="请选择时间"
               v-model:value="formState.entryTime"
               class="width-100"
@@ -3270,6 +3271,13 @@ const handlePreview = async (file) => {
   previewTitle.value = file.name || file.url.substring(file.url.lastIndexOf('/') + 1)
 }
 
+// 成立日期组件
+const entryRef = ref()
+/** 弹窗滚动事件 */
+const handleModalScroll = () => {
+  entryRef.value.blur()
+}
+
 //判断上传图片的宽高
 const checkImageWH = (file, width, height) => {
   return new Promise((resolve, reject) => {
@@ -4123,6 +4131,10 @@ onMounted(async () => {
   width: 100%;
   display: flex;
   flex-direction: column;
+  height: 600px;
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
 }
 
 //上传
