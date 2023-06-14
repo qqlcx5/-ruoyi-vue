@@ -774,7 +774,7 @@
                     v-model:value="record.department"
                     style="width: 100%"
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                    placeholder="请选择"
+                    placeholder="请选择公司/门店/部门"
                     :tree-data="state.organizationIDOptions"
                     :field-names="{
                       children: 'children',
@@ -792,7 +792,7 @@
                     style="width: 100%"
                     show-search
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                    placeholder="请选择"
+                    placeholder="请选择岗位"
                     :tree-data="state.postListOptions"
                     treeNodeFilterProp="label"
                   />
@@ -805,7 +805,7 @@
                     v-model:value="record.brand"
                     style="width: 100%"
                     :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                    placeholder="请选择"
+                    placeholder="请选择所属品牌"
                     multiple
                     :tree-data="state.barnOptions"
                   />
@@ -1163,6 +1163,7 @@
     :title="state.resetPasswordTitle"
     :closable="state.closable"
     :footer="null"
+    @cancel="closePasswordModal"
     wrapClassName="reset-PassWord"
     :width="`${state.resetModalStyle.width}px`"
     :bodyStyle="{
@@ -1173,10 +1174,14 @@
       overflow: 'auto'
     }"
   >
-    <div v-if="!state.isResetPasswordSuccessMark" class="reset-PassWord-tip">
+    <!--  这里分开写吧 其实可以合一起  -->
+    <div
+      v-if="state.isResetPasswordSuccessMark === operationPasswordType.resetPassWord"
+      class="reset-PassWord-tip"
+    >
       重置密码后不可恢复，请谨慎操作。
     </div>
-    <div v-else>
+    <div v-if="state.isResetPasswordSuccessMark === operationPasswordType.resetPassWordSuccess">
       <div class="reset-Password-success">
         <img :src="successImg" alt="" class="success-img" />
         重置密码成功！
@@ -1188,16 +1193,37 @@
       <div class="user-info2">
         <span>新密码：</span>
         <span>{{ state.resetPasswordSuccessInfo?.password }}</span>
-        <div class="copy-button" @click="copyText">复制</div>
+        <!--        <div class="copy-button" @click="copyText">复制</div>-->
+      </div>
+    </div>
+    <div v-if="state.isResetPasswordSuccessMark === operationPasswordType.initSuccess">
+      <div class="message-text padding-right-40">
+        <img :src="successImg" alt="" class="success-img message-img" />
+        成员【{{
+          state.resetPasswordSuccessInfo?.nickname
+        }}】用户密码系统已为您自动生成，可使用以下信息登录系统。
+      </div>
+
+      <div class="user-info3">
+        <span>用户工号：</span>
+        <span>{{ state.resetPasswordSuccessInfo?.username }}</span>
+      </div>
+      <div class="user-info3 margin-top-9">
+        <span>初始密码：</span>
+        <span>{{ state.resetPasswordSuccessInfo?.password }}</span>
       </div>
     </div>
 
     <!--  footer  -->
-    <div v-if="!state.isResetPasswordSuccessMark" class="reset-PassWord-btn-content">
+    <div
+      v-if="state.isResetPasswordSuccessMark === operationPasswordType.resetPassWord"
+      class="reset-PassWord-btn-content"
+    >
       <a-button type="primary" html-type="submit" @click="resetPasswordFN">确认</a-button>
       <a-button @click="closePasswordModal">取消</a-button>
     </div>
     <div class="close-btn-content" v-else>
+      <a-button type="primary" @click="copyText">复制</a-button>
       <a-button @click="closePasswordModal">关闭</a-button>
     </div>
   </a-modal>
@@ -1238,7 +1264,7 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { PageKeyObj } from '@/utils/constants'
+import { operationPasswordType, PageKeyObj } from '@/utils/constants'
 import { useCache } from '@/hooks/web/useCache'
 import { putResetPassWord, updateEditMajorIndividualStatus } from '@/api/system/business'
 import { aassignUserRoleApi } from '@/api/system/permission'
@@ -1566,6 +1592,7 @@ const state: any = reactive({
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
+  needShowInitPassWord: false, //  //新增成员 后 的分配角色关闭才走
   messageTitle: '提示', //短信modal title
   modalTitle: '新增', //modal title
   currentMenu: '目录',
@@ -1624,7 +1651,7 @@ const state: any = reactive({
   resetPasswordTitle: '', //重置密码 modal title
   resetPasswordSuccessInfo: {}, //重置密码成功后
   closable: false, //重置密码 modal 右上角×
-  isResetPasswordSuccessMark: false,
+  isResetPasswordSuccessMark: operationPasswordType.resetPassWord,
   resetModalStyle: {
     width: 488,
     height: 270
@@ -2235,7 +2262,7 @@ state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needRe
 const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
-  const valid = await formRef.value.validate()
+  await formRef.value.validate()
 
   const tempPhoneList: any = []
   const tempPostList: any = []
@@ -2250,7 +2277,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWXWork: item.existWXWork, //是否开通企微
+        existWXWork: item?.existWXWork, //是否开通企微
         userId: formState.id,
         id: item.id
       })
@@ -2260,7 +2287,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWXWork: item.existWXWork //是否开通企微
+        existWXWork: item?.existWXWork //是否开通企微
       })
     }
 
@@ -2350,13 +2377,16 @@ const addMajorIndividualFN = async () => {
 
   state.addEditLoading = true
   try {
-    let res = []
+    let res: any = []
     if (state.modalType === 'add') {
       //后端说新增默认给个密码
       params['password'] = '123456'
       res = await addMember(params)
-      state.addSuccessId = res
+      console.log('新增成员res', res)
+      state.addSuccessId = res?.id
+      state.resetPasswordSuccessInfo = res
       message.success('新建成员成功')
+      state.needShowInitPassWord = true
       //分配角色
       openPermissionModal(true)
     } else {
@@ -2383,6 +2413,10 @@ const closePermissionModal = () => {
   state.isShowPermission = false
   state.roleId = []
   state.permissionRecord = {}
+  if (state.needShowInitPassWord) {
+    //新增成员 后 的分配角色关闭才走
+    openInitPasswordModal()
+  }
 }
 
 //开启分配角色 modal
@@ -2406,6 +2440,10 @@ const PermissionOk = async () => {
   state.btnLoading = false
   await getList()
   closePermissionModal()
+  if (state.needShowInitPassWord) {
+    //新增成员 后 的分配角色关闭才走
+    openInitPasswordModal()
+  }
 }
 
 //数组对象去重
@@ -3130,11 +3168,24 @@ const detailsInfo = async (record) => {
   state.isShowDetails = true
 }
 
+//新增成员 初始化密码 分配角色mdoal 后
+const openInitPasswordModal = () => {
+  state.isResetPasswordSuccessMark = operationPasswordType.initSuccess
+  state.isShowResetPassWord = true
+  state.resetPasswordTitle = '用户密码'
+  state.closable = true
+  state.resetModalStyle = {
+    width: 633,
+    height: 216
+  }
+}
+
 //关闭 重置密码modal
 const closePasswordModal = () => {
   state.isShowResetPassWord = false
-  state.isResetPasswordSuccessMark = false
+  state.isResetPasswordSuccessMark = operationPasswordType.resetPassWord
   state.resetPasswordTitle = '提示'
+  state.needShowInitPassWord = false
   setTimeout(() => {
     //延迟一下 - - 不然会导致 关闭的瞬间样式改变了 闪一下
     state.resetModalStyle = {
@@ -3164,13 +3215,17 @@ const resetPasswordFN = async () => {
     width: 488,
     height: 270
   }
-  state.isResetPasswordSuccessMark = true
+  state.isResetPasswordSuccessMark = operationPasswordType.resetPassWordSuccess
 }
 
 //复制密码
 const copyText = async () => {
+  const userNameText = state.needShowInitPassWord ? '用户工号：' : '用户名:'
+  const passWordText = state.needShowInitPassWord ? '初始密码：' : '新密码:'
   try {
-    await toClipboard(state.resetPasswordSuccessInfo.password) //实现复制
+    await toClipboard(
+      `${userNameText}${state.resetPasswordSuccessInfo.username}\n${passWordText}${state.resetPasswordSuccessInfo.password}`
+    ) //实现复制
     message.success('复制成功')
   } catch (e) {
     message.error('复制失败，您使用的浏览器可能不支持复制功能')
@@ -4363,11 +4418,23 @@ onMounted(async () => {
   //background: slateblue;
 }
 
+//初始化密码
+.init-Password-success {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: PingFangSC-Medium;
+}
+
 //重置密码成功
 .reset-Password-success {
   padding: 43px 0 0 165px;
   display: flex;
   align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: PingFangSC-Medium;
 }
 
 .success-img {
@@ -4377,12 +4444,25 @@ onMounted(async () => {
 }
 
 .user-info1 {
-  padding: 28px 0 0 139px;
+  padding: 28px 0 0 167px;
 }
 
 .user-info2 {
-  padding: 9px 0 0 139px;
+  padding: 9px 0 0 167px;
   display: flex;
+}
+
+.user-info3 {
+  margin-top: 32px;
+  margin-left: 246px;
+}
+
+.padding-right-40 {
+  padding-right: 40px;
+}
+
+.margin-top-9 {
+  margin-top: 9px;
 }
 
 .copy-button {
@@ -4396,16 +4476,6 @@ onMounted(async () => {
   border-radius: 4px;
   background-color: rgba(0, 129, 255, 1);
   cursor: pointer;
-}
-
-.user-info3 {
-  margin: 19px 0 0 50px;
-  //width: 388px;
-  height: 17px;
-  color: rgba(231, 162, 60, 1);
-  font-size: 12px;
-  text-align: left;
-  font-family: PingFangSC-Regular;
 }
 
 .close-btn-content {

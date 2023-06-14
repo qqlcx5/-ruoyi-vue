@@ -116,7 +116,7 @@
         v-if="state.refreshTable"
         :columns="state.columns"
         :data-source="state.tableDataList"
-        :scroll="{ x: 'max-content' }"
+        :scroll="{ x: '100%' }"
         :pagination="false"
         @change="onChange"
         :row-key="(record) => record.id"
@@ -1664,7 +1664,7 @@ const allColumns = [
 
   {
     title: '操作',
-    width: 240,
+    width: 260,
     dataIndex: 'operation',
     key: 'operation',
     fixed: 'right',

@@ -248,6 +248,12 @@ export const organizationCategory = {
   childStore: '2' //子门店
 }
 
+export const operationPasswordType = {
+  initSuccess: 'initSuccess', //密码初始化成功后
+  resetPassWord: 'resetPassWord', //重置密码
+  resetPassWordSuccess: 'resetPassWordSuccess' //重置密码成功后
+}
+
 //定制列缓存 页面pageKey
 export const PageKeyObj = {
   dcc: 'dcc', // 基础配置-dcc设置
