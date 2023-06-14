@@ -41,30 +41,30 @@ const crudSchemas = reactive<VxeCrudSchema>({
         width: 140
       }
     },
-    {
-      title: t('common.status'),
-      field: 'status',
-      dictType: DICT_TYPE.COMMON_STATUS,
-      dictClass: 'number',
-      form: {
-        value: 0,
-        component: 'Switch',
-        componentProps: {
-          activeValue: 0,
-          inactiveValue: 1,
-          disabled: true
-        },
-        colProps: {
-          span: 24
-        }
-      },
-      table: {
-        width: 80,
-        slots: {
-          default: 'status_default'
-        }
-      }
-    },
+    // {
+    //   title: t('common.status'),
+    //   field: 'status',
+    //   dictType: DICT_TYPE.COMMON_STATUS,
+    //   dictClass: 'number',
+    //   form: {
+    //     value: 0,
+    //     component: 'Switch',
+    //     componentProps: {
+    //       activeValue: 0,
+    //       inactiveValue: 1,
+    //       disabled: true
+    //     },
+    //     colProps: {
+    //       span: 24
+    //     }
+    //   },
+    //   table: {
+    //     width: 80,
+    //     slots: {
+    //       default: 'status_default'
+    //     }
+    //   }
+    // },
     {
       title: '子项数量',
       field: 'childCount',

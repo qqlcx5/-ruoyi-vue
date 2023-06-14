@@ -78,17 +78,24 @@
         <el-divider class="!mt-0 !mb-16px" />
         <XTable @register="registerType" @cell-click="cellClickEvent">
           <!-- 操作：新增类型 -->
-          <template #toolbar_buttons></template>
-          <template #status_default="{ row }">
-            <el-switch
-              v-hasPermi="['system:tenant-dict-type:update']"
-              v-model="row.status"
-              :active-value="0"
-              :inactive-value="1"
-              @click.stop
-              @change="handleStatusChange(row, 'type')"
-              disabled
-            />
+          <template #toolbar_buttons>
+            <!--            <XButton-->
+            <!--              type="primary"-->
+            <!--              iconFont="icon-xinzeng"-->
+            <!--              :title="t('action.add')"-->
+            <!--              @click="handleTypeCreate()"-->
+            <!--            />-->
+            <!--          </template>-->
+            <!--          <template #status_default="{ row }">-->
+            <!--            <el-switch-->
+            <!--              v-hasPermi="['system:tenant-dict-type:update']"-->
+            <!--              v-model="row.status"-->
+            <!--              :active-value="0"-->
+            <!--              :inactive-value="1"-->
+            <!--              @click.stop-->
+            <!--              @change="handleStatusChange(row, 'type')"-->
+            <!--              disabled-->
+            <!--            />-->
           </template>
           <template #actionbtns_default="{ row }">
             <!-- 操作：编辑类型 -->
@@ -154,7 +161,6 @@
                 :active-value="0"
                 :inactive-value="1"
                 @change="handleStatusChange(row, 'data')"
-                disabled
               />
             </template>
             <template #actionbtns_default="{ row }">
@@ -304,7 +310,6 @@
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(row, 'dataLevel3')"
-            disabled
           />
         </template>
         <template #actionbtns_default="{ row }">
@@ -384,6 +389,10 @@ const [registerDataLevel3, { reload: dataLevel3GetList, search: dataLevel3Search
 
 // ========== 字典分类列表相关 ==========
 const dictTypeValue = ref('')
+// const handleTypeCreate = () => {
+//   dictTypeValue.value = ''
+//   setDialogTile('typeCreate')
+// }
 const handleTypeUpdate = async (rowId: number) => {
   setDialogTile('typeUpdate')
   // 设置数据

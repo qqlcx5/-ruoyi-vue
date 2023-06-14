@@ -95,7 +95,6 @@
               :inactive-value="1"
               @click.stop
               @change="handleStatusChange(row, 'type')"
-              disabled
             />
           </template>
           <template #actionbtns_default="{ row }">
@@ -105,12 +104,12 @@
               v-hasPermi="['system:dict:update']"
               @click="handleTypeUpdate(row.id)"
             />
-            <!--            &lt;!&ndash; 操作：删除类型 &ndash;&gt;-->
-            <!--            <XTextButton-->
-            <!--              :title="t('action.del')"-->
-            <!--              v-hasPermi="['system:dict:delete']"-->
-            <!--              @click="typeDeleteData(row.id, `是否删除字典名称为''${row.name}''的数据项?`)"-->
-            <!--            />-->
+            <!-- 操作：删除类型 -->
+            <XTextButton
+              :title="t('action.del')"
+              v-hasPermi="['system:dict:delete']"
+              @click="typeDeleteData(row.id, `是否删除字典名称为''${row.name}''的数据项?`)"
+            />
           </template>
         </XTable>
       </div>
@@ -168,7 +167,6 @@
                 :active-value="0"
                 :inactive-value="1"
                 @change="handleStatusChange(row, 'data')"
-                disabled
               />
             </template>
             <template #actionbtns_default="{ row }">
@@ -184,12 +182,12 @@
                 :title="t('action.detail')"
                 @click="handleDataDetail(row)"
               />
-              <!--              &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
-              <!--              <XTextButton-->
-              <!--                v-hasPermi="['system:dict:delete']"-->
-              <!--                :title="t('action.del')"-->
-              <!--                @click="dataDeleteData(row.id, `是否确认删除数据标签为''${row.label}''的数据项?`)"-->
-              <!--              />-->
+              <!-- 操作：删除数据 -->
+              <XTextButton
+                v-hasPermi="['system:dict:delete']"
+                :title="t('action.del')"
+                @click="dataDeleteData(row.id, `是否确认删除数据标签为''${row.label}''的数据项?`)"
+              />
             </template>
           </XTable>
         </div>
@@ -322,7 +320,6 @@
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(row, 'dataLevel3')"
-            disabled
           />
         </template>
         <template #actionbtns_default="{ row }">
@@ -332,12 +329,12 @@
             :title="t('action.edit')"
             @click="handleDataUpdate(row.id, 'dataLevel3Update')"
           />
-          <!--          &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
-          <!--          <XTextButton-->
-          <!--            v-hasPermi="['system:dict:delete']"-->
-          <!--            :title="t('action.del')"-->
-          <!--            @click="dataLevel3DeleteData(row.id, `是否确认删除子项标签为''${row.label}''的数据项?`)"-->
-          <!--          />-->
+          <!-- 操作：删除数据 -->
+          <XTextButton
+            v-hasPermi="['system:dict:delete']"
+            :title="t('action.del')"
+            @click="dataLevel3DeleteData(row.id, `是否确认删除子项标签为''${row.label}''的数据项?`)"
+          />
         </template>
       </XTable>
     </XModal>
@@ -362,7 +359,10 @@ const message = useMessage() // 消息弹窗
 const typeSearchForm = ref({
   createTime: []
 })
-const [registerType, { reload: typeGetList, search: typeSearch }] = useXTable({
+const [
+  registerType,
+  { reload: typeGetList, search: typeSearch, deleteData: dataLevel3DeleteData }
+] = useXTable({
   tableKey: 'dict-type-table',
   allSchemas: DictTypeSchemas.allSchemas,
   params: typeSearchForm,
@@ -377,21 +377,25 @@ const queryParams = reactive({
   dictType: null,
   label: ''
 })
-const [registerData, { reload: dataGetList, search: dataSearch }] = useXTable({
-  tableKey: 'dict-data-table',
-  allSchemas: DictDataSchemas.allSchemas,
-  params: queryParams,
-  getListApi: DictDataApi.getDictDataPageApi,
-  deleteApi: DictDataApi.deleteDictDataApi,
-  border: true,
-  height: 606
-})
+const [registerData, { reload: dataGetList, search: dataSearch, deleteData: dataDeleteData }] =
+  useXTable({
+    tableKey: 'dict-data-table',
+    allSchemas: DictDataSchemas.allSchemas,
+    params: queryParams,
+    getListApi: DictDataApi.getDictDataPageApi,
+    deleteApi: DictDataApi.deleteDictDataApi,
+    border: true,
+    height: 606
+  })
 
 const dataLevel3queryParams = reactive({
   parentId: null,
   label: ''
 })
-const [registerDataLevel3, { reload: dataLevel3GetList, search: dataLevel3Search }] = useXTable({
+const [
+  registerDataLevel3,
+  { reload: dataLevel3GetList, search: dataLevel3Search, deleteData: typeDeleteData }
+] = useXTable({
   tableKey: 'dict-level3data-table',
   allSchemas: DictDataLevel3Schemas.allSchemas,
   params: dataLevel3queryParams,
