@@ -1,12 +1,12 @@
 import { Table } from '@/components/Table'
-import { Form } from '@/components/Form'
+import { Search } from '@/components/Search'
 import { ElTable } from 'element-plus'
 import { TableColumn } from '@/types/table'
 import { cloneDeep } from 'lodash-es'
 
 export type ElTableProps = InstanceType<typeof ElTable>['$props']
 export type TableProps = InstanceType<typeof Table>['$props'] & ElTableProps
-export type FormProps = InstanceType<typeof Form>['$props']
+export type SearchProps = InstanceType<typeof Search>['$props']
 
 export const useDarwerColumn = (columns: TableColumn[]) => {
   let columnsClone = cloneDeep(columns)
@@ -17,7 +17,6 @@ export const useDarwerColumn = (columns: TableColumn[]) => {
       disabled: false
     }
   })
-  console.log(columnsClone)
 
   return {
     columns: columnsClone

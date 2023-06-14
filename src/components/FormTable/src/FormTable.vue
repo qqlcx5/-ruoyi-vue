@@ -7,9 +7,9 @@
         </template>
       </Search>
     </ContentWrap>
-    <ContentWrap ref="tableWrapRef" :class="{ 'fullscreen-open': fullscreen }" class="flex-1">
+    <ContentWrap :class="{ 'fullscreen-open': fullscreen }" class="flex-1 table-wrap">
       <div class="flex flex-col h-full">
-        <div ref="tableToolRef" class="flex justify-between items-center mb-5">
+        <div class="flex justify-between items-center mb-5">
           <div class="flex items-center">
             <XButton
               v-if="tableProps.showAdd"
@@ -39,10 +39,12 @@
           :data="tableObject.tableList"
           :loading="tableObject.loading"
           header-cell-class-name="table-header-style"
+          height="100%"
           v-bind="tableProps"
           :columns="tableColumns"
-          class="flex-1"
+          class="flex flex-col flex-1 overflow-hidden"
           @update:page-size="handlePageSizeChange"
+          @register="register"
         >
           <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
             <slot :name="item" v-bind="data || {}"></slot>
@@ -63,7 +65,7 @@
 import { onMounted, watch, computed, PropType } from 'vue'
 import { useTable } from '@/hooks/web/useTable'
 import { TableColumn } from '@/types/table'
-import { TableProps, FormProps } from './helper'
+import { TableProps, SearchProps } from './helper'
 
 const props = defineProps({
   tableOptions: {
@@ -82,77 +84,11 @@ const props = defineProps({
     default: () => ({})
   },
   formOptions: {
-    type: Object as PropType<FormProps>,
+    type: Object as PropType<SearchProps>,
     default: () => ({})
   }
 })
 
-// const props = withDefaults(
-//   defineProps<
-//     Partial<{
-//       // ======= 表单相关 =======
-//       /** 表单项 */
-//       schema: FormSchema[]
-//       /** 表单数据对象 */
-//       model: Recordable
-//       /** 表单label宽度 */
-//       labelWidth: string | number
-//       showSearch: boolean
-//       showReset: boolean
-//       /** 是否显示伸缩 */
-//       expand: boolean
-//       /** 伸缩的界限字段 */
-//       expandField: string
-//       inline: boolean
-
-//       // ======= 表格相关 =======
-//       showAdd: boolean
-//       showExpandAll: boolean
-//       /** 列表接口 */
-//       listApi: (options: any) => Promise<any>
-//       /** 删除接口 */
-//       delApi: (options: any) => Promise<any>
-//       pageSize: number
-//       currentPage: number
-//       /** 是否多选 */
-//       selection: boolean
-//       /** 是否所有的超出隐藏，优先级低于schema中的showOverflowTooltip */
-//       showOverflowTooltip: boolean
-//       /** 表头 */
-//       columns: TableColumn[]
-//       /** 展开行 */
-//       expandRow: boolean
-//       /** 是否展示分页 */
-//       pagination: Pagination
-//       /** 仅对 type=selection 的列有效，类型为 Boolean，为 true 则会在数据更新之后保留之前选中的数据（需指定 row-key） */
-//       reserveSelection: boolean
-//       /** 加载状态 */
-//       loading: boolean
-//       /** 是否叠加索引 */
-//       reserveIndex: boolean
-//       /** 对齐方式 */
-//       align: string
-//       /** 列表额外请求参数 */
-//       listParams: Recordable
-//       /** 表头对齐方式 */
-//       headerAlign: string
-//       /** 表格数据 */
-//       data: Recordable[]
-//     }>
-//   >(),
-//   {
-//     autoPlaceholder: true,
-//     showSearch: true,
-//     showReset: true,
-//     inline: true,
-//     isCustom: false,
-//     labelWidth: 'auto',
-//     showAdd: true,
-//     showExpandAll: false,
-//     align: 'left',
-//     headerAlign: 'left'
-//   }
-// )
 const emits = defineEmits<{
   (e: 'expandAll', isExpandAll: boolean): void
   (e: 'add'): void
@@ -170,63 +106,6 @@ const isExpandAll = ref(false)
 
 const drawerColumns = ref<TableColumn[]>([])
 
-// const formProps = computed(() => {
-//   const form: Recordable = {}
-//   const schema = props.schema?.map((item) => {
-//     if (item.component === 'Input') {
-//       return {
-//         ...item,
-//         componentProps: {
-//           ...item.componentProps,
-//           style: {
-//             ...item.componentProps?.style,
-//             width: '200px'
-//           }
-//         }
-//       }
-//     }
-//     return item
-//   })
-//   for (const key in props) {
-//     if (formPropsKeyList.includes(key)) {
-//       if (key === 'schema') {
-//         form[key] = schema
-//       } else {
-//         form[key] = props[key]
-//       }
-//     }
-//   }
-//   return form
-// })
-
-// const tableProps = computed(() => {
-//   const table: Recordable = {}
-//   for (const key in props) {
-//     if (!formPropsKeyList.includes(key)) {
-//       table[key] = props[key]
-//     }
-//   }
-//   return table
-// })
-
-// 表单处理
-// const getSchema = computed(() =>
-// props.schema?.map((item) => {
-//   if (item.component === 'Input') {
-//     return {
-//       ...item,
-//       componentProps: {
-//         ...item.componentProps,
-//         style: {
-//           ...item.componentProps?.style,
-//           width: '200px'
-//         }
-//       }
-//     }
-//   }
-//   return item
-// })
-// )
 const tableProps = computed(() => {
   return {
     showAdd: true,
@@ -286,7 +165,7 @@ const handleExpandAll = () => {
   emits('expandAll', isExpandAll.value)
 }
 
-const { tableObject, tableMethods } = useTable({
+const { tableObject, tableMethods, register } = useTable({
   getListApi: tableProps.value.listApi!,
   delListApi: tableProps.value.delApi!,
   defaultParams: {
@@ -341,13 +220,7 @@ const handleColumnReset = () => {
   drawerVisible.value = false
 }
 
-const tableWrapRef = ref()
-const tableToolRef = ref()
-
 onMounted(() => {
-  console.log(tableToolRef.value.offsetHeight)
-  console.log(tableWrapRef.value)
-
   tableMethods.getList()
 })
 
@@ -357,8 +230,8 @@ defineExpose({
 })
 </script>
 
-<style lang="scss">
-.table-header-style {
+<style lang="scss" scoped>
+:deep(.table-header-style) {
   height: 50px;
   font-size: 14px;
   color: $header-text-color;
@@ -372,5 +245,25 @@ defineExpose({
   z-index: 1011;
   width: 100%;
   height: 100%;
+}
+
+:deep(.table-wrap) {
+  .el-card__body {
+    height: 100%;
+
+    & > div {
+      height: 100%;
+    }
+  }
+
+  .table-box {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .el-pagination {
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 </style>

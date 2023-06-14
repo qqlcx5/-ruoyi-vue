@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, createVNode } from 'vue'
 import { AxiosPromise } from 'axios'
 import { findIndex } from '@/utils'
 import { eachTree, treeMap, filter } from '@/utils/tree'
@@ -8,6 +8,7 @@ import { FormSchema } from '@/types/form'
 import { TableColumn } from '@/types/table'
 import { DescriptionsSchema } from '@/types/descriptions'
 import { ComponentOptions, ComponentProps } from '@/types/components'
+import { DictTag } from '@/components/DictTag'
 
 export type CrudSchema = Omit<TableColumn, 'children'> & {
   isSearch?: boolean // 是否在查询显示
@@ -162,6 +163,15 @@ const filterTableSchema = (crudSchema: CrudSchema[]): TableColumn[] => {
     ...item,
     check: item.check || true,
     disabled: item.disabled || false,
+    ...(item.dictType
+      ? item.formatter
+        ? {}
+        : {
+            formatter: (_, __, value) => {
+              return createVNode(DictTag, { type: item.dictType, value })
+            }
+          }
+      : {}),
     ...(item.field === 'action' ? { fixed: 'right' } : {})
   }))
 

@@ -270,19 +270,21 @@ export default defineComponent({
 
     return () => (
       <div v-loading={unref(getProps).loading}>
-        <ElTable
-          // @ts-ignore
-          ref={elTableRef}
-          data={unref(getProps).data}
-          onSelection-change={selectionChange}
-          {...unref(getBindValue)}
-        >
-          {{
-            default: () => rnderTableColumn(),
+        <div class="table-box">
+          <ElTable
             // @ts-ignore
-            append: () => getSlot(slots, 'append')
-          }}
-        </ElTable>
+            ref={elTableRef}
+            data={unref(getProps).data}
+            onSelection-change={selectionChange}
+            {...unref(getBindValue)}
+          >
+            {{
+              default: () => rnderTableColumn(),
+              // @ts-ignore
+              append: () => getSlot(slots, 'append')
+            }}
+          </ElTable>
+        </div>
         {unref(getProps).pagination ? (
           // 保持和 Pagination 组件一致
           <ElPagination
