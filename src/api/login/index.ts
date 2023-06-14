@@ -92,12 +92,12 @@ export const handoffTenant = (data) => {
   return request.post({ url: '/system/auth/handoff-tenant', data })
 }
 
-// 设置默认主体（未登录）
+// 设置默认主体
 export const updateDefaultTenant = (data) => {
   return request.put({ url: '/system/auth/default-tenant/update', data })
 }
 
-// 设置默认主体
+// 设置默认主体（未登录）
 export const updateDefaultTenantByUserName = (data) => {
   return request.put({ url: '/system/auth/default-tenant/update-username', data })
 }

@@ -48,6 +48,9 @@ const equalToPassword = (rule, value, callback) => {
   }
 }
 const newPassword = (rule, value, callback) => {
+  if (value.length < 8 || value.length > 16) {
+    callback(new Error(t('profile.password.pwdRules')))
+  }
   const reg =
     /^(?![A-Za-z]+$)(?![A-Z\d]+$)(?![A-Z\W]+$)(?![a-z\d]+$)(?![a-z\W]+$)(?![\d\W]+$)\S{8,}$/
   if (!reg.test(value)) {
@@ -64,7 +67,6 @@ const rules = reactive<FormRules>({
       validator: newPassword,
       min: 8,
       max: 16,
-      message: t('profile.password.pwdRules'),
       trigger: 'change'
     }
   ],
