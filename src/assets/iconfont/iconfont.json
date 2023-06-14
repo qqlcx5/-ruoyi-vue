@@ -6,6 +6,48 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "35896055",
+      "name": "切换",
+      "font_class": "qiehuan",
+      "unicode": "e6a3",
+      "unicode_decimal": 59043
+    },
+    {
+      "icon_id": "35896056",
+      "name": "手机",
+      "font_class": "shouji",
+      "unicode": "e6a4",
+      "unicode_decimal": 59044
+    },
+    {
+      "icon_id": "35878798",
+      "name": "眼睛",
+      "font_class": "yanjing",
+      "unicode": "e6a0",
+      "unicode_decimal": 59040
+    },
+    {
+      "icon_id": "35878799",
+      "name": "闭眼",
+      "font_class": "biyan",
+      "unicode": "e6a1",
+      "unicode_decimal": 59041
+    },
+    {
+      "icon_id": "35878800",
+      "name": "验证码 3",
+      "font_class": "a-yanzhengma3",
+      "unicode": "e6a2",
+      "unicode_decimal": 59042
+    },
+    {
+      "icon_id": "35794546",
+      "name": "勾",
+      "font_class": "gou",
+      "unicode": "e69f",
+      "unicode_decimal": 59039
+    },
+    {
       "icon_id": "35731401",
       "name": "右",
       "font_class": "you",

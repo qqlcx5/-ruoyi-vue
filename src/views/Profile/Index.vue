@@ -33,27 +33,35 @@
 <script setup lang="ts" name="Profile">
 import { BasicInfo, ProfileUser, ResetPwd, UserSocial } from './components/'
 const { t } = useI18n()
+const { query } = useRoute()
 
 const activeName = ref('basicInfo')
+onMounted(() => {
+  if (query.action) activeName.value = query.action as string
+})
 </script>
 <style scoped>
 .user {
   max-height: 960px;
-  padding: 15px 20px 20px 20px;
+  padding: 15px 20px 20px;
 }
+
 .card-header {
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 :deep(.el-card .el-card__header, .el-card .el-card__body) {
   padding: 15px !important;
 }
+
 .profile-tabs > .el-tabs__content {
   padding: 32px;
-  color: #6b778c;
   font-weight: 600;
+  color: #6b778c;
 }
+
 .el-tabs--left .el-tabs__content {
   height: 100%;
 }

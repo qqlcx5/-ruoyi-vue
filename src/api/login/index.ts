@@ -12,7 +12,7 @@ export interface SmsCodeVO {
   scene: number
 }
 export interface SmsLoginVO {
-  mobile: string
+  phone: string
   code: string
 }
 
@@ -75,6 +75,11 @@ export const reqCheckApi = (data) => {
 // 根据账号密码获取用户的主体信息
 export const getTenantUser = (data) => {
   return request.post({ url: '/system/auth/get-tenant/user', data })
+}
+
+// 根据手机号获取用户的主体信息
+export const getTenantPhone = (data) => {
+  return request.post({ url: '/system/auth/get-tenant/phone', data })
 }
 
 // 根据当前用户获取用户的主体信息
