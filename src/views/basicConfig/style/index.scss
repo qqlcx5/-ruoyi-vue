@@ -66,9 +66,12 @@ $btnWrapHeight: 86px;
     }
   }
   :deep(.el-table__cell) {
-    padding: 14px 0;
+    padding: 12px 0;
     color: $title-color;
   }
+}
+.el-form .el-form-item {
+  color: $title-color;
 }
 .custom-dialog {
   .el-dialog__header {

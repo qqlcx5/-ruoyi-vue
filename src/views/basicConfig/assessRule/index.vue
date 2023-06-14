@@ -2,8 +2,10 @@
   <div class="basic-config-page-container">
     <div class="top-search mb-12px">
       <div>
+        <span class="mr-8px">考核规则名称</span>
+        <el-input placeholder="请输入" style="width: 180px; margin-right: 22px" />
         <span class="mr-8px">门店</span>
-        <el-select value="1">
+        <el-select value="1" style="width: 180px">
           <el-option label="1" value="1" />
         </el-select>
         <el-button type="primary" class="ml-12px">确定</el-button>
@@ -15,24 +17,22 @@
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
     </WgTable>
-
-    <!-- 首次跟进率新增/编辑弹框 -->
-    <EditFirstFollowRate v-model="visible" @success="" />
+    <EditAssessRule v-model="visible" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import WgTable from '../components/WgTable/index.vue'
-import EditFirstFollowRate from '../components/EditFirstFollowRate/index.vue'
+import EditAssessRule from '../components/EditAssessRule/index.vue'
+const router = useRouter() // 路由
 
-const visible = ref<boolean>(false)
 const tableConfig = reactive({
-  pageKey: 'firstFollowRate',
+  pageKey: 'dcc',
   columns: [
     {
       sort: 1,
-      title: '规则名称',
-      key: 'ruleName',
+      title: '考核规则名称',
+      key: 'assessName',
       resizable: true,
       ellipsis: true,
       disabled: false
@@ -40,7 +40,7 @@ const tableConfig = reactive({
     {
       sort: 2,
       title: '适用门店',
-      key: 'shopName',
+      key: 'departName',
       minWidth: 400,
       resizable: true,
       ellipsis: true,
@@ -48,7 +48,7 @@ const tableConfig = reactive({
     },
     {
       sort: 3,
-      title: '启用状态',
+      title: '状态',
       key: 'status',
       resizable: true,
       ellipsis: true,
@@ -57,19 +57,9 @@ const tableConfig = reactive({
         return <el-switch v-model={row.status} active-value={1} inactive-value={0} />
       }
     },
+    { sort: 4, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
     {
-      sort: 4,
-      title: '最低跟进率',
-      key: 'minFollowRate',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    { sort: 5, title: '计算周期', key: 'cycle', resizable: true, ellipsis: true, disabled: false },
-    { sort: 6, title: '参与岗位', key: 'a3', resizable: true, ellipsis: true, disabled: false },
-    { sort: 7, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
-    {
-      sort: 8,
+      sort: 5,
       title: '创建时间',
       key: 'createTime',
       resizable: true,
@@ -77,11 +67,11 @@ const tableConfig = reactive({
       disabled: false
     },
     {
-      sort: 9,
+      sort: 6,
       title: '操作',
       key: 'operate',
       width: 120,
-      fixed: 'right',
+      fixed: null,
       resizable: true,
       ellipsis: true,
       disabled: false,
@@ -100,12 +90,14 @@ const tableConfig = reactive({
     }
   ]
 })
-const tableData = ref([{ status: 1 }])
+const tableData = ref([{ departName: 'zzz', status: 1 }])
+
+const visible = ref<boolean>(false)
 const handleCreate = () => {
   visible.value = true
 }
 const handleDccEdit = (row) => {
-  console.log(row)
+  visible.value = true
 }
 </script>
 

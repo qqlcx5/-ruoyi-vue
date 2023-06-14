@@ -21,7 +21,7 @@
     <div class="config-form-item">
       <!--  todo    -->
       <span>无通话录音打通客户电话是否允许独享线索：</span>
-      <el-switch v-model="ruleForm.cancelFollowPlan" :active-value="1" :inactive-value="0" />
+      <el-switch v-model="ruleForm.clueGrabEnjoyStatus" :active-value="1" :inactive-value="0" />
     </div>
     <div class="config-form-item-tip">
       <div
@@ -48,7 +48,7 @@
       <span>次</span>
     </div>
     <div class="config-form-item mt-15px">
-      <span>*下次跟进时间</span>
+      <span>下次跟进时间</span>
       <el-input-number
         v-model.number="ruleForm.clueFollowConfigHour"
         class="number-input"
@@ -111,7 +111,7 @@
     <div class="part-title mt-30px">
       <span class="main-text">首次跟进未打通电话弹窗提示</span>
       <el-switch
-        v-model="ruleForm.clueNotGetThroughHintStatus"
+        v-model="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintStatus"
         :active-value="1"
         :inactive-value="0"
       />
@@ -119,7 +119,7 @@
     <div class="config-form-item">
       <span>首次跟进线索客户，未打通客户电话：</span>
       <el-input-number
-        v-model.number="ruleForm.clueNotGetThroughHintMinute"
+        v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintMinute"
         class="number-input"
         :max="99999"
         step-strictly
@@ -131,7 +131,7 @@
     <div class="config-form-item mt-15px">
       <span>当天最多弹窗提醒次数：</span>
       <el-input-number
-        v-model.number="ruleForm.clueNotGetThroughHintDayNumber"
+        v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintDayNumber"
         class="number-input"
         :max="99999"
         step-strictly
@@ -142,7 +142,7 @@
     <div class="config-form-item mt-15px">
       <span>单条线索最多弹窗提醒次数：</span>
       <el-input-number
-        v-model.number="ruleForm.clueNotGetThroughHintTotalNumber"
+        v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintTotalNumber"
         class="number-input"
         :max="99999"
         step-strictly
@@ -158,7 +158,11 @@
       <el-button type="primary" @click="handleAddTime">增加时间段</el-button>
     </div>
     <div class="mb-36px">
-      <div v-for="(item, index) in ruleForm.timeList" :key="index" class="config-form-item mt-15px">
+      <div
+        v-for="(item, index) in ruleForm.clueNotGetThroughHintConfigVO.timeList"
+        :key="index"
+        class="config-form-item mt-15px"
+      >
         <span class="mr-8px">时间段</span>
         <el-time-select
           v-model="item.startTime"
@@ -176,7 +180,7 @@
           placeholder="结束时间"
           start="00:00"
           step="00:05"
-          end="23:55"
+          end="24:00"
           class="mr-8px"
           style="width: 130px"
         />
@@ -192,17 +196,20 @@
 <script setup lang="ts">
 const ruleForm = reactive({
   cancelFollowPlan: 0, // 客户到店后是否取消对应有效线索的跟进计划
+  clueGrabEnjoyStatus: 0, // 无通话录音打通客户电话是否允许独享线索
   autoCreateFollowPlan: 0, // 未打通电话自动生成跟进记录
   notGetThroughLeastFollowNum: null, // 未打通客户电话每日最少跟进次数
   clueFollowConfigHour: null, // 下次跟进时间
   smsAutoCreateFollowPlan: 0, // 短信联系客户自动生成跟进记录
   smsClueFollowConfigHour: null, // 短信下次跟进时间
   followMethodList: [], // 线索跟进方式配置
-  clueNotGetThroughHintStatus: 0, // 首次跟进未打通电话弹窗提示
-  clueNotGetThroughHintMinute: null, // 首次跟进线索客户，未打通客户电话：...
-  clueNotGetThroughHintDayNumber: null, // 当天最多弹窗提醒次数
-  clueNotGetThroughHintTotalNumber: null, // 单条线索最多弹窗提醒次数
-  timeList: [] // 时间段 {startTime: 00:00, endTime: 23:59}
+  clueNotGetThroughHintConfigVO: {
+    clueNotGetThroughHintStatus: 0, // 首次跟进未打通电话弹窗提示
+    clueNotGetThroughHintMinute: null, // 首次跟进线索客户，未打通客户电话：...
+    clueNotGetThroughHintDayNumber: null, // 当天最多弹窗提醒次数
+    clueNotGetThroughHintTotalNumber: null, // 单条线索最多弹窗提醒次数
+    timeList: [] // 时间段 {startTime: 00:00, endTime: 23:59}
+  }
 })
 
 const handleAddRow = () => {

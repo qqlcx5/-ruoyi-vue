@@ -1,5 +1,9 @@
 <template>
-  <div id="el-table-wrap" style="display: flex; flex-direction: column">
+  <div
+    class="el-table-wrap"
+    :class="{ 'is--maximize': isFullScreen }"
+    style="display: flex; flex-direction: column"
+  >
     <div class="mb-4px" style="display: flex; align-items: center; margin-top: -10px">
       <div style="flex: 1"><slot name="btns"></slot></div>
       <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
@@ -81,24 +85,14 @@ const emit = defineEmits<IEmit>()
 const { wsCache } = useCache()
 const isFullScreen = ref(false)
 const fullScreen = () => {
-  const elem = document.getElementById('el-table-wrap')
-
-  if (isFullScreen.value === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      isFullScreen.value = !isFullScreen.value
-    }
-  } else {
-    document.exitFullscreen()
-    isFullScreen.value = !isFullScreen.value
-  }
+  console.log(123)
+  isFullScreen.value = !isFullScreen.value
 }
 const getList = () => {
   emit('refresh')
 }
 const columnDialogShow = ref(false)
 const showColumnDialog = () => {
-  console.log(1111)
   columnDialogShow.value = true
 }
 
@@ -161,4 +155,17 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 
 <style scoped lang="scss">
 @import '../../style/index';
+.el-table-wrap {
+  flex: 1;
+  min-height: 1px;
+  &.is--maximize {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100% !important;
+    z-index: 1000;
+    background-color: $page-bg-color;
+  }
+}
 </style>
