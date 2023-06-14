@@ -89,7 +89,9 @@ const message = useMessage() // 消息弹窗
 const uuid = ref('id-' + generateUUID())
 // 查看图片
 const imgViewVisible = ref(false)
-const fileTypeToArray = computed(() => props.fileType.trimAll().replaceAll('.', '').split(','))
+const fileTypeToArray = computed(() =>
+  props.fileType.toLowerCase().trimAll().replaceAll('.', '').split(',')
+)
 // 文件大小单位转小写
 const fileUnit = computed(() => props.fileUnit.toLowerCase())
 const upload = ref()
@@ -113,8 +115,8 @@ const beforeUpload: UploadProps['beforeUpload'] = async (rawFile) => {
 
   // 是否格式正确
   const isTrueFormat = fileTypeToArray.value.some((type: string) => {
-    if (rawFile.type.indexOf(type) > -1) return true
-    return !!(fileExtension && fileExtension.indexOf(type) > -1)
+    if (fileExtension.toLowerCase() === type) return true
+    return false
   })
 
   if (!isTrueFormat) {
