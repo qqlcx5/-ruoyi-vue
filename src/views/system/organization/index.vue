@@ -2789,7 +2789,7 @@ const detailsInfo = async (record) => {
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
-  const tempItem = tempRes.filter((item) => item.id === record.parentId)
+  const tempItem = tempRes.filter((item) => item.id === record.parentId) || [{ name: '顶层机构' }]
 
   const tempArrType = state.organizationTypeOptions.filter(
     (item) => item.value === res.organizationType
