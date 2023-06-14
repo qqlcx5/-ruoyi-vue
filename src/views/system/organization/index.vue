@@ -1662,7 +1662,7 @@ const state: any = reactive({
   branchCompanyTypeOptions: [], //分公司类型列表
   contactInformationOptions: [], //联系方式类型列表
   storeTypeOptions: [], //门店类型
-  loading: true, //表格加载中
+  loading: false, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   treeIconIndex: 0,
   tableDataList: [], //表格数据
@@ -1966,6 +1966,10 @@ const allColumns = [
  * @param isRefresh 右侧刷新图标进
  * */
 const getList = async (isRefresh = false) => {
+  //无查询按钮权限 不请求
+  if (!hasPermission('system:organization:query')) {
+    return
+  }
   state.loading = true
   const params = {
     // pageNo: queryParams.current,
@@ -2176,10 +2180,6 @@ const edit = async (record, isCloseDetails = false, currentTabs = 'basicInformat
   const res = await getOrganizationDetails({ id: record.id })
   console.log('res', res)
   if (res.organizationType === organizationType.store) {
-    //门店
-    state.currentTabs = currentTabs
-    state.isShowStore = true
-    state.record = res
     if (
       record.storeSubtyping === storeSubType.popStore ||
       record.storeSubtyping === storeSubType.cityHall
@@ -2197,7 +2197,15 @@ const edit = async (record, isCloseDetails = false, currentTabs = 'basicInformat
         needUseStore: true,
         belongTenantId: res?.tenantId
       }
+    } else {
+      //门店
+      state.needBelongTenantId = false
+      state.needParentId = true
     }
+    //门店
+    state.currentTabs = currentTabs
+    state.isShowStore = true
+    state.record = res
     return
   }
   //菜单状态 0开启 1关闭

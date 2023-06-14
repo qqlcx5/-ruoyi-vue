@@ -1416,7 +1416,7 @@ const state: any = reactive({
     { value: 0, label: '正常' },
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
-  loading: true, //表格加载中
+  loading: false, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
   tableDataArr: [], //表格数据 Arr
@@ -1709,6 +1709,10 @@ const allColumns = [
  * @param isRefresh 右侧刷新图标进
  * */
 const getList = async (isRefresh = false) => {
+  //无查询按钮权限 不请求
+  if (!hasPermission('system:tenant:query')) {
+    return
+  }
   state.loading = true
   const params = {
     // pageNo: queryParams.current,
