@@ -81,7 +81,7 @@
           <template #toolbar_buttons></template>
           <template #status_default="{ row }">
             <el-switch
-              v-hasPermi="['system:tenant-dict-data:update']"
+              v-hasPermi="['system:tenant-dict-type:update']"
               v-model="row.status"
               :active-value="0"
               :inactive-value="1"
@@ -94,7 +94,7 @@
             <!-- 操作：编辑类型 -->
             <XTextButton
               :title="t('action.edit')"
-              v-hasPermi="['system:tenant-dict-data:update']"
+              v-hasPermi="['system:tenant-dict-type:update']"
               @click="handleTypeUpdate(row.id)"
             />
           </template>
@@ -143,13 +143,13 @@
                 type="primary"
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
-                v-hasPermi="['system:tenant-dict-data:create']"
+                v-hasPermi="['system:tenant-dict:create']"
                 @click="handleDataCreate()"
               />
             </template>
             <template #status_default="{ row }">
               <el-switch
-                v-hasPermi="['system:tenant-dict-data:update']"
+                v-hasPermi="['system:tenant-dict:update']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"
@@ -160,7 +160,7 @@
             <template #actionbtns_default="{ row }">
               <!-- 操作：修改数据 -->
               <XTextButton
-                v-hasPermi="['system:tenant-dict-data:update']"
+                v-hasPermi="['system:tenant-dict:update']"
                 :title="t('action.edit')"
                 @click="handleDataUpdate(row.id)"
               />
@@ -293,13 +293,13 @@
             type="primary"
             iconFont="icon-xinzeng"
             :title="t('action.add')"
-            v-hasPermi="['system:tenant-dict-data:create']"
+            v-hasPermi="['system:tenant-dict:create']"
             @click="handleDataCreate('dataLevel3Create')"
           />
         </template>
         <template #status_default="{ row }">
           <el-switch
-            v-hasPermi="['system:tenant-dict-data:update']"
+            v-hasPermi="['system:tenant-dict:update']"
             v-model="row.status"
             :active-value="0"
             :inactive-value="1"
@@ -310,7 +310,7 @@
         <template #actionbtns_default="{ row }">
           <!-- 操作：修改数据 -->
           <XTextButton
-            v-hasPermi="['system:tenant-dict-data:update']"
+            v-hasPermi="['system:tenant-dict:update']"
             :title="t('action.edit')"
             @click="handleDataUpdate(row.id, 'dataLevel3Update')"
           />
