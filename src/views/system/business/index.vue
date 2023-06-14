@@ -4,44 +4,75 @@
     <!-- 搜索工作栏 -->
     <a-card class="search-card">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
-        <a-form-item :label="`主体名称`" name="keyword">
-          <a-input v-model:value="queryParams.keyword" placeholder="请输入主体名称或者编码" />
-        </a-form-item>
-        <a-form-item :label="`系统名称`" name="systemName">
-          <a-input v-model:value="queryParams.systemName" placeholder="请输入系统名称" />
-        </a-form-item>
-        <a-form-item :label="`有效期`" name="startEndTime">
-          <a-range-picker
-            v-model:value="queryParams.startEndTime"
-            format="YYYY/MM/DD"
-            :placeholder="['开始时间', '结束时间']"
-          />
-        </a-form-item>
+        <div class="total-search-content">
+          <div class="search-content">
+            <a-form-item :label="`主体名称`" name="keyword" class="search-item">
+              <div class="item-condition">
+                <a-input
+                  v-model:value="queryParams.keyword"
+                  placeholder="请输入主体名称或者编码"
+                  class="width-100"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`专营店编码`" name="specialtyCode" class="search-item">
+              <div class="item-condition">
+                <a-input
+                  v-model:value="queryParams.specialtyCode"
+                  placeholder="请输入专营店编码"
+                  class="width-100"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`系统名称`" name="systemName" class="search-item">
+              <div class="item-condition">
+                <a-input
+                  v-model:value="queryParams.systemName"
+                  placeholder="请输入系统名称"
+                  class="width-100"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`有效期`" name="startEndTime" class="search-item">
+              <a-range-picker
+                v-model:value="queryParams.startEndTime"
+                format="YYYY/MM/DD"
+                :placeholder="['开始时间', '结束时间']"
+              />
+            </a-form-item>
+            <a-form-item :label="`状态`" name="status" class="search-item">
+              <div class="item-condition">
+                <a-select
+                  v-model:value="queryParams.status"
+                  placeholder="请选择状态"
+                  class="width-100"
+                  :options="state.statusOptions"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`主体类型`" name="type" class="search-item">
+              <div class="item-condition">
+                <a-select
+                  v-model:value="queryParams.type"
+                  placeholder="请选择主体类型"
+                  class="width-100"
+                  :options="state.majorIndividualTypeOptions"
+                />
+              </div>
+            </a-form-item>
+          </div>
 
-        <a-form-item :label="`状态`" name="status">
-          <a-select
-            v-model:value="queryParams.status"
-            placeholder="请选择状态"
-            style="width: 200px"
-            :options="state.statusOptions"
-          />
-        </a-form-item>
-        <a-form-item :label="`主体类型`" name="type">
-          <a-select
-            v-model:value="queryParams.type"
-            placeholder="请选择主体类型"
-            style="width: 200px"
-            :options="state.majorIndividualTypeOptions"
-          />
-        </a-form-item>
-        <a-button
-          type="primary"
-          html-type="submit"
-          @click="getList()"
-          v-hasPermi="['system:tenant:query']"
-          >查询</a-button
-        >
-        <a-button @click="resetQuery">重置</a-button>
+          <div class="search-btn-content">
+            <a-button
+              type="primary"
+              html-type="submit"
+              @click="getList()"
+              v-hasPermi="['system:tenant:query']"
+              >查询</a-button
+            >
+            <a-button @click="resetQuery">重置</a-button>
+          </div>
+        </div>
       </a-form>
     </a-card>
 
@@ -59,12 +90,7 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button
-            type="primary"
-            @click="openModal()"
-            v-if="state.isSuperAdmin"
-            v-hasPermi="['system:tenant:create']"
-          >
+          <a-button type="primary" @click="openModal()" v-hasPermi="['system:tenant:create']">
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -1052,7 +1078,12 @@
             </a-tooltip>
           </template>
 
-          <div v-if="childItem?.isSuperAdmin" class="send-code-btn" @click="resetPassword">
+          <div
+            v-if="childItem?.isSuperAdmin"
+            v-hasPermi="['system:tenant:reset-password']"
+            class="send-code-btn"
+            @click="resetPassword"
+          >
             重置密码
           </div>
         </div>
@@ -1230,6 +1261,7 @@ const queryParams: any = reactive({
   current: 1, //当前页码
   pageSize: 10, //显示条数
   keyword: undefined,
+  specialtyCode: undefined,
   systemName: undefined,
   startEndTime: [],
   status: undefined,
@@ -1682,6 +1714,7 @@ const getList = async (isRefresh = false) => {
     // pageNo: queryParams.current,
     // pageSize: queryParams.pageSize,
     keyword: queryParams.keyword,
+    specialtyCode: queryParams.specialtyCode,
     systemName: queryParams.systemName,
     status: queryParams.status,
     type: queryParams.type
@@ -1838,12 +1871,6 @@ const openModal = async (record: any = {}, isChildStore = false) => {
   }
   const res = await getSimpleTenantList()
   state.record = record
-
-  // let menuTree = []
-  // let menu = {}
-  // let menu: Tree = { id: 0, name: '顶层主体', children: [] }
-  // menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
-  // menuTree.push(menu)
   state.optionalMenuList = res
 
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
@@ -3030,7 +3057,11 @@ const getAllType = async () => {
 }
 
 // 新增、修改 主体类型
-const majorIndividualTypeChange = () => {
+const majorIndividualTypeChange = async () => {
+  //TODO 这块有空得让产品重新 罗列 重新写 改来改去的 openModal()
+  const res = await getSimpleTenantList()
+  state.optionalMenuList = res
+
   //  超管
   if (state.formState.majorIndividualType === 'manufacturer') {
     //  厂家
@@ -3050,7 +3081,7 @@ const majorIndividualTypeChange = () => {
     )
     state.formState.belongTenantId = state.record.id
   }
-
+  console.log('state.optionalMenuTreeChange1111', state.optionalMenuTreeChange)
   state.optionalMenuTreeChange = handleTree(
     state.optionalMenuTreeChange,
     'id',
@@ -3058,7 +3089,9 @@ const majorIndividualTypeChange = () => {
     'children'
   )
 
+  console.log('state.optionalMenuTreeChange2222', state.optionalMenuTreeChange)
   state.formState.belongTenantId = state.optionalMenuTreeChange[0]?.id
+  console.log('state.formState.belongTenantId', state.formState.belongTenantId)
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
@@ -3130,10 +3163,83 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+//========================== search start ==================================
+.search-form-style {
+  :deep(.ant-form-item) {
+    margin: 0;
+  }
+}
+
+.total-search-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.search-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  //flex: 1 3 auto;
+}
+
+.search-btn-content {
+  width: 150px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  //background: skyblue;
+  //flex: 1 1 auto;
+}
+
+.search-item {
+  display: flex;
+  //flex: 1;
+  margin-top: 10px;
+}
+
+.item-label {
+  width: 80px;
+  //margin-left: 10px;
+  display: flex;
+  //justify-content: flex-start;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.item-condition {
+  width: 180px;
+}
+
+.item-condition-date {
+  width: 240px;
+}
+
+.flex-style {
+  display: flex;
+}
+
+.select-input {
+  width: 270px;
+}
+
+.width-70 {
+  width: 70px;
+}
+
+.width-180 {
+  width: 180px;
+  flex: 1;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+//========================== search end ==================================
 .search-card {
   min-width: 1700px;
-  min-height: 72px;
-  padding: 20px;
+  //min-height: 72px;
+  padding: 0px 20px 10px 20px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
