@@ -129,6 +129,7 @@ export default {
     tenantNamePlaceholder: '请输入租户名称',
     usernamePlaceholder: '请输入用户名',
     passwordPlaceholder: '请输入密码',
+    newPasswordPlaceholder: '请输入8-16位数字和字母组合的密码',
     codePlaceholder: '请输入验证码',
     mobileTitle: '手机登录',
     mobileNumber: '手机号码',
@@ -139,7 +140,11 @@ export default {
     btnQRCode: '二维码登录',
     qrcode: '扫描二维码登录',
     btnRegister: '注册',
-    SmsSendMsg: '验证码已发送'
+    SmsSendMsg: '验证码已发送',
+    switchPasswordLogin: '切换密码登录',
+    switchVerificationCodeLogin: '切换手机验证码登录',
+    reset: '确认重置',
+    loginForAccount: '登录已有账号'
   },
   captcha: {
     verification: '请完成安全验证',

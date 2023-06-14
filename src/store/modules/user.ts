@@ -13,6 +13,7 @@ interface UserVO {
   avatar: string
   nickname: string
   username: string
+  isAdmin?: number
 }
 interface TenantVO {
   systemName?: string
@@ -37,7 +38,8 @@ export const useUserStore = defineStore('admin-user', {
       id: 0,
       avatar: '',
       nickname: '',
-      username: ''
+      username: '',
+      isAdmin: 0
     },
     tenant: {}
   }),
@@ -97,7 +99,8 @@ export const useUserStore = defineStore('admin-user', {
         id: 0,
         avatar: '',
         nickname: '',
-        username: ''
+        username: '',
+        isAdmin: 0
       }
       this.tenant = {}
     }

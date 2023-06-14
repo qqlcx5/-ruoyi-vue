@@ -58,7 +58,7 @@ const messageBox = useMessage()
 const userStore = useUserStoreWithOut()
 
 const canEditWatermark = computed(() => {
-  return userStore.getRoles.includes('super_admin') || userStore.getRoles.includes('tenant_admin')
+  return userStore.getUser.isAdmin === 1
 })
 
 const water = ref(userStore.getTenant.watermark || '')
@@ -187,9 +187,9 @@ const loading = ref(false)
 // 更新水印
 const handleUpdateWatermark = async () => {
   loading.value = true
-
   await updateWatermark({ watermark: water.value, watermarkVisible: checkValue.value ? 0 : 1 })
     .then((res) => {
+      console.log(res)
       if (!res) return messageBox.error('更新水印失败')
       messageBox.success('更新水印成功')
       userStore.setTenantAction(water.value)
@@ -198,6 +198,9 @@ const handleUpdateWatermark = async () => {
       } else {
         setWatermark(undefined)
       }
+    })
+    .catch(() => {
+      messageBox.error('更新水印失败')
     })
     .finally(() => {
       loading.value = false
@@ -325,9 +328,11 @@ watch(
   flex-wrap: wrap;
   justify-content: space-between;
 }
+
 .checkbox-style {
   width: 50%;
   margin-bottom: 16px;
+
   .el-checkbox {
     height: auto;
   }

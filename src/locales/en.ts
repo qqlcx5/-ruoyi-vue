@@ -129,6 +129,7 @@ export default {
     tenantNamePlaceholder: 'Please Enter Tenant Name',
     usernamePlaceholder: 'Please Enter Username',
     passwordPlaceholder: 'Please Enter Password',
+    newPasswordPlaceholder: 'Please Enter 8-16 password combination of Numbers and letters',
     codePlaceholder: 'Please Enter Verification Code',
     mobileTitle: 'Mobile sign in',
     mobileNumber: 'Mobile Number',
@@ -139,7 +140,11 @@ export default {
     btnQRCode: 'QR code sign in',
     qrcode: 'Scan the QR code to log in',
     btnRegister: 'Sign up',
-    SmsSendMsg: 'code has been sent'
+    SmsSendMsg: 'code has been sent',
+    switchPasswordLogin: 'Password Login',
+    switchVerificationCodeLogin: 'Verification Code Login',
+    reset: 'Reset Password',
+    loginForAccount: 'Login for Account'
   },
   captcha: {
     verification: 'Please complete security verification',
