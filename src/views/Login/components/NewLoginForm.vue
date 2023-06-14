@@ -476,7 +476,16 @@ const getTenant = async (data) => {
       authUtil.setTenantId(defaultTenant.tenantId)
       await handleLogin(defaultTenant)
     } else {
-      switchTenantRef.value.openDialog(tenantList, '', loginData.loginForm)
+      if (getLoginState.value === LoginStateEnum.LOGIN) {
+        switchTenantRef.value.openDialog(tenantList, '', {
+          username: loginData.loginForm.username,
+          password: loginData.loginForm.password
+        })
+      } else if (getLoginState.value === LoginStateEnum.MOBILE) {
+        switchTenantRef.value.openDialog(tenantList, '', {
+          mobileNumber: loginData.loginForm.mobileNumber
+        })
+      }
     }
   }
 }
