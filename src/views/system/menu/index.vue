@@ -481,6 +481,7 @@
     v-model:visible="state.isShowDelete"
     destroyOnClose
     :closable="false"
+    @cancel="closeDeleteModal"
     :width="state.deleteModalWidth"
     :bodyStyle="{
       width: '100%',
@@ -645,7 +646,10 @@
     >
       <div class="employees-info-card">
         <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
-        <template v-for="(childrenItem, childrenIndex) in item.postInfo">
+        <template
+          v-for="(childrenItem, childrenIndex) in item.postInfo"
+          :key="`postStyle${childrenIndex}`"
+        >
           <div v-html="childrenItem.post" class="post-style"></div>
 
           <div class="employees-name-content">
@@ -983,9 +987,9 @@ const layout = {
  * */
 const getList = async (isRefresh = false) => {
   //无查询按钮权限 不请求
-  if (!hasPermission('system:menu:query')) {
-    return
-  }
+  // if (!hasPermission('system:menu:query')) {
+  //   return
+  // }
   loading.value = true
   try {
     const res = await MenuApi.getMenuList(queryParams)

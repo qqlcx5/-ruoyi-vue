@@ -1151,6 +1151,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     wrapClassName="status-change-modal"
     width="424px"
     :bodyStyle="{
@@ -1967,9 +1968,9 @@ const allColumns = [
  * */
 const getList = async (isRefresh = false) => {
   //无查询按钮权限 不请求
-  if (!hasPermission('system:organization:query')) {
-    return
-  }
+  // if (!hasPermission('system:organization:query')) {
+  //   return
+  // }
   state.loading = true
   const params = {
     // pageNo: queryParams.current,

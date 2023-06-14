@@ -25,6 +25,11 @@ export const getMemberAllList = (params: MajorIndividual) => {
   return request.get({ url: '/system/user/list-all-simple', params })
 }
 
+// 主体管理下查询 负责人
+export const getMemberAllListBusiness = (params) => {
+  return request.get({ url: '/system/user/list-for-tenant', params })
+}
+
 // 成员id获取手机号
 export const getMemberPhoneList = (params: MajorIndividual) => {
   return request.get({ url: '/system/user/extra/get_phone_list', params })

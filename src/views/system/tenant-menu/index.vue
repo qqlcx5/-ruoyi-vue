@@ -918,9 +918,9 @@ const layout = {
  * */
 const getList = async (isRefresh = false) => {
   //无查询按钮权限 不请求
-  if (!hasPermission('system:tenant-menu:query')) {
-    return
-  }
+  // if (!hasPermission('system:tenant-menu:query')) {
+  //   return
+  // }
   loading.value = true
   try {
     // const res = await MenuApi.getMenuList(queryParams)

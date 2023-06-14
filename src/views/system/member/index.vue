@@ -590,7 +590,7 @@
               :pagination="false"
               @resizeColumn="handleResizeColumn"
             >
-              <template #bodyCell="{ column, text, record, index }">
+              <template #bodyCell="{ column, record, index }">
                 <template v-if="column.key === 'phoneType'">
                   <div>
                     <a-radio-group
@@ -992,6 +992,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -1830,10 +1831,10 @@ const allColumns = [
 
 /** 查询列表 */
 const getList = async (page, isRefresh = false) => {
-  //无查询按钮权限 不请求
-  if (!hasPermission('system:user:list')) {
-    return
-  }
+  // //无查询按钮权限 不请求
+  // if (!hasPermission('system:user:list')) {
+  //   return
+  // }
 
   state.loading = true
 
@@ -3689,7 +3690,8 @@ const addDataSource = reactive({
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: true
+      isService: true,
+      existWXWork: true
     }
   ]
 })

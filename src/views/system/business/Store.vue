@@ -775,7 +775,7 @@ import {
   getStoreList,
   updateOrganizationStore
 } from '@/api/system/organization'
-import { getMemberAllList, getMemberPhoneList } from '@/api/system/member'
+import { getMemberAllList, getMemberAllListBusiness, getMemberPhoneList } from '@/api/system/member'
 import { reconstructedTreeData, reconstructionArrayObject } from '@/utils/utils'
 import { message, Upload, UploadChangeParam, UploadProps } from 'ant-design-vue'
 import { getAccessToken, getTenantId } from '@/utils/auth'
@@ -1633,7 +1633,14 @@ const getOrganizationTypeListFN = async () => {
   state.maintenanceBrandOptions = res.filter((item) => item.dictType === 'maintenanceBrand')
   //获取成员列表(不分页) 新增编辑 modal内的负责人list
   // const memberRes = await getMemberList()
-  const memberRes = await getMemberAllList()
+  let memberRes = []
+  if (props.fromPage === 'business') {
+    //主体管理
+    memberRes = await getMemberAllListBusiness()
+  } else {
+    //机构管理页面
+    memberRes = await getMemberAllList()
+  }
   //username nickname
   const needReplacePartPostKey = [
     ['tempLabel', 'nickname'],
