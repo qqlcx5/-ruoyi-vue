@@ -525,6 +525,7 @@ const submitTypeForm = async () => {
       // 提交请求
       try {
         const data = unref(typeFormRef)?.formModel as DictTypeReqVO
+        data.status = CommonStatusEnum.ENABLE
         if (actionType.value === 'typeCreate') {
           data.type = dictTypeValue.value
           await DictTypeApi.createDictTypeApi(data)

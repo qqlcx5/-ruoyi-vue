@@ -2,11 +2,31 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 import type { Router, RouteLocationNormalized, RouteRecordNormalized } from 'vue-router'
 import { isUrl } from '@/utils/is'
 import { omit, cloneDeep } from 'lodash-es'
+import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 
 const modules = import.meta.glob('../views/**/*.{vue,tsx}')
 
 /* Layout */
 export const Layout = () => import('@/layout/Layout.vue')
+
+/* 有无菜单、按钮、目录权限 */
+export const hasPermission = (value: string[]) => {
+  const { wsCache } = useCache()
+  const { t } = useI18n()
+  const all_permission = '*:*:*'
+  const permissions = wsCache.get(CACHE_KEY.USER).permissions
+  if (value && value instanceof Array && value.length > 0) {
+    const permissionFlag = value
+
+    const hasPermissions = permissions.some((permission: string) => {
+      return all_permission === permission || permissionFlag.includes(permission)
+    })
+
+    return hasPermissions
+  } else {
+    throw new Error(t('permission.hasPermission'))
+  }
+}
 
 export const getParentLayout = () => {
   return () =>

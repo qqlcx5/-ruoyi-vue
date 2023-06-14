@@ -284,8 +284,14 @@ const validatePassword = (rule: any, value: any, callback: any) => {
 
 const LoginRules = computed(() => {
   return {
-    username: [{ required, message: '请输入用户名' }],
-    password: [{ required, min: 8, message: '请输入至少8位密码' }],
+    username: [{ required: getLoginState.value === LoginStateEnum.LOGIN, message: '请输入用户名' }],
+    password: [
+      {
+        required: getLoginState.value === LoginStateEnum.LOGIN,
+        min: 8,
+        message: '请输入至少8位密码'
+      }
+    ],
     mobileNumber: [
       {
         required: [LoginStateEnum.RESET_PASSWORD, LoginStateEnum.MOBILE].includes(
@@ -397,13 +403,6 @@ const getCode = async () => {
       return
     }
     // 情况二，已开启：则展示验证码；只有完成验证码的情况，才进行登录
-    // 弹出验证码
-    const data = await validForm().catch((error) => {
-      console.error(error)
-    })
-    if (!data) {
-      return
-    }
     verify.value.show()
   }
 }
@@ -518,7 +517,6 @@ const handleLogin = async (tenantData?) => {
     isFirstLogin.value = res.firstLogin === 1
     if (loginData.loginForm.rememberMe) {
       authUtil.setLoginForm({ ...loginData.loginForm })
-      console.log(authUtil.getLoginForm())
     } else {
       authUtil.removeLoginForm()
     }
