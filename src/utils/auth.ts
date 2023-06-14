@@ -103,3 +103,17 @@ export const setTenantData = (data) => {
 export const removeTenantData = () => {
   wsCache.delete(TenantDataKey)
 }
+
+// ========== 登录相关 ==========
+const LoginDataKey = 'LOGIN_DATA'
+export const getLoginData = () => {
+  return wsCache.get(LoginDataKey)
+}
+
+export const setLoginData = (data) => {
+  wsCache.set(LoginDataKey, data)
+}
+
+export const removeLoginData = () => {
+  wsCache.delete(LoginDataKey)
+}

@@ -14,13 +14,14 @@ import { Icon } from '@/components/Icon'
 import SwitchTenant from '@/layout/components/SwitchTenant/index.vue'
 import { useUserStoreWithOut } from '@/store/modules/user'
 import { getTenantById, handoffTenant } from '@/api/login'
-import { getTenantData, getTenantId, setTenantId } from '@/utils/auth'
+import { getLoginData, getTenantData, getTenantId, setTenantId } from '@/utils/auth'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import router from '@/router'
 import { RouteRecordRaw } from 'vue-router'
 import { usePermissionStoreWithOut } from '@/store/modules/permission'
 import * as authUtil from '@/utils/auth'
 import { ElLoading } from 'element-plus'
+import { LoginStateEnum } from '@/views/Login/components/useLogin'
 
 const { getPrefixCls, variables } = useDesign()
 
@@ -64,7 +65,16 @@ export default defineComponent({
     })
     // 切换主体
     const switchTenant = async () => {
-      await getTenantById({ tenantId: getTenantId() }).then((res) => {
+      const loginData = getLoginData()
+      let params: any = { loginTypeEnum: 'USERNAME' }
+      if (loginData.loginType === LoginStateEnum.MOBILE) {
+        params = {
+          tenantId: getTenantId(),
+          loginTypeEnum: 'PHONE',
+          phone: loginData.phone
+        }
+      }
+      await getTenantById(params).then((res) => {
         if (!res) return messageBox.error('获取可选主体失败')
         let tenantList: any[] = []
         res.forEach((tenant) => {
@@ -80,8 +90,18 @@ export default defineComponent({
         text: '正在切换主体中...',
         background: 'rgba(0, 0, 0, 0.7)'
       })
+      const loginData = getLoginData()
+      let params: any = { tenantId: data.tenantId }
+      console.log(loginData.loginType === LoginStateEnum.MOBILE)
+      if (loginData.loginType === LoginStateEnum.MOBILE) {
+        params = {
+          tenantId: data.tenantId,
+          loginTypeEnum: 'PHONE',
+          phone: loginData.phone
+        }
+      }
       // 重新设置token信息
-      await handoffTenant({ tenantId: data.tenantId }).then((res) => {
+      await handoffTenant(params).then((res) => {
         if (!res) return messageBox.error('获取新主体token失败')
         authUtil.setToken(res)
       })

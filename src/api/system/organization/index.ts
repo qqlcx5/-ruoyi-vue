@@ -25,6 +25,11 @@ export const getSimpleOrganizationList = (params) => {
   return request.get({ url: '/system/organization/list-all-simple', params })
 }
 
+// 获取上级机构列表 子门店 获取上级门店
+export const getStoreList = (params) => {
+  return request.get({ url: '/system/organization/store-list', params })
+}
+
 // 获取上级机构列表() 成员管理 左侧 部门
 export const getDeptList = (params) => {
   return request.get({ url: '/system/user/extra/list-org', params })

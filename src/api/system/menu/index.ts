@@ -64,6 +64,11 @@ export const updateMenuStatus = (data) => {
   return request.put({ url: '/system/menu/update/status', data })
 }
 
+// 修改菜单显示状态
+export const updateMenuVisibleStatus = (data) => {
+  return request.put({ url: '/system/menu/update/visible', data })
+}
+
 // 删除菜单
 export const deleteMenu = (id: number) => {
   return request.delete({ url: '/system/menu/delete?id=' + id })

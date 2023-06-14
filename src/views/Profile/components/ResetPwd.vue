@@ -1,14 +1,17 @@
 <template>
   <el-form ref="formRef" :model="password" :rules="rules" label-width="80px">
-    <el-form-item :label="t('profile.password.oldPassword')">
+    <el-form-item :label="t('profile.password.oldPassword')" prop="oldPassword">
       <InputPassword v-model="password.oldPassword" />
     </el-form-item>
-    <el-form-item :label="t('profile.password.newPassword')">
+    <el-form-item :label="t('profile.password.newPassword')" prop="newPassword">
       <InputPassword v-model="password.newPassword" strength />
     </el-form-item>
-    <el-form-item :label="t('profile.password.confirmPassword')">
+    <el-form-item :label="t('profile.password.confirmPassword')" prop="confirmPassword">
       <InputPassword v-model="password.confirmPassword" strength />
     </el-form-item>
+    <div class="pwd-tip"
+      >注：密码长度不能少于8位，需包含大写字母、小写字母、数字、特殊符号至少3种及以上元素</div
+    >
     <el-form-item>
       <XButton type="primary" @click="submit(formRef)" :title="t('common.save')" />
       <XButton type="danger" :title="t('common.reset')" @click="reset(formRef)" />
@@ -20,9 +23,15 @@ import type { FormRules, FormInstance } from 'element-plus'
 
 import { InputPassword } from '@/components/InputPassword'
 import { updateUserPwdApi } from '@/api/system/user/profile'
+import { useUserStoreWithOut } from '@/store/modules/user'
+import { useTagsViewStore } from '@/store/modules/tagsView'
 
 const { t } = useI18n()
 const message = useMessage()
+const userStore = useUserStoreWithOut()
+const tagsViewStore = useTagsViewStore()
+const { replace } = useRouter()
+
 const formRef = ref<FormInstance>()
 const password = reactive({
   oldPassword: '',
@@ -31,21 +40,31 @@ const password = reactive({
 })
 
 // 表单校验
-const equalToPassword = (value, callback) => {
-  if (password.newPassword !== value) {
+const equalToPassword = (rule, value, callback) => {
+  if (password.newPassword !== value && value !== password.newPassword) {
     callback(new Error(t('profile.password.diffPwd')))
   } else {
     callback()
   }
 }
+const newPassword = (rule, value, callback) => {
+  const reg =
+    /^(?![A-Za-z]+$)(?![A-Z\d]+$)(?![A-Z\W]+$)(?![a-z\d]+$)(?![a-z\W]+$)(?![\d\W]+$)\S{8,}$/
+  if (!reg.test(value)) {
+    callback(new Error('密码应为数字、大小写字母、特殊字符中的至少3种组成'))
+  } else {
+    callback()
+  }
+}
 const rules = reactive<FormRules>({
-  oldPassword: [
-    { required: true, message: t('profile.password.oldPwdMsg'), trigger: 'blur' },
-    { min: 3, max: 5, message: t('profile.password.pwdRules'), trigger: 'blur' }
-  ],
+  oldPassword: [{ required: true, message: t('profile.password.oldPwdMsg'), trigger: 'blur' }],
   newPassword: [
-    { required: true, message: t('profile.password.newPwdMsg'), trigger: 'blur' },
-    { min: 6, max: 20, message: t('profile.password.pwdRules'), trigger: 'blur' }
+    {
+      required: true,
+      validator: newPassword,
+      trigger: 'blur'
+    },
+    { min: 8, max: 20, message: t('profile.password.pwdRules'), trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: t('profile.password.cfPwdMsg'), trigger: 'blur' },
@@ -58,6 +77,10 @@ const submit = (formEl: FormInstance | undefined) => {
     if (valid) {
       await updateUserPwdApi(password.oldPassword, password.newPassword)
       message.success(t('common.updateSuccess'))
+      // 退出登录
+      await userStore.loginOut()
+      tagsViewStore.delAllViews()
+      replace('/login?redirect=/index')
     }
   })
 }
@@ -66,3 +89,10 @@ const reset = (formEl: FormInstance | undefined) => {
   formEl.resetFields()
 }
 </script>
+<style lang="scss" scoped>
+.pwd-tip {
+  margin-bottom: 56px;
+  margin-left: 80px;
+  color: $error-color;
+}
+</style>

@@ -3,7 +3,7 @@
     :class="prefixCls"
     class="h-[100%] relative flex justify-center items-center <xl:bg-v-dark <sm:px-10px <xl:px-10px <md:px-10px"
   >
-    <div class="flex w-1100px h-712px">
+    <div class="flex w-1062px h-668px">
       <div :class="`login-left-block ${prefixCls}__left flex-1 pl-50px relative <xl:hidden`">
         <div class="mt-70px mb-20px text-40px">Hello</div>
         <div class="text-30px leading-tight">欢迎登录{{ underlineToHump(appStore.getTitle) }}</div>
@@ -15,6 +15,7 @@
         <NewLoginForm />
       </div>
     </div>
+    <LoginFooter class="absolute bottom-24px" />
   </div>
 </template>
 <script setup lang="ts">
@@ -23,6 +24,7 @@ import { underlineToHump } from '@/utils'
 import { useDesign } from '@/hooks/web/useDesign'
 import { useAppStore } from '@/store/modules/app'
 import { NewLoginForm } from './components'
+import LoginFooter from './components/LoginFooter.vue'
 
 const appStore = useAppStore()
 const { getPrefixCls } = useDesign()
@@ -35,6 +37,7 @@ $prefix-cls: #{$namespace}-login;
 .#{$prefix-cls} {
   background: url('@/assets/imgs/login-bg.png') no-repeat center;
   background-size: cover;
+
   &__left {
     &::before {
       position: absolute;
@@ -49,14 +52,16 @@ $prefix-cls: #{$namespace}-login;
       content: '';
     }
   }
+
   .login-left-block {
-    color: #ffffff;
+    color: #fff;
     background: url('@/assets/imgs/login-block.png') no-repeat center;
     background-size: contain;
   }
+
   .login-right-block {
-    background-color: #ffffff;
-    box-shadow: 6px 5px 16px 0px rgba(212, 212, 212, 0.5);
+    background-color: #fff;
+    box-shadow: 6px 5px 16px 0 rgb(212 212 212 / 50%);
   }
 }
 </style>

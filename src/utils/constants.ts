@@ -219,7 +219,33 @@ export const PayRefundStatusEnum = {
 
 export const organizationType = {
   store: 'store', //门店
-  branchCompany: 'branchCompany' //分公司
+  storeText: '门店',
+  department: 'department', //部门
+  departmentText: '部门',
+  branchCompany: 'branchCompany', //分公司
+  branchCompanyText: '分公司',
+  company: 'company', //公司
+  companyText: '公司'
+}
+
+export const majorIndividualType = {
+  dealer: 'dealer', //经销商
+  dealerText: '经销商',
+  manufacturer: 'manufacturer', //厂家
+  manufacturerText: '厂家'
+}
+
+export const storeSubType = {
+  popStore: 'popStore', //快闪店
+  popStoreText: '快闪店',
+  cityHall: 'cityHall', //城市展厅
+  cityHallText: '城市展厅'
+}
+
+export const organizationCategory = {
+  organization: '0', //非门店与子门店的 其他机构
+  store: '1', //门店
+  childStore: '2' //子门店
 }
 
 //定制列缓存 页面pageKey

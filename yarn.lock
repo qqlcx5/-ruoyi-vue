@@ -4943,6 +4943,11 @@ js-base64@^3.7.5:
   resolved "https://registry.npmmirror.com/js-base64/-/js-base64-3.7.5.tgz#21e24cf6b886f76d6f5f165bfcd69cc55b9e3fca"
   integrity sha512-3MEt5DTINKqfScXKfJFrRbxkrnk2AxPWGBL/ycjz4dK8iqiSJ06UxD8jh8xuh6p10TX4t2+7FsBYVxxQbMg+qA==
 
+js-pinyin@^0.2.4:
+  version "0.2.4"
+  resolved "https://registry.npmmirror.com/js-pinyin/-/js-pinyin-0.2.4.tgz#8a8df3cd1f831ba58d30bb91306ddbb5ef77e3d1"
+  integrity sha512-JyWqZqdypu5R8QqTHRV/w6Y+3sxFqiTrnbodAj0d5SwfHIHg0gJBmsXv+kXd6NHkHrk37VrQ7WaAwungX+Ny0Q==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmmirror.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
