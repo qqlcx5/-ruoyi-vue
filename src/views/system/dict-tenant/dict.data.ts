@@ -69,8 +69,7 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         component: 'Switch',
         componentProps: {
           activeValue: 0,
-          inactiveValue: 1,
-          disabled: true
+          inactiveValue: 1
         },
         colProps: {
           span: 24
