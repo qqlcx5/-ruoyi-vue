@@ -1636,7 +1636,14 @@ const getOrganizationTypeListFN = async () => {
   let memberRes = []
   if (props.fromPage === 'business') {
     //主体管理
-    memberRes = await getMemberAllListBusiness()
+    //TODO 主体管理内 门店与子门店 需要tenantId  没空没空 先全上 有空再看取哪个
+    memberRes = await getMemberAllListBusiness({
+      tenantId:
+        props.editRecord.belongTenantId ||
+        props.editRecord.tenantId ||
+        props.useStoreList.belongTenantId ||
+        state.formState.belongTenantId
+    })
   } else {
     //机构管理页面
     memberRes = await getMemberAllList()
