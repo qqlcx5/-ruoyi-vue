@@ -56,7 +56,7 @@ const newSchema = computed(() => {
   if (props.layout === 'inline') {
     schema = schema.concat([
       {
-        field: 'action',
+        field: 'operate',
         formItemProps: {
           labelWidth: '0px'
         }
@@ -109,14 +109,12 @@ const setVisible = () => {
     :schema="newSchema"
     @register="register"
   >
-    <template #action>
+    <template #operate>
       <div v-if="layout === 'inline'">
         <ElButton v-if="showSearch" type="primary" @click="search">
-          <Icon icon="ep:search" class="mr-5px" />
           {{ t('common.query') }}
         </ElButton>
         <ElButton v-if="showReset" @click="reset">
-          <Icon icon="ep:refresh-right" class="mr-5px" />
           {{ t('common.reset') }}
         </ElButton>
         <ElButton v-if="expand" text @click="setVisible">
@@ -125,7 +123,7 @@ const setVisible = () => {
         </ElButton>
       </div>
     </template>
-    <template v-for="(slot, name) in slots" #[name]><slot :name="name"></slot></template>
+    <template v-for="(_slot, name) in slots" #[name]><slot :name="name"></slot></template>
   </Form>
 
   <template v-if="layout === 'bottom'">

@@ -2,6 +2,7 @@
   <el-form
     :model="loginData.loginForm"
     :rules="LoginRules"
+    :validate-on-rule-change="false"
     label-position="top"
     class="login-form w-full"
     label-width="120px"
@@ -61,6 +62,7 @@
               type="password"
               :placeholder="t('login.passwordPlaceholder')"
               show-password
+              minlength="8"
               @keyup.enter="getCode()"
             >
               <template #prefix>
@@ -282,8 +284,14 @@ const validatePassword = (rule: any, value: any, callback: any) => {
 
 const LoginRules = computed(() => {
   return {
-    username: [required],
-    password: [required],
+    username: [{ required: getLoginState.value === LoginStateEnum.LOGIN, message: '请输入用户名' }],
+    password: [
+      {
+        required: getLoginState.value === LoginStateEnum.LOGIN,
+        min: 8,
+        message: '请输入至少8位密码'
+      }
+    ],
     mobileNumber: [
       {
         required: [LoginStateEnum.RESET_PASSWORD, LoginStateEnum.MOBILE].includes(
@@ -317,9 +325,9 @@ const loginData = reactive({
   captchaEnable: import.meta.env.VITE_APP_CAPTCHA_ENABLE,
   tenantEnable: import.meta.env.VITE_APP_TENANT_ENABLE,
   loginForm: {
-    tenantName: '万车利源码',
-    username: 'admin',
-    password: 'admin123',
+    tenantName: '',
+    username: '', // admin
+    password: '', // admin123
     newPassword: '',
     mobileNumber: '',
     code: '',
@@ -395,7 +403,6 @@ const getCode = async () => {
       return
     }
     // 情况二，已开启：则展示验证码；只有完成验证码的情况，才进行登录
-    // 弹出验证码
     verify.value.show()
   }
 }
@@ -509,7 +516,7 @@ const handleLogin = async (tenantData?) => {
     })
     isFirstLogin.value = res.firstLogin === 1
     if (loginData.loginForm.rememberMe) {
-      authUtil.setLoginForm(loginData.loginForm)
+      authUtil.setLoginForm({ ...loginData.loginForm })
     } else {
       authUtil.removeLoginForm()
     }

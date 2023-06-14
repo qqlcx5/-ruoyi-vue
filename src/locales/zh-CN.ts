@@ -131,12 +131,12 @@ export default {
     passwordPlaceholder: '请输入密码',
     newPasswordPlaceholder: '请输入8-16位数字和字母组合的密码',
     codePlaceholder: '请输入验证码',
-    mobileTitle: '手机登录',
+    mobileTitle: '验证码登录',
     mobileNumber: '手机号码',
     mobileNumberPlaceholder: '请输入手机号码',
     backLogin: '返回',
     getSmsCode: '获取验证码',
-    btnMobile: '手机登录',
+    btnMobile: '验证码登录',
     btnQRCode: '二维码登录',
     qrcode: '扫描二维码登录',
     btnRegister: '注册',
@@ -367,7 +367,7 @@ export default {
     login: {
       backSignIn: '返回',
       signInFormTitle: '登录',
-      mobileSignInFormTitle: '手机登录',
+      mobileSignInFormTitle: '验证码登录',
       qrSignInFormTitle: '二维码登录',
       signUpFormTitle: '注册',
       forgetFormTitle: '重置密码',
@@ -433,7 +433,7 @@ export default {
       oldPwdMsg: '请输入旧密码',
       newPwdMsg: '请输入新密码',
       cfPwdMsg: '请输入确认密码',
-      pwdRules: '长度在 6 到 20 个字符',
+      pwdRules: '密码长度在 8 到 16 个字符',
       diffPwd: '两次输入密码不一致'
     }
   },

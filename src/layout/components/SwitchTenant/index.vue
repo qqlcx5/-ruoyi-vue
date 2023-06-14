@@ -40,8 +40,9 @@
 </template>
 <script setup lang="ts">
 import { updateDefaultTenant, updateDefaultTenantByUserName } from '@/api/login/index'
-import { getAccessToken } from '@/utils/auth'
+import { getAccessToken, getLoginData } from '@/utils/auth'
 import * as authUtil from '@/utils/auth'
+import { LoginStateEnum } from '@/views/Login/components/useLogin'
 
 // 字典未登录无法获取，先写死
 const TenantMap = {
@@ -71,14 +72,18 @@ const handleItemClick = (item) => {
 // 设置默认主体
 const setDefaultLoginTenant = async (item) => {
   let res = null
+  const loginData = getLoginData()
+  let params = { tenantId: item.tenantId }
+  if (loginData.loginType === LoginStateEnum.LOGIN) {
+    params['loginTypeEnum'] = 'USERNAME'
+  } else if (loginData.loginType === LoginStateEnum.MOBILE) {
+    params['loginTypeEnum'] = 'PHONE'
+  }
   if (getAccessToken()) {
-    res = await updateDefaultTenant({ tenantId: item.tenantId })
+    res = await updateDefaultTenant(params)
   } else {
-    const params = {
-      tenantId: item.tenantId,
-      username: loginForm.value.username,
-      password: loginForm.value.password
-    }
+    params['username'] = loginForm.value.username
+    params['password'] = loginForm.value.password
     res = await updateDefaultTenantByUserName(params)
   }
   if (!res) return message.error('设置默认主体失败')

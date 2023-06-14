@@ -53,12 +53,12 @@
       </template>
       <template #status_default="{ row }">
         <el-switch
-          v-hasPermi="['system:role:update-status']"
           v-model="row.status"
           :active-value="0"
           :inactive-value="1"
           @click.stop
           @change="roleStatusChange(row)"
+          :disabled="!hasPermission(['system:role:update-status'])"
         />
       </template>
       <template #actionbtns_default="{ row }">
@@ -140,6 +140,7 @@ import * as RoleApi from '@/api/system/role'
 import ConfigDetailDrawer from './component/ConfigDetailDrawer.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
+import { hasPermission } from '@/utils/routerHelper'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗

@@ -57,7 +57,12 @@ const getIconName = computed(() => (unref(textType) === 'password' ? 'ep:hide' :
 
 <template>
   <div :class="[prefixCls, `${prefixCls}--${configGlobal?.size}`]">
-    <ElInput v-bind="$attrs" v-model="valueRef" :type="textType">
+    <ElInput
+      v-bind="$attrs"
+      v-model="valueRef"
+      :type="textType"
+      @input="(val) => (valueRef = val.replace(/[\u4e00-\u9fa5\s]+/g, ''))"
+    >
       <template #suffix>
         <Icon class="el-input__icon cursor-pointer" :icon="getIconName" @click="changeTextType" />
       </template>
@@ -94,7 +99,7 @@ $prefix-cls: #{$namespace}-input-password;
       background-color: transparent;
       border-color: var(--el-color-white);
       border-style: solid;
-      border-width: 0 5px 0 5px;
+      border-width: 0 5px;
       content: '';
     }
 

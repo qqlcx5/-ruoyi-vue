@@ -78,23 +78,30 @@
         <el-divider class="!mt-0 !mb-16px" />
         <XTable @register="registerType" @cell-click="cellClickEvent">
           <!-- 操作：新增类型 -->
-          <template #toolbar_buttons></template>
-          <template #status_default="{ row }">
-            <el-switch
-              v-hasPermi="['system:tenant-dict-data:update']"
-              v-model="row.status"
-              :active-value="0"
-              :inactive-value="1"
-              @click.stop
-              @change="handleStatusChange(row, 'type')"
-              disabled
-            />
+          <template #toolbar_buttons>
+            <!--            <XButton-->
+            <!--              type="primary"-->
+            <!--              iconFont="icon-xinzeng"-->
+            <!--              :title="t('action.add')"-->
+            <!--              @click="handleTypeCreate()"-->
+            <!--            />-->
+            <!--          </template>-->
+            <!--          <template #status_default="{ row }">-->
+            <!--            <el-switch-->
+            <!--              v-hasPermi="['system:tenant-dict-type:update']"-->
+            <!--              v-model="row.status"-->
+            <!--              :active-value="0"-->
+            <!--              :inactive-value="1"-->
+            <!--              @click.stop-->
+            <!--              @change="handleStatusChange(row, 'type')"-->
+            <!--              disabled-->
+            <!--            />-->
           </template>
           <template #actionbtns_default="{ row }">
             <!-- 操作：编辑类型 -->
             <XTextButton
               :title="t('action.edit')"
-              v-hasPermi="['system:tenant-dict-data:update']"
+              v-hasPermi="['system:tenant-dict-type:update']"
               @click="handleTypeUpdate(row.id)"
             />
           </template>
@@ -143,24 +150,23 @@
                 type="primary"
                 iconFont="icon-xinzeng"
                 :title="t('action.add')"
-                v-hasPermi="['system:tenant-dict-data:create']"
+                v-hasPermi="['system:tenant-dict:create']"
                 @click="handleDataCreate()"
               />
             </template>
             <template #status_default="{ row }">
               <el-switch
-                v-hasPermi="['system:tenant-dict-data:update']"
+                v-hasPermi="['system:tenant-dict:update']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"
                 @change="handleStatusChange(row, 'data')"
-                disabled
               />
             </template>
             <template #actionbtns_default="{ row }">
               <!-- 操作：修改数据 -->
               <XTextButton
-                v-hasPermi="['system:tenant-dict-data:update']"
+                v-hasPermi="['system:tenant-dict:update']"
                 :title="t('action.edit')"
                 @click="handleDataUpdate(row.id)"
               />
@@ -293,24 +299,23 @@
             type="primary"
             iconFont="icon-xinzeng"
             :title="t('action.add')"
-            v-hasPermi="['system:tenant-dict-data:create']"
+            v-hasPermi="['system:tenant-dict:create']"
             @click="handleDataCreate('dataLevel3Create')"
           />
         </template>
         <template #status_default="{ row }">
           <el-switch
-            v-hasPermi="['system:tenant-dict-data:update']"
+            v-hasPermi="['system:tenant-dict:update']"
             v-model="row.status"
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(row, 'dataLevel3')"
-            disabled
           />
         </template>
         <template #actionbtns_default="{ row }">
           <!-- 操作：修改数据 -->
           <XTextButton
-            v-hasPermi="['system:tenant-dict-data:update']"
+            v-hasPermi="['system:tenant-dict:update']"
             :title="t('action.edit')"
             @click="handleDataUpdate(row.id, 'dataLevel3Update')"
           />
@@ -384,6 +389,10 @@ const [registerDataLevel3, { reload: dataLevel3GetList, search: dataLevel3Search
 
 // ========== 字典分类列表相关 ==========
 const dictTypeValue = ref('')
+// const handleTypeCreate = () => {
+//   dictTypeValue.value = ''
+//   setDialogTile('typeCreate')
+// }
 const handleTypeUpdate = async (rowId: number) => {
   setDialogTile('typeUpdate')
   // 设置数据
@@ -516,6 +525,7 @@ const submitTypeForm = async () => {
       // 提交请求
       try {
         const data = unref(typeFormRef)?.formModel as DictTypeReqVO
+        data.status = CommonStatusEnum.ENABLE
         if (actionType.value === 'typeCreate') {
           data.type = dictTypeValue.value
           await DictTypeApi.createDictTypeApi(data)

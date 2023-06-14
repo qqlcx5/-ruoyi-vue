@@ -13,3 +13,8 @@ export const uploadFile = async (data) => {
     data
   })
 }
+
+// 获取树形门店数据
+export const treeShopData = async () => {
+  return await request.get({ url: '/system/department/get/shop/tree' })
+}

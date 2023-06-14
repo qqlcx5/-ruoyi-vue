@@ -158,6 +158,7 @@ export default defineComponent({
           // 如果是 Divider 组件，需要自己占用一行
           const isDivider = item.component === 'Divider'
           const Com = componentMap['Divider'] as ReturnType<typeof defineComponent>
+
           return isDivider ? (
             <Com {...{ contentPosition: 'left', ...item.componentProps }}>{item?.label}</Com>
           ) : isCol ? (
@@ -176,6 +177,7 @@ export default defineComponent({
       const slotsMap: Recordable = {
         ...setItemComponentSlots(slots, item?.componentProps?.slots, item.field)
       }
+
       if (
         item?.component !== 'SelectV2' &&
         item?.component !== 'Cascader' &&
@@ -185,6 +187,7 @@ export default defineComponent({
       }
 
       const formItemSlots: Recordable = setFormItemSlots(slots, item.field)
+
       // 如果有 labelMessage，自动使用插槽渲染
       if (item?.labelMessage) {
         formItemSlots.label = () => {
@@ -208,6 +211,7 @@ export default defineComponent({
           )
         }
       }
+
       return (
         <ElFormItem {...(item.formItemProps || {})} prop={item.field} label={item.label || ''}>
           {{

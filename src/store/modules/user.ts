@@ -1,6 +1,6 @@
 import { store } from '../index'
 import { defineStore } from 'pinia'
-import { getAccessToken, removeToken } from '@/utils/auth'
+import { getAccessToken, removeToken, getLoginForm, setLoginForm } from '@/utils/auth'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import { getInfoApi, loginOutApi } from '@/api/login'
 import { useWatermark } from '@/hooks/web/useWatermark'
@@ -86,10 +86,12 @@ export const useUserStore = defineStore('admin-user', {
     },
     async loginOut() {
       await loginOutApi()
+      const loginForm = getLoginForm()
       clear()
       removeToken()
       wsCache.clear()
       this.resetState()
+      if (loginForm) setLoginForm(loginForm)
     },
     resetState() {
       this.permissions = []
