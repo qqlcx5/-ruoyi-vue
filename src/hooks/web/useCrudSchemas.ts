@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, createVNode } from 'vue'
 import { AxiosPromise } from 'axios'
 import { findIndex } from '@/utils'
 import { eachTree, treeMap, filter } from '@/utils/tree'
@@ -8,6 +8,7 @@ import { FormSchema } from '@/types/form'
 import { TableColumn } from '@/types/table'
 import { DescriptionsSchema } from '@/types/descriptions'
 import { ComponentOptions, ComponentProps } from '@/types/components'
+import { DictTag } from '@/components/DictTag'
 
 export type CrudSchema = Omit<TableColumn, 'children'> & {
   isSearch?: boolean // 是否在查询显示
@@ -148,7 +149,7 @@ const filterSearchSchema = (crudSchema: CrudSchema[], allSchemas: AllSchemas): F
 
 // 过滤 table 结构
 const filterTableSchema = (crudSchema: CrudSchema[]): TableColumn[] => {
-  const tableColumns = treeMap<CrudSchema>(crudSchema, {
+  let tableColumns = treeMap<CrudSchema>(crudSchema, {
     conversion: (schema: CrudSchema) => {
       if (schema?.isTable !== false && schema?.table?.show !== false) {
         return {
@@ -158,6 +159,21 @@ const filterTableSchema = (crudSchema: CrudSchema[]): TableColumn[] => {
       }
     }
   })
+  tableColumns = tableColumns.map((item) => ({
+    ...item,
+    check: item.check || true,
+    disabled: item.disabled || false,
+    ...(item.dictType
+      ? item.formatter
+        ? {}
+        : {
+            formatter: (_, __, value) => {
+              return createVNode(DictTag, { type: item.dictType, value })
+            }
+          }
+      : {}),
+    ...(item.field === 'action' ? { fixed: 'right' } : {})
+  }))
 
   // 第一次过滤会有 undefined 所以需要二次过滤
   return filter<TableColumn>(tableColumns as TableColumn[], (data) => {

@@ -14,7 +14,8 @@ const props = defineProps({
   circle: propTypes.bool.def(false),
   round: propTypes.bool.def(false),
   plain: propTypes.bool.def(false),
-  onClick: { type: Function as PropType<(...args) => any>, default: null }
+  onClick: { type: Function as PropType<(...args) => any>, default: null },
+  iconSize: propTypes.number.def(16)
 })
 const getBindValue = computed(() => {
   const delArr: string[] = ['title', 'preIcon', 'postIcon', 'onClick']
@@ -31,19 +32,22 @@ const getBindValue = computed(() => {
 
 <template>
   <el-button v-bind="getBindValue" @click="onClick">
-    <iconfont :name="iconFont" v-if="iconFont" class="mr-4px" />
-    <Icon :icon="preIcon" v-if="preIcon" class="mr-1px" />
-    {{ title ? title : '' }}
-    <Icon :icon="postIcon" v-if="postIcon" class="mr-1px" />
+    <slot>
+      <iconfont :name="iconFont" v-if="iconFont" class="mr-4px" />
+      <Icon :size="iconSize" :icon="preIcon" v-if="preIcon" class="mr-4px" />
+      {{ title ? title : '' }}
+      <Icon :size="iconSize" :icon="postIcon" v-if="postIcon" class="mr-4px" />
+    </slot>
   </el-button>
 </template>
 <style lang="scss" scoped>
 :deep(.el-button.is-text) {
-  margin-left: 0;
   padding: 8px 4px;
+  margin-left: 0;
 }
+
 :deep(.el-button.is-link) {
-  margin-left: 0;
   padding: 8px 4px;
+  margin-left: 0;
 }
 </style>
