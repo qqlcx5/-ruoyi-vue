@@ -230,7 +230,11 @@
             <!--  子门店  -->
             <a-switch
               v-if="record.type === storeSubType.popStore || record.type === storeSubType.cityHall"
-              :disabled="record.level === 1 || !state.childStoreHasPermission"
+              :disabled="
+                record.level === 1 ||
+                !state.childStoreHasPermission ||
+                !record.parentStoreStatusSwitch
+              "
               v-model:checked="record.statusSwitch"
               @change="(value) => setTableStatusChangeInfo(value, record)"
             />
@@ -984,7 +988,13 @@
           }}
           {{ state.tableStatusChangeInfo.record.name }} 吗？</div
         >
-        <div v-if="state.tableStatusChangeInfo?.tempTreeNum > 0" class="status-text-info">
+        <div
+          v-if="
+            state.tableStatusChangeInfo?.tempTreeNum > 0 &&
+            state.tableStatusChangeInfo?.needChildNum
+          "
+          class="status-text-info"
+        >
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
@@ -1207,7 +1217,7 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { organizationType, PageKeyObj, storeSubType } from '@/utils/constants'
+import { organizationCategory, organizationType, PageKeyObj, storeSubType } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
@@ -1768,6 +1778,14 @@ const getList = async (isRefresh = false) => {
           break
         default:
           item.store = ''
+      }
+
+      if (item.organizationCategory === organizationCategory.childStore) {
+        //  子门店 需要 知道父门店的 状态 关闭则禁用 子门店 状态switch
+        const parentStoreItem = res.find((childItem) => childItem.id === item.parentId)
+        if (parentStoreItem) {
+          item.parentStoreStatusSwitch = parentStoreItem.status === 0
+        }
       }
     })
 
@@ -2448,6 +2466,7 @@ const setTableStatusChangeInfo = async (value, record) => {
     value,
     record
   }
+  console.log('record)', record)
 
   if (value) {
     state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
@@ -2477,6 +2496,9 @@ const setTableStatusChangeInfo = async (value, record) => {
     })
     console.log('state.tableStatusChangeInfo.tempTreeNum', state.tableStatusChangeInfo.tempTreeNum)
   }
+
+  //主体都不需要 子机构数量提示 主体的状态开启 关闭 提示语 全部去掉 当门店状态为关闭时 子门店状态不可操作  null为主体   store: '1', //门店 childStore: '2' //子门店
+  state.tableStatusChangeInfo['needChildNum'] = record.organizationCategory !== null
 
   //TODO 这里还得改 子门店的得单独判断
   //过滤得到父级项

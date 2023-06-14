@@ -437,6 +437,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     width="424px"
     :bodyStyle="{
       width: '100%',
