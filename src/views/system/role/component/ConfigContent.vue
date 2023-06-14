@@ -300,6 +300,8 @@ const selectedBrands = computed({
 // 指定部门选择
 const openDepartModal = () => {
   const { dataScopeDeptIds, userIdsSelected } = currentNode.value
+
+  console.log(dataScopeDeptIds, userIdsSelected)
   selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, userIdsSelected)
 }
 const onSelectOrgAndStaffConfirm = (dataScopeDepts, dataScopeUsers) => {

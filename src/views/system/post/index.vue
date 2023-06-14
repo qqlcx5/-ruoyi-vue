@@ -157,7 +157,7 @@
             </template>
             <template #status_default="{ row }">
               <el-switch
-                v-hasPermi="['system:post:update']"
+                v-hasPermi="['system:post:update-status']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"

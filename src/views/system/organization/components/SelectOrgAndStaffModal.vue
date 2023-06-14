@@ -53,7 +53,7 @@
 
     <template #footer>
       <!-- 按钮：取消 -->
-      <XButton :title="t('common.cancel')" @click="modelVisible = false" />
+      <XButton :title="t('common.cancel')" @click="close()" />
       <!-- 按钮：确认 -->
       <XButton type="primary" :title="t('common.confirmSelect')" @click="submitForm()" />
     </template>
@@ -164,6 +164,11 @@ const submitForm = async () => {
     const selectedStaffData = checkedNodes.filter((i) => i.type === 'user')
     emit('confirm', selectedData, selectedStaffData)
   }
+  close()
+}
+const close = () => {
+  defaultCheckedKeys.value = []
+  currentNode.value = {}
   modelVisible.value = false
 }
 </script>
