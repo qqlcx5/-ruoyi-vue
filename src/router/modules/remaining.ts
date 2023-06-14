@@ -1,4 +1,5 @@
 import { Layout } from '@/utils/routerHelper'
+import whiteRouter from './whiteRouter'
 
 const { t } = useI18n()
 /**
@@ -294,7 +295,8 @@ const remainingRouter: AppRouteRecordRaw[] = [
         }
       }
     ]
-  }
+  },
+  ...whiteRouter
 ]
 
 export default remainingRouter
