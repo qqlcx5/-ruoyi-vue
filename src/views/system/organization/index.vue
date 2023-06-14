@@ -2789,7 +2789,7 @@ const detailsInfo = async (record) => {
 
   //上级机构
   const tempRes = await getSimpleOrganizationList({ status: 0 })
-  const tempItem = tempRes.filter((item) => item.id === record.parentId) || [{ name: '顶层机构' }]
+  const tempItem = tempRes.filter((item) => item.id === record.parentId)
 
   const tempArrType = state.organizationTypeOptions.filter(
     (item) => item.value === res.organizationType
@@ -2910,7 +2910,7 @@ const detailsInfo = async (record) => {
       infoArr: [
         {
           textSpan: '上级机构：',
-          text: tempItem[0]?.name
+          text: tempItem.length === 0 ? '顶层机构' : tempItem[0]?.name
         },
         {
           textSpan: '机构类型：',
