@@ -1,9 +1,9 @@
 <template>
-  <div id="wg-el-table" style="display: flex; flex-direction: column">
+  <div id="el-table-wrap" style="display: flex; flex-direction: column">
     <div class="mb-4px" style="display: flex; align-items: center; margin-top: -10px">
       <div style="flex: 1"><slot name="btns"></slot></div>
       <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
-      <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
+      <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
       <Icon
         icon="svg-icon:custom-column"
         :size="50"
@@ -11,14 +11,14 @@
         @click="showColumnDialog"
       />
     </div>
+    <slot name="tip"></slot>
     <el-table
-      :data="[
-        { a1: 3, a2: 4 },
-        { a1: 3, a2: 4 }
-      ]"
-      max-height="calc(100% + 40px)"
-      class="wg-custom-table"
+      :data="data"
+      @selection-change="handleSelectionChange"
+      max-height="calc(100% + 54px)"
+      class="custom-table"
     >
+      <el-table-column v-if="tableConfig.type === 'selection'" type="selection" />
       <template v-for="column in curColumns" :key="column.prop">
         <el-table-column
           :label="column.title"
@@ -41,12 +41,13 @@
     </el-table>
     <!--  定制列  -->
     <CustomColumn
+      id="card-content"
       v-if="columnDialogShow"
       @change-column="changeColumn"
       :allColumns="columns"
       :defaultKeys="defaultKeys"
       :changedColumnsObj="changedColumnsObj"
-      :pageKey="PageKeyObj.dcc"
+      :pageKey="tableConfig.pageKey"
     />
   </div>
 </template>
@@ -54,12 +55,33 @@
 <script setup lang="ts">
 import Expand from './Expand'
 import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
-import { PageKeyObj } from '@/utils/constants'
 import { cloneDeep } from 'lodash-es'
+import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 
+interface ITableConfig {
+  pageKey: string
+  columns?: any[]
+  type?: 'string'
+}
+interface IProps {
+  data: object[]
+  tableConfig: ITableConfig
+}
+const props = withDefaults(defineProps<IProps>(), {
+  data: () => [],
+  tableConfig: () => ({ pageKey: '' })
+})
+const columns = ref(props.tableConfig.columns || [])
+interface IEmit {
+  (event: 'selectionChange', checkedList: object[]): void
+  (event: 'refresh'): void
+}
+const emit = defineEmits<IEmit>()
+
+const { wsCache } = useCache()
 const isFullScreen = ref(false)
 const fullScreen = () => {
-  const elem = document.getElementById('wg-el-table')
+  const elem = document.getElementById('el-table-wrap')
 
   if (isFullScreen.value === false) {
     if (elem?.requestFullscreen) {
@@ -71,50 +93,72 @@ const fullScreen = () => {
     isFullScreen.value = !isFullScreen.value
   }
 }
-const columnDialogShow = ref(false)
-const showColumnDialog = () => (columnDialogShow.value = true)
-interface IProps {
-  data: object[]
-  columns: object[]
+const getList = () => {
+  emit('refresh')
 }
-const props = withDefaults(defineProps<IProps>(), {
-  data: () => [],
-  columns: () => []
-})
-let defaultKeys = ref(
-  props.columns.reduce((arr: string[], item: { key: string }) => {
+const columnDialogShow = ref(false)
+const showColumnDialog = () => {
+  console.log(1111)
+  columnDialogShow.value = true
+}
+
+const handleSelectionChange = (value) => {
+  emit('selectionChange', value)
+}
+
+let defaultKeys = ref<any[]>(
+  columns.value.reduce((arr: string[], item: { key: string }) => {
     if (item.key) arr.push(item.key)
     return arr
   }, [])
 )
-const curColumns = ref(props.columns)
+const curColumns = ref(columns.value)
 interface IColumnObj {
-  currentColumns: object
+  currentColumns: object[]
+  currentCheckedList: string[]
 }
 const changedColumnsObj = ref<IColumnObj>()
+const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
+console.log(props.tableConfig.pageKey, columnsObj)
+if (columnsObj[props.tableConfig.pageKey]) {
+  let curKeys = columnsObj[props.tableConfig.pageKey].currentColumns.map((d) => d.key)
+  console.log(curKeys)
+  if (!curKeys.length) {
+    curKeys = defaultKeys.value
+  }
+  changedColumnsObj.value = columnsObj[props.tableConfig.pageKey]
+  curColumns.value = curKeys.reduce((arr, key) => {
+    const obj = columns.value.find((d) => d.key === key)
+    if (obj) arr.push(obj)
+    return arr
+  }, [])
+  columns.value.filter((d) => curKeys.includes(d.key))
+} else {
+  curColumns.value = columns.value.filter((columnsItem) => {
+    return defaultKeys.value.some((item) => columnsItem.key === item)
+  })
+}
+
 const changeColumn = (columnsObj, isCloseModal = false) => {
   if (isCloseModal) {
     columnDialogShow.value = false
     return
   }
   changedColumnsObj.value = cloneDeep(columnsObj)
-  curColumns.value = changedColumnsObj!.value?.currentColumns as any[]
+  console.log(changedColumnsObj.value)
+  let curKeys = changedColumnsObj.value?.currentColumns.map((d) => d['key']) || []
+  if (!curKeys.length) {
+    curKeys = defaultKeys.value
+  }
+  curColumns.value = curKeys.reduce((arr, key) => {
+    const obj = columns.value.find((d) => d.key === key)
+    if (obj) arr.push(obj)
+    return arr
+  }, [])
   columnDialogShow.value = false
 }
 </script>
 
 <style scoped lang="scss">
-.wg-custom-table {
-  --el-table-header-bg-color: var(--table-bg-color);
-  --el-table-header-text-color: $title-color;
-  border: 1px solid $border-color;
-  :deep(.el-table__inner-wrapper)::before {
-    content: none;
-  }
-  :deep(.el-table__row):last-child {
-    td.el-table__cell {
-      border-bottom: none;
-    }
-  }
-}
+@import '../../style/index';
 </style>

@@ -52,22 +52,43 @@ $btnWrapHeight: 86px;
       text-align: left;
     }
   }
-  .custom-table {
-    --el-table-header-bg-color: var(--table-bg-color);
-    --el-table-header-text-color: $title-color;
-    border: 1px solid $border-color;
-    :deep(.el-table__inner-wrapper)::before {
-      content: none;
-    }
-    :deep(.el-table__row):last-child {
-      td.el-table__cell {
-        border-bottom: none;
-      }
-    }
-    :deep(.el-table__cell) {
-      padding: 14px 0;
+}
+.custom-table {
+  --el-table-header-bg-color: var(--table-bg-color);
+  --el-table-header-text-color: $title-color;
+  border: 1px solid $border-color;
+  :deep(.el-table__inner-wrapper)::before {
+    content: none;
+  }
+  :deep(.el-table__row):last-child {
+    td.el-table__cell {
+      border-bottom: none;
     }
   }
+  :deep(.el-table__cell) {
+    padding: 14px 0;
+    color: $title-color;
+  }
 }
-
+.custom-dialog {
+  .el-dialog__header {
+    padding-bottom: 20px;
+    margin-right: 0;
+    border-bottom: 1px solid $border-color;
+    .el-dialog__title {
+      font-size: 18px;
+      color: $title-color;
+    }
+  }
+  .el-dialog__body {
+    padding: 25px;
+  }
+  .el-dialog__footer {
+    border-top: 1px solid $border-color;
+    padding: 15px 25px;
+  }
+  .el-input-number .el-input__inner {
+    text-align: left;
+  }
+}
 

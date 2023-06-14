@@ -5,8 +5,8 @@
     </div>
     <div class="config-form-item">
       <span>线索被抢单状态变化：</span>
-      <el-radio-group v-model="radio" size="small">
-        <el-radio label="1">自动变化</el-radio><el-radio label="2">手动接单变化</el-radio>
+      <el-radio-group v-model="ruleForm.clueGrabType" size="small">
+        <el-radio :label="1">自动变化</el-radio><el-radio :label="2">手动接单变化</el-radio>
       </el-radio-group>
     </div>
     <div class="config-form-item-tip">
@@ -15,12 +15,12 @@
     </div>
     <div class="part-title">
       <span class="main-text">接单推送间隔设置</span>
-      <el-switch v-model="bool" />
+      <el-switch v-model="ruleForm.receivePushStatus" :active-value="1" :inactive-value="0" />
     </div>
     <div class="config-form-item">
       <span>成员选择【暂不接单】或未接单时，间隔</span>
       <el-input-number
-        v-model.number="num"
+        v-model.number="ruleForm.receivePushMinute"
         class="number-input"
         :max="99999"
         step-strictly
@@ -34,12 +34,16 @@
     </div>
     <div class="part-title">
       <span class="main-text">跟进未打通电话推送通知间隔时间设置</span>
-      <el-switch v-model="bool" />
+      <el-switch
+        v-model="ruleForm.followNotGetThroughPushStatus"
+        :active-value="1"
+        :inactive-value="0"
+      />
     </div>
     <div class="config-form-item">
       <span>成员跟进客户未打通电话，间隔</span>
       <el-input-number
-        v-model.number="num"
+        v-model.number="ruleForm.followNotGetThroughPushMinute"
         class="number-input"
         :max="99999"
         step-strictly
@@ -53,9 +57,13 @@
 </template>
 
 <script setup lang="ts">
-const radio = ref<string>('1')
-const num = ref<number>()
-const bool = ref<boolean>(false)
+const ruleForm = reactive({
+  clueGrabType: 1,
+  receivePushStatus: 0,
+  receivePushMinute: null,
+  followNotGetThroughPushStatus: 0,
+  followNotGetThroughPushMinute: null
+})
 </script>
 
 <style scoped lang="scss">

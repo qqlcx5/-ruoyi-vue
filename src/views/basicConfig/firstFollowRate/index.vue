@@ -15,20 +15,24 @@
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
     </WgTable>
+
+    <!-- 首次跟进率新增/编辑弹框 -->
+    <EditFirstFollowRate v-model="visible" @success="" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import WgTable from '../components/WgTable/index.vue'
-const router = useRouter() // 路由
+import EditFirstFollowRate from '../components/EditFirstFollowRate/index.vue'
 
+const visible = ref<boolean>(false)
 const tableConfig = reactive({
-  pageKey: 'dcc',
+  pageKey: 'firstFollowRate',
   columns: [
     {
       sort: 1,
-      title: 'DCC规则名称',
-      key: 'a1',
+      title: '规则名称',
+      key: 'ruleName',
       resizable: true,
       ellipsis: true,
       disabled: false
@@ -36,7 +40,7 @@ const tableConfig = reactive({
     {
       sort: 2,
       title: '适用门店',
-      key: 'departName',
+      key: 'shopName',
       minWidth: 400,
       resizable: true,
       ellipsis: true,
@@ -53,9 +57,19 @@ const tableConfig = reactive({
         return <el-switch v-model={row.status} active-value={1} inactive-value={0} />
       }
     },
-    { sort: 4, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
     {
-      sort: 5,
+      sort: 4,
+      title: '最低跟进率',
+      key: 'minFollowRate',
+      resizable: true,
+      ellipsis: true,
+      disabled: false
+    },
+    { sort: 5, title: '计算周期', key: 'cycle', resizable: true, ellipsis: true, disabled: false },
+    { sort: 6, title: '参与岗位', key: 'a3', resizable: true, ellipsis: true, disabled: false },
+    { sort: 7, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
+    {
+      sort: 8,
       title: '创建时间',
       key: 'createTime',
       resizable: true,
@@ -63,11 +77,11 @@ const tableConfig = reactive({
       disabled: false
     },
     {
-      sort: 6,
+      sort: 9,
       title: '操作',
       key: 'operate',
       width: 120,
-      fixed: null,
+      fixed: 'right',
       resizable: true,
       ellipsis: true,
       disabled: false,
@@ -86,10 +100,9 @@ const tableConfig = reactive({
     }
   ]
 })
-const tableData = ref([{ departName: 'zzz', status: 1 }])
-
+const tableData = ref([{ status: 1 }])
 const handleCreate = () => {
-  router.push('/clue/basic-config/edit-dcc')
+  visible.value = true
 }
 const handleDccEdit = (row) => {
   console.log(row)
