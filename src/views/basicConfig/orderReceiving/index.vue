@@ -1,5 +1,5 @@
 <template>
-  <div class="basic-config-content order-receiving-container" v-if="!loading">
+  <div class="basic-config-content order-receiving-container" v-loading="loading">
     <div class="part-title">
       <span class="main-text">抢单后状态变化</span>
     </div>
@@ -52,13 +52,15 @@
       />
       <span>分钟再次推送接单提醒通知，直到接单为止</span>
     </div>
-    <el-button class="mt-90px" type="primary" size="large" @click="handleSave">保存设置</el-button>
+    <el-button class="mt-90px" type="primary" size="large" :loading="btnLoading" @click="handleSave"
+      >保存设置</el-button
+    >
   </div>
 </template>
 
 <script setup lang="ts">
 import { queryClueGrabConfig, saveClueGrabConfig } from '@/api/clue/basicConfig/index'
-
+const message = useMessage()
 let ruleForm = reactive({
   clueGrabType: null,
   receivePushStatus: 0,
@@ -79,8 +81,15 @@ const getInfo = async () => {
   }
 }
 getInfo()
+const btnLoading = ref<boolean>(false)
 const handleSave = async () => {
-  await saveClueGrabConfig(ruleForm)
+  try {
+    btnLoading.value = true
+    await saveClueGrabConfig(ruleForm)
+    message.success('保存成功')
+  } finally {
+    btnLoading.value = false
+  }
 }
 </script>
 
