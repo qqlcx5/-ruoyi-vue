@@ -8,6 +8,17 @@ export type ElTableProps = InstanceType<typeof ElTable>['$props']
 export type TableProps = InstanceType<typeof Table>['$props'] & ElTableProps
 export type SearchProps = InstanceType<typeof Search>['$props']
 
+export type ActionButton = {
+  /** 按钮名称 */
+  name: string
+  /** 权限名称 */
+  permission?: string | boolean
+  /** 点击事件 */
+  click: Function
+  /** 是否禁用 */
+  disabled?: boolean
+}
+
 export const useDarwerColumn = (columns: TableColumn[]) => {
   let columnsClone = cloneDeep(columns)
   columnsClone = columnsClone.map((item) => {
