@@ -24,3 +24,7 @@ export const clueDistributeUpdateV2 = (params) => {
 export const clueDistributeSaveV2 = (params) => {
   return request.post({ url: 'clue/v2.0/mange/clueDistribute/insert', params })
 }
+// 派发成员配置
+export const clueDistributeUser = (params) => {
+  return request.post({ url: '/clue/clueDistributeUser/page', params })
+}
