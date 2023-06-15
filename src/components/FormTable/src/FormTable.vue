@@ -51,6 +51,7 @@
               <XTextButton :disabled="item.disabled" :title="item.name" @click="item.click(row)" />
             </template>
             <el-dropdown
+              v-if="actionButtons.length > 3"
               @command="(command) => handleCommand(command, actionButtons.slice(3), row)"
             >
               <el-button type="primary" link>
