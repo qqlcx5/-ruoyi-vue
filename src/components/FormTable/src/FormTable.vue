@@ -46,6 +46,42 @@
           @update:page-size="handlePageSizeChange"
           @register="register"
         >
+          <template #action="{ row }">
+            <div class="flex flex-nowrap">
+              <template v-for="item in actionButtons.slice(0, 3)" :key="item.name">
+                <XTextButton
+                  :disabled="item.disabled"
+                  :title="item.name"
+                  @click="item.click(row)"
+                />
+              </template>
+              <el-popover
+                v-if="actionButtons.length > 3"
+                placement="bottom"
+                :width="50"
+                trigger="hover"
+              >
+                <template #reference>
+                  <el-button type="text">
+                    <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+                  </el-button>
+                </template>
+                <template #default>
+                  <div class="flex flex-col items-start">
+                    <template v-for="btn in actionButtons.slice(3)" :key="btn.name">
+                      <div class="mb-2">
+                        <XTextButton
+                          :disabled="btn.disabled"
+                          :title="btn.name"
+                          @click="btn.click(row)"
+                        />
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </el-popover>
+            </div>
+          </template>
           <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
             <slot :name="item" v-bind="data || {}"></slot>
           </template>
@@ -65,15 +101,22 @@
 import { onMounted, watch, computed, PropType } from 'vue'
 import { useTable } from '@/hooks/web/useTable'
 import { TableColumn } from '@/types/table'
-import { TableProps, SearchProps } from './helper'
+import { TableProps, SearchProps, ActionButton } from './helper'
+import { hasPermission } from '@/utils/utils'
+import { isEmpty, isString } from 'lodash-es'
 
 const props = defineProps({
   tableOptions: {
     type: Object as PropType<
       TableProps &
         Partial<{
+          /** 是否显示新增按钮 */
           showAdd: boolean
+          /** 是否显示展开全部按钮 */
           showExpandAll: boolean
+          /** 是否显示新增按钮 */
+          actionButtons: ActionButton[]
+          /** 列表接口额外参数 */
           listParams: Recordable
           /** 列表接口 */
           listApi: (options: any) => Promise<any>
@@ -105,6 +148,13 @@ const fullscreen = ref(false)
 const isExpandAll = ref(false)
 
 const drawerColumns = ref<TableColumn[]>([])
+
+const actionButtons = computed(() => {
+  const buttons = props.tableOptions.actionButtons?.filter((item) =>
+    isString(item.permission) ? hasPermission(item.permission) : item.permission
+  )
+  return buttons || []
+})
 
 const tableProps = computed(() => {
   return {
@@ -138,7 +188,20 @@ const formProps = computed(() => {
 watch(
   () => tableProps.value.columns,
   (val: TableColumn[]) => {
-    tableColumns.value = val
+    tableColumns.value = [
+      ...val,
+      ...(!isEmpty(actionButtons.value)
+        ? [
+            {
+              label: '操作',
+              field: 'action',
+              minWidth: actionButtons.value.length >= 3 ? 180 : 100,
+              fixed: 'right',
+              showOverflowTooltip: false
+            }
+          ]
+        : [])
+    ]
     drawerColumns.value = val
   },
   {
