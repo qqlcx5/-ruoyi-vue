@@ -1,30 +1,66 @@
 <template>
-  <el-card class="dispatch-rule-container" :gutter="12" shadow="never">
-    <el-form :model="searchForm" class="wg-query-form w-full" ref="elFormRef" label-position="left">
-      <el-row :gutter="12">
-        <el-col :span="6">
-          <el-form-item label="考核规则名称">
-            <el-input v-model="searchForm.rulename" placeholder="请输入" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="门店">
-            <el-input v-model="searchForm.shopId" placeholder="请输入" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" class="!flex flex-column justify-between">
-          <div>
-            <el-button type="primary">查询</el-button>
-            <el-button>重置</el-button>
-          </div>
-        </el-col>
-      </el-row>
-    </el-form>
-  </el-card>
+  <form-table
+    ref="table"
+    :form-options="{ schema: allSchemas.searchSchema }"
+    :table-options="{
+      columns: allSchemas.tableColumns,
+      listApi: dispatchApi.getClueDistribute,
+      showAdd: true
+    }"
+  >
+    <template #action>
+      <!--      编辑-->
+      <XTextButton :title="t('action.edit')" />
+      <!--      删除-->
+      <XTextButton :title="t('action.del')" />
+    </template>
+    <template #status="{ row }">
+      <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
+    </template>
+  </form-table>
 </template>
 
 <script setup lang="ts" name="dispatchRule">
-const searchForm = ref({ rulename: '', shopId: '' })
+import { TableColumn } from '@/types/table'
+import * as dispatchApi from '@/api/clue/dispatchStrategy'
+import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
+
+const { t } = useI18n()
+
+const columns: TableColumn[] = [
+  {
+    label: '规则名称',
+    field: 'ruleName',
+    isSearch: true
+  },
+  {
+    label: '适用门店',
+    field: 'shopNameList',
+    isSearch: true,
+    search: {
+      component: 'Cascader',
+      componentProps: {}
+    }
+  },
+  {
+    label: '状态',
+    field: 'status'
+  },
+  {
+    label: '创建人',
+    field: 'createById'
+  },
+  {
+    label: '创建时间',
+    field: 'createByTime'
+  },
+  {
+    label: '操作',
+    field: 'action'
+  }
+]
+
+const { allSchemas } = useCrudSchemas(columns)
 </script>
 
 <style lang="scss" scoped></style>
