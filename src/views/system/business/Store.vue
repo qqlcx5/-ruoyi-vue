@@ -775,7 +775,7 @@ import {
   getStoreList,
   updateOrganizationStore
 } from '@/api/system/organization'
-import { getMemberAllList, getMemberPhoneList } from '@/api/system/member'
+import { getMemberAllList, getMemberAllListBusiness, getMemberPhoneList } from '@/api/system/member'
 import { reconstructedTreeData, reconstructionArrayObject } from '@/utils/utils'
 import { message, Upload, UploadChangeParam, UploadProps } from 'ant-design-vue'
 import { getAccessToken, getTenantId } from '@/utils/auth'
@@ -1633,7 +1633,21 @@ const getOrganizationTypeListFN = async () => {
   state.maintenanceBrandOptions = res.filter((item) => item.dictType === 'maintenanceBrand')
   //获取成员列表(不分页) 新增编辑 modal内的负责人list
   // const memberRes = await getMemberList()
-  const memberRes = await getMemberAllList()
+  let memberRes = []
+  if (props.fromPage === 'business') {
+    //主体管理
+    //TODO 主体管理内 门店与子门店 需要tenantId  没空没空 先全上 有空再看取哪个
+    memberRes = await getMemberAllListBusiness({
+      tenantId:
+        props.editRecord.belongTenantId ||
+        props.editRecord.tenantId ||
+        props.useStoreList.belongTenantId ||
+        state.formState.belongTenantId
+    })
+  } else {
+    //机构管理页面
+    memberRes = await getMemberAllList()
+  }
   //username nickname
   const needReplacePartPostKey = [
     ['tempLabel', 'nickname'],

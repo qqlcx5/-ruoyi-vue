@@ -590,7 +590,7 @@
               :pagination="false"
               @resizeColumn="handleResizeColumn"
             >
-              <template #bodyCell="{ column, text, record, index }">
+              <template #bodyCell="{ column, record, index }">
                 <template v-if="column.key === 'phoneType'">
                   <div>
                     <a-radio-group
@@ -940,7 +940,7 @@
           {{ state.permissionRecord?.username }}
         </div>
         <div class="member-name">
-          {{ state.permissionRecord?.memberName }}
+          {{ state.permissionRecord?.memberName || state.permissionRecord?.nickname }}
         </div>
       </div>
 
@@ -992,6 +992,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -1830,10 +1831,10 @@ const allColumns = [
 
 /** 查询列表 */
 const getList = async (page, isRefresh = false) => {
-  //无查询按钮权限 不请求
-  if (!hasPermission('system:user:list')) {
-    return
-  }
+  // //无查询按钮权限 不请求
+  // if (!hasPermission('system:user:list')) {
+  //   return
+  // }
 
   state.loading = true
 
@@ -3505,8 +3506,10 @@ const sendCurrentSelect = (currentKey) => {
 
 //获取部门列表
 const getOrganizationListFN = async () => {
+  //新增 修改 上级机构
   const selectRes = await getSimpleOrganizationList()
 
+  //左侧树
   const res = await getDeptList()
 
   res.map((item) => {
@@ -3522,9 +3525,25 @@ const getOrganizationListFN = async () => {
     }
   })
 
+  selectRes.map((item) => {
+    if (item.migrated === 1) {
+      //0没迁移 1迁移
+      item.name = item.migrated === 1 ? `${item.name}(关闭)` : item.name
+      item.tagText = '已转移'
+      item.needTag = true
+    } else {
+      //0开启 1关闭
+      item.name = item.status === 1 ? `${item.name}(关闭)` : item.name
+      item.needTag = false
+    }
+  })
+
+  //又改！！！ 说好 关闭 跟转移 打()的  现在又要过滤掉 上面代码先不删 估计过两天又要改回来
+  const tempRes = selectRes.filter((item) => item.migrated !== 1 && item.status !== 1)
+
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
 
-  const tempOrganizationList = handleTree(selectRes, 'id', 'parentId', 'children')
+  const tempOrganizationList = handleTree(tempRes, 'id', 'parentId', 'children')
 
   state.organizationList = res
   // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
@@ -3539,10 +3558,11 @@ const getOrganizationListFN = async () => {
     ['needTag', 'needTag']
   ]
   //左侧树 机构(部门)
-  state.organizationOptions = reconstructedTreeData(tempOrganizationList, needReplaceIDKey)
-  console.log('state.organizationOptions', state.organizationOptions)
+  state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
+
   //新增修改内 上级机构
-  state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
+  state.organizationIDOptions = reconstructedTreeData(tempOrganizationList, needReplaceIDKey)
+
   return res
 }
 
@@ -3689,7 +3709,8 @@ const addDataSource = reactive({
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: true
+      isService: true,
+      existWXWork: true
     }
   ]
 })

@@ -920,7 +920,6 @@
     destroyOnClose
     :title="state.messageTitle"
     wrapClassName="date-status-change-modal"
-    @ok="statusOk"
     @cancel="statusCancel"
     width="560px"
     :bodyStyle="{
@@ -969,6 +968,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     wrapClassName="status-change-modal"
     width="424px"
     :bodyStyle="{
@@ -1020,6 +1020,7 @@
     title="提示"
     wrapClassName="date-status-change-modal"
     width="528px"
+    @cancel="closeDateModal"
     :bodyStyle="{
       width: '100%',
       height: '129px',
@@ -1720,9 +1721,9 @@ const allColumns = [
  * */
 const getList = async (isRefresh = false) => {
   //无查询按钮权限 不请求
-  if (!hasPermission('system:tenant:query')) {
-    return
-  }
+  // if (!hasPermission('system:tenant:query')) {
+  //   return
+  // }
   state.loading = true
   const params = {
     // pageNo: queryParams.current,
