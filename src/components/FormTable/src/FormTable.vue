@@ -47,40 +47,23 @@
           @register="register"
         >
           <template #action="{ row }">
-            <div class="flex flex-nowrap">
-              <template v-for="item in actionButtons.slice(0, 3)" :key="item.name">
-                <XTextButton
-                  :disabled="item.disabled"
-                  :title="item.name"
-                  @click="item.click(row)"
-                />
+            <template v-for="item in actionButtons.slice(0, 3)" :key="item.name">
+              <XTextButton :disabled="item.disabled" :title="item.name" @click="item.click(row)" />
+            </template>
+            <el-dropdown
+              @command="(command) => handleCommand(command, actionButtons.slice(3), row)"
+            >
+              <el-button type="primary" link>
+                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <template v-for="btn in actionButtons.slice(3)" :key="btn.name">
+                    <el-dropdown-item :command="btn.name"> {{ btn.name }} </el-dropdown-item>
+                  </template>
+                </el-dropdown-menu>
               </template>
-              <el-popover
-                v-if="actionButtons.length > 3"
-                placement="bottom"
-                :width="50"
-                trigger="hover"
-              >
-                <template #reference>
-                  <el-button type="text">
-                    <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-                  </el-button>
-                </template>
-                <template #default>
-                  <div class="flex flex-col items-start">
-                    <template v-for="btn in actionButtons.slice(3)" :key="btn.name">
-                      <div class="mb-2">
-                        <XTextButton
-                          :disabled="btn.disabled"
-                          :title="btn.name"
-                          @click="btn.click(row)"
-                        />
-                      </div>
-                    </template>
-                  </div>
-                </template>
-              </el-popover>
-            </div>
+            </el-dropdown>
           </template>
           <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
             <slot :name="item" v-bind="data || {}"></slot>
@@ -185,9 +168,36 @@ const formProps = computed(() => {
   }
 })
 
+/** 获取操作按钮的总宽度 */
+const getActionButtonsWidth = () => {
+  // 8为按钮的左右padding，2为按钮的border，5冗余大小
+  const padding = 8 + 2 + 5
+  // 单元格的左右padding
+  const cellPadding = 24
+  let textWidth = 0
+  // 更多按钮的宽度
+  const moreBtnWidth = 28
+  const btns = actionButtons.value.slice(0, 3)
+  const btnsText = btns.reduce((total, current) => total + current.name, '')
+  const span = document.createElement('span')
+  span.style.opacity = '0'
+  span.style.fontSize = '14px'
+  span.innerHTML = btnsText
+  document.body.appendChild(span)
+  textWidth = span.offsetWidth
+  document.body.removeChild(span)
+
+  return btns.length === 3
+    ? textWidth + cellPadding + moreBtnWidth + padding * 3
+    : textWidth + padding * 3 + cellPadding
+}
+
 watch(
   () => tableProps.value.columns,
   (val: TableColumn[]) => {
+    const btnsWidth = getActionButtonsWidth()
+    console.log(btnsWidth)
+
     tableColumns.value = [
       ...val,
       ...(!isEmpty(actionButtons.value)
@@ -195,7 +205,7 @@ watch(
             {
               label: '操作',
               field: 'action',
-              minWidth: actionButtons.value.length >= 3 ? 180 : 100,
+              width: btnsWidth,
               fixed: 'right',
               showOverflowTooltip: false
             }
@@ -221,6 +231,15 @@ watch(
     deep: true
   }
 )
+
+/** 操作更多按钮 */
+const handleCommand = (common, btns, row) => {
+  btns.forEach((item) => {
+    if (item.name === common) {
+      item.click(row)
+    }
+  })
+}
 
 /** 展开全部 */
 const handleExpandAll = () => {
