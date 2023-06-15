@@ -132,8 +132,6 @@ const getCheckedList = (value) => {
     background-color: var(--page-bg-color);
   }
   .table-wrap {
-    flex: 1;
-    height: 1px;
     padding: 15px;
     background-color: var(--page-bg-color);
   }

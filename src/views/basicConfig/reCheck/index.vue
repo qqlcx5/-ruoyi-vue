@@ -12,9 +12,9 @@
       <el-table-column label="参与复核门店" prop="a1" />
       <el-table-column label="参与时间" prop="a2" />
       <el-table-column label="创建人" prop="createBy" />
-      <el-table-column label="操作" width="80px">
+      <el-table-column label="操作" width="60px">
         <template #default="{ row }">
-          <Icon icon="ep:delete" />
+          <Icon icon="ep:delete" color="#FE3B30" style="cursor: pointer" />
         </template>
       </el-table-column>
     </el-table>
@@ -30,9 +30,9 @@
       <el-table-column label="参与复核门店" prop="a1" />
       <el-table-column label="参与时间" prop="a2" />
       <el-table-column label="创建人" prop="createBy" />
-      <el-table-column label="操作" width="80px">
+      <el-table-column label="操作" width="60px">
         <template #default="{ row }">
-          <Icon icon="ep:delete" />
+          <Icon icon="ep:delete" color="#FE3B30" style="cursor: pointer" />
         </template>
       </el-table-column>
     </el-table>
