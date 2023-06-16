@@ -18,9 +18,15 @@
           />
         </el-form-item>
         <el-form-item label="适用门店" label-width="70px">
-          <el-select style="width: 240px">
-            <el-option label="1" value="2" />
-          </el-select>
+          <el-cascader
+            :options="shopList"
+            :props="{ label: 'name', value: 'id', multiple: true }"
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            clearable
+            style="min-width: 240px"
+          />
         </el-form-item>
         <el-divider />
         <div class="form-title">考核规则设置</div>
@@ -109,7 +115,6 @@
         </el-form-item>
         <el-form-item label="常规跟进逾期设置" prop="firstFollowSeriousOverdue">
           <el-switch v-model="ruleForm.followOpenRules" :active-value="1" :inactive-value="0" />
-          >
         </el-form-item>
         <el-form-item
           required
@@ -184,10 +189,12 @@ const message = useMessage()
 interface IProps {
   modelValue: boolean
   curInfo: object
+  shopList: object[]
 }
 const props = withDefaults(defineProps<IProps>(), {
   modelValue: false,
-  curInfo: () => ({ id: '' })
+  curInfo: () => ({ id: '' }),
+  shopList: () => []
 })
 interface IEmit {
   (event: 'update:modelValue', modelValue: boolean): void

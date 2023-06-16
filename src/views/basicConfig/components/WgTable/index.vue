@@ -21,6 +21,7 @@
       @selection-change="handleSelectionChange"
       max-height="calc(100% + 54px)"
       class="custom-table"
+      v-loading="loading"
     >
       <el-table-column v-if="tableConfig.type === 'selection'" type="selection" />
       <template v-for="column in curColumns" :key="column.prop">
@@ -46,7 +47,7 @@
     <div style="text-align: right">
       <Pagination
         v-if="queryParams.pageNo"
-        :total="tableConfig.total || 0"
+        :total="tableConfig.queryParams.total || 0"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"
         @pagination="onPageChange"
@@ -81,8 +82,10 @@ interface ITableConfig {
 interface IProps {
   data: object[]
   tableConfig: ITableConfig
+  loading: boolean
 }
 const props = withDefaults(defineProps<IProps>(), {
+  loading: false,
   data: () => [],
   tableConfig: () => ({ pageKey: '', queryParams: {} })
 })
