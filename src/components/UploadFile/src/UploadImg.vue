@@ -15,17 +15,11 @@
       <template v-if="modelValue">
         <img :src="modelValue" class="upload-image" />
         <div class="upload-handle" @click.stop>
-          <!-- <div class="handle-icon" @click="editImg">
-            <Icon icon="ep:edit" />
-            <span>{{ t('action.edit') }}</span>
-          </div> -->
           <div class="handle-icon" @click="imgViewVisible = true">
             <Icon icon="ep:zoom-in" />
-            <!-- <span>{{ t('action.detail') }}</span> -->
           </div>
           <div class="handle-icon" @click="deleteFile">
             <Icon icon="ep:delete" />
-            <!-- <span>{{ t('action.del') }}</span> -->
           </div>
         </div>
       </template>
