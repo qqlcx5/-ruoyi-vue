@@ -91,7 +91,7 @@
     </div>
     <el-form :model="ruleForm" :disabled="!editFlag">
       <el-table
-        disabled
+        ref="tableRef"
         :data="ruleForm.followMethodList"
         class="custom-table"
         max-height="300px"
@@ -205,7 +205,7 @@
     </div>
 
     <div class="mb-36px">
-      <el-form ref="timeFormRef" :model="timeList" :disabled="!editTimeFlag">
+      <el-form ref="timeFormRef" :model="timeList" :disabled="!editTimeFlag" scroll-to-error>
         <div
           v-for="(item, index) in timeList"
           :key="item.timestamp"
@@ -251,7 +251,7 @@
 import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicConfig'
 import { postListAllSimple } from '@/api/common/index'
 import { judgeTimeList } from '@/utils/utils'
-import type { FormInstance } from 'element-plus'
+import type { FormInstance, ElTable } from 'element-plus'
 import dayjs from 'dayjs'
 
 const message = useMessage()
@@ -316,7 +316,8 @@ const editFlag = ref<boolean>(false)
 const editFollowMethod = (bool) => {
   editFlag.value = bool
 }
-const handleAddRow = () => {
+const tableRef = ref<InstanceType<typeof ElTable>>()
+const handleAddRow = async () => {
   ;(ruleForm.followMethodList as any[]).push({
     followMethod: null, // 跟进方式（1-电话，2-微信 3-短信）
     isSelect: 0, // 是否可选择 0-否 1-是
@@ -324,6 +325,8 @@ const handleAddRow = () => {
     limitRoleList: [], // 限制岗位 [{roleId, roleName}]
     isPermitFirstSelect: 0 // 首次跟进是否允许选择 0-否 1-是
   })
+  await nextTick()
+  tableRef.value?.setScrollTop(ruleForm.followMethodList.length * 50)
 }
 const handleDeleteRow = (index) => {
   ruleForm.followMethodList.splice(index, 1)
@@ -348,8 +351,6 @@ const timeEdit = async (bool) => {
     try {
       await timeFormRef.value?.validate()
     } catch (e) {
-      const dom = document.querySelector('#time-range .el-form-item__error')
-      dom && dom.scrollIntoView({ behavior: 'smooth' })
       return false
     }
     const arr = timeList.value.map((d) => {
@@ -373,11 +374,14 @@ const timeEdit = async (bool) => {
   }
 }
 // 添加时间段
-const handleAddTime = () => {
+const handleAddTime = async () => {
   timeList.value.push({
     timestamp: new Date().getTime(),
     arr: []
   })
+  await nextTick()
+  const dom = document.querySelector('#time-range')
+  dom && dom.scrollIntoView({ behavior: 'smooth' })
 }
 const handleDelTime = (index) => {
   timeList.value.splice(index, 1)

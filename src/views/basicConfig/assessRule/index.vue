@@ -12,27 +12,38 @@
         <el-button>重置</el-button>
       </div>
     </div>
-    <WgTable class="table-wrap" :data="tableData" :tableConfig="tableConfig">
+    <WgTable
+      class="table-wrap"
+      :data="tableData"
+      :tableConfig="tableConfig"
+      @page-change="pageChange"
+    >
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
       </template>
     </WgTable>
-    <EditAssessRule v-model="visible" />
+    <EditAssessRule v-model="visible" :curInfo="curInfo" @success="getList" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import WgTable from '../components/WgTable/index.vue'
-import EditAssessRule from '../components/EditAssessRule/index.vue'
-const router = useRouter() // 路由
+import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
+import { queryAssessRulePage, deleteAssessRule } from '@/api/clue/basicConfig'
+import dayjs from 'dayjs'
+import { getAllStoreList } from '@/api/common'
+
+const message = useMessage()
 
 const tableConfig = reactive({
   pageKey: 'dcc',
+  total: 0,
+  queryParams: { pageNo: 1, pageSize: 10 },
   columns: [
     {
       sort: 1,
       title: '考核规则名称',
-      key: 'assessName',
+      key: 'checkRuleName',
       resizable: true,
       ellipsis: true,
       disabled: false
@@ -49,39 +60,43 @@ const tableConfig = reactive({
     {
       sort: 3,
       title: '状态',
-      key: 'status',
+      key: 'openRules',
       resizable: true,
       ellipsis: true,
       disabled: false,
       render: ({ row }) => {
-        return <el-switch v-model={row.status} active-value={1} inactive-value={0} />
+        return <el-switch v-model={row.openRules} active-value={1} inactive-value={0} />
       }
     },
-    { sort: 4, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
+    { sort: 4, title: '创建人', key: 'creator', resizable: true, ellipsis: true, disabled: false },
     {
       sort: 5,
       title: '创建时间',
       key: 'createTime',
+      minWidth: '180px',
       resizable: true,
       ellipsis: true,
-      disabled: false
+      disabled: false,
+      render: ({ row }) => {
+        return row.createTime ? dayjs(row.createTime).format('YYYY-MM-DD HH:mm:ss') : ''
+      }
     },
     {
       sort: 6,
       title: '操作',
       key: 'operate',
       width: 120,
-      fixed: null,
+      fixed: 'right',
       resizable: true,
       ellipsis: true,
       disabled: false,
-      render: ({ row }) => {
+      render: ({ row, index }) => {
         return (
           <div>
             <el-button type="primary" link onclick={() => handleDccEdit(row)}>
               编辑
             </el-button>
-            <el-button type="primary" link>
+            <el-button type="primary" link onclick={() => handleDelete(row, index)}>
               删除
             </el-button>
           </div>
@@ -90,14 +105,45 @@ const tableConfig = reactive({
     }
   ]
 })
-const tableData = ref([{ departName: 'zzz', status: 1 }])
+const tableData = ref([])
 
 const visible = ref<boolean>(false)
+
+const pageChange = () => {
+  console.log(tableConfig)
+  getList()
+}
+
+const searchParams = unref(tableConfig.queryParams)
+const getList = async () => {
+  const data = await queryAssessRulePage(searchParams)
+  tableConfig.total = data.total || 0
+  tableData.value = data.list
+  console.log(data)
+}
+getList()
+const getShopList = () => {
+  getAllStoreList()
+}
+getShopList()
 const handleCreate = () => {
+  curInfo.value = {}
   visible.value = true
 }
+const curInfo = ref<object>({})
 const handleDccEdit = (row) => {
+  curInfo.value = row
   visible.value = true
+}
+const handleDelete = (row, index) => {
+  message.wgOperateConfirm('确认删除当前数据？', '提示').then(async (res) => {
+    if (res === 'confirm') {
+      await deleteAssessRule({ id: row.id })
+      getList()
+      // tableData.value.splice(index, 1)
+    }
+    console.log(res)
+  })
 }
 </script>
 
