@@ -90,6 +90,36 @@ export const getAllIds = (tree) => {
   return result
 }
 
+/**
+ * 获取当前节点的 所有子id
+ * @param nodeId 当前id
+ * @param menuItems 存在id与parentId的数组
+ * @return list 所有父节点id
+ * */
+export const getAllChildIds = (nodeId: any, menuItems: any) => {
+  const childIds: any = []
+  menuItems.forEach((item) => {
+    if (item.parentId === nodeId) {
+      childIds.push(item.id)
+      childIds.push(...getAllChildIds(item.id, menuItems))
+    }
+  })
+  return childIds
+}
+
+/**
+ * 获取所有父节点id
+ * @param itemId 子级id
+ * @param allMenuTreeArr 存在id与parentId的数组
+ * @return list 所有父节点id
+ * */
+export const findParentIds = (itemId, allMenuTreeArr) => {
+  const item = allMenuTreeArr.find((item) => item.id === itemId)
+  return item && item.parentId !== null
+    ? [item.id, ...findParentIds(item.parentId, allMenuTreeArr)]
+    : []
+}
+
 //过滤树结构 获取新树
 // export function filterTree(tree = [], map = [], arr = []) {
 export function filterTree(

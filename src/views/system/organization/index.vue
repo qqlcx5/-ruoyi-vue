@@ -39,7 +39,7 @@
     <!--  表格  -->
     <a-card
       :bordered="false"
-      style="min-width: 1710px; height: 100%; padding-bottom: 30px"
+      style="min-width: 1710px; height: 100%; padding-bottom: 30px; overflow: auto"
       id="card-content"
     >
       <!--  <ContentWrap>-->
@@ -1153,7 +1153,7 @@
     :closable="false"
     @cancel="closeStatusModal"
     wrapClassName="status-change-modal"
-    width="424px"
+    :width="state.statusModalWidth"
     :bodyStyle="{
       width: '100%',
       height: '139px',
@@ -1676,6 +1676,7 @@ const state: any = reactive({
   isShowStoreDetails: false, //详情 门店
   isShowPermission: false, //设置属性modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
+  statusModalWidth: '424px',
   isShowDelete: false, //删除确认 modal
   modalTitle: '新增', //modal title
   routerRules: [{ required: true }, { validator: routeValidator }],
@@ -2680,6 +2681,7 @@ const openStatusModal = () => {
 }
 //关闭 状态开始关闭 确认modal
 const closeStatusModal = () => {
+  state.statusModalWidth = '424px'
   state.isShowStatus = false
   //直接这里补一次请求吧 - -
   getList()
@@ -2720,12 +2722,14 @@ const setTableStatusChangeInfo = async (value, record, type = 'switch', disabled
       operation: '删除',
       type: 'delete'
     }
+    state.statusModalWidth = '424px'
 
     state.tableStatusChangeInfo['statusBtnText'] = '确认删除'
     state.tableStatusChangeInfo['statusTopText'] = `删除后`
     state.tableStatusChangeInfo['statusText'] = `删除`
     state.tableStatusChangeInfo['statusTextF'] = '将会导致业务数据的丢失，且不可恢复，'
   } else {
+    state.statusModalWidth = '488px'
     //表格按钮状态
     state.tableStatusChangeInfo = {
       value,
@@ -2892,7 +2896,7 @@ const detailsInfo = async (record) => {
   }
 
   //联系方式
-  const tempArrContactInformationArr = []
+  const tempArrContactInformationArr: any = []
   state.contactInformationOptions.filter((topItem) => {
     return relVO?.contact.some((item) => {
       if (topItem.value === item.contactType) {
@@ -3534,7 +3538,7 @@ watch(
 }
 .message-text-content {
   width: 520px;
-  //margin-left: 15px;
+  padding-right: 25px;
 }
 .message-img {
   margin-top: 3px;

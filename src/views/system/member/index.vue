@@ -257,7 +257,7 @@
           class="table-list"
           :columns="state.columns"
           :data-source="state.tableDataList"
-          :scroll="{ x: 'max-content' }"
+          :scroll="{ x: 'max-content', y: 500 }"
           row-key="id"
           :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
           :loading="state.loading"
@@ -298,7 +298,11 @@
           <template #bodyCell="{ column, record }">
             <!--  联系电话   -->
             <template v-if="column?.key === 'memberPhone'">
-              <div v-for="item in record?.memberPhoneList" class="phone-div-content">
+              <div
+                v-for="(item, index) in record?.memberPhoneList"
+                :key="`memberPhoneList${index}`"
+                class="phone-div-content"
+              >
                 <div class="phone-div">{{ item.phoneNum }}</div>
                 <div :class="item.type === '1' ? 'private-tag' : 'company-tag'"
                   >{{ item.phoneType }}
@@ -308,12 +312,23 @@
 
             <!--  部门/岗位   -->
             <template v-if="column?.key === 'departmentPost'">
-              <div v-for="item in record?.departmentPostList" class="phone-div-content">
-                <div class="phone-div"
-                  ><span
-                    :class="[{ 'close-style': item.depStatus }, { 'delete-style': item.depDelete }]"
-                    >{{ item.department }}</span
-                  >/
+              <div
+                v-for="(item, index) in record?.departmentPostList"
+                class="phone-div-content"
+                :key="`departmentPostList${index}`"
+              >
+                <div class="phone-div">
+                  <a-tooltip>
+                    <template #title>{{ item.departmentAll }}</template>
+                    <span
+                      :class="[
+                        { 'close-style': item.depStatus },
+                        { 'delete-style': item.depDelete }
+                      ]"
+                      >{{ item.department }}</span
+                    >
+                  </a-tooltip>
+                  /
                   <span
                     :class="[
                       { 'close-style': item.postStatus },
@@ -1886,7 +1901,7 @@ const getList = async (page, isRefresh = false) => {
 
   try {
     const res = await getMemberList(params)
-
+    console.log('res', res)
     state.rawData = res.list
     state.tableDataList = res.list
     state.tableDataList.map((item) => {
@@ -1924,7 +1939,8 @@ const getList = async (page, isRefresh = false) => {
         //0未删除 1删除  删除显示优先级高于关闭
         postStatusText = postItem.postDeleted === 0 ? postStatusText : '(删除)'
         tempDepartmentPost.push({
-          department: `${postItem.componentName}${depStatusText}`, //部门
+          department: `${postItem.organizationName}${depStatusText}`, //部门 末位
+          departmentAll: `${postItem.componentName}${depStatusText}`, //部门 全部
           depStatus: postItem.organizationStatus === 1, //0开启 1关闭 部门开启/关闭
           depDelete: postItem.organizationDeleted === 1, //0未删除 1删除 部门未删除/删除
           postStatus: postItem.postStatus === 1, //0开启 1关闭 岗位开启/关闭
@@ -4082,8 +4098,7 @@ onMounted(async () => {
 .right-card-content {
   width: 100%;
   height: 100%;
-  overflow: auto;
-  //background: slateblue;
+  overflow: hidden;
   background: rgb(255, 255, 255);
   flex: 4 1 auto;
   //margin-right: 10px;
@@ -4583,10 +4598,12 @@ onMounted(async () => {
 //table 联系电话
 .phone-div-content {
   display: flex;
-  margin-bottom: 10px;
+  padding: 5px 0;
 }
 
 .phone-div {
+  display: flex;
+  align-items: center;
   margin-right: 14px;
 }
 
