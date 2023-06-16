@@ -22,3 +22,8 @@ export const treeShopData = async () => {
 export const postListAllSimple = async () => {
   return await request.get({ url: '/system/post/list-all-simple' })
 }
+
+// 获取当前主体的门店信息列表
+export const getAllStoreList = async () => {
+  return await request.get({ url: '/system/organization/all-store-list' })
+}

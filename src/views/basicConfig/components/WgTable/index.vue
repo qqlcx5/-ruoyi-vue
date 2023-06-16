@@ -43,6 +43,15 @@
         </el-table-column>
       </template>
     </el-table>
+    <div style="text-align: right">
+      <Pagination
+        v-if="queryParams.pageNo"
+        :total="tableConfig.total || 0"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="onPageChange"
+      />
+    </div>
     <!--  定制列  -->
     <CustomColumn
       id="card-content"
@@ -66,6 +75,8 @@ interface ITableConfig {
   pageKey: string
   columns?: any[]
   type?: 'string'
+  total?: number
+  queryParams: any
 }
 interface IProps {
   data: object[]
@@ -73,14 +84,20 @@ interface IProps {
 }
 const props = withDefaults(defineProps<IProps>(), {
   data: () => [],
-  tableConfig: () => ({ pageKey: '' })
+  tableConfig: () => ({ pageKey: '', queryParams: {} })
 })
+const { queryParams } = toRefs(props.tableConfig)
 const columns = ref(props.tableConfig.columns || [])
 interface IEmit {
   (event: 'selectionChange', checkedList: object[]): void
   (event: 'refresh'): void
+  (event: 'pageChange', params: object): void
 }
 const emit = defineEmits<IEmit>()
+
+const onPageChange = (params) => {
+  emit('pageChange', params)
+}
 
 const { wsCache } = useCache()
 const isFullScreen = ref(false)
