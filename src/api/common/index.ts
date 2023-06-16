@@ -18,3 +18,7 @@ export const uploadFile = async (data) => {
 export const treeShopData = async () => {
   return await request.get({ url: '/system/department/get/shop/tree' })
 }
+// 获取岗位精简信息列表
+export const postListAllSimple = async () => {
+  return await request.get({ url: '/system/post/list-all-simple' })
+}

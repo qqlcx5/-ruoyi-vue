@@ -98,9 +98,9 @@ export function filterTree(
   arr: MenuTreeList[] = []
 ) {
   if (!tree.length) return []
-  for (let item of tree) {
+  for (const item of tree) {
     if (!map.includes(item.id)) continue
-    let node = { ...item, children: [] }
+    const node = { ...item, children: [] }
     arr.push(node)
     if (item.children && item.children.length) filterTree(item.children, map, node.children)
   }
@@ -164,4 +164,36 @@ export const fullScreen = () => {
 export const hasPermission = (permission: string) => {
   const permissionsList = wsCache.get(CACHE_KEY.USER).permissions
   return permissionsList.includes(permission)
+}
+
+interface ITimeList {
+  startTime: string
+  endTime: string
+}
+export const judgeTimeList = (dateArr: ITimeList[]) => {
+  for (const k in dateArr) {
+    if (!judge(k, dateArr)) {
+      return false
+    }
+  }
+  return true
+}
+const judge = (idx: any, dateArr: any) => {
+  for (const k in dateArr) {
+    if (idx !== k) {
+      if (
+        dateArr[k].startTime <= dateArr[idx].startTime &&
+        dateArr[k].endTime > dateArr[idx].startTime
+      ) {
+        return false
+      }
+      if (
+        dateArr[k].startTime < dateArr[idx].endTime &&
+        dateArr[k].endTime >= dateArr[idx].endTime
+      ) {
+        return false
+      }
+    }
+  }
+  return true
 }
