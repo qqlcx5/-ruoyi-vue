@@ -17,10 +17,12 @@
       :on-preview="handlePreview"
       class="upload-file-uploader"
     >
-      <el-button><Icon icon="ep:upload" class="mr-1" />上传文件</el-button>
+      <slot>
+        <el-button><Icon icon="ep:upload" class="mr-1" />上传文件</el-button>
+      </slot>
       <template v-if="isShowTip" #tip>
         <div class="tips">
-          <slot>支持扩展名：{{ fileType.split(',').join(' ') }}</slot>
+          <slot name="tips">支持扩展名：{{ fileType.split(',').join(' ') }}</slot>
         </div>
       </template>
     </el-upload>
@@ -67,7 +69,9 @@ const showDialog = ref(false)
 const message = useMessage() // 消息弹窗
 const loading = ref(false)
 const emit = defineEmits(['update:modelValue'])
-const fileTypeToArray = computed(() => props.fileType.trimAll().replaceAll('.', '').split(','))
+const fileTypeToArray = computed(() =>
+  props.fileType.toLowerCase().trimAll().replaceAll('.', '').split(',')
+)
 // 文件大小单位转小写
 const fileUnit = computed(() => props.fileUnit.toLowerCase())
 
@@ -84,8 +88,8 @@ const beforeUpload: UploadProps['beforeUpload'] = (file: UploadRawFile) => {
   }
 
   const isTrueFormat = fileTypeToArray.value.some((type: string) => {
-    if (file.type.indexOf(type) > -1) return true
-    return !!(fileExtension && fileExtension.indexOf(type) > -1)
+    if (fileExtension.toLowerCase() === type) return true
+    return false
   })
 
   if (props.limit) {

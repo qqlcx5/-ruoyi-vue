@@ -28,32 +28,38 @@
 
       <a-form-item label="系统logo" name="logoUrl">
         <div style="height: 131px">
-          <a-upload
-            v-model:file-list="state.logoListUrl"
-            :action="updateUrl + '?updateSupport=' + updateSupport"
-            list-type="picture-card"
-            @preview="handlePreview"
-            accept=".jpg, .png, .gif"
-            class="avatar-uploader"
-            :show-upload-list="true"
-            :headers="uploadHeaders"
-            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"
-            @change="
-              (file, fileList) => {
-                handleChange(file, fileList, 'logo')
-              }
-            "
-            @remove="
-              (file) => {
-                removeImg(file, 'logo')
-              }
-            "
-          >
-            <div v-if="state.logoListUrl.length < 1">
-              <Icon icon="svg-icon:add-upload" :size="15" />
-              <div style="margin-top: 8px">上传logo</div>
-            </div>
-          </a-upload>
+          <UploadImg
+            v-model:modelValue="state.logoUrlSuccess"
+            fileSize="300"
+            :fileUnit="FileUnit.KB"
+            :resolution="[400, 400]"
+          />
+          <!--          <a-upload-->
+          <!--            v-model:file-list="state.logoListUrl"-->
+          <!--            :action="updateUrl + '?updateSupport=' + updateSupport"-->
+          <!--            list-type="picture-card"-->
+          <!--            @preview="handlePreview"-->
+          <!--            accept=".jpg, .png, .gif"-->
+          <!--            class="avatar-uploader"-->
+          <!--            :show-upload-list="true"-->
+          <!--            :headers="uploadHeaders"-->
+          <!--            :before-upload="(file, fileList) => beforeUpload(file, fileList, 'logo')"-->
+          <!--            @change="-->
+          <!--              (file, fileList) => {-->
+          <!--                handleChange(file, fileList, 'logo')-->
+          <!--              }-->
+          <!--            "-->
+          <!--            @remove="-->
+          <!--              (file) => {-->
+          <!--                removeImg(file, 'logo')-->
+          <!--              }-->
+          <!--            "-->
+          <!--          >-->
+          <!--            <div v-if="state.logoListUrl.length < 1">-->
+          <!--              <Icon icon="svg-icon:add-upload" :size="15" />-->
+          <!--              <div style="margin-top: 8px">上传logo</div>-->
+          <!--            </div>-->
+          <!--          </a-upload>-->
           <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
         </div>
       </a-form-item>
@@ -87,6 +93,8 @@ import { putUserNameLogo } from '@/api/system/business'
 import { useAppStore } from '@/store/modules/app'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 // import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue'
+import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
+import { FileUnit } from '@/components/UploadFile/src/helper'
 const appStore = useAppStore()
 const { wsCache } = useCache()
 
@@ -123,7 +131,7 @@ const loading = ref<boolean>(false)
 const imageUrl = ref<string>('')
 const layout = {
   labelCol: { span: 6 },
-  wrapperCol: { span: 14 }
+  wrapperCol: { span: 16 }
 }
 
 const uploadHeaders = ref({

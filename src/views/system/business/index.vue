@@ -4,51 +4,82 @@
     <!-- 搜索工作栏 -->
     <a-card class="search-card">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
-        <a-form-item :label="`主体名称`" name="keyword">
-          <a-input v-model:value="queryParams.keyword" placeholder="请输入主体名称或者编码" />
-        </a-form-item>
-        <a-form-item :label="`系统名称`" name="systemName">
-          <a-input v-model:value="queryParams.systemName" placeholder="请输入系统名称" />
-        </a-form-item>
-        <a-form-item :label="`有效期`" name="startEndTime">
-          <a-range-picker
-            v-model:value="queryParams.startEndTime"
-            format="YYYY/MM/DD"
-            :placeholder="['开始时间', '结束时间']"
-          />
-        </a-form-item>
+        <div class="total-search-content">
+          <div class="search-content">
+            <a-form-item :label="`主体名称`" name="keyword" class="search-item">
+              <div class="item-condition">
+                <a-input
+                  v-model:value="queryParams.keyword"
+                  placeholder="请输入主体名称或者编码"
+                  class="width-100"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`专营店编码`" name="specialtyCode" class="search-item">
+              <div class="item-condition">
+                <a-input
+                  v-model:value="queryParams.specialtyCode"
+                  placeholder="请输入专营店编码"
+                  class="width-100"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`系统名称`" name="systemName" class="search-item">
+              <div class="item-condition">
+                <a-input
+                  v-model:value="queryParams.systemName"
+                  placeholder="请输入系统名称"
+                  class="width-100"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`有效期`" name="startEndTime" class="search-item">
+              <a-range-picker
+                v-model:value="queryParams.startEndTime"
+                format="YYYY/MM/DD"
+                :placeholder="['开始时间', '结束时间']"
+              />
+            </a-form-item>
+            <a-form-item :label="`状态`" name="status" class="search-item">
+              <div class="item-condition">
+                <a-select
+                  v-model:value="queryParams.status"
+                  placeholder="请选择状态"
+                  class="width-100"
+                  :options="state.statusOptions"
+                />
+              </div>
+            </a-form-item>
+            <a-form-item :label="`主体类型`" name="type" class="search-item">
+              <div class="item-condition">
+                <a-select
+                  v-model:value="queryParams.type"
+                  placeholder="请选择主体类型"
+                  class="width-100"
+                  :options="state.majorIndividualTypeOptions"
+                />
+              </div>
+            </a-form-item>
+          </div>
 
-        <a-form-item :label="`状态`" name="status">
-          <a-select
-            v-model:value="queryParams.status"
-            placeholder="请选择状态"
-            style="width: 200px"
-            :options="state.statusOptions"
-          />
-        </a-form-item>
-        <a-form-item :label="`主体类型`" name="type">
-          <a-select
-            v-model:value="queryParams.type"
-            placeholder="请选择主体类型"
-            style="width: 200px"
-            :options="state.majorIndividualTypeOptions"
-          />
-        </a-form-item>
-        <a-button
-          type="primary"
-          html-type="submit"
-          @click="getList()"
-          v-hasPermi="['system:tenant:query']"
-          >查询</a-button
-        >
-        <a-button @click="resetQuery">重置</a-button>
+          <div class="search-btn-content">
+            <a-button
+              type="primary"
+              html-type="submit"
+              @click="getList()"
+              v-hasPermi="['system:tenant:query']"
+              >查询</a-button
+            >
+            <a-button @click="resetQuery">重置</a-button>
+          </div>
+        </div>
       </a-form>
     </a-card>
 
     <!--  表格  -->
     <a-card
       :bordered="false"
-      style="min-width: 1700px; height: 100%; padding-bottom: 30px"
+      style="min-width: 1700px; width: 100%; height: 100%; padding-bottom: 30px; overflow: hidden"
       id="card-content"
     >
       <!--  <ContentWrap>-->
@@ -59,12 +90,7 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button
-            type="primary"
-            @click="openModal()"
-            v-if="state.isSuperAdmin"
-            v-hasPermi="['system:tenant:create']"
-          >
+          <a-button type="primary" @click="openModal()" v-hasPermi="['system:tenant:create']">
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -115,8 +141,8 @@
       <a-table
         v-if="state.refreshTable"
         :columns="state.columns"
-        :data-source="state.tableDataList"
-        :scroll="{ x: '100%' }"
+        :data-source="state.tableDataPseudoPaginationList"
+        :scroll="{ x: '100%', y: 520 }"
         :pagination="false"
         @change="onChange"
         :row-key="(record) => record.id"
@@ -204,7 +230,11 @@
             <!--  子门店  -->
             <a-switch
               v-if="record.type === storeSubType.popStore || record.type === storeSubType.cityHall"
-              :disabled="record.level === 1 || !state.childStoreHasPermission"
+              :disabled="
+                record.level === 1 ||
+                !state.childStoreHasPermission ||
+                !record.parentStoreStatusSwitch
+              "
               v-model:checked="record.statusSwitch"
               @change="(value) => setTableStatusChangeInfo(value, record)"
             />
@@ -406,6 +436,15 @@
           </template>
         </template>
       </a-table>
+
+      <!-- 分页 -->
+      <Pagination
+        :total="state.tableDataList.length"
+        v-model:page="state.pageNo"
+        v-model:limit="state.pageSize"
+        style="padding: 0 15px"
+        @pagination="onPageChange"
+      />
       <!--  </ContentWrap>-->
     </a-card>
   </div>
@@ -809,15 +848,16 @@
     destroyOnClose
     title="配置权限"
     @cancel="closePermissionModal"
-    :width="'665px'"
+    :width="'1032px'"
     :bodyStyle="{ height: '700px', margin: '0', padding: '0', overflow: 'auto' }"
   >
     <div class="per-content">
-      <div class="text-content">请选择该主体的功能配置权限：</div>
       <!--  左右两侧  -->
       <div class="select-content">
-        <div class="left-content">
+        <div>
+          <div class="text-content">请选择该主体的功能配置权限：</div>
           <a-tabs
+            class="left-content"
             v-model:activeKey="state.activeKey"
             tabBarGutter="40px"
             :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
@@ -835,44 +875,68 @@
                   v-if="state.isShowTree"
                   v-model:selectedKeys="state.selectedKeys"
                   v-model:checkedKeys="state.checkedKeys"
-                  :selectable="false"
                   :defaultExpandAll="state.defaultExpandAll"
+                  blockNode
                   checkable
                   :height="533"
                   :tree-data="state.menuTreeList"
                   :fieldNames="state.fieldNames"
                   @check="testCheck"
-                  multiple
-                >
-                  <!--                  <template #title="{ title, key }">-->
-                  <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
-                  <!--                    <template v-else>{{ title }}</template>-->
-                  <!--                  </template>-->
-                </a-tree>
+                  @select="treeSelect"
+                />
               </div>
             </a-tab-pane>
             <a-tab-pane key="client" tab="客户端" force-render>客户端</a-tab-pane>
           </a-tabs>
         </div>
+
         <div class="right-content">
+          <div style="height: 20px"></div>
+          <div class="list-content border-1">
+            <div class="right-top-text">操作权限</div>
+            <div class="tab-search-content">
+              <a-checkbox v-model:checked="state.selectAllOperation" @change="selectAllOperation"
+                >全选</a-checkbox
+              >
+            </div>
+            <div>
+              <a-checkbox-group
+                v-model:value="state.operationCheckedValue"
+                @change="operationCheckedValueChange"
+                class="checkbox-group"
+              >
+                <div class="operation-checkbox-content">
+                  <a-checkbox
+                    v-for="(item, index) in state.operationCheckedList"
+                    :value="item.id"
+                    :key="`operationCheckbox${index}`"
+                    class="operation-checkbox-style"
+                  >
+                    {{ item.name }}
+                  </a-checkbox>
+                </div>
+              </a-checkbox-group>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-content">
+          <div v-if="state.isShowRightTree">已选信息：</div>
           <div v-if="state.isShowRightTree">
-            <div v-if="state.isShowRightTree">已选信息：</div>
-            <a-tree
-              v-if="state.isShowRightTree"
-              :selectable="false"
-              defaultExpandAll
-              :height="533"
-              :tree-data="state.selectTree"
-              :fieldNames="state.fieldNames"
-            >
-              <!--                  <template #title="{ title, key }">-->
-              <!--                    <span v-if="key === '0-0-1-0'" style="color: #1890ff">{{ title }}</span>-->
-              <!--                    <template v-else>{{ title }}</template>-->
-              <!--                  </template>-->
-            </a-tree>
-            <div v-if="state.selectTree?.length === 0" class="select-tip"
-              >请选择左侧要配置的菜单</div
-            >
+            <div class="right-top-text">管理端</div>
+            <div class="right-card-content">
+              <a-tree
+                v-if="state.isShowRightTree"
+                :selectable="false"
+                defaultExpandAll
+                :height="533"
+                :tree-data="state.selectTree"
+                :fieldNames="state.fieldNames"
+              />
+              <div v-if="state.selectTree?.length === 0" class="select-tip"
+                >请选择左侧要配置的菜单</div
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -890,7 +954,6 @@
     destroyOnClose
     :title="state.messageTitle"
     wrapClassName="date-status-change-modal"
-    @ok="statusOk"
     @cancel="statusCancel"
     width="560px"
     :bodyStyle="{
@@ -939,6 +1002,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     wrapClassName="status-change-modal"
     width="424px"
     :bodyStyle="{
@@ -958,7 +1022,13 @@
           }}
           {{ state.tableStatusChangeInfo.record.name }} 吗？</div
         >
-        <div v-if="state.tableStatusChangeInfo?.tempTreeNum > 0" class="status-text-info">
+        <div
+          v-if="
+            state.tableStatusChangeInfo?.tempTreeNum > 0 &&
+            state.tableStatusChangeInfo?.needChildNum
+          "
+          class="status-text-info"
+        >
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
@@ -984,6 +1054,7 @@
     title="提示"
     wrapClassName="date-status-change-modal"
     width="528px"
+    @cancel="closeDateModal"
     :bodyStyle="{
       width: '100%',
       height: '129px',
@@ -1052,7 +1123,12 @@
             </a-tooltip>
           </template>
 
-          <div v-if="childItem?.isSuperAdmin" class="send-code-btn" @click="resetPassword">
+          <div
+            v-if="childItem?.isSuperAdmin"
+            v-hasPermi="['system:tenant:reset-password']"
+            class="send-code-btn"
+            @click="resetPassword"
+          >
             重置密码
           </div>
         </div>
@@ -1176,7 +1252,7 @@ import * as MenuApi from '@/api/system/menu'
 import { handleTree } from '@/utils/tree'
 import { message, Upload } from 'ant-design-vue'
 import type { UploadProps, UploadChangeParam } from 'ant-design-vue'
-import { organizationType, PageKeyObj, storeSubType } from '@/utils/constants'
+import { organizationCategory, organizationType, PageKeyObj, storeSubType } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 import {
   addMajorIndividual,
@@ -1201,7 +1277,9 @@ import {
   reconstructedTreeData,
   toTreeCount,
   fullScreen,
-  hasPermission
+  hasPermission,
+  getAllChildIds,
+  findParentIds
 } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -1219,6 +1297,7 @@ import { FileUnit } from '@/components/UploadFile/src/helper'
 import isBetween from 'dayjs/plugin/isBetween'
 import { getOrganizationTypeList } from '@/api/system/organization'
 import { majorIndividualType } from '@/utils/constants'
+import Pagination from '@/components/Pagination/index.vue'
 
 const { wsCache } = useCache()
 
@@ -1230,6 +1309,7 @@ const queryParams: any = reactive({
   current: 1, //当前页码
   pageSize: 10, //显示条数
   keyword: undefined,
+  specialtyCode: undefined,
   systemName: undefined,
   startEndTime: [],
   status: undefined,
@@ -1357,6 +1437,8 @@ const imageUrl = ref<string>('')
 
 //TODO 有空补吧
 const state: any = reactive({
+  pageNo: 1,
+  pageSize: 10,
   majorIndividualHasPermission: false, //table 状态switch 是否禁用 权限关禁用  主体状态权限
   storeHasPermission: false, //table 状态switch 是否禁用 权限关禁用 门店状态权限
   childStoreHasPermission: false, //table 状态switch 是否禁用 权限关禁用 子门店状态权限
@@ -1384,10 +1466,11 @@ const state: any = reactive({
     { value: 0, label: '正常' },
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
-  loading: true, //表格加载中
+  loading: false, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
   tableDataArr: [], //表格数据 Arr
+  tableDataPseudoPaginationList: [], //表格数据 伪分页
   treeIconIndex: 0,
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
@@ -1450,7 +1533,9 @@ const state: any = reactive({
   activeKey: 'backstage', // tabsKey frontDesk前台 backstage后台
   selectAll: false, //权限配置 全选
   isExpandAllTab: false, //权限配置 展开折叠
-  menuTreeList: [], //权限配置 前台列表
+  menuTreeList: [], //权限配置 前台列表 树 过滤btn
+  menuTreeArr: [], //权限配置 前台列表 数组 过滤btn
+  allMenuTreeArr: [], //权限配置 前台列表 数组 不过滤btn
   fieldNames: { children: 'children', title: 'name', key: 'id' }, //权限配置 前台列表 tree的对应字段替换
   selectedKeys: [], //权限配置 前台列表 设置选中的树节点
   checkedKeys: [], //权限配置 前台列表 选中复选框的树节点
@@ -1462,6 +1547,10 @@ const state: any = reactive({
   isShowRightTree: false, //权限配置 选中的树 是否显示
   permissionRecord: {}, //权限配置 操作 时 存的整条数据
   PermissionType: 'add', //权限配置 新增 修改
+  operationCheckedList: [], //权限配置 当前选中的 菜单 的btn list checkbox
+  selectAllOperation: false, //权限配置 当前选中的 菜单 的btn  全选 true/false
+  operationCheckedValue: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单
+  operationCheckedAllValue: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单
   editPermissionID: undefined, //编辑功能配置时的id
   isShowDetails: false, //详细modal
   detailsInfo: [], //详情内容
@@ -1504,10 +1593,10 @@ const state: any = reactive({
   changedColumnsObj: {} //定制列组件接收到的当前列信息
 })
 
-//存放功能配置 选中的所有keys(包括父节点id)
-const checkedKeysBack = ref([])
-// const checkedKeysBackNew = ref([])
-const checkedKeysBackNew: Ref<(string | number)[]> = ref([])
+// //存放功能配置 选中的所有keys(包括父节点id)
+// const checkedKeysBack = ref([])
+// const checkedKeysDirIds = ref([])
+const checkedKeysDirIds: Ref<(string | number)[]> = ref([])
 
 // 有效期组件
 const effectiveRef = ref()
@@ -1521,10 +1610,52 @@ const handleModalScroll = () => {
 
 //获取子节点的 父节点id
 const testCheck = (checkedKeys, e) => {
-  //存放功能配置 选中的所有keys(包括父节点id)
-  checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
   console.log('checkedKeys', checkedKeys)
-  console.log('checkedKeysBack.value', checkedKeysBack.value)
+  console.log('e', e)
+  // //存放功能配置 选中的所有keys(包括父节点id)
+  // checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
+  //存放功能配置 父节点id
+  checkedKeysDirIds.value = e.halfCheckedKeys
+  console.log('checkedKeys', checkedKeys)
+  console.log('checkedKeysDirIds.value', checkedKeysDirIds.value)
+  if (e.checked === false) {
+    // //  取消勾选 获取取消勾选的子节点项
+    // // const currentNodeChildren = state.allMenuTreeArr.filter((item) => item.parentId === e.node.key)
+    // const currentNodeChildren = getAllChildIds(e.node.key, state.allMenuTreeArr)
+    // // 取消勾选 获取取消勾选的子节点项 id
+    // const currentNodeChildrenIds = currentNodeChildren.map((item) => item.id)
+    // 取消勾选 获取取消勾选的子节点项 id 递归
+    const currentNodeChildrenIds: any = getAllChildIds(e.node.key, state.allMenuTreeArr)
+    //清空当前操作权限 btn 选中的值
+    // state.operationCheckedValue = []
+    console.log('取消勾选的子节点项 idcurrentNodeChildrenIds', currentNodeChildrenIds)
+    // console.log('currentNodeChildren ', currentNodeChildren)
+    //过滤去除取消勾选的菜单 操作权限 对应的 btn
+    state.operationCheckedValue = state.operationCheckedValue.filter(
+      (item) => !currentNodeChildrenIds.includes(item)
+    )
+    //过滤去除取消勾选的菜单 操作权限 对应的 btn All
+    state.operationCheckedAllValue = state.operationCheckedAllValue.filter(
+      (item) => !currentNodeChildrenIds.includes(item)
+    )
+  }
+}
+
+const treeSelect = (selectedKeys, e) => {
+  console.log('selectedKeys', selectedKeys)
+  console.log('selectedKeys===>e', e)
+  console.log('state.menuTreeArr', state.menuTreeArr)
+  //权限btn
+  state.operationCheckedList = state.allMenuTreeArr.filter(
+    (item) => item.parentId === selectedKeys[0] && item.type === 3
+  )
+  //获取复选框所有的id数组
+  const idList = state.operationCheckedList.map((item) => item.id)
+  //操作权限 btn 选中回显
+  state.operationCheckedValue = state.operationCheckedAllValue.filter((item) =>
+    idList.includes(item)
+  )
+  console.log('state.operationCheckedList', state.operationCheckedList)
 }
 
 //ALL columns 用于定制列过滤 排序
@@ -1677,11 +1808,16 @@ const allColumns = [
  * @param isRefresh 右侧刷新图标进
  * */
 const getList = async (isRefresh = false) => {
+  //无查询按钮权限 不请求
+  // if (!hasPermission('system:tenant:query')) {
+  //   return
+  // }
   state.loading = true
   const params = {
     // pageNo: queryParams.current,
     // pageSize: queryParams.pageSize,
     keyword: queryParams.keyword,
+    specialtyCode: queryParams.specialtyCode,
     systemName: queryParams.systemName,
     status: queryParams.status,
     type: queryParams.type
@@ -1732,6 +1868,14 @@ const getList = async (isRefresh = false) => {
         default:
           item.store = ''
       }
+
+      if (item.organizationCategory === organizationCategory.childStore) {
+        //  子门店 需要 知道父门店的 状态 关闭则禁用 子门店 状态switch
+        const parentStoreItem = res.find((childItem) => childItem.id === item.parentId)
+        if (parentStoreItem) {
+          item.parentStoreStatusSwitch = parentStoreItem.status === 0
+        }
+      }
     })
 
     state.tableDataList = res
@@ -1750,6 +1894,8 @@ const getList = async (isRefresh = false) => {
     state.tableDataList = handleTree(state.tableDataList as any[], 'id', 'parentNode', 'children')
     state.total = res.total
     console.log('state.tableDataList ', state.tableDataList)
+    //伪分页
+    onPageChange({ pageNo: 1, pageSize: 10 })
 
     if (isRefresh) {
       message.success('刷新成功')
@@ -1758,19 +1904,6 @@ const getList = async (isRefresh = false) => {
     state.loading = false
   }
 
-  // //获取菜单列表
-  // // const menuList = await MenuApi.getSimpleMenusList()
-  // const menuList = await MenuApi.getMajorIndividualSimpleMenusList({ id })
-  // //不要展示按钮 默认按钮全选 后端处理
-  // const tempArr = menuList.filter((item) => item.type !== 3)
-  // state.menuTreeList = handleTree(tempArr)
-  //
-  // // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  // state.parentCheckedKeys = []
-  // state.menuTreeList.map((item) => {
-  //   state.parentCheckedKeys.push(item.id)
-  // })
-  // state.defaultExpandAll = true
   await nextTick(() => {
     state.isShowTree = true
   })
@@ -1838,12 +1971,6 @@ const openModal = async (record: any = {}, isChildStore = false) => {
   }
   const res = await getSimpleTenantList()
   state.record = record
-
-  // let menuTree = []
-  // let menu = {}
-  // let menu: Tree = { id: 0, name: '顶层主体', children: [] }
-  // menu.children = handleTree(res, 'id', 'belongTenantId', 'children')
-  // menuTree.push(menu)
   state.optionalMenuList = res
 
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
@@ -2308,20 +2435,28 @@ const closePermissionModal = () => {
   state.selectAll = false
   state.isExpandAllTab = false
   state.isShowTree = false
+  state.selectedKeys = []
+  state.operationCheckedList = [] //权限配置 当前选中的 菜单 的btn list checkbox
+  state.selectAllOperation = false //权限配置 当前选中的 菜单 的btn  全选 true/false
+  state.operationCheckedValue = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单
+  state.operationCheckedAllValue = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单
 }
 
 //开启功能配置 modal
 const openPermissionModal = async (id) => {
-  state.isShowPermission = true
   // //获取菜单列表
   // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
   // //获取菜单列表
   // const menuList = await MenuApi.getSimpleMenusList()
   //获取菜单列表
   const menuList = await MenuApi.getMajorIndividualSimpleMenusList({ id })
+  state.allMenuTreeArr = menuList
   //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = menuList.filter((item) => item.type !== 3)
-  state.menuTreeList = handleTree(tempArr)
+  state.menuTreeArr = menuList.filter((item) => item.type !== 3)
+
+  state.menuTreeList = handleTree(cloneDeep(state.menuTreeArr))
+
+  state.isShowPermission = true
 }
 
 //配置菜单 Modal 确认
@@ -2366,6 +2501,7 @@ const PermissionOk = async () => {
 // }
 
 const assignPermission = async (record) => {
+  console.log('record)', record)
   state.permissionRecord = record
   state.PermissionType = 'edit'
   //TODO 有空改一下 - - 这里不大合适 需求一直改 这里改了好多次 - -
@@ -2373,19 +2509,22 @@ const assignPermission = async (record) => {
   if (record.packageId != null) {
     const res = await getTenantPackage({ id: record.packageId })
     //... res 可能为null
-    const { menuIds = [], dirIds = [], id } = res || []
+    const { menuIds = [], dirIds = [], buttonIds = [], id } = res || []
     state.editPermissionID = id
     state.checkedKeys = menuIds
+    state.operationCheckedAllValue = buttonIds
     console.log('state.menuTreeList', state.menuTreeList)
     console.log('dirIds', dirIds)
     console.log('menuIds', menuIds)
-    nextTick(() => {
-      state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
-    })
-    checkedKeysBackNew.value = [...dirIds]
+    // nextTick(() => {
+    //   state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
+    // })
+    // checkedKeysDirIds.value = [...dirIds]
+    checkedKeysDirIds.value = [...dirIds]
     console.log('state.selectTree', state.selectTree)
   } else {
     state.selectTree = []
+    checkedKeysDirIds.value = []
   }
   //右侧展开显示 左侧选中的数据
   state.isShowRightTree = false
@@ -2417,6 +2556,7 @@ const setTableStatusChangeInfo = async (value, record) => {
     value,
     record
   }
+  console.log('record)', record)
 
   if (value) {
     state.tableStatusChangeInfo['statusBtnText'] = '确认开启'
@@ -2446,6 +2586,9 @@ const setTableStatusChangeInfo = async (value, record) => {
     })
     console.log('state.tableStatusChangeInfo.tempTreeNum', state.tableStatusChangeInfo.tempTreeNum)
   }
+
+  //主体都不需要 子机构数量提示 主体的状态开启 关闭 提示语 全部去掉 当门店状态为关闭时 子门店状态不可操作  null为主体   store: '1', //门店 childStore: '2' //子门店
+  state.tableStatusChangeInfo['needChildNum'] = record.organizationCategory !== null
 
   //TODO 这里还得改 子门店的得单独判断
   //过滤得到父级项
@@ -2596,9 +2739,47 @@ const selectAll = ({ target }) => {
   } else {
     //全不选
     state.checkedKeys = []
-    checkedKeysBack.value = []
+    checkedKeysDirIds.value = []
   }
 }
+
+//配置菜单 操作权限 btn 全选全不选
+const selectAllOperation = ({ target }) => {
+  if (target.checked) {
+    //全选
+    // state.checkedKeys = state.parentCheckedKeys
+    state.operationCheckedValue = getAllIds(state.operationCheckedList)
+  } else {
+    //全不选
+    state.operationCheckedValue = []
+    // checkedKeysDirIds.value = []
+  }
+}
+
+//配置菜单 操作权限 btn change
+const operationCheckedValueChange = (checkedValue) => {
+  //  左侧 菜单 没有勾选则 勾选上
+  console.log('checkedValue', checkedValue)
+  //当前选中的 btn 第一项
+  const currentItem =
+    checkedValue.length > 0 && state.allMenuTreeArr.find((item) => item.id === checkedValue[0])
+  //通过当前选中的 btn第一项获取 父级 项
+  const parentItem =
+    checkedValue.length > 0 && state.allMenuTreeArr.find((item) => item.id === currentItem.parentId)
+  if (!state.checkedKeys.includes(parentItem.id)) {
+    //选中了操作权限 btn 但是 左侧 菜单没有勾选 则勾选
+    state.checkedKeys.push(parentItem.id)
+    //  递归将上层父节点id 存入
+    const tempIds = findParentIds(checkedValue[0], state.allMenuTreeArr)
+    //将所需的菜单id存入 直接去重
+    checkedKeysDirIds.value = [...new Set(checkedKeysDirIds.value.concat(tempIds))]
+    console.log('所有父级id', tempIds)
+    console.log('checkedKeysDirIds.value', checkedKeysDirIds.value)
+  }
+  console.log('currentItem', currentItem)
+  console.log('parentItem=========>', parentItem)
+}
+
 //配置菜单 前台 展开折叠
 const expandAllFN = ({ target }) => {
   if (target.checked) {
@@ -3018,6 +3199,16 @@ const setPreviewImage = (imgUrl = '') => {
   previewVisible.value = true
 }
 
+//页码改变  伪分页
+const onPageChange = ({ pageNo, pageSize }) => {
+  // 计算要显示的数据的起始索引和结束索引
+  const startIndex = (pageNo - 1) * pageSize
+  const endIndex = startIndex + pageSize
+
+  // 根据起始索引和结束索引提取要显示的数据
+  state.tableDataPseudoPaginationList = state.tableDataList.slice(startIndex, endIndex)
+}
+
 //数据字典
 const getAllType = async () => {
   //获取数据字典
@@ -3030,7 +3221,11 @@ const getAllType = async () => {
 }
 
 // 新增、修改 主体类型
-const majorIndividualTypeChange = () => {
+const majorIndividualTypeChange = async () => {
+  //TODO 这块有空得让产品重新 罗列 重新写 改来改去的 openModal()
+  const res = await getSimpleTenantList()
+  state.optionalMenuList = res
+
   //  超管
   if (state.formState.majorIndividualType === 'manufacturer') {
     //  厂家
@@ -3050,7 +3245,7 @@ const majorIndividualTypeChange = () => {
     )
     state.formState.belongTenantId = state.record.id
   }
-
+  console.log('state.optionalMenuTreeChange1111', state.optionalMenuTreeChange)
   state.optionalMenuTreeChange = handleTree(
     state.optionalMenuTreeChange,
     'id',
@@ -3058,7 +3253,9 @@ const majorIndividualTypeChange = () => {
     'children'
   )
 
+  console.log('state.optionalMenuTreeChange2222', state.optionalMenuTreeChange)
   state.formState.belongTenantId = state.optionalMenuTreeChange[0]?.id
+  console.log('state.formState.belongTenantId', state.formState.belongTenantId)
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
@@ -3087,15 +3284,48 @@ state.storeHasPermission = hasPermission('system:tenant:update-store-status')
 //子门店状态权限
 state.childStoreHasPermission = hasPermission('system:tenant:update-child-store-status')
 
-//监听  左侧选中数据  更新 右侧展示数据
+// //监听  左侧选中数据  更新 右侧展示数据
+// watch(
+//   () => [state.checkedKeys, checkedKeysBack.value, checkedKeysDirIds.value],
+//   () => {
+//     state.idArr = [
+//       ...new Set(checkedKeysBack.value.concat(state.checkedKeys)),
+//       ...new Set(checkedKeysDirIds.value)
+//     ]
+//     state.selectTree = filterTree(state.menuTreeList, state.idArr)
+//     state.isShowRightTree = false
+//     //右侧展开显示 左侧选中的数据
+//     nextTick(() => {
+//       state.isShowRightTree = true
+//     })
+//   },
+//   {
+//     immediate: true,
+//     deep: true
+//   }
+// )
+
 watch(
-  () => [state.checkedKeys, checkedKeysBack.value, checkedKeysBackNew.value],
-  () => {
+  () => state.checkedKeys,
+  (val) => {
+    //权限配置 选中的菜单
+    console.log('state.checkedKeys ---- change')
+    console.log('state.checkedKeys, ------', state.checkedKeys)
+    console.log('checkedKeysDirIds.value ---------', checkedKeysDirIds.value)
+    console.log('state.menuTreeArr---------', state.menuTreeArr)
+    state.selectAll = val.length > 0 && val.length === state.menuTreeArr.length
+    if ([...state.checkedKeys, ...checkedKeysDirIds.value].length === state.menuTreeArr.length) {
+      //回显全选特殊处理 - - 目录 跟 菜单 length 等于 list length
+      state.selectAll = true
+    }
+    //确认请求入参
     state.idArr = [
-      ...new Set(checkedKeysBack.value.concat(state.checkedKeys)),
-      ...new Set(checkedKeysBackNew.value)
+      ...new Set(checkedKeysDirIds.value.concat(state.checkedKeys, state.operationCheckedAllValue))
     ]
-    state.selectTree = filterTree(state.menuTreeList, state.idArr)
+    //右侧树
+    // state.selectTree = filterTree(state.menuTreeList, state.idArr)
+    // state.selectTree = filterTree(handleTree(cloneDeep(state.allMenuTreeArr)), state.idArr)
+    state.selectTree = filterTree(handleTree(cloneDeep(state.allMenuTreeArr)), state.idArr)
     state.isShowRightTree = false
     //右侧展开显示 左侧选中的数据
     nextTick(() => {
@@ -3103,8 +3333,49 @@ watch(
     })
   },
   {
-    immediate: true,
-    deep: true
+    immediate: true
+  }
+)
+
+// const arr1 = [1, 2, 3, 4, 5, 6]
+// const arr2 = [2, 3]
+// const arr = arr1.filter((item) => !arr2.includes(item))
+// console.log('arr!!!!!!!!!!!!', arr)
+
+watch(
+  () => state.operationCheckedValue,
+  (val) => {
+    //  权限配置 操作权限 即 btn 当前选中的菜单的
+    console.log('valBtn', val)
+    state.selectAllOperation = val.length > 0 && val.length === state.operationCheckedList.length
+    //获取复选框所有的id数组
+    const idList = state.operationCheckedList.map((item) => item.id)
+    //当前菜单没有选中的值
+    console.log('state.operationCheckedList', state.operationCheckedList)
+    const noSelectValue = idList.filter((item) => !val.includes(item))
+    console.log('当前菜单没有选中的值noSelectValue', noSelectValue)
+    //去重
+    state.operationCheckedAllValue = [...new Set(state.operationCheckedAllValue.concat(val))]
+    //通过未选中的值反向过滤  获取所有操作权限 选中的btn
+    state.operationCheckedAllValue = state.operationCheckedAllValue.filter(
+      (item) => !noSelectValue.includes(item)
+    )
+    console.log('state.operationCheckedAllValue', state.operationCheckedAllValue)
+    //确认请求入参
+    state.idArr = [
+      ...new Set(state.idArr.concat(state.operationCheckedAllValue, checkedKeysDirIds.value))
+    ]
+    //通过未选中的值反向过滤
+    state.idArr = state.idArr.filter((item) => !noSelectValue.includes(item))
+    //右侧树
+    state.selectTree = filterTree(handleTree(cloneDeep(state.allMenuTreeArr)), state.idArr)
+    console.log('state.idArr!!!', state.idArr)
+    console.log('state.selectTree!!!', state.selectTree)
+    state.isShowRightTree = false
+    //右侧展开显示 左侧选中的数据
+    nextTick(() => {
+      state.isShowRightTree = true
+    })
   }
 )
 
@@ -3130,10 +3401,88 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+.test {
+  width: 100%;
+  height: 200px;
+  background: white;
+}
+//========================== search start ==================================
+.search-form-style {
+  :deep(.ant-form-item) {
+    margin: 0;
+  }
+}
+
+.total-search-content {
+  display: flex;
+  justify-content: space-between;
+}
+
+.search-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  //flex: 1 3 auto;
+}
+
+.search-btn-content {
+  width: 150px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  //background: skyblue;
+  //flex: 1 1 auto;
+}
+
+.search-item {
+  display: flex;
+  //flex: 1;
+  margin-top: 10px;
+}
+
+.item-label {
+  width: 80px;
+  //margin-left: 10px;
+  display: flex;
+  //justify-content: flex-start;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.item-condition {
+  width: 180px;
+}
+
+.item-condition-date {
+  width: 240px;
+}
+
+.flex-style {
+  display: flex;
+}
+
+.select-input {
+  width: 270px;
+}
+
+.width-70 {
+  width: 70px;
+}
+
+.width-180 {
+  width: 180px;
+  flex: 1;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+//========================== search end ==================================
 .search-card {
   min-width: 1700px;
-  min-height: 72px;
-  padding: 20px;
+  //min-height: 72px;
+  padding: 0px 20px 10px 20px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -3243,7 +3592,7 @@ onMounted(async () => {
 }
 
 .select-content {
-  width: 625px;
+  width: 100%;
   display: flex;
   justify-content: space-between;
 }
@@ -3260,6 +3609,35 @@ onMounted(async () => {
   width: 290px;
   height: 620px;
   //background: red;
+}
+
+.right-card-content {
+  width: 100%;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(234, 235, 239, 1);
+  overflow: auto;
+}
+
+.border-1 {
+  border: 1px solid rgba(234, 235, 239, 1);
+  overflow: auto;
+}
+.operation-checkbox-content {
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.operation-checkbox-style {
+  margin: 5px 26px 0 0;
+}
+.list-content {
+  width: 100%;
+  height: 620px;
+  display: flex;
+  flex-direction: column;
 }
 
 //表格状态改变 modal
@@ -3589,6 +3967,14 @@ onMounted(async () => {
 .child-store-tag {
   background-color: rgba(253, 246, 235, 1);
   color: rgba(231, 162, 60, 1);
+}
+.right-top-text {
+  width: 100%;
+  height: 46px;
+  padding-left: 18px;
+  display: flex;
+  align-items: center;
+  background: rgba(246, 246, 246, 1);
 }
 </style>
 

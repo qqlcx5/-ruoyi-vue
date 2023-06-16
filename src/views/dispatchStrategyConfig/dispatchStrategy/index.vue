@@ -27,8 +27,8 @@
         </el-col>
         <el-col :span="6" class="!flex flex-column justify-between">
           <div>
-            <el-button type="primary">查询</el-button>
-            <el-button>重置</el-button>
+            <el-button type="primary" @click="handleSearch">查询</el-button>
+            <el-button @click="handleReset">重置</el-button>
           </div>
         </el-col>
       </el-row>
@@ -36,16 +36,15 @@
   </el-card>
   <ContentWrap>
     <!--    列表-->
-    <el-row>
+    <el-row :gutter="10">
       <el-col :span="3">
-        <el-button type="primary">新增</el-button>
-      </el-col>
-      <el-col :span="3">
-        <el-button type="danger">删除</el-button>
+        <el-button type="primary" @click="addRule">新增</el-button>
+        <el-button type="danger" @click="handleDelete">删除</el-button>
       </el-col>
     </el-row>
     <el-table
       class="mt10 dispatch-table"
+      v-loading="loading"
       :data="tableData"
       @selection-change="selectedChange"
       border
@@ -57,7 +56,7 @@
       <el-table-column label="线索清洗员" prop="filterUserName" width="120" />
       <el-table-column label="派发人员配置" align="center" class="staff-config-column">
         <template #header>
-          <el-table ref="replacement-table">
+          <el-table class="replacement-table">
             <el-table-column label="派发门店" />
             <el-table-column label="实际派发成员数" />
             <el-table-column label="是否派发" />
@@ -109,30 +108,104 @@
       <el-table-column label="开通门店" prop="shopName" width="120" />
       <el-table-column label="操作" width="120">
         <template #default="{ row }">
-          <el-button type="text" @click="editRule(row.id)"> 编辑 </el-button>
+          <el-button type="text" @click="editRule(row.id)"> 编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <!-- 分页 -->
+    <Pagination
+      :total="total"
+      v-model:page="searchForm.pageNo"
+      v-model:limit="searchForm.pageSize"
+      @pagination="getTableData"
+    />
   </ContentWrap>
+  <el-dialog title="提示" v-model:visible="delDialog" width="30%">
+    <p class="mb10"
+      ><i class="el-icon-warning Danger"></i>确认要删除这<span class="Danger">{{
+        selectedIds.length
+      }}</span
+      >条派发策略吗？
+    </p>
+    <p>删除后，对应派发成员将无法接收到线索派发。</p>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="delDialog = false">取 消</el-button>
+        <el-button type="primary" @click="confirmDel">确 定</el-button>
+      </div>
+    </template>
+  </el-dialog>
   <staff-table ref="staffTableRef" />
+  <crud ref="crudRef" @refresh="handleSearch" />
 </template>
 
 <script setup lang="ts" name="dispatchStrategy">
 import StaffTable from '@/views/dispatchStrategyConfig/components/staffTable.vue'
+import Crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
+import { treeShopData } from '@/api/common/index'
+import * as dispatchApi from '@/api/clue/dispatchStrategy'
+const message = useMessage()
+
+onMounted(() => {
+  getShopData()
+  handleSearch()
+})
 
 const treeShopCascader = ref()
-const searchForm = ref({ shopId: '', searchClueName: '' })
-const tableData = ref({
-  clueChannelName: '',
-  parentName: '',
-  filterUserName: '',
-  distributeShopList: [],
-  receivePattern: '',
-  createBy: '',
-  createTime: '',
-  shopName: ''
+
+const total = ref(0) // 列表的总页数
+const loading = ref(true) // 列表的加载中
+const searchForm = ref({
+  shopId: '',
+  searchClueName: '',
+  pageNo: 1,
+  pageSize: 10
 })
-const selectedIds = ref(['0'])
+// 搜索
+const handleSearch = () => {
+  searchForm.value.pageNo = 1
+  getTableData(searchForm)
+}
+// 查询列表数据
+const getTableData = (searchForm) => {
+  loading.value = true
+  try {
+    dispatchApi.getClueDistribute(searchForm).then((res) => {
+      if (res) {
+        tableData.value = res.data.list
+        nextTick(() => {
+          const replacementTable = document.querySelector('.replacement-table')
+          const elTableBodyWrapper = replacementTable?.querySelector('.el-table__body-wrapper')
+          if (elTableBodyWrapper) {
+            replacementTable?.removeChild(elTableBodyWrapper)
+          }
+        })
+      } else {
+        message.error(res.message)
+      }
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const elFormRef = ref()
+const handleReset = () => {
+  elFormRef.value.resetField()
+  handleSearch()
+}
+
+type DispatchStrategy = {
+  clueChannelName: string
+  parentName: string
+  filterUserName: string
+  distributeShopList: string[]
+  receivePattern: string
+  createBy: string
+  createTime: string
+  shopName: string
+}
+const tableData = ref<DispatchStrategy[]>([])
 const cptReceivePattern = computed(() => {
   const map = {
     1: '配置模式',
@@ -143,8 +216,41 @@ const cptReceivePattern = computed(() => {
     return map[val] || ''
   }
 })
+
+// 新增派发策略
+const crudRef = ref()
+const addRule = () => {
+  crudRef.value.openDialog()
+}
+// 编辑派发策略
+const editRule = (id) => {
+  crudRef.value.openDialog(id)
+}
+
+// 选中后批量操作
+const delDialog = ref(false)
+const selectedIds = ref(['0'])
 const selectedChange = (val: string[]): void => {
   selectedIds.value = val.map((item: any) => item.id)
+}
+const handleDelete = () => {
+  if (selectedIds.value.length < 1) {
+    return message.warning('未选择数据')
+  } else {
+    delDialog.value = true
+  }
+}
+// 删除
+const confirmDel = () => {
+  dispatchApi.delStrategy({ ids: selectedIds.value }).then((res) => {
+    if (res) {
+      message.success('删除成功')
+      delDialog.value = false
+      handleSearch()
+    } else {
+      message.error(res.message)
+    }
+  })
 }
 
 // 派发成员数弹窗
@@ -160,16 +266,29 @@ type ShopDataObj = {
   children: ShopDataObj[]
 }
 const shopData = ref<ShopDataObj[]>([])
-// const formatTreeData = (data) => {
-//   for (let i = 0; i < data.length; i++) {
-//     if (data[i].children && data[i].children.length < 1) {
-//       data[i].children = undefined
-//     } else if (data[i].children) {
-//       formatTreeData(data[i].children)
-//     }
-//   }
-//   return data
-// }
+const formatTreeData = (data) => {
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].children && data[i].children.length < 1) {
+      data[i].children = undefined
+    } else if (data[i].children) {
+      formatTreeData(data[i].children)
+    }
+  }
+  return data
+}
+const getShopData = () => {
+  treeShopData().then((res) => {
+    if (res) {
+      shopData.value = formatTreeData(res.data)
+    } else {
+      message.error(res.message)
+    }
+  })
+}
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.el-row {
+  margin-bottom: 10px;
+}
+</style>

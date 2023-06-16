@@ -124,6 +124,7 @@ watch(
         {{ userInfo?.tenant?.systemName || '万国投资管理系统' }}
       </div>
       <Icon
+        v-hasPermi="['system:tenant:update-system']"
         :size="18"
         icon="svg-icon:edit"
         color="#fff"

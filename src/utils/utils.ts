@@ -90,6 +90,36 @@ export const getAllIds = (tree) => {
   return result
 }
 
+/**
+ * 获取当前节点的 所有子id
+ * @param nodeId 当前id
+ * @param menuItems 存在id与parentId的数组
+ * @return list 所有父节点id
+ * */
+export const getAllChildIds = (nodeId: any, menuItems: any) => {
+  const childIds: any = []
+  menuItems.forEach((item) => {
+    if (item.parentId === nodeId) {
+      childIds.push(item.id)
+      childIds.push(...getAllChildIds(item.id, menuItems))
+    }
+  })
+  return childIds
+}
+
+/**
+ * 获取所有父节点id
+ * @param itemId 子级id
+ * @param allMenuTreeArr 存在id与parentId的数组
+ * @return list 所有父节点id
+ * */
+export const findParentIds = (itemId, allMenuTreeArr) => {
+  const item = allMenuTreeArr.find((item) => item.id === itemId)
+  return item && item.parentId !== null
+    ? [item.id, ...findParentIds(item.parentId, allMenuTreeArr)]
+    : []
+}
+
 //过滤树结构 获取新树
 // export function filterTree(tree = [], map = [], arr = []) {
 export function filterTree(
@@ -98,9 +128,9 @@ export function filterTree(
   arr: MenuTreeList[] = []
 ) {
   if (!tree.length) return []
-  for (let item of tree) {
+  for (const item of tree) {
     if (!map.includes(item.id)) continue
-    let node = { ...item, children: [] }
+    const node = { ...item, children: [] }
     arr.push(node)
     if (item.children && item.children.length) filterTree(item.children, map, node.children)
   }
@@ -164,4 +194,36 @@ export const fullScreen = () => {
 export const hasPermission = (permission: string) => {
   const permissionsList = wsCache.get(CACHE_KEY.USER).permissions
   return permissionsList.includes(permission)
+}
+
+interface ITimeList {
+  startTime: string
+  endTime: string
+}
+export const judgeTimeList = (dateArr: ITimeList[]) => {
+  for (const k in dateArr) {
+    if (!judge(k, dateArr)) {
+      return false
+    }
+  }
+  return true
+}
+const judge = (idx: any, dateArr: any) => {
+  for (const k in dateArr) {
+    if (idx !== k) {
+      if (
+        dateArr[k].startTime <= dateArr[idx].startTime &&
+        dateArr[k].endTime > dateArr[idx].startTime
+      ) {
+        return false
+      }
+      if (
+        dateArr[k].startTime < dateArr[idx].endTime &&
+        dateArr[k].endTime >= dateArr[idx].endTime
+      ) {
+        return false
+      }
+    }
+  }
+  return true
 }

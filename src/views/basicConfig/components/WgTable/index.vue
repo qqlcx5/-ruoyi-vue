@@ -1,5 +1,9 @@
 <template>
-  <div id="el-table-wrap" style="display: flex; flex-direction: column">
+  <div
+    class="el-table-wrap"
+    :class="{ 'is--maximize': isFullScreen }"
+    style="display: flex; flex-direction: column"
+  >
     <div class="mb-4px" style="display: flex; align-items: center; margin-top: -10px">
       <div style="flex: 1"><slot name="btns"></slot></div>
       <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
@@ -39,6 +43,15 @@
         </el-table-column>
       </template>
     </el-table>
+    <div style="text-align: right">
+      <Pagination
+        v-if="queryParams.pageNo"
+        :total="tableConfig.total || 0"
+        v-model:page="queryParams.pageNo"
+        v-model:limit="queryParams.pageSize"
+        @pagination="onPageChange"
+      />
+    </div>
     <!--  定制列  -->
     <CustomColumn
       id="card-content"
@@ -62,6 +75,8 @@ interface ITableConfig {
   pageKey: string
   columns?: any[]
   type?: 'string'
+  total?: number
+  queryParams: any
 }
 interface IProps {
   data: object[]
@@ -69,36 +84,32 @@ interface IProps {
 }
 const props = withDefaults(defineProps<IProps>(), {
   data: () => [],
-  tableConfig: () => ({ pageKey: '' })
+  tableConfig: () => ({ pageKey: '', queryParams: {} })
 })
+const { queryParams } = toRefs(props.tableConfig)
 const columns = ref(props.tableConfig.columns || [])
 interface IEmit {
   (event: 'selectionChange', checkedList: object[]): void
   (event: 'refresh'): void
+  (event: 'pageChange', params: object): void
 }
 const emit = defineEmits<IEmit>()
+
+const onPageChange = (params) => {
+  emit('pageChange', params)
+}
 
 const { wsCache } = useCache()
 const isFullScreen = ref(false)
 const fullScreen = () => {
-  const elem = document.getElementById('el-table-wrap')
-
-  if (isFullScreen.value === false) {
-    if (elem?.requestFullscreen) {
-      elem?.requestFullscreen()
-      isFullScreen.value = !isFullScreen.value
-    }
-  } else {
-    document.exitFullscreen()
-    isFullScreen.value = !isFullScreen.value
-  }
+  console.log(123)
+  isFullScreen.value = !isFullScreen.value
 }
 const getList = () => {
   emit('refresh')
 }
 const columnDialogShow = ref(false)
 const showColumnDialog = () => {
-  console.log(1111)
   columnDialogShow.value = true
 }
 
@@ -161,4 +172,17 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 
 <style scoped lang="scss">
 @import '../../style/index';
+.el-table-wrap {
+  flex: 1;
+  min-height: 1px;
+  &.is--maximize {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100% !important;
+    z-index: 1000;
+    background-color: $page-bg-color;
+  }
+}
 </style>

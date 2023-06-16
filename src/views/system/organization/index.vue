@@ -39,7 +39,7 @@
     <!--  表格  -->
     <a-card
       :bordered="false"
-      style="min-width: 1710px; height: 100%; padding-bottom: 30px"
+      style="min-width: 1710px; height: 100%; padding-bottom: 30px; overflow: auto"
       id="card-content"
     >
       <!--  <ContentWrap>-->
@@ -1151,8 +1151,9 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     wrapClassName="status-change-modal"
-    width="424px"
+    :width="state.statusModalWidth"
     :bodyStyle="{
       width: '100%',
       height: '139px',
@@ -1662,7 +1663,7 @@ const state: any = reactive({
   branchCompanyTypeOptions: [], //分公司类型列表
   contactInformationOptions: [], //联系方式类型列表
   storeTypeOptions: [], //门店类型
-  loading: true, //表格加载中
+  loading: false, //表格加载中
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   treeIconIndex: 0,
   tableDataList: [], //表格数据
@@ -1675,6 +1676,7 @@ const state: any = reactive({
   isShowStoreDetails: false, //详情 门店
   isShowPermission: false, //设置属性modal
   isShowStatus: false, //表格状态改变 确认modal 确认后才开短信modal
+  statusModalWidth: '424px',
   isShowDelete: false, //删除确认 modal
   modalTitle: '新增', //modal title
   routerRules: [{ required: true }, { validator: routeValidator }],
@@ -1966,6 +1968,10 @@ const allColumns = [
  * @param isRefresh 右侧刷新图标进
  * */
 const getList = async (isRefresh = false) => {
+  //无查询按钮权限 不请求
+  // if (!hasPermission('system:organization:query')) {
+  //   return
+  // }
   state.loading = true
   const params = {
     // pageNo: queryParams.current,
@@ -2176,10 +2182,6 @@ const edit = async (record, isCloseDetails = false, currentTabs = 'basicInformat
   const res = await getOrganizationDetails({ id: record.id })
   console.log('res', res)
   if (res.organizationType === organizationType.store) {
-    //门店
-    state.currentTabs = currentTabs
-    state.isShowStore = true
-    state.record = res
     if (
       record.storeSubtyping === storeSubType.popStore ||
       record.storeSubtyping === storeSubType.cityHall
@@ -2197,7 +2199,15 @@ const edit = async (record, isCloseDetails = false, currentTabs = 'basicInformat
         needUseStore: true,
         belongTenantId: res?.tenantId
       }
+    } else {
+      //门店
+      state.needBelongTenantId = false
+      state.needParentId = true
     }
+    //门店
+    state.currentTabs = currentTabs
+    state.isShowStore = true
+    state.record = res
     return
   }
   //菜单状态 0开启 1关闭
@@ -2671,6 +2681,7 @@ const openStatusModal = () => {
 }
 //关闭 状态开始关闭 确认modal
 const closeStatusModal = () => {
+  state.statusModalWidth = '424px'
   state.isShowStatus = false
   //直接这里补一次请求吧 - -
   getList()
@@ -2711,12 +2722,14 @@ const setTableStatusChangeInfo = async (value, record, type = 'switch', disabled
       operation: '删除',
       type: 'delete'
     }
+    state.statusModalWidth = '424px'
 
     state.tableStatusChangeInfo['statusBtnText'] = '确认删除'
     state.tableStatusChangeInfo['statusTopText'] = `删除后`
     state.tableStatusChangeInfo['statusText'] = `删除`
     state.tableStatusChangeInfo['statusTextF'] = '将会导致业务数据的丢失，且不可恢复，'
   } else {
+    state.statusModalWidth = '488px'
     //表格按钮状态
     state.tableStatusChangeInfo = {
       value,
@@ -2883,7 +2896,7 @@ const detailsInfo = async (record) => {
   }
 
   //联系方式
-  const tempArrContactInformationArr = []
+  const tempArrContactInformationArr: any = []
   state.contactInformationOptions.filter((topItem) => {
     return relVO?.contact.some((item) => {
       if (topItem.value === item.contactType) {
@@ -2901,7 +2914,7 @@ const detailsInfo = async (record) => {
       infoArr: [
         {
           textSpan: '上级机构：',
-          text: tempItem[0]?.name
+          text: tempItem.length === 0 ? '顶层机构' : tempItem[0]?.name
         },
         {
           textSpan: '机构类型：',
@@ -3525,7 +3538,7 @@ watch(
 }
 .message-text-content {
   width: 520px;
-  //margin-left: 15px;
+  padding-right: 25px;
 }
 .message-img {
   margin-top: 3px;

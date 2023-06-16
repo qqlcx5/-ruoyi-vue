@@ -184,7 +184,12 @@
               >
               <a-popover placement="bottom">
                 <template #content>
-                  <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
+                  <div
+                    class="text-color margin-right-5"
+                    @click="setDeleteInfo(record)"
+                    v-hasPermi="['system:menu:delete']"
+                    >删除</div
+                  >
                 </template>
                 <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
               </a-popover>
@@ -432,6 +437,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -475,6 +481,7 @@
     v-model:visible="state.isShowDelete"
     destroyOnClose
     :closable="false"
+    @cancel="closeDeleteModal"
     :width="state.deleteModalWidth"
     :bodyStyle="{
       width: '100%',
@@ -639,7 +646,10 @@
     >
       <div class="employees-info-card">
         <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
-        <template v-for="(childrenItem, childrenIndex) in item.postInfo">
+        <template
+          v-for="(childrenItem, childrenIndex) in item.postInfo"
+          :key="`postStyle${childrenIndex}`"
+        >
           <div v-html="childrenItem.post" class="post-style"></div>
 
           <div class="employees-name-content">
@@ -702,7 +712,7 @@ const queryParams = reactive({
 })
 
 const queryFormRef = ref() // 搜索的表单
-const loading = ref(true) // 列表的加载中
+const loading = ref(false) // 列表的加载中
 const list = ref<any>([]) // 列表的数据
 
 //路由地址校验规则
@@ -976,6 +986,10 @@ const layout = {
  * @param isRefresh 右侧刷新图标进
  * */
 const getList = async (isRefresh = false) => {
+  //无查询按钮权限 不请求
+  // if (!hasPermission('system:menu:query')) {
+  //   return
+  // }
   loading.value = true
   try {
     const res = await MenuApi.getMenuList(queryParams)

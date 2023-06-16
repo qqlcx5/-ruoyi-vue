@@ -1,14 +1,14 @@
 <template>
   <div class="basic-config-page-container">
     <div class="top-search mb-12px">
-      <dive>
+      <div>
         <span class="mr-8px">门店</span>
         <el-select value="1">
           <el-option label="1" value="1" />
         </el-select>
         <el-button type="primary" class="ml-12px">确定</el-button>
         <el-button>重置</el-button>
-      </dive>
+      </div>
     </div>
     <WgTable class="table-wrap" :data="tableData" :tableConfig="tableConfig">
       <template #btns>
@@ -119,8 +119,6 @@ const handleDccEdit = (row) => {
     background-color: var(--page-bg-color);
   }
   .table-wrap {
-    flex: 1;
-    height: 1px;
     padding: 15px;
     background-color: var(--page-bg-color);
   }

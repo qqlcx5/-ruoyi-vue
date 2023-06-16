@@ -136,10 +136,16 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
       })
       if (res) {
         tableObject.tableList = (res as unknown as ResponseType).list
+
         if ((res as unknown as ResponseType).total) {
           tableObject.total = (res as unknown as ResponseType).total as unknown as number
         }
       }
+    },
+    reload: function () {
+      tableObject.currentPage = 1
+      // @ts-ignore
+      this.getList()
     },
     setProps: async (props: TableProps = {}) => {
       const table = await getTable()
@@ -218,6 +224,8 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
     register,
     elTableRef,
     tableObject,
-    methods
+    methods,
+    // 返回 tableMethods 属性，和 tableObject 更统一
+    tableMethods: methods
   }
 }

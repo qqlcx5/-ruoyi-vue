@@ -1,5 +1,5 @@
 <template>
-  <div class="basic-config-content order-receiving-container">
+  <div class="basic-config-content order-receiving-container" v-loading="loading">
     <div class="part-title">
       <span class="main-text">抢单后状态变化</span>
     </div>
@@ -52,18 +52,45 @@
       />
       <span>分钟再次推送接单提醒通知，直到接单为止</span>
     </div>
-    <el-button class="mt-90px" type="primary" size="large">保存设置</el-button>
+    <el-button class="mt-90px" type="primary" size="large" :loading="btnLoading" @click="handleSave"
+      >保存设置</el-button
+    >
   </div>
 </template>
 
 <script setup lang="ts">
-const ruleForm = reactive({
-  clueGrabType: 1,
+import { queryClueGrabConfig, saveClueGrabConfig } from '@/api/clue/basicConfig/index'
+const message = useMessage()
+let ruleForm = reactive({
+  clueGrabType: null,
   receivePushStatus: 0,
   receivePushMinute: null,
   followNotGetThroughPushStatus: 0,
   followNotGetThroughPushMinute: null
 })
+
+const loading = ref<boolean>(false)
+const getInfo = async () => {
+  try {
+    loading.value = true
+    const data = await queryClueGrabConfig()
+    console.log(data)
+    ruleForm = reactive(data)
+  } finally {
+    loading.value = false
+  }
+}
+getInfo()
+const btnLoading = ref<boolean>(false)
+const handleSave = async () => {
+  try {
+    btnLoading.value = true
+    await saveClueGrabConfig(ruleForm)
+    message.success('保存成功')
+  } finally {
+    btnLoading.value = false
+  }
+}
 </script>
 
 <style scoped lang="scss">

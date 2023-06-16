@@ -257,7 +257,7 @@
           class="table-list"
           :columns="state.columns"
           :data-source="state.tableDataList"
-          :scroll="{ x: 'max-content' }"
+          :scroll="{ x: 'max-content', y: 500 }"
           row-key="id"
           :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
           :loading="state.loading"
@@ -298,7 +298,11 @@
           <template #bodyCell="{ column, record }">
             <!--  联系电话   -->
             <template v-if="column?.key === 'memberPhone'">
-              <div v-for="item in record?.memberPhoneList" class="phone-div-content">
+              <div
+                v-for="(item, index) in record?.memberPhoneList"
+                :key="`memberPhoneList${index}`"
+                class="phone-div-content"
+              >
                 <div class="phone-div">{{ item.phoneNum }}</div>
                 <div :class="item.type === '1' ? 'private-tag' : 'company-tag'"
                   >{{ item.phoneType }}
@@ -308,12 +312,23 @@
 
             <!--  部门/岗位   -->
             <template v-if="column?.key === 'departmentPost'">
-              <div v-for="item in record?.departmentPostList" class="phone-div-content">
-                <div class="phone-div"
-                  ><span
-                    :class="[{ 'close-style': item.depStatus }, { 'delete-style': item.depDelete }]"
-                    >{{ item.department }}</span
-                  >/
+              <div
+                v-for="(item, index) in record?.departmentPostList"
+                class="phone-div-content"
+                :key="`departmentPostList${index}`"
+              >
+                <div class="phone-div">
+                  <a-tooltip>
+                    <template #title>{{ item.departmentAll }}</template>
+                    <span
+                      :class="[
+                        { 'close-style': item.depStatus },
+                        { 'delete-style': item.depDelete }
+                      ]"
+                      >{{ item.department }}</span
+                    >
+                  </a-tooltip>
+                  /
                   <span
                     :class="[
                       { 'close-style': item.postStatus },
@@ -424,9 +439,9 @@
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
     :width="'950px'"
-    :bodyStyle="{ height: '600px', margin: 'auto', padding: '14px', overflow: 'auto' }"
+    :bodyStyle="{ padding: 0 }"
   >
-    <div class="base_info_content">
+    <div class="base_info_content" @scroll="handleModalScroll">
       <a-form
         :model="formState"
         ref="formRef"
@@ -516,6 +531,7 @@
             class="width-50"
           >
             <a-date-picker
+              ref="entryRef"
               placeholder="请选择时间"
               v-model:value="formState.entryTime"
               class="width-100"
@@ -589,7 +605,7 @@
               :pagination="false"
               @resizeColumn="handleResizeColumn"
             >
-              <template #bodyCell="{ column, text, record, index }">
+              <template #bodyCell="{ column, record, index }">
                 <template v-if="column.key === 'phoneType'">
                   <div>
                     <a-radio-group
@@ -939,7 +955,7 @@
           {{ state.permissionRecord?.username }}
         </div>
         <div class="member-name">
-          {{ state.permissionRecord?.memberName }}
+          {{ state.permissionRecord?.memberName || state.permissionRecord?.nickname }}
         </div>
       </div>
 
@@ -991,6 +1007,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -1581,7 +1598,7 @@ const state: any = reactive({
     { value: 0, label: '正常' },
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
-  loading: true, //表格加载中
+  loading: false, //表格加载中
   selectedRowKeys: [],
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
@@ -1829,6 +1846,11 @@ const allColumns = [
 
 /** 查询列表 */
 const getList = async (page, isRefresh = false) => {
+  // //无查询按钮权限 不请求
+  // if (!hasPermission('system:user:list')) {
+  //   return
+  // }
+
   state.loading = true
 
   if (page) {
@@ -1879,7 +1901,7 @@ const getList = async (page, isRefresh = false) => {
 
   try {
     const res = await getMemberList(params)
-
+    console.log('res', res)
     state.rawData = res.list
     state.tableDataList = res.list
     state.tableDataList.map((item) => {
@@ -1917,7 +1939,8 @@ const getList = async (page, isRefresh = false) => {
         //0未删除 1删除  删除显示优先级高于关闭
         postStatusText = postItem.postDeleted === 0 ? postStatusText : '(删除)'
         tempDepartmentPost.push({
-          department: `${postItem.componentName}${depStatusText}`, //部门
+          department: `${postItem.organizationName}${depStatusText}`, //部门 末位
+          departmentAll: `${postItem.componentName}${depStatusText}`, //部门 全部
           depStatus: postItem.organizationStatus === 1, //0开启 1关闭 部门开启/关闭
           depDelete: postItem.organizationDeleted === 1, //0未删除 1删除 部门未删除/删除
           postStatus: postItem.postStatus === 1, //0开启 1关闭 岗位开启/关闭
@@ -3265,6 +3288,13 @@ const handlePreview = async (file) => {
   previewTitle.value = file.name || file.url.substring(file.url.lastIndexOf('/') + 1)
 }
 
+// 成立日期组件
+const entryRef = ref()
+/** 弹窗滚动事件 */
+const handleModalScroll = () => {
+  entryRef.value.blur()
+}
+
 //判断上传图片的宽高
 const checkImageWH = (file, width, height) => {
   return new Promise((resolve, reject) => {
@@ -3492,8 +3522,10 @@ const sendCurrentSelect = (currentKey) => {
 
 //获取部门列表
 const getOrganizationListFN = async () => {
+  //新增 修改 上级机构
   const selectRes = await getSimpleOrganizationList()
 
+  //左侧树
   const res = await getDeptList()
 
   res.map((item) => {
@@ -3509,9 +3541,25 @@ const getOrganizationListFN = async () => {
     }
   })
 
+  selectRes.map((item) => {
+    if (item.migrated === 1) {
+      //0没迁移 1迁移
+      item.name = item.migrated === 1 ? `${item.name}(关闭)` : item.name
+      item.tagText = '已转移'
+      item.needTag = true
+    } else {
+      //0开启 1关闭
+      item.name = item.status === 1 ? `${item.name}(关闭)` : item.name
+      item.needTag = false
+    }
+  })
+
+  //又改！！！ 说好 关闭 跟转移 打()的  现在又要过滤掉 上面代码先不删 估计过两天又要改回来
+  const tempRes = selectRes.filter((item) => item.migrated !== 1 && item.status !== 1)
+
   const organizationList = handleTree(res, 'id', 'parentId', 'children')
 
-  const tempOrganizationList = handleTree(selectRes, 'id', 'parentId', 'children')
+  const tempOrganizationList = handleTree(tempRes, 'id', 'parentId', 'children')
 
   state.organizationList = res
   // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
@@ -3526,10 +3574,11 @@ const getOrganizationListFN = async () => {
     ['needTag', 'needTag']
   ]
   //左侧树 机构(部门)
-  state.organizationOptions = reconstructedTreeData(tempOrganizationList, needReplaceIDKey)
-  console.log('state.organizationOptions', state.organizationOptions)
+  state.organizationOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
+
   //新增修改内 上级机构
-  state.organizationIDOptions = reconstructedTreeData(organizationList, needReplaceIDKey)
+  state.organizationIDOptions = reconstructedTreeData(tempOrganizationList, needReplaceIDKey)
+
   return res
 }
 
@@ -3676,7 +3725,8 @@ const addDataSource = reactive({
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: true
+      isService: true,
+      existWXWork: true
     }
   ]
 })
@@ -4048,8 +4098,7 @@ onMounted(async () => {
 .right-card-content {
   width: 100%;
   height: 100%;
-  overflow: auto;
-  //background: slateblue;
+  overflow: hidden;
   background: rgb(255, 255, 255);
   flex: 4 1 auto;
   //margin-right: 10px;
@@ -4118,6 +4167,10 @@ onMounted(async () => {
   width: 100%;
   display: flex;
   flex-direction: column;
+  height: 600px;
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
 }
 
 //上传
@@ -4545,10 +4598,12 @@ onMounted(async () => {
 //table 联系电话
 .phone-div-content {
   display: flex;
-  margin-bottom: 10px;
+  padding: 5px 0;
 }
 
 .phone-div {
+  display: flex;
+  align-items: center;
   margin-right: 14px;
 }
 
