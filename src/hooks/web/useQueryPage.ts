@@ -1,3 +1,5 @@
+import { cloneDeep } from 'lodash-es'
+
 interface IOption {
   path: (val: object) => Promise<unknown>
   params: object
@@ -9,11 +11,11 @@ interface IResult {
 export default function (option: IOption) {
   const loading = ref<boolean>(false)
   const list = ref<object[]>([])
-  let cfmParams = option.params
+  let cfmParams = cloneDeep(option.params)
   const getList = async (params?) => {
     try {
       if (params) {
-        cfmParams = params
+        cfmParams = cloneDeep(params)
       }
       loading.value = true
       const resultData: IResult = (await option.path(cfmParams)) as IResult
@@ -28,6 +30,7 @@ export default function (option: IOption) {
   getList()
   const pageChange = ({ pageNo, pageSize }) => {
     cfmParams = { ...cfmParams, pageNo, pageSize }
+    console.log(cfmParams)
     getList()
   }
 

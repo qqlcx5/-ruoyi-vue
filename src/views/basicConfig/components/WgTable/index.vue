@@ -7,7 +7,7 @@
     <div class="mb-4px" style="display: flex; align-items: center; margin-top: -10px">
       <div style="flex: 1"><slot name="btns"></slot></div>
       <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
-      <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList" />
+      <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="refresh" />
       <Icon
         icon="svg-icon:custom-column"
         :size="50"
@@ -75,6 +75,7 @@ import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 interface ITableConfig {
   pageKey: string
   columns?: any[]
+  refresh?: () => void
   type?: 'string'
   total?: number
   queryParams: any
@@ -101,15 +102,14 @@ const emit = defineEmits<IEmit>()
 const onPageChange = (params) => {
   emit('pageChange', params)
 }
-
+const refresh = () => {
+  props.tableConfig.refresh && props.tableConfig.refresh()
+}
 const { wsCache } = useCache()
 const isFullScreen = ref(false)
 const fullScreen = () => {
   console.log(123)
   isFullScreen.value = !isFullScreen.value
-}
-const getList = () => {
-  emit('refresh')
 }
 const columnDialogShow = ref(false)
 const showColumnDialog = () => {

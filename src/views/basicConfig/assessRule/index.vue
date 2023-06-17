@@ -48,8 +48,8 @@ import { cloneDeep } from 'lodash-es'
 const message = useMessage()
 
 const tableConfig = reactive({
-  pageKey: 'dcc',
-  total: 0,
+  pageKey: 'assessRule',
+  refresh: () => getList(),
   // name: '',
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
@@ -138,9 +138,15 @@ const statusChange = async (val, row) => {
     row.openRules = val === 1 ? 0 : 1
   }
 }
+
+// const treeChange = (val) => {
+//   tableConfig.queryParams.shopName = val ? shopList.find((d) => d['id'] === val)!['name'] : ''
+// }
+
 const handleRest = () => {
   tableConfig.queryParams.shopId = ''
   tableConfig.queryParams.shopName = ''
+  handleSearch()
 }
 const handleSearch = () => {
   const obj = shopList.find((d) => tableConfig.queryParams.shopId === d['id']) || {}
