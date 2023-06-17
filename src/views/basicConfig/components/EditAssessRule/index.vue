@@ -7,8 +7,8 @@
       width="665px"
       :before-close="handleClose"
     >
-      <el-form ref="formRef" :rules="rules" :model="ruleForm" :disabled="loading">
-        <el-form-item label="规则名称" label-width="70px" prop="checkRuleName">
+      <el-form id="edit-form" ref="formRef" :rules="rules" :model="ruleForm" :disabled="loading">
+        <el-form-item label="规则名称" label-width="80px" prop="checkRuleName">
           <el-input
             v-model.trim="ruleForm.checkRuleName"
             placeholder="请输入规则名称"
@@ -17,10 +17,17 @@
             style="width: 340px"
           />
         </el-form-item>
-        <el-form-item label="适用门店" label-width="70px">
-          <el-select style="width: 240px">
-            <el-option label="1" value="2" />
-          </el-select>
+        <el-form-item label="适用门店" label-width="80px" prop="applicableShopId">
+          <el-cascader
+            v-model="ruleForm.applicableShopId"
+            :options="shopTreeList"
+            :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            clearable
+            style="min-width: 240px"
+          />
         </el-form-item>
         <el-divider />
         <div class="form-title">考核规则设置</div>
@@ -73,14 +80,22 @@
           <el-switch v-model="ruleForm.receiveOpenRules" :active-value="1" :inactive-value="0" />
         </el-form-item>
         <el-form-item required label="线索接单判定“一般逾期”为派单后" prop="generalOverdue">
-          <el-input-number v-model="ruleForm.generalOverdue" :controls="false" /><span
-            >分钟接单</span
-          >
+          <el-input-number
+            v-model="ruleForm.generalOverdue"
+            :controls="false"
+            :min="0"
+            step-strictly
+            :step="1"
+          /><span>分钟接单</span>
         </el-form-item>
         <el-form-item required label="线索接单判定“严重逾期”为派单后" prop="seriousOverdue">
-          <el-input-number v-model="ruleForm.seriousOverdue" :controls="false" /><span
-            >分钟接单</span
-          >
+          <el-input-number
+            v-model="ruleForm.seriousOverdue"
+            :controls="false"
+            :min="0"
+            step-strictly
+            :step="1"
+          /><span>分钟接单</span>
         </el-form-item>
         <el-form-item label="首次跟进逾期设置" prop="firstFollowOpenRules">
           <el-switch
@@ -94,47 +109,68 @@
           label="线索首次跟进判定“一般逾期”为派单后"
           prop="firstFollowGeneralOverdue"
         >
-          <el-input-number v-model="ruleForm.firstFollowGeneralOverdue" :controls="false" /><span
-            >分钟跟进</span
-          >
+          <el-input-number
+            v-model="ruleForm.firstFollowGeneralOverdue"
+            :controls="false"
+            :min="0"
+            step-strictly
+            :step="1"
+          /><span>分钟跟进</span>
         </el-form-item>
         <el-form-item
           required
           label="线索首次跟进判定“严重逾期”为派单后"
           prop="firstFollowSeriousOverdue"
         >
-          <el-input-number v-model="ruleForm.firstFollowSeriousOverdue" :controls="false" /><span
-            >分钟跟进</span
-          >
+          <el-input-number
+            v-model="ruleForm.firstFollowSeriousOverdue"
+            :controls="false"
+            :min="0"
+            step-strictly
+            :step="1"
+          /><span>分钟跟进</span>
         </el-form-item>
-        <el-form-item label="常规跟进逾期设置" prop="firstFollowSeriousOverdue">
+        <el-form-item label="常规跟进逾期设置" prop="followOpenRules">
           <el-switch v-model="ruleForm.followOpenRules" :active-value="1" :inactive-value="0" />
-          >
         </el-form-item>
         <el-form-item
           required
           label="线索常规跟进逾期界限时间配置：计划跟进时间当日"
           prop="overdueLimitDate"
         >
-          <el-input-number v-model="ruleForm.overdueLimitDate" :controls="false" />
+          <el-time-select
+            v-model="ruleForm.overdueLimitDate"
+            start="00:00"
+            step="00:01"
+            end="23:59"
+            style="width: 120px"
+          />
         </el-form-item>
         <el-form-item
           required
           label="线索常规跟进判定“一般逾期”为计划跟进时间当日22:00+"
           prop="followGeneralOverdue"
         >
-          <el-input-number v-model="ruleForm.followGeneralOverdue" :controls="false" /><span
-            >分钟后跟进</span
-          >
+          <el-input-number
+            v-model="ruleForm.followGeneralOverdue"
+            :controls="false"
+            :min="0"
+            step-strictly
+            :step="1"
+          /><span>分钟后跟进</span>
         </el-form-item>
         <el-form-item
           required
           label="线索常规跟进判定“严重逾期”为计划跟进时间当日22:00+"
           prop="followSeriousOverdue"
         >
-          <el-input-number v-model="ruleForm.followSeriousOverdue" :controls="false" /><span
-            >分钟后跟进</span
-          >
+          <el-input-number
+            v-model="ruleForm.followSeriousOverdue"
+            :controls="false"
+            :min="0"
+            step-strictly
+            :step="1"
+          /><span>分钟后跟进</span>
         </el-form-item>
         <el-form-item label="回收设置" prop="recycle">
           <el-switch v-model="ruleForm.recycle" :active-value="1" :inactive-value="0" />
@@ -143,6 +179,9 @@
           <el-input-number
             v-model="ruleForm.recyclePostpone"
             :controls="false"
+            :min="0"
+            step-strictly
+            :step="1"
             style="margin-left: 0px"
           />
           <span>分钟未进行跟进，则对线索进行回收重新派发</span>
@@ -161,7 +200,9 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="handleConfirm(formRef)">确定</el-button>
+          <el-button type="primary" :loading="btnLoading" @click="handleConfirm(formRef)"
+            >确定</el-button
+          >
           <el-button @click="handleClose">取消</el-button>
         </span>
       </template>
@@ -173,21 +214,25 @@
 import { judgeTimeList } from '@/utils/utils'
 import type { FormInstance, FormRules } from 'element-plus'
 import dayjs from 'dayjs'
-import { treeShopData } from '@/api/common'
+import { listToTree } from '@/utils/tree'
+import { cloneDeep, difference } from 'lodash-es'
 import {
   existRuleShop,
   createAssessRule,
   detailAssessRule,
-  editAssessRule
+  editAssessRule,
+  checkRuleName
 } from '@/api/clue/basicConfig'
 const message = useMessage()
 interface IProps {
   modelValue: boolean
   curInfo: object
+  shopList: object[]
 }
 const props = withDefaults(defineProps<IProps>(), {
   modelValue: false,
-  curInfo: () => ({ id: '' })
+  curInfo: () => ({ id: '' }),
+  shopList: () => []
 })
 interface IEmit {
   (event: 'update:modelValue', modelValue: boolean): void
@@ -195,20 +240,30 @@ interface IEmit {
 }
 const emit = defineEmits<IEmit>()
 
-const ruleShopList = ref<object[]>([])
+const checkedList = ref<any[]>([])
 const getExistRuleShop = async () => {
   const data = await existRuleShop()
-  ruleShopList.value = data
+  checkedList.value = data.map((d) => +d)
   console.log(data)
 }
+const shopTreeList = ref<object[]>([])
 watch(
   () => props.modelValue,
-  (val) => {
+  async (val) => {
     if (val) {
-      if (props.curInfo['id']) {
-        getExistRuleShop()
-        getInfo(props.curInfo['id'])
-      }
+      const id = props.curInfo['id']
+      Promise.all([getExistRuleShop(), id && getInfo(id)]).then(() => {
+        const list = cloneDeep(props.shopList)
+        const ids: string[] = ruleForm.applicableShopId
+        console.log(checkedList.value, ids)
+        checkedList.value = difference(checkedList.value, ids).map((d) => +d)
+        list.forEach((item: object) => {
+          item['disabled'] = checkedList.value.includes(item['id'])
+        })
+        console.log(list)
+        shopTreeList.value = listToTree(list, { pid: 'parentId' })
+        console.log(shopTreeList)
+      })
     } else {
       formRef.value?.resetFields()
     }
@@ -220,6 +275,8 @@ const getInfo = async (id) => {
     loading.value = true
     const data = await detailAssessRule({ id })
     console.log(data)
+    data.applicableShopId = data?.applicableShopId.split(',') || []
+    data.applicableShopId = data.applicableShopId.map((d) => +d)
     ruleForm = reactive(data)
     dealTimeList(data.timeList || [])
   } finally {
@@ -228,19 +285,21 @@ const getInfo = async (id) => {
 }
 
 const rules: FormRules = reactive<FormRules>({
+  checkRuleName: [{ required: true, message: '请输入规则名称', trigger: 'blur' }],
   generalOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
   seriousOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
   firstFollowGeneralOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
   firstFollowSeriousOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
-  overdueLimitDate: [{ required: true, message: '请输入', trigger: 'blur' }],
+  overdueLimitDate: [{ required: true, message: '请选择', trigger: 'change' }],
   followGeneralOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
   followSeriousOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
   recyclePostpone: [{ required: true, message: '请输入', trigger: 'blur' }]
 })
 const formRef = ref<FormInstance>()
+
 let ruleForm = reactive({
   checkRuleName: '', // 考核规则名称
-  applicableShopId: '', // 适用门店id
+  applicableShopId: [], // 适用门店id 提交时 join(',')
   applicableShopName: [], // 适用门店名称
 
   timeList: [], // 时间段
@@ -266,6 +325,8 @@ let ruleForm = reactive({
   augment: 0, // 是否允许增派
   share: 0 // 是否允许共享
 })
+const _form = cloneDeep(ruleForm)
+const restForm = () => (ruleForm = reactive(_form))
 // 处理时间段数据
 const timeList = ref<object[]>([])
 const dealTimeList = (list) => {
@@ -323,14 +384,33 @@ const handleDelTime = (index) => {
   timeList.value.splice(index, 1)
 }
 const handleClose = () => {
+  const dom = document.querySelector('.edit-assess-rule-dialog .el-dialog__body')
+  dom && (dom.scrollTop = 0)
+  restForm()
+  formRef.value?.resetFields()
+  editTimeFlag.value = false
+  timeList.value = []
   emit('update:modelValue', false)
 }
+const btnLoading = ref<boolean>(false)
 const handleConfirm = async (formEl: FormInstance | undefined) => {
-  Promise.all([editTimeFlag && timeEdit(false), formEl && formEl.validate()]).then(async (res) => {
-    await (ruleForm['id'] ? editAssessRule(ruleForm) : createAssessRule(ruleForm))
-    message.success('提交成功')
-    emit('success')
-    handleClose()
+  Promise.all([editTimeFlag && timeEdit(false), formEl && formEl.validate()]).then(async () => {
+    try {
+      btnLoading.value = true
+      const params = cloneDeep(ruleForm)
+      params['applicableShopId'] = params.applicableShopId.join(',') as any
+      if (params['id']) {
+        await checkRuleName({ id: params['id'], ruleName: params.checkRuleName })
+        await editAssessRule(params)
+      } else {
+        await createAssessRule(params)
+      }
+      message.success('提交成功')
+      emit('success')
+      handleClose()
+    } finally {
+      btnLoading.value = false
+    }
   })
 }
 </script>
