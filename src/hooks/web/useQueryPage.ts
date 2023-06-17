@@ -9,16 +9,16 @@ interface IResult {
 export default function (option: IOption) {
   const loading = ref<boolean>(false)
   const list = ref<object[]>([])
-  let cfmParams = unref(option.params)
+  let cfmParams = option.params
   const getList = async (params?) => {
     try {
       if (params) {
-        cfmParams = unref(params)
+        cfmParams = params
       }
       loading.value = true
       const resultData: IResult = (await option.path(cfmParams)) as IResult
       list.value = resultData.list
-      option.params['total'] = resultData.total || 200
+      option.params['total'] = resultData.total
     } catch (e) {
       console.error(e)
     } finally {

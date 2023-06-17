@@ -46,7 +46,7 @@
     </el-table>
     <div style="text-align: right">
       <Pagination
-        v-if="queryParams.pageNo"
+        v-if="queryParams && queryParams.pageNo"
         :total="tableConfig.queryParams.total || 0"
         v-model:page="queryParams.pageNo"
         v-model:limit="queryParams.pageSize"

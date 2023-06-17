@@ -10,8 +10,9 @@
         />
         <span class="mr-8px">门店</span>
         <el-cascader
-          :options="shopList"
-          :props="{ label: 'name', value: 'id' }"
+          v-model="tableConfig.queryParams.shopId"
+          :options="shopTreeList"
+          :props="{ label: 'name', value: 'id', emitPath: false }"
           filterable
           clearable
           style="min-width: 180px"
@@ -39,16 +40,18 @@
 import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
-import { queryAssessRulePage, deleteAssessRule } from '@/api/clue/basicConfig'
+import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
 import dayjs from 'dayjs'
 import { getAllStoreList } from '@/api/common'
 import { listToTree } from '@/utils/tree'
+import { cloneDeep } from 'lodash-es'
 const message = useMessage()
 
 const tableConfig = reactive({
   pageKey: 'dcc',
   total: 0,
-  queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
+  // name: '',
+  queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
     {
       sort: 1,
@@ -75,7 +78,14 @@ const tableConfig = reactive({
       ellipsis: true,
       disabled: false,
       render: ({ row }) => {
-        return <el-switch v-model={row.openRules} active-value={1} inactive-value={0} />
+        return (
+          <el-switch
+            v-model={row.openRules}
+            active-value={1}
+            inactive-value={0}
+            onChange={(event) => statusChange(event, row)}
+          />
+        )
       }
     },
     { sort: 4, title: '创建人', key: 'creator', resizable: true, ellipsis: true, disabled: false },
@@ -100,13 +110,13 @@ const tableConfig = reactive({
       resizable: true,
       ellipsis: true,
       disabled: false,
-      render: ({ row, index }) => {
+      render: ({ row }) => {
         return (
           <div>
             <el-button type="primary" link onclick={() => handleDccEdit(row)}>
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row, index)}>
+            <el-button type="primary" link onclick={() => handleDelete(row)}>
               删除
             </el-button>
           </div>
@@ -116,20 +126,34 @@ const tableConfig = reactive({
   ]
 })
 const visible = ref<boolean>(false)
-
-const { loading, list, getList, option, pageChange } = useQueryPage({
+const { loading, list, getList, pageChange } = useQueryPage({
   path: queryAssessRulePage,
   params: tableConfig.queryParams
 })
+const statusChange = async (val, row) => {
+  try {
+    await updateRuleStatus({ id: row.id, status: val })
+  } catch (e) {
+    message.error('修改失败')
+    row.openRules = val === 1 ? 0 : 1
+  }
+}
+const handleRest = () => {
+  tableConfig.queryParams.shopId = ''
+  tableConfig.queryParams.shopName = ''
+}
 const handleSearch = () => {
+  const obj = shopList.find((d) => tableConfig.queryParams.shopId === d['id']) || {}
+  tableConfig.queryParams.shopName = obj['name'] || null
   tableConfig.queryParams.pageNo = 1
   getList(tableConfig.queryParams)
 }
-const shopList = ref<object[]>([])
+let shopList = []
+const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
   const data = await getAllStoreList()
-  shopList.value = listToTree(data || [], { pid: 'parentId' })
-  console.log(shopList)
+  shopList = cloneDeep(data || [])
+  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
 }
 getShopList()
 const handleCreate = () => {
@@ -145,7 +169,7 @@ const handleDelete = (row) => {
   message.wgOperateConfirm('确认删除当前数据？', '提示').then(async (res) => {
     if (res === 'confirm') {
       await deleteAssessRule({ id: row.id })
-      getList(option)
+      getList()
       // list.value.splice(index, 1)
     }
     console.log(res)

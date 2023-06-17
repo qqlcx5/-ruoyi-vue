@@ -32,7 +32,6 @@
             step-strictly
             :step="1"
             :min="1"
-            :max="99999"
             style="width: 100px"
           />
           <span class="ml-8px">天内不可重复</span>

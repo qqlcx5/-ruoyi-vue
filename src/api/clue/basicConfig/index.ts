@@ -30,9 +30,21 @@ export const saveClueFollowConfig = (data) => {
 export const createAssessRule = (data) => {
   return request.post({ url: '/clue/clueDistributeCheckProductization/create', data })
 }
+// 校验规则名称是否已经存在
+export const checkRuleName = (params) => {
+  return request.get({
+    url: `/clue/clueDistributeCheckProductization/valid/check-rule-name/${params.id}/${params.ruleName}`
+  })
+}
 // 获取分页 线索考核规则设置(产品化)
 export const queryAssessRulePage = (data) => {
   return request.post({ url: '/clue/clueDistributeCheckProductization/query-page', data })
+}
+// 开启-关闭考核规则设置(产品化)
+export const updateRuleStatus = ({ id, status }) => {
+  return request.get({
+    url: `/clue/clueDistributeCheckProductization/update/open-rule/${id}/${status}`
+  })
 }
 // 删除 线索考核规则设置(产品化)
 export const deleteAssessRule = (params) => {
