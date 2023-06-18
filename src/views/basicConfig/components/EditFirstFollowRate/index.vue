@@ -7,8 +7,9 @@
     :before-close="handleClose"
   >
     <el-form ref="formRef" :rules="rules" :model="ruleForm" label-width="110px">
-      <el-form-item label="规则名称">
+      <el-form-item label="规则名称" prop="ruleName">
         <el-input
+          v-model="ruleForm.ruleName"
           placeholder="请输入规则名称"
           maxlength="20"
           show-word-limit
@@ -44,6 +45,8 @@
 </template>
 
 <script setup lang="ts">
+import { existFirstFollowRuleShop, firstFollowRateSave } from '@/api/clue/basicConfig'
+
 interface IProps {
   modelValue: boolean
 }
@@ -54,6 +57,15 @@ interface IEmit {
   (event: 'update:modelValue', modelValue: boolean): void
 }
 const emit = defineEmits<IEmit>()
+
+const ruleForm = reactive<any>({
+  ruleName: '', // 规则名称
+  applicableShopId: '', // 适用门店
+  minFollowRate: null, // 最低跟进率
+  cycle: '', // 周期
+  limitPositionTypeList: [] // 参与规则岗位
+})
+
 const handleClose = () => {
   emit('update:modelValue', false)
 }

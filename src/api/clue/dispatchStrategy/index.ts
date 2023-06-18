@@ -28,3 +28,31 @@ export const clueDistributeSaveV2 = (params) => {
 export const clueDistributeUser = (params) => {
   return request.post({ url: '/clue/clueDistributeUser/page', params })
 }
+// 获取分页 线索规则设置
+export const getClueDistributeRule = (params) => {
+  return request.post({ url: '/clue/clueDistributeProductization/query-page', params })
+}
+// 新增 线索规则设置
+export const addClueDistributeRule = (params) => {
+  return request.post({ url: '/clue/clueDistributeProductization/create', params })
+}
+//删除 线索规则设置
+export const delClueDistributeRule = (id: string) => {
+  return request.get(`/clue/clueDistributeProductization/delete/${id}`)
+}
+// 详情
+export const detailClueDistributeRule = (id: string) => {
+  return request.get(`/clue/clueDistributeProductization/detail/${id}`)
+}
+// 编辑
+export const editClueDistributeRule = (params) => {
+  return request.post({ url: '/clue/clueDistributeProductization/edit', params })
+}
+// 获取存在规则门店
+export const getExitRuleShop = (id: string) => {
+  return request.get({ url: `/clue/clueDistributeProductization/valid/exist-rule-shop`, id })
+}
+//校验规则名称是否已经存在
+export const checkValidRuleName = (id: number, ruleName: string) => {
+  return request.get(`/clue/clueDistributeProductization/valid/rule-name/${id}/${ruleName}`)
+}

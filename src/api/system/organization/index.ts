@@ -99,3 +99,7 @@ export const getOrganizationStoreDetails = (params) => {
 export const deleteOrganization = (id: number) => {
   return request.delete({ url: '/system/organization/delete?id=' + id })
 }
+// 获取当前主体的门店信息列表
+export const getAllStoreList = async () => {
+  return await request.get({ url: '/system/organization/all-store-list' })
+}

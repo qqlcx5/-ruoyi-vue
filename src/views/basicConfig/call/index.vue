@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicConfig'
-import { getAllStoreList } from '@/api/common'
+import { getAllStoreList } from '@/api/system/organization/index'
 import { listToTree } from '@/utils/tree'
 import { cloneDeep } from 'lodash-es'
 import { ElTable } from 'element-plus'
