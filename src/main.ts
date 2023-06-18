@@ -63,6 +63,11 @@ import { setupColorPicker } from '@/plugins/colorpicker/idnex'
 import Antd from 'ant-design-vue'
 import 'ant-design-vue/dist/antd.variable.min.css'
 
+const progressEl = document.getElementById('progress')
+if (progressEl) progressEl.setAttribute('value', '100')
+const appLoadingLogoEl = document.querySelector('.app-loading-logo') as HTMLElement
+if (appLoadingLogoEl) appLoadingLogoEl.style.left = '448px'
+
 // 本地开发模式 全局引入 element-plus 样式，加快第一次进入速度
 if (isDevMode() == true) {
   import('element-plus/dist/index.css')
