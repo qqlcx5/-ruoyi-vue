@@ -22,7 +22,6 @@
       <el-input-number
         v-model.number="ruleForm.receivePushMinute"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"
@@ -45,7 +44,6 @@
       <el-input-number
         v-model.number="ruleForm.followNotGetThroughPushMinute"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"

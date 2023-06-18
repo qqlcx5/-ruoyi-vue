@@ -43,7 +43,6 @@
       <el-input-number
         v-model.number="ruleForm.notGetThroughLeastFollowNum"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"
@@ -55,7 +54,6 @@
       <el-input-number
         v-model.number="ruleForm.clueFollowConfigHour"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"
@@ -71,7 +69,6 @@
       <el-input-number
         v-model.number="ruleForm.smsClueFollowConfigHour"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"
@@ -164,7 +161,6 @@
       <el-input-number
         v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintMinute"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"
@@ -176,7 +172,6 @@
       <el-input-number
         v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintDayNumber"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"
@@ -187,7 +182,6 @@
       <el-input-number
         v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintTotalNumber"
         class="number-input"
-        :max="99999"
         step-strictly
         :step="1"
         :controls="false"
@@ -318,6 +312,9 @@ const editFollowMethod = (bool) => {
 }
 const tableRef = ref<InstanceType<typeof ElTable>>()
 const handleAddRow = async () => {
+  if (!ruleForm.followMethodList) {
+    ruleForm.followMethodList = []
+  }
   ;(ruleForm.followMethodList as any[]).push({
     followMethod: null, // 跟进方式（1-电话，2-微信 3-短信）
     isSelect: 0, // 是否可选择 0-否 1-是
