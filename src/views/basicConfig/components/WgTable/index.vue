@@ -23,6 +23,12 @@
       class="custom-table"
       v-loading="loading"
     >
+      <template #empty>
+        <div>
+          <img src="@/assets/imgs/empty.png" alt="" style="width: 200px; margin: 30px auto 0" />
+          <div>暂无数据</div>
+        </div>
+      </template>
       <el-table-column v-if="tableConfig.type === 'selection'" type="selection" />
       <template v-for="column in curColumns" :key="column.prop">
         <el-table-column
@@ -45,7 +51,7 @@
         </el-table-column>
       </template>
     </el-table>
-    <div style="text-align: right">
+    <div style="text-align: right; margin-bottom: -15px">
       <Pagination
         v-if="queryParams && queryParams.pageNo"
         :total="tableConfig.queryParams.total || 0"
@@ -187,6 +193,10 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
     height: 100% !important;
     z-index: 1000;
     background-color: $page-bg-color;
+  }
+  .el-switch {
+    height: 20px;
+    vertical-align: bottom;
   }
 }
 </style>

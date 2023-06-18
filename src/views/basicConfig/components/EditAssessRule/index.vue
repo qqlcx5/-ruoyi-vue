@@ -255,14 +255,11 @@ watch(
       Promise.all([getExistRuleShop(), id && getInfo(id)]).then(() => {
         const list = cloneDeep(props.shopList)
         const ids: string[] = ruleForm.applicableShopId
-        console.log(checkedList.value, ids)
         checkedList.value = difference(checkedList.value, ids).map((d) => +d)
         list.forEach((item: object) => {
           item['disabled'] = checkedList.value.includes(item['id'])
         })
-        console.log(list)
         shopTreeList.value = listToTree(list, { pid: 'parentId' })
-        console.log(shopTreeList)
       })
     } else {
       formRef.value?.resetFields()
