@@ -1,100 +1,122 @@
 <template>
-  <el-card class="channel-container" :gutter="12" shadow="never">
-    <el-form
-      :model="queryParams"
-      class="wg-query-form w-full"
-      ref="elFormRef"
-      label-position="left"
-    >
-      <el-row :gutter="12">
-        <el-col :span="6">
-          <el-form-item label="线索平台所属部门">
-            <el-input v-model="queryParams.shopName" placeholder="请输入" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="线索平台">
-            <el-input v-model="queryParams.sourceName" placeholder="请输入" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6" class="!flex flex-column justify-between">
-          <div>
-            <el-button type="primary" @click="onSearch">查询</el-button>
-            <el-button>重置</el-button>
-          </div>
-        </el-col>
-      </el-row>
-    </el-form>
-  </el-card>
   <ContentWrap>
-    <!--    列表-->
-    <XTable @register="registerTable">
-      <template #toolbar_buttons>
-        <XButton type="primary" :title="t('action.add')" @click="handleAdd()" />
-      </template>
-      <template #need_filter_default="{ row }">
+    <form-table
+      ref="table"
+      :form-options="{ schema: allSchemas.searchSchema }"
+      :table-options="{
+        columns: allSchemas.tableColumns,
+        listApi: channelApi.getClueChannel,
+        showAdd: true,
+        actionButtons
+      }"
+      @add="handleAdd"
+    >
+      <template #needFilter="{ row }">
         <el-switch
           v-model="row.needFilter"
-          :active-value="0"
-          :inactive-value="1"
+          :active-value="1"
+          :inactive-value="0"
           @change="handleNeedFilterChange(row, 'needFilter')"
         />
       </template>
-      <template #actionbtns_default="{ row }">
-        <XTextButton :title="t('action.edit')" @click="handleUpdate(row.id)" />
-        <XTextButton :title="t('action.del')" @click="deleteData(row.id)" />
-      </template>
-    </XTable>
+    </form-table>
   </ContentWrap>
-  <XModal v-model="dialogVisible" :title="dialogTitle">
-    <Form
-      v-if="['add', 'edit'].includes(actionType)"
-      :schema="allSchemas.formSchema"
-      :rules="rules"
-      ref="formRef"
-    />
-    <Descriptions />
-    <template #footer>
-      <XButton
-        type="primary"
-        :title="t('action.save')"
-        :loading="actionLoading"
-        @click="submitForm"
-      />
-      <XButton :title="t('dialog.close')" @click="dialogVisible = false" />
-    </template>
-  </XModal>
+  <AddChannelModal ref="addChannelModalRef" />
 </template>
 
 <script setup lang="ts" name="ClueChannel">
-import { allSchemas, rules } from './channel.data'
 import * as channelApi from '@/api/clue/channel'
 import { FormExpose } from '@/components/Form'
 import { unref } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
+import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
+import { TableColumn } from '@/types/table'
+
+import AddChannelModal from './components/AddChannelModal.vue'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
 
-const queryParams = ref({ shopName: '', sourceName: '' })
-const [registerTable, { reload, search: onSearch, deleteData }] = useXTable({
-  tableKey: 'wg-basic-clue-channel',
-  allSchemas: allSchemas,
-  params: queryParams,
-  getListApi: channelApi.getClueChannel,
-  deleteApi: channelApi.delClueChannel,
-  border: true
-})
+const columns: TableColumn[] = [
+  {
+    label: '编号',
+    field: 'serialNumber'
+  },
+  {
+    label: '线索平台所属门店',
+    field: 'shopName',
+    isSearch: true
+  },
+  {
+    label: '线索平台',
+    field: 'clueSource',
+    isSearch: true
+  },
+  {
+    label: '平台账号',
+    field: 'platformUsername'
+  },
+  {
+    label: '平台密码',
+    field: 'platformPassword'
+  },
+  {
+    label: '创建人',
+    field: 'createBy'
+  },
+  {
+    label: '创建时间',
+    field: 'createTime'
+  },
+  {
+    label: '是否需要清洗',
+    field: 'needFilter'
+  },
+  {
+    label: '是否自动派发',
+    field: 'autoDistribute'
+  },
+  {
+    label: '是否线索平台规则派发',
+    field: 'platformRule'
+  },
+  {
+    label: '手动创建线索是否可选',
+    field: 'isShow'
+  },
+  {
+    label: '操作',
+    field: 'action'
+  }
+]
+const actionButtons = [
+  {
+    name: '编辑',
+    click: (row) => {
+      console.log(row)
+      handleUpdate(row)
+    }
+  },
+  {
+    name: '删除',
+    click: (row) => {
+      console.log(row)
+    }
+  }
+]
 
-// 弹出框
-const dialogVisible = ref(false) // 是否显示弹出层
-const dialogTitle = ref('edit') // 弹出层标题
-const actionLoading = ref(false) // 遮罩层
-const actionType = ref('') // 操作按钮的类型
+const { allSchemas } = useCrudSchemas(columns)
+
 const formRef = ref<FormExpose>() // 表单 Ref
 
+const addChannelModalRef = ref()
+const { push } = useRouter() // 路由
 const handleAdd = () => {
-  setDialogTitle('add')
+  push({
+    path: '/clueChannel/source'
+  })
+  // setDialogTitle('add')
+  // addChannelModalRef.value.openModal()
 }
 const handleUpdate = async (rowId: string) => {
   setDialogTitle('update')
@@ -104,13 +126,16 @@ const handleUpdate = async (rowId: string) => {
 
 // 设置标题
 const setDialogTitle = (type: string) => {
-  dialogTitle.value = t('action.' + type)
-  actionType.value = type
-  dialogVisible.value = true
+  console.log(type)
+  // dialogTitle.value = t('action.' + type)
+  // actionType.value = type
+  // dialogVisible.value = true
 }
 
 // 改变用户状态操作
 const handleNeedFilterChange = async (row, type) => {
+  console.log('===========================', row)
+  return
   const text = row.status === CommonStatusEnum.ENABLE ? '启用' : '停用'
   let comfirmText = ''
   if (type === 'needFilter') {
@@ -133,33 +158,6 @@ const handleNeedFilterChange = async (row, type) => {
       row.status =
         row.status === CommonStatusEnum.ENABLE ? CommonStatusEnum.DISABLE : CommonStatusEnum.ENABLE
     })
-}
-
-// 保存按钮
-const submitForm = async () => {
-  const elForm = unref(formRef)?.getElFormRef()
-  if (!elForm) return
-  elForm.validate(async (valid) => {
-    if (valid) {
-      actionLoading.value = true
-      // 提交请求
-      try {
-        const data = unref(formRef)?.formModel as channelApi.ChannelVO
-        if (actionType.value === 'add') {
-          await channelApi.addClueChannel(data)
-          message.success(t('common.createSuccess'))
-        } else {
-          await channelApi.updateClueChannel(data)
-          message.success(t('common.updateSuccess'))
-        }
-        dialogVisible.value = false
-      } finally {
-        actionLoading.value = false
-        // 刷新表格
-        await reload()
-      }
-    }
-  })
 }
 </script>
 

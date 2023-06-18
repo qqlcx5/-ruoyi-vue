@@ -24,6 +24,7 @@ import { FormExpose } from '@/components/Form'
 const formRef = ref<FormExpose>() // 表单 Ref
 
 const loading = ref(false)
+const hide = () => {}
 </script>
 
 <style lang="scss" scoped></style>

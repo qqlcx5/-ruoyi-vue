@@ -2,12 +2,12 @@ import request from '@/config/axios'
 
 export interface ChannelPageReqVO extends PageParam {
   shopName?: string
-  sourceName?: string
+  clueSource?: string
 }
 
 export interface ChannelVO {
   serialNumber: string
-  sourceName: string
+  clueSource: string
   shopName: string
   platformUsername: string
   platformPassword: string
