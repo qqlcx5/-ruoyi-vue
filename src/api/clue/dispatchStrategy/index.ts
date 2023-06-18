@@ -29,12 +29,12 @@ export const clueDistributeUser = (params) => {
   return request.post({ url: '/clue/clueDistributeUser/page', params })
 }
 // 获取分页 线索规则设置
-export const getClueDistributeRule = (params) => {
-  return request.post({ url: '/clue/clueDistributeProductization/query-page', params })
+export const getClueDistributeRule = (data) => {
+  return request.post({ url: '/clue/clueDistributeProductization/query-page', data })
 }
 // 新增 线索规则设置
-export const addClueDistributeRule = (params) => {
-  return request.post({ url: '/clue/clueDistributeProductization/create', params })
+export const addClueDistributeRule = (data) => {
+  return request.post({ url: '/clue/clueDistributeProductization/create', data })
 }
 //删除 线索规则设置
 export const delClueDistributeRule = (id: string) => {
@@ -45,8 +45,8 @@ export const detailClueDistributeRule = (id: string) => {
   return request.get(`/clue/clueDistributeProductization/detail/${id}`)
 }
 // 编辑
-export const editClueDistributeRule = (params) => {
-  return request.post({ url: '/clue/clueDistributeProductization/edit', params })
+export const editClueDistributeRule = (data) => {
+  return request.post({ url: '/clue/clueDistributeProductization/edit', data })
 }
 // 获取存在规则门店
 export const getExitRuleShop = (id: string) => {
