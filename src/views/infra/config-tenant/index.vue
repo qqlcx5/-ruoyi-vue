@@ -82,12 +82,12 @@
       </template>
       <template #visible_default="{ row }">
         <el-switch
-          v-hasPermi="['system:tenant:config:update']"
           v-model="row.visible"
           :active-value="true"
           :inactive-value="false"
           @click.stop
           @change="handleStatusChange(row)"
+          :disabled="!hasPermission(['system:tenant:config:update'])"
         />
       </template>
       <template #actionbtns_default="{ row }">
@@ -149,6 +149,7 @@
 <script setup lang="ts" name="Config">
 import type { FormExpose } from '@/components/Form'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
+import { hasPermission } from '@/utils/routerHelper'
 // 业务相关的 import
 import * as ConfigApi from '@/api/infra/config'
 import { rules, allSchemas } from './config.data'

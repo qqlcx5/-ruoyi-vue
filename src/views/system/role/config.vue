@@ -42,7 +42,7 @@
       <el-button type="primary" @click="handleOk" :loading="loading">{{
         t('common.ok')
       }}</el-button>
-      <el-button @click="handleCancel">{{ t('common.cancel') }}</el-button>
+      <el-button @click="handleCancel">{{ t('common.back') }}</el-button>
     </div>
   </div>
 </template>
