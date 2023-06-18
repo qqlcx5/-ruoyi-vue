@@ -98,7 +98,7 @@ let ruleForm = reactive<any>({
   ruleType: 0,
   repetitionPeriod: null
 })
-const _form = toRaw(ruleForm)
+const _form = cloneDeep(ruleForm)
 const rules: FormRules = reactive({
   repetitionPeriod: [{ required: true, type: 'number', message: '请输入数字', trigger: 'blur' }]
 })

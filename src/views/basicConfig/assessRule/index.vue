@@ -65,7 +65,7 @@ const tableConfig = reactive({
       sort: 2,
       title: '适用门店',
       key: 'applicableShopName',
-      minWidth: 400,
+      minWidth: 350,
       resizable: true,
       ellipsis: true,
       disabled: false,
@@ -145,6 +145,7 @@ const statusChange = async (val, row) => {
 // }
 
 const handleRest = () => {
+  tableConfig.queryParams.name = ''
   tableConfig.queryParams.shopId = ''
   tableConfig.queryParams.shopName = ''
   handleSearch()
