@@ -26,7 +26,7 @@
 import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
-import { pageRepetitionPeriod, updateRuleStatus } from '@/api/clue/basicConfig'
+import { pageRepetitionPeriod, updateEnableRepetitionPeriod } from '@/api/clue/basicConfig'
 
 const message = useMessage()
 
@@ -96,10 +96,10 @@ tableConfig.columns.forEach((item, index) => {
 })
 const statusChange = async (val, row) => {
   try {
-    await updateRuleStatus({ id: row.id, status: val })
+    await updateEnableRepetitionPeriod({ id: row.id, isEnable: val })
   } catch (e) {
     message.error('修改失败')
-    row.openRules = val === 1 ? 0 : 1
+    row.isEnable = val === 1 ? 0 : 1
   }
 }
 const { loading, list, getList, pageChange } = useQueryPage({

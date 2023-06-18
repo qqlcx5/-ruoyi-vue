@@ -90,9 +90,6 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
   await formEl.validate(async (valid, fields) => {
     if (valid) {
       const params = cloneDeep(ruleForm)
-      if (!params.repetitionPeriod) {
-        params.repetitionPeriod = '-1'
-      }
       await addRepetitionPeriod(params)
       handleClose()
     } else {
