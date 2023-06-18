@@ -42,7 +42,8 @@ import WgTable from '../components/WgTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
 import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
 import dayjs from 'dayjs'
-import { getAllStoreList } from '@/api/common'
+import { getAllStoreList } from '@/api/system/organization/index'
+
 import { listToTree } from '@/utils/tree'
 import { cloneDeep } from 'lodash-es'
 const message = useMessage()

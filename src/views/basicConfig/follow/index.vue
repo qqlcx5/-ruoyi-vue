@@ -243,10 +243,10 @@
 
 <script setup lang="ts">
 import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicConfig'
-import { postListAllSimple } from '@/api/common/index'
 import { judgeTimeList } from '@/utils/utils'
 import type { FormInstance, ElTable } from 'element-plus'
 import dayjs from 'dayjs'
+import { listSimplePostsApi } from '@/api/system/post/info'
 
 const message = useMessage()
 let ruleForm = reactive({
@@ -279,7 +279,7 @@ const followMethodChange = (val, row) => {
 }
 let postList = reactive<object[]>([])
 const getPostList = () => {
-  postListAllSimple().then((data) => {
+  listSimplePostsApi().then((data) => {
     console.log(data)
     postList = reactive(data.map((d) => ({ roleId: d.id, roleName: d.name })))
   })
