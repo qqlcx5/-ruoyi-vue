@@ -45,7 +45,9 @@
 </template>
 
 <script setup lang="ts">
+import { getAllStoreList } from '@/api/system/organization'
 import { existFirstFollowRuleShop, firstFollowRateSave } from '@/api/clue/basicConfig'
+import { listSimplePostsApi } from '@/api/system/post/info'
 
 interface IProps {
   modelValue: boolean

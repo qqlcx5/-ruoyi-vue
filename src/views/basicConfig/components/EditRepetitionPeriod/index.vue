@@ -2,7 +2,7 @@
   <el-dialog
     class="custom-dialog"
     :model-value="props.modelValue"
-    title="新增"
+    :title="editFlag ? '编辑' : '新增'"
     width="500px"
     :before-close="handleClose"
   >
@@ -48,19 +48,43 @@
 </template>
 
 <script setup lang="ts">
-import { addRepetitionPeriod } from '@/api/clue/basicConfig'
+import { addRepetitionPeriod, updateRepetitionPeriod } from '@/api/clue/basicConfig'
 import type { FormInstance, FormRules } from 'element-plus'
 import { cloneDeep } from 'lodash-es'
+
+const message = useMessage()
+
 interface IProps {
   modelValue: boolean
+  curInfo: {
+    id?: number
+  }
 }
 const props = withDefaults(defineProps<IProps>(), {
-  modelValue: false
+  modelValue: false,
+  curInfo: () => ({})
 })
 interface IEmit {
   (event: 'update:modelValue', modelValue: boolean): void
+  (event: 'success'): void
 }
 const emit = defineEmits<IEmit>()
+
+const editFlag = ref<boolean>(false)
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val) {
+      editFlag.value = !!props.curInfo.id
+      if (unref(editFlag)) {
+        ruleForm = reactive(cloneDeep(props.curInfo))
+        if (ruleForm.repetitionPeriod > 0) {
+          isLimit.value = 'hasLimit'
+        }
+      }
+    }
+  }
+)
 
 const ruleFormRef = ref<FormInstance>()
 
@@ -89,8 +113,14 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      const params = cloneDeep(ruleForm)
-      await addRepetitionPeriod(params)
+      const params = {
+        id: ruleForm.id || null,
+        ruleType: ruleForm.ruleType,
+        repetitionPeriod: ruleForm.repetitionPeriod || ''
+      }
+      unref(editFlag) ? await updateRepetitionPeriod(params) : await addRepetitionPeriod(params)
+      emit('success')
+      message.success('提交成功')
       handleClose()
     } else {
       console.log('error submit!', fields)
