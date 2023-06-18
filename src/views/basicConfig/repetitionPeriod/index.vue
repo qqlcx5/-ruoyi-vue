@@ -2,13 +2,15 @@
   <div class="basic-config-page-container">
     <WgTable
       class="table-wrap"
-      :data="tableData"
+      :data="list"
       :tableConfig="tableConfig"
       @selectionChange="getCheckedList"
+      @page-change="pageChange"
+      :loading="loading"
     >
       <template #btns>
         <el-button type="primary" @click="handleCreate">新增</el-button>
-        <el-button @click="handleDelete">删除</el-button>
+        <el-button :disabled="!checkedList.length" @click="handleDelete">删除</el-button>
       </template>
       <template #tip>
         <div class="mb-12px" style="line-height: 20px; font-size: 14px; color: #ff4141"
@@ -21,30 +23,30 @@
 </template>
 
 <script setup lang="tsx">
+import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
+import { pageRepetitionPeriod, updateEnableRepetitionPeriod } from '@/api/clue/basicConfig'
 
+const message = useMessage()
+
+const typeObj = { 0: '不限', 1: '门店', 2: '分店' }
 const tableConfig = reactive({
   pageKey: 'repetitionPeriod',
   type: 'selection',
+  refresh: () => getList(),
+  queryParams: { pageNo: 1, pageSize: 10 },
   columns: [
     {
-      sort: 1,
       title: '线索重复判断维度',
-      key: 'a221',
+      key: 'ruleType',
       minWidth: 150,
-      resizable: true,
-      ellipsis: true,
-      disabled: false
+      render: ({ row }) => typeObj[row.ruleType]
     },
     {
-      sort: 2,
       title: '周期',
-      key: 'a2',
+      key: 'repetitionPeriod',
       minWidth: 180,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return row.repetitionPeriod > 0 ? (
           <span>线索{row.repetitionPeriod}天内不可重复</span>
@@ -53,27 +55,29 @@ const tableConfig = reactive({
         )
       }
     },
-    { sort: 3, title: '状态', key: 'isEnable', resizable: true, ellipsis: true, disabled: false },
-    { sort: 4, title: '创建人', key: 'createBy', resizable: true, ellipsis: true, disabled: false },
     {
-      sort: 5,
-      title: '创建时间',
-      key: 'createTime',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
+      title: '状态',
+      key: 'isEnable',
+      render: ({ row }) => {
+        return (
+          <el-switch
+            v-model={row.isEnable}
+            active-value={1}
+            inactive-value={0}
+            onChange={(event) => statusChange(event, row)}
+          />
+        )
+      }
     },
-    { sort: 6, title: '最近操作人', key: 'a5', resizable: true, ellipsis: true, disabled: false },
-    { sort: 7, title: '最近操作时间', key: 'a5', resizable: true, ellipsis: true, disabled: false },
+    { title: '创建人', key: 'creator' },
+    { title: '创建时间', key: 'createTime' },
+    { title: '最近操作人', key: 'updater' },
+    { title: '最近操作时间', key: 'updateTime' },
     {
-      sort: 8,
       title: '操作',
       key: 'operate',
       width: 120,
-      fixed: null,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
+      fixed: 'right',
       render: ({ row }) => {
         return (
           <div>
@@ -86,13 +90,30 @@ const tableConfig = reactive({
     }
   ]
 })
-const tableData = ref([{ repetitionPeriod: 22 }])
-
+tableConfig.columns.forEach((item, index) => {
+  item['sort'] += index
+  Object.assign(item, { resizable: true, ellipsis: true, disabled: false })
+})
+const statusChange = async (val, row) => {
+  try {
+    await updateEnableRepetitionPeriod({ id: row.id, isEnable: val })
+  } catch (e) {
+    message.error('修改失败')
+    row.isEnable = val === 1 ? 0 : 1
+  }
+}
+const { loading, list, getList, pageChange } = useQueryPage({
+  path: pageRepetitionPeriod,
+  params: tableConfig.queryParams
+})
 const visible = ref<boolean>(false)
 const handleCreate = () => {
   visible.value = true
 }
-const handleEdit = () => {}
+const handleDelete = () => {}
+const handleEdit = () => {
+  visible.value = true
+}
 const checkedList = ref<object[]>([])
 const getCheckedList = (value) => {
   checkedList.value = value

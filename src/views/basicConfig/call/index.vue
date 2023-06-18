@@ -1,8 +1,10 @@
 <template>
-  <div class="basic-config-content call-settings-container">
+  <div class="basic-config-content call-settings-container" v-loading="loading">
     <div class="config-form-item">
       <span class="mr-8px">每个客户每天允许打通电话次数</span>
-      <el-button type="primary" v-if="!editFlag" @click="toggleEdit(true)">编辑</el-button>
+      <el-button type="primary" v-if="!editFlag" :loading="btnLoading" @click="toggleEdit(true)">{{
+        btnLoading ? '保存中' : '编辑'
+      }}</el-button>
       <template v-else>
         <el-button type="primary" @click="toggleEdit(false)">保存</el-button>
         <el-button type="primary" @click="handleAddRow">新增行</el-button>
@@ -10,17 +12,36 @@
     </div>
     <el-form :disabled="!editFlag">
       <el-table
-        :data="canGetThroughVOs"
+        ref="tableRef"
+        :data="ruleForm.canGetThroughVOs"
         max-height="calc(100% + 54px)"
         class="custom-table mt-20px"
       >
         <el-table-column label="可打通次数" min-width="200">
-          <el-input-number :controls="false" />
+          <template #default="{ row }">
+            <el-input-number
+              v-model="row.canGetThroughNum"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+            />
+          </template>
         </el-table-column>
         <el-table-column label="参与计数门店" min-width="200">
-          <el-select>
-            <el-option label="1" value="1" />
-          </el-select>
+          <template #default="{ row, $index }">
+            <el-cascader
+              v-model="row.joinCountShopIds"
+              :options="shopTreeList"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              clearable
+              @visible-change="visibleChange($event, row, $index)"
+              style="min-width: 240px"
+            />
+          </template>
         </el-table-column>
         <el-table-column label="状态" min-width="60">
           <template #default="{ row }">
@@ -38,20 +59,84 @@
 </template>
 
 <script setup lang="ts">
-const canGetThroughVOs = ref<object[]>([{ isEnable: 1 }])
-const editFlag = ref<boolean>(false)
-const toggleEdit = (bool) => {
-  editFlag.value = bool
+import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicConfig'
+import { getAllStoreList } from '@/api/system/organization/index'
+import { listToTree } from '@/utils/tree'
+import { cloneDeep } from 'lodash-es'
+import { ElTable } from 'element-plus'
+const loading = ref<boolean>(false)
+let ruleForm = reactive<{ canGetThroughVOs: any[] }>({ canGetThroughVOs: [] })
+const getInfo = async () => {
+  try {
+    const data = await queryClueFollowConfig()
+    data.canGetThroughVOs = data.canGetThroughVOs || []
+    data.canGetThroughVOs.forEach((item) => {
+      if (item.joinCountShopIds) {
+        item.joinCountShopIds = item.joinCountShopIds.map((d) => +d)
+      }
+    })
+    ruleForm = reactive(data)
+  } finally {
+    loading.value = false
+  }
 }
-const handleAddRow = () => {
-  canGetThroughVOs.value.push({
+
+const shopList = ref<object[]>([])
+const shopTreeList = ref<object[]>([])
+const getShopList = async () => {
+  const data = await getAllStoreList()
+  shopList.value = cloneDeep(data)
+}
+const visibleChange = async (val, row, index) => {
+  if (val) {
+    shopTreeList.value = []
+    await nextTick()
+    const checkedList = ruleForm.canGetThroughVOs.reduce((arr, item, itemIndex) => {
+      const ids = item.joinCountShopIds || []
+      if (itemIndex !== index && ids.length) {
+        console.log(ids, item)
+        arr.push(...ids)
+      }
+      return arr
+    }, [])
+    console.log(checkedList)
+    const list: any[] = cloneDeep(shopList.value)
+    list.forEach((item) => {
+      item.disabled = checkedList.includes(item.id)
+    })
+    shopTreeList.value = listToTree(list, { pid: 'parentId' })
+  }
+}
+
+loading.value = true
+Promise.all([getInfo(), getShopList()]).finally(() => (loading.value = false))
+
+const editFlag = ref<boolean>(false)
+const btnLoading = ref<boolean>(false)
+const toggleEdit = async (bool) => {
+  editFlag.value = bool
+  if (bool === false) {
+    try {
+      btnLoading.value = true
+      console.log(ruleForm)
+      await saveClueFollowConfig(ruleForm)
+    } finally {
+      btnLoading.value = false
+    }
+  }
+}
+const tableRef = ref<InstanceType<typeof ElTable>>()
+const handleAddRow = async () => {
+  ruleForm.canGetThroughVOs.push({
     canGetThroughNum: null,
     joinCountShopIds: [],
     isEnable: 0
   })
+  await nextTick()
+  tableRef.value?.setScrollTop(ruleForm.canGetThroughVOs.length * 50)
 }
 const handleDelRow = (index) => {
-  canGetThroughVOs.value.splice(index, 1)
+  ruleForm.canGetThroughVOs.splice(index, 1)
 }
 </script>
 

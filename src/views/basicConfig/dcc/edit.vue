@@ -33,7 +33,6 @@
               step-strictly
               :step="1"
               :min="0"
-              :max="99999"
               class="input-w-90px"
             />
             <span>时</span>
@@ -53,7 +52,6 @@
                 step-strictly
                 :step="1"
                 :min="0"
-                :max="99999"
                 class="input-w-90px"
               />
               <span>至</span>
@@ -63,7 +61,6 @@
                 step-strictly
                 :step="1"
                 :min="0"
-                :max="99999"
                 class="input-w-90px"
               />
               <span>小时内，每</span>
@@ -73,7 +70,6 @@
                 step-strictly
                 :step="1"
                 :min="0"
-                :max="99999"
                 class="input-w-90px"
               />
               <span>小时内必须跟进</span>
@@ -108,7 +104,6 @@
               step-strictly
               :step="1"
               :min="0"
-              :max="99999"
               class="input-w-90px"
             />
             <span>时</span>

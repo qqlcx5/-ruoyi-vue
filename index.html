@@ -15,137 +15,90 @@
     />
     <title><%= title %></title>
   </head>
-  <body>
-    <div id="app">
-      <style>
-        .app-loading {
-          display: flex;
-          width: 100%;
-          height: 100%;
-          justify-content: center;
-          align-items: center;
-          flex-direction: column;
-          background: #f0f2f5;
-        }
-
-        .app-loading .app-loading-wrap {
+  <style>
+      body {
+          margin: 0 !important;
+          padding: 0 !important;
+      }
+      .app-loading {
           position: absolute;
           top: 50%;
           left: 50%;
+          height: 10px;
           display: flex;
           -webkit-transform: translate3d(-50%, -50%, 0);
           transform: translate3d(-50%, -50%, 0);
           justify-content: center;
           align-items: center;
-          flex-direction: column;
-        }
-
-        .app-loading .app-loading-title {
-          margin-bottom: 30px;
-          font-size: 20px;
-          font-weight: bold;
+          flex-direction: column
+      }
+      .app-loading-logo {
+          position: absolute;
+          top: -130px;
+          left: -144px;
+          width: 180px;
+          /*transform: translate3d(-50%, -50%, 0);*/
+          transition: all 0.2s linear;
+      }
+      .app-loading-text {
+          line-height: 1;
+          font-size: 26px;
+          color: #435364;
           text-align: center;
-        }
-
-        .app-loading .app-loading-logo {
-          width: 100px;
-          margin: 0 auto 15px auto;
-        }
-
-        .app-loading .app-loading-item {
+          margin-top: 32px;
+      }
+      .progress {
           position: relative;
-          display: inline-block;
-          width: 60px;
-          height: 60px;
-          vertical-align: middle;
-          border-radius: 50%;
-        }
-
-        .app-loading .app-loading-outter {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border: 4px solid #2d8cf0;
-          border-bottom: 0;
-          border-left-color: transparent;
-          border-radius: 50%;
-          animation: loader-outter 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
-        }
-
-        .app-loading .app-loading-inner {
-          position: absolute;
-          top: calc(50% - 20px);
-          left: calc(50% - 20px);
-          width: 40px;
-          height: 40px;
-          border: 4px solid #87bdff;
-          border-right: 0;
-          border-top-color: transparent;
-          border-radius: 50%;
-          animation: loader-inner 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
-        }
-
-        @-webkit-keyframes loader-outter {
-          0% {
-            -webkit-transform: rotate(0deg);
-            transform: rotate(0deg);
-          }
-
-          100% {
-            -webkit-transform: rotate(360deg);
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes loader-outter {
-          0% {
-            -webkit-transform: rotate(0deg);
-            transform: rotate(0deg);
-          }
-
-          100% {
-            -webkit-transform: rotate(360deg);
-            transform: rotate(360deg);
-          }
-        }
-
-        @-webkit-keyframes loader-inner {
-          0% {
-            -webkit-transform: rotate(0deg);
-            transform: rotate(0deg);
-          }
-
-          100% {
-            -webkit-transform: rotate(-360deg);
-            transform: rotate(-360deg);
-          }
-        }
-
-        @keyframes loader-inner {
-          0% {
-            -webkit-transform: rotate(0deg);
-            transform: rotate(0deg);
-          }
-
-          100% {
-            -webkit-transform: rotate(-360deg);
-            transform: rotate(-360deg);
-          }
-        }
-      </style>
-      <div class="app-loading">
-        <div class="app-loading-wrap">
-          <div class="app-loading-title">
-            <img src="/logo.gif" class="app-loading-logo" alt="Logo" />
-            <div class="app-loading-title"><%= title %></div>
-          </div>
-          <div class="app-loading-item">
-            <div class="app-loading-outter"></div>
-            <div class="app-loading-inner"></div>
-          </div>
-        </div>
+          line-height: 10px;
+      }
+      progress{
+          width: 560px;
+          height: 10px;
+          color: #3296fa;        /*IE value颜色值*/
+          vertical-align: bottom;
+          background-color: #edeff2;
+          border-radius: 5px;
+      }
+      progress::-webkit-progress-bar {
+          background-color: #edeff2;
+      }
+      progress::-webkit-progress-value {
+          background-image: linear-gradient(135deg,#4eccff 18%,#00b5ff 0,#00b5ff 52%,#4eccff 0,#4eccff 70%,#00b5ff 0);
+          background-size: 24px 24px;
+          border-radius: 5px;   /*进度条内圆角*/
+          transition: all 0.2s linear;
+          overflow: hidden;
+      }
+  </style>
+  <body>
+    <div class="app-loading">
+      <div class="progress">
+        <img src="/app-loading.gif" class="app-loading-logo" alt="loadingLogo" />
+        <progress id="progress" max="100" value="0"></progress>
+        <div class="app-loading-text">数据加载中...</div>
       </div>
+    </div>
+    <div id="app">
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
+  <script type="text/javascript">
+    let progressIntervalId
+    let progressValue = 0
+    const el = document.getElementById('progress')
+    const loadingEl = document.querySelector('.app-loading-logo')
+    const appLoadingEl = document.querySelector('.app-loading')
+    if (el && loadingEl) {
+      progressIntervalId = setInterval(() => {
+        progressValue += 10
+        if (el.getAttribute('value') === "100") {
+          if (appLoadingEl) setTimeout(() => {appLoadingEl.style.display = 'none'}, 300)
+          return clearInterval(progressIntervalId)
+        }
+        loadingEl.style.left = (56 * progressValue / 10 - 144) + 'px'
+        el.setAttribute('value', progressValue + '')
+        if (progressValue === 90) clearInterval(progressIntervalId)
+      }, 200)
+    }
+  </script>
 </html>

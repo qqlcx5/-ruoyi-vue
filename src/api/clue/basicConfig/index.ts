@@ -30,9 +30,21 @@ export const saveClueFollowConfig = (data) => {
 export const createAssessRule = (data) => {
   return request.post({ url: '/clue/clueDistributeCheckProductization/create', data })
 }
+// 校验规则名称是否已经存在
+export const checkRuleName = (params) => {
+  return request.get({
+    url: `/clue/clueDistributeCheckProductization/valid/check-rule-name/${params.id}/${params.ruleName}`
+  })
+}
 // 获取分页 线索考核规则设置(产品化)
 export const queryAssessRulePage = (data) => {
   return request.post({ url: '/clue/clueDistributeCheckProductization/query-page', data })
+}
+// 开启-关闭考核规则设置(产品化)
+export const updateRuleStatus = ({ id, status }) => {
+  return request.get({
+    url: `/clue/clueDistributeCheckProductization/update/open-rule/${id}/${status}`
+  })
 }
 // 删除 线索考核规则设置(产品化)
 export const deleteAssessRule = (params) => {
@@ -74,4 +86,33 @@ export const updateRepetitionPeriod = (data) => {
 // 更新状态 线索重复周期
 export const updateEnableRepetitionPeriod = (data) => {
   return request.post({ url: '/clue/clueRepetitionPeriod/updateEnable', data })
+}
+
+// 获取已配置首次跟进率门店
+export const existFirstFollowRuleShop = () => {
+  return request.get({ url: `/clue/clueFirstFollowRateConfig/valid/exist-first-follow-rule-shop` })
+}
+// 新增首次跟进配置
+export const firstFollowRateSave = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/save', data })
+}
+// 分页 首次跟进率
+export const firstFollowRatePage = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/v2/page', data })
+}
+// 删除首次跟进率配置
+export const firstFollowRateDelete = ({ id }) => {
+  return request.get({ url: `/clue/clueFirstFollowRateConfig/delete/${id}` })
+}
+// 详情 首次跟进率
+export const firstFollowRateDetail = ({ id }) => {
+  return request.get({ url: `/clue/clueFirstFollowRateConfig/detail/${id}` })
+}
+// 更新配置 首次跟进率
+export const firstFollowRateEdit = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/edit', data })
+}
+// 更新启用状态 首次跟进率
+export const firstFollowRateUpdateStatus = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/update/status', data })
 }

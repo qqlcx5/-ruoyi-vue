@@ -13,7 +13,7 @@
       label-width="140px"
       style="height: 120px"
     >
-      <el-form-item label="线索重复判断维度">
+      <el-form-item label="线索重复判断维度" prop="ruleType">
         <el-radio-group v-model="ruleForm.ruleType">
           <el-radio :label="0">不限</el-radio>
           <el-radio :label="1">门店</el-radio>
@@ -32,7 +32,6 @@
             step-strictly
             :step="1"
             :min="1"
-            :max="99999"
             style="width: 100px"
           />
           <span class="ml-8px">天内不可重复</span>
@@ -49,7 +48,9 @@
 </template>
 
 <script setup lang="ts">
+import { addRepetitionPeriod } from '@/api/clue/basicConfig'
 import type { FormInstance, FormRules } from 'element-plus'
+import { cloneDeep } from 'lodash-es'
 interface IProps {
   modelValue: boolean
 }
@@ -69,22 +70,27 @@ const limitChange = () => {
   ruleFormRef.value && ruleFormRef.value.clearValidate('repetitionPeriod')
 }
 
-const ruleForm = reactive({
+let ruleForm = reactive<any>({
   ruleType: 0,
   repetitionPeriod: null
 })
+const _form = toRaw(ruleForm)
 const rules: FormRules = reactive({
   repetitionPeriod: [{ required: true, type: 'number', message: '请输入数字', trigger: 'blur' }]
 })
 
 const handleClose = () => {
+  ruleForm = reactive(_form)
+  isLimit.value = 'noLimit'
+  ruleFormRef.value?.resetFields()
   emit('update:modelValue', false)
 }
 const handleConfirm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  await formEl.validate((valid, fields) => {
+  await formEl.validate(async (valid, fields) => {
     if (valid) {
-      console.log('submit!')
+      const params = cloneDeep(ruleForm)
+      await addRepetitionPeriod(params)
       handleClose()
     } else {
       console.log('error submit!', fields)

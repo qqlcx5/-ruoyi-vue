@@ -257,6 +257,7 @@ export const operationPasswordType = {
 //定制列缓存 页面pageKey
 export const PageKeyObj = {
   dcc: 'dcc', // 基础配置-dcc设置
+  assessRule: 'assessRule',
   recoveryClue: 'recoveryClue',
   firstFollowRate: 'firstFollowRate',
   repetitionPeriod: 'repetitionPeriod',
