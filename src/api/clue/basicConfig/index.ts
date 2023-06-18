@@ -87,3 +87,32 @@ export const updateRepetitionPeriod = (data) => {
 export const updateEnableRepetitionPeriod = (data) => {
   return request.post({ url: '/clue/clueRepetitionPeriod/updateEnable', data })
 }
+
+// 获取已配置首次跟进率门店
+export const existFirstFollowRuleShop = () => {
+  return request.get({ url: `/clue/clueFirstFollowRateConfig/valid/exist-first-follow-rule-shop` })
+}
+// 新增首次跟进配置
+export const firstFollowRateSave = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/save', data })
+}
+// 分页 首次跟进率
+export const firstFollowRatePage = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/v2/page', data })
+}
+// 删除首次跟进率配置
+export const firstFollowRateDelete = ({ id }) => {
+  return request.get({ url: `/clue/clueFirstFollowRateConfig/delete/${id}` })
+}
+// 详情 首次跟进率
+export const firstFollowRateDetail = ({ id }) => {
+  return request.get({ url: `/clue/clueFirstFollowRateConfig/detail/${id}` })
+}
+// 更新配置 首次跟进率
+export const firstFollowRateEdit = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/edit', data })
+}
+// 更新启用状态 首次跟进率
+export const firstFollowRateUpdateStatus = (data) => {
+  return request.post({ url: '/clue/clueFirstFollowRateConfig/update/status', data })
+}

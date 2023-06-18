@@ -286,6 +286,7 @@ const getInfo = async (id) => {
 
 const rules: FormRules = reactive<FormRules>({
   checkRuleName: [{ required: true, message: '请输入规则名称', trigger: 'blur' }],
+  applicableShopId: [{ required: true, message: '请选择适用门店', trigger: 'change' }],
   generalOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
   seriousOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
   firstFollowGeneralOverdue: [{ required: true, message: '请输入', trigger: 'blur' }],
@@ -422,7 +423,7 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
     padding: 0 20px;
   }
   .el-dialog__body {
-    height: 450px;
+    height: 550px;
     overflow: auto;
     padding-left: 0 !important;
     padding-right: 0 !important;

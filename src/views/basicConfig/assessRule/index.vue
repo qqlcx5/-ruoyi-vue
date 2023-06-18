@@ -42,7 +42,8 @@ import WgTable from '../components/WgTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
 import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
 import dayjs from 'dayjs'
-import { getAllStoreList } from '@/api/common'
+import { getAllStoreList } from '@/api/system/organization/index'
+
 import { listToTree } from '@/utils/tree'
 import { cloneDeep } from 'lodash-es'
 const message = useMessage()
@@ -50,8 +51,7 @@ const message = useMessage()
 const tableConfig = reactive({
   pageKey: 'assessRule',
   refresh: () => getList(),
-  // name: '',
-  queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
+  queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10, total: 0 },
   columns: [
     {
       sort: 1,
@@ -64,11 +64,12 @@ const tableConfig = reactive({
     {
       sort: 2,
       title: '适用门店',
-      key: 'departName',
+      key: 'applicableShopName',
       minWidth: 400,
       resizable: true,
       ellipsis: true,
-      disabled: false
+      disabled: false,
+      render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
       sort: 3,

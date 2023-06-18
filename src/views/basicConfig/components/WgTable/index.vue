@@ -27,6 +27,7 @@
       <template v-for="column in curColumns" :key="column.prop">
         <el-table-column
           :label="column.title"
+          show-overflow-tooltip
           :prop="column.prop"
           :width="column.width"
           :min-width="column.minWidth || 120"

@@ -18,12 +18,3 @@ export const uploadFile = async (data) => {
 export const treeShopData = async () => {
   return await request.get({ url: '/system/department/get/shop/tree' })
 }
-// 获取岗位精简信息列表
-export const postListAllSimple = async () => {
-  return await request.get({ url: '/system/post/list-all-simple' })
-}
-
-// 获取当前主体的门店信息列表
-export const getAllStoreList = async () => {
-  return await request.get({ url: '/system/organization/all-store-list' })
-}
