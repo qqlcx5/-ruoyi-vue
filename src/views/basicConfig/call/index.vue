@@ -1,5 +1,5 @@
 <template>
-  <div class="basic-config-content call-settings-container" v-loading="loading">
+  <div class="basic-config-content call-settings-container">
     <div class="config-form-item">
       <span class="mr-8px">每个客户每天允许打通电话次数</span>
       <el-button type="primary" v-if="!editFlag" :loading="btnLoading" @click="toggleEdit(true)">{{
@@ -16,6 +16,7 @@
         :data="ruleForm.canGetThroughVOs"
         max-height="calc(100% + 54px)"
         class="custom-table mt-20px"
+        v-loading="loading"
       >
         <el-table-column label="可打通次数" min-width="200">
           <template #default="{ row }">
@@ -76,6 +77,7 @@ const getInfo = async () => {
       }
     })
     ruleForm = reactive(data)
+    setTimeout(() => {}, 1000)
   } finally {
     loading.value = false
   }
@@ -86,6 +88,7 @@ const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
   const data = await getAllStoreList()
   shopList.value = cloneDeep(data)
+  shopTreeList.value = listToTree(data, { pid: 'parentId' })
 }
 const visibleChange = async (val, row, index) => {
   if (val) {
@@ -109,7 +112,9 @@ const visibleChange = async (val, row, index) => {
 }
 
 loading.value = true
-Promise.all([getInfo(), getShopList()]).finally(() => (loading.value = false))
+Promise.all([getInfo(), getShopList()]).finally(() => {
+  loading.value = false
+})
 
 const editFlag = ref<boolean>(false)
 const btnLoading = ref<boolean>(false)
@@ -118,7 +123,6 @@ const toggleEdit = async (bool) => {
   if (bool === false) {
     try {
       btnLoading.value = true
-      console.log(ruleForm)
       await saveClueFollowConfig(ruleForm)
     } finally {
       btnLoading.value = false

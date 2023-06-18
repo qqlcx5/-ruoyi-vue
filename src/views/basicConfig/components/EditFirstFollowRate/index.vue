@@ -1,13 +1,19 @@
 <template>
-  <div class="edit-first-follow-rate-dialog">
+  <div class="edit-first-follow-rate-dialog" v-loading.fullscreen.lock="loading">
     <el-dialog
       class="custom-dialog"
       :model-value="props.modelValue"
-      title="新增"
+      :title="editFlag ? '编辑' : '新增'"
       width="665px"
       :before-close="handleClose"
     >
-      <el-form ref="formRef" :rules="rules" :model="ruleForm" label-width="110px">
+      <el-form
+        ref="formRef"
+        :rules="rules"
+        :disabled="loading"
+        :model="ruleForm"
+        label-width="110px"
+      >
         <el-form-item label="规则名称" prop="ruleName">
           <el-input
             v-model.trim="ruleForm.ruleName"
@@ -75,7 +81,7 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="handleConfirm">确定</el-button>
+          <el-button type="primary" :loading="btnLoading" @click="handleConfirm">确定</el-button>
           <el-button @click="handleClose">取消</el-button>
         </span>
       </template>
@@ -85,7 +91,7 @@
 
 <script setup lang="ts">
 import {
-  detailAssessRule,
+  firstFollowRateDetail,
   existFirstFollowRuleShop,
   firstFollowRateSave,
   firstFollowRateEdit
@@ -180,10 +186,12 @@ const loading = ref<boolean>(false)
 const getInfo = async (id) => {
   try {
     loading.value = true
-    const data = await detailAssessRule({ id })
-    data.applicableShopId = data?.applicableShopId.split(',') || []
+    const data = await firstFollowRateDetail({ id })
+    data.applicableShopId = data?.applicableShopId?.split(',') || []
     data.applicableShopId = data.applicableShopId.map((d) => +d)
+    data.limitPositionTypeList = data.limitPositionTypes.split(',').map((d) => +d)
     ruleForm = reactive(data)
+    console.log(ruleForm, 'ruleFormruleForm')
   } finally {
     loading.value = false
   }
@@ -192,15 +200,22 @@ const getInfo = async (id) => {
 const handleClose = () => {
   emit('update:modelValue', false)
 }
+
+const btnLoading = ref<boolean>(false)
 const handleConfirm = () => {
   formRef.value?.validate(async (vali) => {
     if (vali) {
-      const params = cloneDeep(ruleForm)
-      params.applicableShopId = params.applicableShopId.join(',')
-      unref(editFlag) ? await firstFollowRateEdit(params) : await firstFollowRateSave(params)
-      message.success('提交成功')
-      emit('success')
-      handleClose()
+      try {
+        btnLoading.value = true
+        const params = cloneDeep(ruleForm)
+        params.applicableShopId = params.applicableShopId.join(',')
+        unref(editFlag) ? await firstFollowRateEdit(params) : await firstFollowRateSave(params)
+        message.success('提交成功')
+        emit('success')
+        handleClose()
+      } finally {
+        btnLoading.value = false
+      }
     }
   })
 }
