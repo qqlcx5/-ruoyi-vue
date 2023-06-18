@@ -15,6 +15,9 @@ export interface SmsLoginVO {
   phone: string
   code: string
 }
+export interface ScanLoginVO {
+  token: string
+}
 
 // 登录
 export const loginApi = (data: UserLoginVO) => {
@@ -100,4 +103,19 @@ export const updateDefaultTenant = (data) => {
 // 设置默认主体（未登录）
 export const updateDefaultTenantByUserName = (data) => {
   return request.put({ url: '/system/auth/default-tenant/update-username', data })
+}
+
+// 获取二维码id
+export const getQrCodeApi = () => {
+  return request.get({ url: '/system/scan/code/get-qrCode' })
+}
+
+// 获取二维码状态
+export const getQrCodeStateApi = (params) => {
+  return request.get({ url: '/system/scan/code/get-qrCode-state', params })
+}
+
+// 短信验证码登录
+export const scanCodeLoginApi = (data: ScanLoginVO) => {
+  return request.post({ url: '/system/auth/login/scanCode', data })
 }
