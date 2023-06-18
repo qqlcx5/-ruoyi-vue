@@ -18,7 +18,7 @@
         >
       </template>
     </WgTable>
-    <EditRepetitionPeriod v-model="visible" />
+    <EditRepetitionPeriod v-model="visible" :curInfo="curItem" @success="getList" />
   </div>
 </template>
 
@@ -26,7 +26,12 @@
 import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
-import { pageRepetitionPeriod, updateEnableRepetitionPeriod } from '@/api/clue/basicConfig'
+import {
+  pageRepetitionPeriod,
+  deleteBatchRepetitionPeriod,
+  updateEnableRepetitionPeriod
+} from '@/api/clue/basicConfig'
+import { dateFormat } from '@/utils/utils'
 
 const message = useMessage()
 
@@ -70,13 +75,23 @@ const tableConfig = reactive({
       }
     },
     { title: '创建人', key: 'creator' },
-    { title: '创建时间', key: 'createTime' },
+    {
+      title: '创建时间',
+      minWidth: '190',
+      key: 'createTime',
+      render: ({ row }) => dateFormat(row.createTime)
+    },
     { title: '最近操作人', key: 'updater' },
-    { title: '最近操作时间', key: 'updateTime' },
+    {
+      title: '最近操作时间',
+      minWidth: '190',
+      key: 'updateTime',
+      render: ({ row }) => dateFormat(row.updateTime)
+    },
     {
       title: '操作',
       key: 'operate',
-      width: 120,
+      width: 75,
       fixed: 'right',
       render: ({ row }) => {
         return (
@@ -97,6 +112,7 @@ tableConfig.columns.forEach((item, index) => {
 const statusChange = async (val, row) => {
   try {
     await updateEnableRepetitionPeriod({ id: row.id, isEnable: val })
+    getList()
   } catch (e) {
     message.error('修改失败')
     row.isEnable = val === 1 ? 0 : 1
@@ -106,18 +122,37 @@ const { loading, list, getList, pageChange } = useQueryPage({
   path: pageRepetitionPeriod,
   params: tableConfig.queryParams
 })
+const curItem = ref<object>({})
 const visible = ref<boolean>(false)
 const handleCreate = () => {
+  curItem.value = {}
   visible.value = true
 }
-const handleDelete = () => {}
-const handleEdit = () => {
+
+const handleEdit = (row) => {
+  curItem.value = row
   visible.value = true
 }
 const checkedList = ref<object[]>([])
 const getCheckedList = (value) => {
   checkedList.value = value
   console.log(checkedList)
+}
+const handleDelete = async () => {
+  try {
+    if (unref(checkedList).find((d) => d['isEnable'])) {
+      message.warning('启用的线索周期不可删除')
+      return
+    }
+    await message.confirm('是否确认删除？')
+    loading.value = true
+    const ids = unref(checkedList).map((d) => d['id'])
+    await deleteBatchRepetitionPeriod({ ids })
+    message.success('删除成功')
+    getList()
+  } catch (e) {
+    loading.value = false
+  }
 }
 </script>
 
