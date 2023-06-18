@@ -14,7 +14,7 @@ const props = defineProps({
   // 二维码内容
   text: {
     type: [String, Array] as PropType<string | Recordable[]>,
-    default: null
+    default: '刷新一下再扫吧'
   },
   // qrcode.js配置项
   options: {
@@ -229,7 +229,7 @@ const disabledClick = () => {
       class="absolute top-0 left-0 flex w-full h-full items-center justify-center"
       @click="disabledClick"
     >
-      <div class="absolute top-[50%] left-[50%] font-bold">
+      <div class="absolute top-[50%] left-[50%] font-bold text-16px text-center cursor-pointer">
         <Icon icon="ep:refresh-right" :size="30" color="var(--el-color-primary)" />
         <div>{{ disabledText }}</div>
       </div>
@@ -242,7 +242,7 @@ $prefix-cls: #{$namespace}-qrcode;
 
 .#{$prefix-cls} {
   &--disabled {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgb(255 255 255 / 95%);
 
     & > div {
       transform: translate(-50%, -50%);
