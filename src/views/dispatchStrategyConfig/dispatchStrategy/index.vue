@@ -48,6 +48,7 @@
       :data="tableData"
       @selection-change="selectedChange"
       :span-method="objectSpanMethod"
+      :cell-class-name="tableRowClassName"
       border
     >
       <el-table-column type="selection" />
@@ -60,7 +61,8 @@
       <el-table-column label="实际派发成员数" prop="distributeUserNum">
         <template #default="shop">
           <el-button type="text">
-            {{ shop.row.distributeUserNum }}
+            {{ shop.row.distributeUserNum }} {{ shop.row.isMergeTool }}
+            {{ shop.row.distributeShopListCount }}
           </el-button>
         </template>
       </el-table-column>
@@ -155,10 +157,12 @@ const handleSearch = () => {
 }
 // 查询列表数据
 const getTableData = async (searchForm) => {
+  console.log(searchForm)
+
   loading.value = true
   try {
     // let res = await dispatchApi.getClueDistribute(searchForm)
-    let res = dispatch_strategy_res
+    let res: any = dispatch_strategy_res
     if (res) {
       console.log('反反复复反反复复付')
       let list = res.data.list
@@ -166,6 +170,7 @@ const getTableData = async (searchForm) => {
       let newArr: any[] = []
       list.forEach((item: any, index) => {
         item.index = index + 1
+        item.distributeShopListCount = item.distributeShopList.length
         if (item.distributeShopList.length > 0) {
           item.distributeShopList.forEach((aItem, aIndex) => {
             item.isMergeTool = false
@@ -216,7 +221,7 @@ const objectSpanMethod = ({ row, column }) => {
     'createBy',
     'createTime',
     'shopName'
-  ].includes(property)
+  ].includes(property) //需要合并的字段
   // ----------皮卡丘------------
   let num = row.distributeShopList.length
   if (isTool && num > 0) {
@@ -231,6 +236,24 @@ const objectSpanMethod = ({ row, column }) => {
         colspan: 0
       }
     }
+  }
+}
+
+const tableRowClassName = ({ row, column }) => {
+  console.log(row)
+  let num = row.distributeShopList.length
+  let property: string = column.property || ''
+  let isTool: boolean = [
+    'distributeShopName',
+    'distributeUserNum',
+    'status'
+    // 'isExternalDistribute'
+  ].includes(property) //需要合并的字段
+
+  if (isTool && num > 1) {
+    console.log(num)
+
+    return 'hide-border-right'
   }
 }
 
@@ -326,5 +349,8 @@ const getShopData = () => {
 <style lang="scss" scoped>
 .el-row {
   margin-bottom: 10px;
+}
+:deep(.hide-border-right) {
+  border-right: 0;
 }
 </style>
