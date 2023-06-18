@@ -59,7 +59,12 @@
       </el-table-column>
       <el-table-column label="状态" width="80">
         <template #default="{ row }">
-          <el-switch v-model="row.status" :active-value="0" :inactive-value="1" />
+          <el-switch
+            v-model="row.status"
+            :active-value="0"
+            :inactive-value="1"
+            :disabled="!hasPermission(['system:post:update-status'])"
+          />
         </template>
       </el-table-column>
       <el-table-column v-if="actionType !== 'update'" label="操作">
@@ -89,6 +94,7 @@ import * as PostInfoApi from '@/api/system/post/info'
 import { PostInfoVO } from '@/api/system/post/info'
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
+import { hasPermission } from '@/utils/routerHelper'
 
 // 弹窗相关的变量
 const modelVisible = ref(false) // 是否显示弹出层

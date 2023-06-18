@@ -157,12 +157,12 @@
             </template>
             <template #status_default="{ row }">
               <el-switch
-                v-hasPermi="['system:post:update-status']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"
                 @click.stop
                 @change="postInfoStatusChange(row)"
+                :disabled="!hasPermission(['system:post:update-status'])"
               />
             </template>
             <template #user_count="{ row }">
@@ -209,6 +209,7 @@ import PostForm from './form.vue'
 import DistributeModal from './component/DistributeModal.vue'
 import { h } from 'vue'
 import { CommonStatusEnum } from '@/utils/constants'
+import { hasPermission } from '@/utils/routerHelper'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗

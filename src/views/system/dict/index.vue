@@ -162,11 +162,11 @@
             </template>
             <template #status_default="{ row }">
               <el-switch
-                v-hasPermi="['system:dict:update']"
                 v-model="row.status"
                 :active-value="0"
                 :inactive-value="1"
                 @change="handleStatusChange(row, 'data')"
+                :disabled="!hasPermission(['system:dict:update'])"
               />
             </template>
             <template #actionbtns_default="{ row }">
@@ -315,11 +315,11 @@
         </template>
         <template #status_default="{ row }">
           <el-switch
-            v-hasPermi="['system:dict:update']"
             v-model="row.status"
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(row, 'dataLevel3')"
+            :disabled="!hasPermission(['system:dict:update'])"
           />
         </template>
         <template #actionbtns_default="{ row }">
@@ -351,6 +351,7 @@ import * as DictDataApi from '@/api/system/dict/dict.data'
 import { DictDataVO, DictTypeReqVO } from '@/api/system/dict/types'
 import { CommonStatusEnum } from '@/utils/constants'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
+import { hasPermission } from '@/utils/routerHelper'
 import { reactive } from 'vue'
 
 const { t } = useI18n() // 国际化
@@ -359,18 +360,16 @@ const message = useMessage() // 消息弹窗
 const typeSearchForm = ref({
   createTime: []
 })
-const [
-  registerType,
-  { reload: typeGetList, search: typeSearch, deleteData: dataLevel3DeleteData }
-] = useXTable({
-  tableKey: 'dict-type-table',
-  allSchemas: DictTypeSchemas.allSchemas,
-  params: typeSearchForm,
-  getListApi: DictTypeApi.getDictTypePageApi,
-  deleteApi: DictTypeApi.deleteDictTypeApi,
-  border: true,
-  height: 660
-})
+const [registerType, { reload: typeGetList, search: typeSearch, deleteData: typeDeleteData }] =
+  useXTable({
+    tableKey: 'dict-type-table',
+    allSchemas: DictTypeSchemas.allSchemas,
+    params: typeSearchForm,
+    getListApi: DictTypeApi.getDictTypePageApi,
+    deleteApi: DictTypeApi.deleteDictTypeApi,
+    border: true,
+    height: 660
+  })
 
 const queryParams = reactive({
   parentId: 0,
@@ -394,7 +393,7 @@ const dataLevel3queryParams = reactive({
 })
 const [
   registerDataLevel3,
-  { reload: dataLevel3GetList, search: dataLevel3Search, deleteData: typeDeleteData }
+  { reload: dataLevel3GetList, search: dataLevel3Search, deleteData: dataLevel3DeleteData }
 ] = useXTable({
   tableKey: 'dict-level3data-table',
   allSchemas: DictDataLevel3Schemas.allSchemas,
