@@ -37,7 +37,7 @@
   <ContentWrap>
     <!--    列表-->
     <el-row :gutter="10">
-      <el-col :span="3">
+      <el-col :span="8">
         <el-button type="primary" @click="addRule">新增</el-button>
         <el-button type="danger" @click="handleDelete">删除</el-button>
       </el-col>
@@ -47,6 +47,7 @@
       v-loading="loading"
       :data="tableData"
       @selection-change="selectedChange"
+      :span-method="objectSpanMethod"
       border
     >
       <el-table-column type="selection" />
@@ -54,48 +55,33 @@
       <el-table-column label="线索平台来源" prop="clueChannelName" width="120" />
       <el-table-column label="所属区域" prop="parentName" width="120" />
       <el-table-column label="线索清洗员" prop="filterUserName" width="120" />
-      <el-table-column label="派发人员配置" align="center" class="staff-config-column">
-        <template #header>
-          <el-table class="replacement-table">
-            <el-table-column label="派发门店" />
-            <el-table-column label="实际派发成员数" />
-            <el-table-column label="是否派发" />
-            <el-table-column label="是否外部派发" />
-          </el-table>
+
+      <el-table-column label="派发门店" prop="distributeShopName" />
+      <el-table-column label="实际派发成员数" prop="distributeUserNum">
+        <template #default="shop">
+          <el-button type="text">
+            {{ shop.row.distributeUserNum }}
+          </el-button>
         </template>
-        <template #default="{ row }">
-          <el-table :data="row.distributeShopList" :show-header="false">
-            <el-table-column label="派发门店" prop="distributeShopName" />
-            <el-table-column label="实际派发成员数" prop="distributeUserNum">
-              <template #default="shop">
-                <el-button type="text" @click="showStaffTable(shop.row.distributeShopId, row.id)">
-                  {{ shop.row.distributeUserNum }}
-                </el-button>
-              </template>
-            </el-table-column>
-            <el-table-column label="是否派发" prop="status">
-              <template #default="scope">
-                <el-switch
-                  v-model="scope.row.status"
-                  active-color="#13ce66"
-                  :active-value="1"
-                  :inactive-value="0"
-                  @change="onUpdateStatus(scope, row)"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column label="是否外部派发" prop="isExternalDistribute">
-              <template #default="scope">
-                <el-switch
-                  v-model="scope.row.isExternalDistribute"
-                  active-color="#13ce66"
-                  :active-value="1"
-                  :inactive-value="0"
-                  @change="onUpdateExternalDistribute(scope, row)"
-                />
-              </template>
-            </el-table-column>
-          </el-table>
+      </el-table-column>
+      <el-table-column label="是否派发" prop="status">
+        <template #default="scope">
+          <el-switch
+            v-model="scope.row.status"
+            active-color="#13ce66"
+            :active-value="1"
+            :inactive-value="0"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="是否外部派发" prop="isExternalDistribute">
+        <template #default="scope">
+          <el-switch
+            v-model="scope.row.isExternalDistribute"
+            active-color="#13ce66"
+            :active-value="1"
+            :inactive-value="0"
+          />
         </template>
       </el-table-column>
       <el-table-column label="接单模式" prop="receivePattern" width="120">
@@ -144,6 +130,7 @@ import StaffTable from '@/views/dispatchStrategyConfig/components/staffTable.vue
 import Crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
 import { treeShopData } from '@/api/common/index'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
+import { dispatch_strategy_res } from './dispatchStrategy.data'
 const message = useMessage()
 
 onMounted(() => {
@@ -167,25 +154,83 @@ const handleSearch = () => {
   getTableData(searchForm)
 }
 // 查询列表数据
-const getTableData = (searchForm) => {
+const getTableData = async (searchForm) => {
   loading.value = true
   try {
-    dispatchApi.getClueDistribute(searchForm).then((res) => {
-      if (res) {
-        tableData.value = res.data.list
-        nextTick(() => {
-          const replacementTable = document.querySelector('.replacement-table')
-          const elTableBodyWrapper = replacementTable?.querySelector('.el-table__body-wrapper')
-          if (elTableBodyWrapper) {
-            replacementTable?.removeChild(elTableBodyWrapper)
-          }
-        })
-      } else {
-        message.error(res.message)
-      }
-    })
+    // let res = await dispatchApi.getClueDistribute(searchForm)
+    let res = dispatch_strategy_res
+    if (res) {
+      console.log('反反复复反反复复付')
+      let list = res.data.list
+
+      let newArr: any[] = []
+      list.forEach((item: any, index) => {
+        item.index = index + 1
+        if (item.distributeShopList.length > 0) {
+          item.distributeShopList.forEach((aItem, aIndex) => {
+            item.isMergeTool = false
+            if (aIndex == 0) {
+              item.isMergeTool = true
+            }
+            item = {
+              ...item,
+              ...aItem
+            }
+
+            newArr.push(JSON.parse(JSON.stringify(item)))
+          })
+        } else {
+          item.isMergeTool = false
+          newArr.push(JSON.parse(JSON.stringify(item)))
+        }
+      })
+
+      console.log(newArr)
+
+      tableData.value = newArr
+      console.log(tableData)
+      nextTick(() => {
+        const replacementTable = document.querySelector('.replacement-table')
+        const elTableBodyWrapper = replacementTable?.querySelector('.el-table__body-wrapper')
+        if (elTableBodyWrapper) {
+          replacementTable?.removeChild(elTableBodyWrapper)
+        }
+      })
+    } else {
+      message.error(res.message)
+    }
   } finally {
     loading.value = false
+  }
+}
+
+const objectSpanMethod = ({ row, column }) => {
+  let property: string = column.property || ''
+  let isTool: boolean = [
+    '',
+    'id',
+    'clueChannelName',
+    'parentName',
+    'filterUserName',
+    'receivePattern',
+    'createBy',
+    'createTime',
+    'shopName'
+  ].includes(property)
+  // ----------皮卡丘------------
+  let num = row.distributeShopList.length
+  if (isTool && num > 0) {
+    if (row.isMergeTool) {
+      return {
+        rowspan: num,
+        colspan: 1
+      }
+    } else {
+      return {
+        rowspan: 0,
+        colspan: 0
+      }
+    }
   }
 }
 
@@ -195,17 +240,8 @@ const handleReset = () => {
   handleSearch()
 }
 
-type DispatchStrategy = {
-  clueChannelName: string
-  parentName: string
-  filterUserName: string
-  distributeShopList: string[]
-  receivePattern: string
-  createBy: string
-  createTime: string
-  shopName: string
-}
-const tableData = ref<DispatchStrategy[]>([])
+const tableData = ref<any[]>([])
+
 const cptReceivePattern = computed(() => {
   const map = {
     1: '配置模式',

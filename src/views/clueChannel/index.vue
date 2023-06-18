@@ -7,7 +7,8 @@
         columns: allSchemas.tableColumns,
         listApi: channelApi.getClueChannel,
         showAdd: true,
-        actionButtons
+        actionButtons,
+        selection: true
       }"
       @add="handleAdd"
     >
