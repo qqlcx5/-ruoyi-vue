@@ -67,17 +67,27 @@
           </el-form-item>
 
           <el-form-item label="区划编号" prop="code">
-            <el-input v-model="form.code" placeholder="请输入区划编号" class="input-width">
+            <el-input
+              v-model="form.code"
+              :disabled="state.isDisabled"
+              placeholder="请输入区划编号"
+              class="input-width"
+            >
               <!--              <template #prepend>{{ form.name }}</template>-->
             </el-input>
           </el-form-item>
 
           <el-form-item label="区划名称" prop="name">
-            <el-input v-model="form.name" placeholder="请输入区划名称" class="input-width" />
+            <el-input
+              v-model="form.name"
+              :disabled="state.isDisabled"
+              placeholder="请输入区划名称"
+              class="input-width"
+            />
           </el-form-item>
 
           <el-form-item label="区划等级" prop="level">
-            <el-radio-group v-model="form.level">
+            <el-radio-group v-model="form.level" :disabled="state.isDisabled">
               <el-radio :label="0" class="margin-right-20">国家</el-radio>
               <el-radio :label="1" class="margin-right-20">省份/直辖市</el-radio>
               <el-radio :label="2" class="margin-right-20">地市</el-radio>
@@ -88,14 +98,19 @@
           </el-form-item>
 
           <el-form-item label="是否显示区划" props="visible">
-            <el-switch v-model="form.visible" />
+            <el-switch v-model="form.visible" :disabled="state.isDisabled" />
           </el-form-item>
 
           <el-form-item label="区划排序" props="sort">
-            <el-input v-model="form.sort" class="input-width" />
+            <el-input v-model="form.sort" :disabled="state.isDisabled" class="input-width" />
           </el-form-item>
           <el-form-item label="区划备注" props="remark">
-            <el-input v-model="form.remark" type="textarea" class="input-width" />
+            <el-input
+              v-model="form.remark"
+              :disabled="state.isDisabled"
+              type="textarea"
+              class="input-width"
+            />
           </el-form-item>
           <el-form-item v-if="state.operationType">
             <el-button type="primary" @click="onSubmit">提交</el-button>
@@ -154,7 +169,8 @@ const state: any = reactive({
   currentNode: {}, //当前选中的树节点
   operationType: '', //当前操作类型 add edit
   isShow: false, //删除modal
-  statusValue: false
+  statusValue: false,
+  isDisabled: true
 })
 
 const formRef = ref()
@@ -234,6 +250,8 @@ const resetForm = () => {
 //接收选中的省市区节点
 const sendCurrentSelect = (currentSelectNode) => {
   console.log('currentSelectNode', currentSelectNode)
+  state.operationType = ''
+  state.isDisabled = true
   state.currentNode = currentSelectNode
   form.parentCode = currentSelectNode.data.parentCode //父区划编号
   form.parentName = currentSelectNode.data.parentName //父区划名称
@@ -265,6 +283,7 @@ const addEditArea = (type) => {
       form.sort = state.currentNode.data.sort //区划排序
       form.remark = state.currentNode.data.remark //区划备注
   }
+  state.isDisabled = false
 }
 
 //open 删除 modal
