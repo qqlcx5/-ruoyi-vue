@@ -134,6 +134,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
       const res = await config?.getListApi(unref(paramsObj)).finally(() => {
         tableObject.loading = false
       })
+
       if (res) {
         tableObject.tableList = (res as unknown as ResponseType).list
 
