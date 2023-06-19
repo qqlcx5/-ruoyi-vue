@@ -7,19 +7,10 @@
       listApi: getTable,
       showAdd: true,
       actionButtons,
+      selection: true,
       spanMethod: objectSpanMethod
     }"
-  >
-    <template #tableAppend>
-      <XButton type="danger" :title="t('action.delete')" @click="addMember" />
-    </template>
-    <template #action>
-      <!--      编辑-->
-      <XTextButton :title="t('action.edit')" />
-      <!--      删除-->
-      <XTextButton :title="t('action.del')" />
-    </template>
-  </form-table>
+  />
 </template>
 
 <script setup lang="ts" name="dispatchMember">
@@ -28,11 +19,7 @@ import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { getAllStoreList } from '@/api/system/organization'
 import { listToTree } from '@/utils/tree'
-import { computed } from 'vue'
-
-const message = useMessage() // 消息弹窗
-
-const { t } = useI18n()
+import { computed, ref } from 'vue'
 
 onMounted(() => {
   getShopList()
@@ -44,7 +31,8 @@ const getShopList = async () => {
   const data = await getAllStoreList()
   shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
 }
-const mergerItems = [
+
+let mergeItems = [
   {
     columnIndex: 1,
     spanArr: [],
@@ -59,20 +47,15 @@ const mergerItems = [
   }
 ]
 const getTable = (params) => {
-  return dispatchApi.clueDistributeUser(params).then((res) => {
-    const { status, data } = res
-    if (status === 200) {
-      getSpanArr(data.list, mergerItems)
-    } else {
-      message.error(res.message)
-    }
-    return
+  return dispatchApi.clueDistributeUser(params).then((data) => {
+    getSpanArr(data.list, mergeItems)
+    return data
   })
 }
 const objectSpanMethod = ({ rowIndex, columnIndex }) => {
   if (columnIndex === 1 || columnIndex === 2) {
     // 判断第几列需要合并
-    let item = mergerItems.find((item) => item.columnIndex === columnIndex)
+    let item = mergeItems.find((item) => item.columnIndex === columnIndex)
     const _row = item?.spanArr[rowIndex] || 0
     const _col = _row > 0 ? 1 : 0
     return {
@@ -144,7 +127,16 @@ const columns: TableColumn[] = [
     isTable: false,
     search: {
       component: 'Cascader',
-      componentProps: {}
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: computed(() => shopTreeList.value),
+        props: {
+          label: 'name',
+          value: 'id',
+          emitPath: false
+        }
+      }
     }
   },
   {
@@ -187,8 +179,6 @@ const columns: TableColumn[] = [
     field: 'action'
   }
 ]
-
-const addMember = () => {}
 
 const actionButtons = [
   {

@@ -93,14 +93,12 @@ const columns: TableColumn[] = [
 const actionButtons = [
   {
     name: '编辑',
-    permission: true,
     click: () => {
       console.log('新增')
     }
   },
   {
     name: '删除',
-    permission: true,
     click: () => {
       console.log('删除')
     }
