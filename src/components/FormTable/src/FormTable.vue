@@ -33,6 +33,7 @@
           </div>
         </div>
         <Table
+          v-model:current-page="tableObject.currentPage"
           :pagination="{
             total: tableObject.total
           }"
@@ -87,7 +88,7 @@ import { useTable } from '@/hooks/web/useTable'
 import { TableColumn } from '@/types/table'
 import { TableProps, SearchProps, ActionButton } from './helper'
 import { hasPermission } from '@/utils/utils'
-import { isEmpty, isString } from 'lodash-es'
+import { isEmpty, isString, isBoolean } from 'lodash-es'
 
 const props = defineProps({
   tableOptions: {
@@ -135,7 +136,11 @@ const drawerColumns = ref<TableColumn[]>([])
 
 const actionButtons = computed(() => {
   const buttons = props.tableOptions.actionButtons?.filter((item) =>
-    isString(item.permission) ? hasPermission(item.permission) : item.permission
+    isString(item.permission)
+      ? hasPermission(item.permission)
+      : isBoolean(item.permission)
+      ? item.permission
+      : true
   )
   return buttons || []
 })
@@ -197,7 +202,6 @@ watch(
   () => tableProps.value.columns,
   (val: TableColumn[]) => {
     const btnsWidth = getActionButtonsWidth()
-    console.log(btnsWidth)
 
     tableColumns.value = [
       ...val,
