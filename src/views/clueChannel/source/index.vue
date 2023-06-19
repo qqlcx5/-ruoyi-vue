@@ -1,0 +1,148 @@
+<template>
+  <div class="basic-config-content club-source-main">
+    <div class="part-title">
+      <span class="main-text">线索来源管理</span>
+    </div>
+    <div class="part-content">
+      <div class="source">
+        <div class="source-column" v-for="(item, index) in sourceList" :key="index">
+          <div class="header">
+            <span class="title">{{ levelList[index] }}级来源</span
+            ><span class="add-bnt" @click="addSource(index)">添加{{ levelList[index] }}级来源</span>
+          </div>
+          <div class="content">
+            <div
+              class="list-row"
+              :class="{ active: item.checkedData.sourceCode == lItem.sourceCode }"
+              v-for="(lItem, lIndex) in item.list"
+              :key="lIndex"
+              @click="selectedSource(lItem, index)"
+            >
+              <span class="label">{{ lItem.sourceName }}</span>
+              <div class="bnt-wrap">
+                <XTextButton :title="t('action.edit')" @click.stop="handleEdit()" />
+                <XTextButton :title="t('action.del')" @click.stop="handledelete()" />
+                <i class="iconfont icon-you" v-if="lItem.children.length > 0"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <AddSourceModal ref="addSourceModalRef" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import AddSourceModal from './components/AddSourceModal.vue'
+import { source_res } from './sour.data'
+const { t } = useI18n() // 国际化
+let levelList = ['一', '二', '三']
+let sourceList = ref<any[]>([])
+sourceList.value.push({ checkedData: {}, list: source_res.data })
+
+const selectedSource = (lItem, index) => {
+  sourceList.value[index].checkedData = lItem
+  sourceList.value = sourceList.value.slice(0, index + 1)
+  let children = lItem.children || []
+  if (children && children.length > 0) {
+    sourceList.value.push({ checkedData: {}, list: children })
+  }
+}
+const addSourceModalRef = ref()
+const addSource = (index: number) => {
+  console.log(index)
+  let data: any = {}
+  if (index > 0) {
+    data = sourceList.value[index - 1].checkedData
+  }
+  addSourceModalRef.value.openModal(data)
+}
+const handleEdit = () => {}
+const handledelete = () => {}
+</script>
+
+<style lang="scss" scoped>
+.club-source-main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 22px 30px;
+  background-color: var(--page-bg-color);
+  .part-title {
+    padding-bottom: 10px;
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 20px;
+    line-height: 25px;
+    .main-text {
+      font-size: 18px;
+      font-weight: bold;
+      color: $title-color;
+      margin-right: 6px;
+    }
+    .sub-text {
+      font-size: 14px;
+      color: $tip-color;
+    }
+  }
+  .part-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    .source {
+      display: flex;
+      border: 1px solid $border-color;
+      .source-column {
+        width: 368px;
+        border-right: 1px solid $border-color;
+        display: flex;
+        flex-direction: column;
+        .cell {
+          height: 36px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .header {
+          @extend .cell;
+          padding: 0 18px;
+          height: 50px;
+          background-color: #f6f6f6;
+          .title {
+            color: #333333;
+            font-weight: bold;
+          }
+          .add-bnt {
+            color: #1989fa;
+          }
+        }
+        .content {
+          flex: 1;
+          overflow: auto;
+          .list-row {
+            @extend .cell;
+            padding-left: 18px;
+            padding-right: 12px;
+            cursor: pointer;
+            .bnt-wrap {
+              display: flex;
+              align-items: center;
+            }
+          }
+          .active {
+            color: #1989fa;
+            background-color: #ebf5ff;
+          }
+          &::-webkit-scrollbar {
+            display: none;
+          }
+        }
+        &:last-child {
+          border: 0;
+        }
+      }
+    }
+  }
+}
+</style>
