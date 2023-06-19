@@ -32,6 +32,7 @@ import type { TreeNode } from 'element-plus/es/components/tree-v2/src/types'
 import { Search } from '@element-plus/icons-vue'
 import { getAllCustomKeys, getAllIds, reconstructedTreeData } from '@/utils/utils'
 import { provincesMunicipalitiesArea } from '@/constant/pr'
+import {handleTree} from "@/utils/tree";
 
 interface TreeDataProps {
   treeData?: Array<any>
@@ -103,7 +104,8 @@ watch(
     if (val.length === 0) {
       return
     }
-    state.treeData = val
+    // state.treeData = val
+    state.treeData = handleTree(val, 'code', 'parentCode', 'children')
     //默认选中第一个节点
     state.currentNodeKey = props.treeData[0]?.children[0]?.children[0]?.code
     console.log('props.treeData[0]?.children[0]?.children[0]', props.treeData[0])
