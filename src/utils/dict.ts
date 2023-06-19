@@ -23,6 +23,9 @@ export interface DictDataType {
 export const getDictOptions = (dictType: string) => {
   return dictStore.getDictByType(dictType)
 }
+export const getTenantDictOptions = (dictType: string | string[]): any => {
+  return dictStore.getTenantDictByType(dictType)
+}
 
 export const getIntDictOptions = (dictType: string) => {
   const dictOption: DictDataType[] = []
@@ -134,5 +137,8 @@ export enum DICT_TYPE {
 
   // ========== 自定义 ==========
   PERSON_TYPE = 'person_type', // 成员类型
-  POST_TYPE = 'post_type' // 岗位类型
+  POST_TYPE = 'post_type', // 岗位类型
+
+  // ========== 租户字典 ==========
+  MANUAL_RECYCLING_REASON = 'MANUAL_RECYCLING_REASON' // 回收原因
 }

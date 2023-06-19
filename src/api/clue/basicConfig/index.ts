@@ -116,3 +116,24 @@ export const firstFollowRateEdit = (data) => {
 export const firstFollowRateUpdateStatus = (data) => {
   return request.post({ url: '/clue/clueFirstFollowRateConfig/update/status', data })
 }
+
+// 新增、编辑 回收线索
+export const saveRecycleSchedule = (data) => {
+  return request.post({ url: 'clue/clueRecycleSchedule/save', data })
+}
+// 根据查询条件获取线索列表
+export const queryClueValidPage = (data) => {
+  return request.post({ url: 'clue/clueRecycleSchedule/queryClueValidPage', data })
+}
+// 分页 回收线索
+export const pageRecycleSchedule = (data) => {
+  return request.post({ url: 'clue/clueRecycleSchedule/page', data })
+}
+// 详情 回收线索
+export const detailRecycleSchedule = ({ id }) => {
+  return request.post({ url: `/clue/clueRecycleSchedule/detail/${id}` })
+}
+// 执行回收 回收线索
+export const executeRecycleSchedule = ({ id }) => {
+  return request.post({ url: `/clue/clueRecycleSchedule/execute/${id}` })
+}
