@@ -4,29 +4,87 @@
     :form-options="{ schema: allSchemas.searchSchema }"
     :table-options="{
       columns: allSchemas.tableColumns,
-      listApi: dispatchApi.clueDistributeUser,
-      showAdd: true
+      listApi: getTable,
+      showAdd: true,
+      actionButtons,
+      selection: true,
+      spanMethod: objectSpanMethod
     }"
-  >
-    <template #tableAppend>
-      <XButton type="danger" :title="t('action.delete')" @click="addMember" />
-    </template>
-    <template #action>
-      <!--      编辑-->
-      <XTextButton :title="t('action.edit')" />
-      <!--      删除-->
-      <XTextButton :title="t('action.del')" />
-    </template>
-  </form-table>
+  />
 </template>
 
 <script setup lang="ts" name="dispatchMember">
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
+import { getAllStoreList } from '@/api/system/organization'
+import { listToTree } from '@/utils/tree'
+import { computed, ref } from 'vue'
 
-const { t } = useI18n()
+onMounted(() => {
+  getShopList()
+})
 
+// 获取门店数据
+const shopTreeList = ref<object[]>([])
+const getShopList = async () => {
+  const data = await getAllStoreList()
+  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+}
+
+let mergeItems = [
+  {
+    columnIndex: 1,
+    spanArr: [],
+    pos: 0,
+    prop: 'branchName'
+  },
+  {
+    columnIndex: 2,
+    spanArr: [],
+    pos: 0,
+    prop: 'distributeShopName'
+  }
+]
+const getTable = (params) => {
+  return dispatchApi.clueDistributeUser(params).then((data) => {
+    getSpanArr(data.list, mergeItems)
+    return data
+  })
+}
+const objectSpanMethod = ({ rowIndex, columnIndex }) => {
+  if (columnIndex === 1 || columnIndex === 2) {
+    // 判断第几列需要合并
+    let item = mergeItems.find((item) => item.columnIndex === columnIndex)
+    const _row = item?.spanArr[rowIndex] || 0
+    const _col = _row > 0 ? 1 : 0
+    return {
+      rowspan: _row,
+      colspan: _col
+    }
+  }
+}
+
+const getSpanArr = (data, array) => {
+  for (let n = 0; n < array.length; n++) {
+    array[n].spanArr = []
+    for (let i = 0; i < data.length; i++) {
+      if (i === 0) {
+        array[n].spanArr.push(1)
+        array[n].pos = 0
+      } else {
+        // 判断当前元素与上个元素是否相同
+        if (data[i][array[n].prop] === data[i - 1][array[n].prop]) {
+          array[n].spanArr[array[n].pos] += 1
+          array[n].spanArr.push(0)
+        } else {
+          array[n].spanArr.push(1)
+          array[n].pos = i
+        }
+      }
+    }
+  }
+}
 const columns: TableColumn[] = [
   {
     label: '分公司',
@@ -69,7 +127,16 @@ const columns: TableColumn[] = [
     isTable: false,
     search: {
       component: 'Cascader',
-      componentProps: {}
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: computed(() => shopTreeList.value),
+        props: {
+          label: 'name',
+          value: 'id',
+          emitPath: false
+        }
+      }
     }
   },
   {
@@ -79,7 +146,16 @@ const columns: TableColumn[] = [
     isTable: false,
     search: {
       component: 'Cascader',
-      componentProps: {}
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: computed(() => shopTreeList.value),
+        props: {
+          label: 'name',
+          value: 'id',
+          emitPath: false
+        }
+      }
     }
   },
   {
@@ -104,7 +180,22 @@ const columns: TableColumn[] = [
   }
 ]
 
-const addMember = () => {}
+const actionButtons = [
+  {
+    name: '编辑',
+    permission: true,
+    click: () => {
+      console.log('新增')
+    }
+  },
+  {
+    name: '删除',
+    permission: true,
+    click: () => {
+      console.log('删除')
+    }
+  }
+]
 
 const { allSchemas } = useCrudSchemas(columns)
 </script>
