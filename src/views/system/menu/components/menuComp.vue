@@ -36,11 +36,7 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card
-      :bordered="false"
-      style="min-width: 1710px; height: 100%; overflow: auto"
-      id="card-content"
-    >
+    <a-card :bordered="false" style="height: 100%; overflow: auto" id="card-content">
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -702,8 +698,36 @@ import { cloneDeep } from 'lodash-es'
 import { getPostList, getRolesList } from '@/api/system/member'
 import { getMemberNumList, getMemberNumRoleList, updateMenuVisibleStatus } from '@/api/system/menu'
 import { getOrganizationTypeList } from '@/api/system/organization'
+import { watch, nextTick } from 'vue'
 // import { useAppStore } from '@/store/modules/app'
 // const appStore = useAppStore()
+
+/* --------------------------------- 初始化数据 --------------------------------- */
+const props = defineProps({
+  mode: {
+    type: String,
+    default: 'memberSide'
+  }
+})
+watch(
+  () => props.mode, // 源
+  (newValue, oldValue) => {
+    // 回调函数
+    console.log(newValue, oldValue)
+    changeMode()
+  },
+  {
+    immediate: true // 立即触发
+    // deep: true // 深度监听
+  }
+)
+function changeMode() {
+  nextTick(async () => {
+    await getAllType()
+    await getList()
+  })
+}
+/* ---------------------------------- 初始化数据end --------------------------------- */
 
 const queryParams = reactive({
   name: undefined,
@@ -886,7 +910,6 @@ const state: any = reactive({
     keepAlive: true //====菜单===缓存状态
   }, //新增表单
   tableStatusChangeInfo: {}, //存当前表格item项以及switch值
-  currentRecord: {}, //当前的record
   isShowDelete: false, //删除确认 modal
   deleteModalWidth: '488px', //删除modal width
   modalBtnLoading: false,
@@ -1795,10 +1818,10 @@ watch(
   }
 )
 
-onMounted(async () => {
-  await getAllType()
-  await getList()
-})
+// onMounted(async () => {
+//   await getAllType()
+//   await getList()
+// })
 </script>
 
 <style lang="scss" scoped>

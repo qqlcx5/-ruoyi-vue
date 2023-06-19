@@ -6,7 +6,7 @@
       <el-tab-pane label="管理端" name="managementEnd"> </el-tab-pane>
       <el-tab-pane label="客户端" name="client"> </el-tab-pane>
     </el-tabs>
-    <MenuComp />
+    <MenuComp :mode="tabsName" />
   </div>
 </template>
 
@@ -22,14 +22,16 @@ const handleTabsClick = (tab: any) => {
 
 <style lang="scss" scoped>
 .system-menu {
+  :deep(.el-card) {
+    border: none;
+    border-radius: 0;
+  }
   :deep(.el-tabs__content) {
     display: none;
   }
   :deep(.el-tabs--border-card > .el-tabs__header) {
     border-bottom: none;
     background-color: #f1f3f6;
-    // padding-top: 14px;
-    // padding-bottom: 14px; 
   }
   :deep(.el-tabs__item) {
     position: relative;
