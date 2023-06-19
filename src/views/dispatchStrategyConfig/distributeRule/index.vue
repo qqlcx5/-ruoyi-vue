@@ -1,65 +1,116 @@
 <template>
   <form-table
-    ref="table"
+    ref="tableRef"
     :form-options="{ schema: allSchemas.searchSchema }"
     :table-options="{
       columns: allSchemas.tableColumns,
-      listApi: dispatchApi.getClueDistribute,
-      showAdd: true
+      listApi: dispatchApi.getClueDistributeRule,
+      delApi: dispatchApi.delClueDistributeRule,
+      showAdd: true,
+      actionButtons
     }"
+    @add="addRule"
   >
-    <template #action>
-      <!--      编辑-->
-      <XTextButton :title="t('action.edit')" />
-      <!--      删除-->
-      <XTextButton :title="t('action.del')" />
-    </template>
-    <template #status="{ row }">
-      <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
+    <template #openRules="{ row }">
+      <el-switch v-model="row.openRules" :active-value="1" :inactive-value="0" />
     </template>
   </form-table>
+  <Crud ref="crudRef" />
 </template>
 
 <script setup lang="ts" name="dispatchRule">
+import { computed } from 'vue'
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
+import { getAllStoreList } from '@/api/system/organization'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
+import { listToTree } from '@/utils/tree'
+import Crud from './components/crud.vue'
 
-const { t } = useI18n()
+onMounted(() => {
+  getShopList()
+})
+
+// 获取门店数据
+const shopTreeList = ref<object[]>([])
+const getShopList = async () => {
+  const data = await getAllStoreList()
+  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+}
+
+const tableRef = ref()
 
 const columns: TableColumn[] = [
   {
-    label: '规则名称',
-    field: 'ruleName',
-    isSearch: true
+    label: '考核规则名称',
+    field: 'name',
+    isSearch: true,
+    isTable: false
   },
   {
-    label: '适用门店',
-    field: 'shopNameList',
+    label: '门店',
+    field: 'shopId',
     isSearch: true,
+    isTable: false,
     search: {
       component: 'Cascader',
-      componentProps: {}
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: computed(() => shopTreeList.value),
+        props: {
+          label: 'name',
+          value: 'id',
+          emitPath: false
+        }
+      }
     }
   },
   {
+    label: '规则名称',
+    field: 'distributeRuleName'
+  },
+  {
+    label: '适用门店',
+    field: 'applicableShopName'
+  },
+  {
     label: '状态',
-    field: 'status'
+    field: 'openRules'
   },
   {
     label: '创建人',
-    field: 'createById'
+    field: 'creator'
   },
   {
     label: '创建时间',
-    field: 'createByTime'
-  },
-  {
-    label: '操作',
-    field: 'action'
+    field: 'createTime'
   }
 ]
 
+// const columns = ref<TableColumn[]>()
+
+const actionButtons = [
+  {
+    name: '编辑',
+    permission: true,
+    click: () => {
+      console.log('新增')
+    }
+  },
+  {
+    name: '删除',
+    permission: true,
+    click: () => {
+      console.log('删除')
+    }
+  }
+]
+
+const crudRef = ref()
+const addRule = async () => {
+  crudRef.value.openDialog(shopTreeList)
+}
 const { allSchemas } = useCrudSchemas(columns)
 </script>
 
