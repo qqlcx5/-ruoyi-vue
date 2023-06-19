@@ -36,6 +36,14 @@ export const getOperateLogPageApi = (params: OperateLogPageReqVO) => {
   return request.get({ url: '/system/operate-log/page', params })
 }
 // 导出操作日志
-export const exportOperateLogApi = (params: OperateLogPageReqVO) => {
+export const exportOperateLogApi = (params) => {
   return request.download({ url: '/system/operate-log/export', params })
+}
+// 查询操作日志详情
+export const getOperateLogDetailApi = (params) => {
+  return request.get({ url: '/system/operate-log/get', params })
+}
+// 删除操作日志
+export const deleteOperateLogApi = (ids) => {
+  return request.delete({ url: `/system/operate-log/delete?ids=${ids}` })
 }

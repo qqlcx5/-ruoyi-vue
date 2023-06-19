@@ -1,25 +1,23 @@
 <template>
-    <svg class="icon" aria-hidden="true">
-        <use :xlink:href="`#${name}`"></use>
-    </svg>
+  <svg class="icon" aria-hidden="true">
+    <use :xlink:href="`#${props.name}`" />
+  </svg>
 </template>
 
-<script>
-export default {
-    props: {
-        name: {
-            type: String,
-            required: true,
-        },
-    },
-};
+<script lang="ts" setup>
+import { propTypes } from '@/utils/propTypes'
+
+const props = defineProps({
+  name: propTypes.string.def('')
+})
 </script>
 
 <style lang="scss" scoped>
 .icon {
-    width: 1em; height: 1em;
-    vertical-align: -0.15em;
-    fill: currentColor;
-    overflow: hidden;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  vertical-align: -0.15em;
+  fill: currentColor;
 }
 </style>
