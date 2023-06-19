@@ -8,7 +8,12 @@
       @page-change="pageChange"
     >
       <template #btns>
-        <el-button type="primary" @click="handleCreate">新增回收计划</el-button>
+        <XButton
+          type="primary"
+          iconFont="icon-xinzeng"
+          title="新增回收计划"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
     <CreateRecoveryPlan v-model="visible" @success="getList" />

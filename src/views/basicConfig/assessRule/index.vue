@@ -29,7 +29,7 @@
       :loading="loading"
     >
       <template #btns>
-        <el-button type="primary" @click="handleCreate">新增</el-button>
+        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
       </template>
     </WgTable>
     <EditAssessRule v-model="visible" :shopList="shopList" :curInfo="curInfo" @success="getList" />
