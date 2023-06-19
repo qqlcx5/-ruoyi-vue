@@ -36,7 +36,12 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card :bordered="false" style="height: 100%; overflow: auto" id="card-content">
+    <a-card
+      :bordered="false"
+      style="height: 100%; overflow: auto"
+      id="card-content"
+      :loading="tableLoading"
+    >
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -696,43 +701,17 @@ import {
 } from '@/utils/utils'
 import { cloneDeep } from 'lodash-es'
 import { getPostList, getRolesList } from '@/api/system/member'
-import { getMemberNumList, getMemberNumRoleList, updateMenuVisibleStatus } from '@/api/system/menu'
+import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 import { getOrganizationTypeList } from '@/api/system/organization'
-import { watch, nextTick } from 'vue'
+import { watch, nextTick, reactive } from 'vue'
 // import { useAppStore } from '@/store/modules/app'
 // const appStore = useAppStore()
-
-/* --------------------------------- 初始化数据 --------------------------------- */
-const props = defineProps({
-  mode: {
-    type: String,
-    default: 'memberSide'
-  }
-})
-watch(
-  () => props.mode, // 源
-  (newValue, oldValue) => {
-    // 回调函数
-    console.log(newValue, oldValue)
-    changeMode()
-  },
-  {
-    immediate: true // 立即触发
-    // deep: true // 深度监听
-  }
-)
-function changeMode() {
-  nextTick(async () => {
-    await getAllType()
-    await getList()
-  })
-}
-/* ---------------------------------- 初始化数据end --------------------------------- */
 
 const queryParams = reactive({
   name: undefined,
   status: undefined,
-  type: null
+  type: null,
+  entrance: ''
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -1184,6 +1163,7 @@ const saveForm = async () => {
   const tempTenantTypeString = state.formState.tenantType.join() || ''
 
   params.tenantType = tempTenantTypeString
+  params.entrance = queryParams.entrance
   state.modalBtnLoading = true
   //
   try {
@@ -1782,7 +1762,7 @@ const closeEmployees = () => {
 //数据字典
 const getAllType = async () => {
   //获取数据字典
-  const dictRes = await getOrganizationTypeList()
+  const dictRes = await getOrganizationTypeList({ entrance: queryParams.entrance })
 
   //适用主体类型
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
@@ -1822,6 +1802,37 @@ watch(
 //   await getAllType()
 //   await getList()
 // })
+/* --------------------------------- 初始化数据 --------------------------------- */
+const props = defineProps({
+  mode: {
+    type: String,
+    default: 'memberSide'
+  }
+})
+
+let tableLoading = ref(false)
+watch(
+  () => props.mode, // 源
+  (newValue, oldValue) => {
+    // 回调函数
+    queryParams.entrance = newValue
+    console.log(newValue, oldValue)
+    changeMode()
+  },
+  {
+    immediate: true // 立即触发
+    // deep: true // 深度监听
+  }
+)
+function changeMode() {
+  nextTick(async () => {
+    tableLoading.value = true
+    await getAllType()
+    await getList()
+    tableLoading.value = false
+  })
+}
+/* ---------------------------------- 初始化数据end --------------------------------- */
 </script>
 
 <style lang="scss" scoped>

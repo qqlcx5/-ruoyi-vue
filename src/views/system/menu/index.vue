@@ -14,9 +14,9 @@
 import { ref } from 'vue'
 import MenuComp from './components/menuComp.vue'
 
-let tabsName = ref('memberSide')
+let tabsName = ref('managementEnd')
 const handleTabsClick = (tab: any) => {
-  console.log('🚀 ~ file: index.vue:17 ~ handleTabsClick ~ tab.name:', tab)
+  console.log('🚀 ~ file: index.vue:17 ~ handleTabsClick ~ tab.name:', tab.paneName)
 }
 </script>
 

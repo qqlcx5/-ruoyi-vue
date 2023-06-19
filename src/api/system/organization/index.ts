@@ -16,8 +16,8 @@ export const getOrganizationList = (params: MajorIndividual) => {
 }
 
 // 获取机构类型列表(获取字典列表ALL 如何自己通过type过滤...)
-export const getOrganizationTypeList = () => {
-  return request.get({ url: '/system/tenant-dict-data/list-all-simple' })
+export const getOrganizationTypeList = (params) => {
+  return request.get({ url: '/system/tenant-dict-data/list-all-simple', params })
 }
 
 // 获取上级机构列表
