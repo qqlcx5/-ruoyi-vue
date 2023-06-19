@@ -15,7 +15,6 @@
       :table-options="{
         columns: allSchemas.tableColumns,
         listApi: getConfigPageApi,
-        delApi: deleteConfigApi,
         showAdd: true,
         selection: true
       }"
@@ -39,15 +38,17 @@
       </template>
     </form-table>
     <!-- 新增-通用提示 -->
-    <newGeneralReminderModal v-model="dialogVisible" />
+    <newGeneralReminderModal v-model="newGeneralVisible" />
+    <promptTypeConfigModal v-model="promptTypeVisible" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { TableColumn } from '@/types/table'
-import { getConfigPageApi, deleteConfigApi } from '@/api/infra/config'
+import { getConfigPageApi } from '@/api/infra/config'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import newGeneralReminderModal from './components/newGeneralReminderModal.vue'
+import promptTypeConfigModal from './components/promptTypeConfigModal.vue'
 import { ElTable } from 'element-plus'
 
 const { t } = useI18n()
@@ -100,13 +101,14 @@ const columns: TableColumn[] = [
     showOverflowTooltip: false
   }
 ]
-let dialogVisible = ref(false) // 弹窗是否展示
+let newGeneralVisible = ref(false) // 新增通用提示
+let promptTypeVisible = ref(false) // 提示类型配置
 let tableRef = ref<InstanceType<typeof ElTable>>()
 // 操作：新增
 async function handleAdd() {
   const list = await tableRef.value?.tableMethods?.getSelections()
   console.log('add', list)
-  dialogVisible.value = true
+  newGeneralVisible.value = true
 }
 
 // 操作：删除
@@ -116,7 +118,8 @@ function handleDel() {
 
 // 操作：提示类型配置
 function handlePrompt() {
-  console.log('prompt')
+  console.log('prompt111')
+  promptTypeVisible.value = true
 }
 
 // 操作：修改
