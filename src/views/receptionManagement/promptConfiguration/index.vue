@@ -6,7 +6,7 @@
       <el-tab-pane label="必讲项提示配置" name="needlessToSay"></el-tab-pane>
     </el-tabs>
     <form-table
-      ref="table"
+      ref="tableRef"
       @add="handleAdd"
       @selection-change="handleSelectionChange"
       :form-options="{
@@ -48,6 +48,7 @@ import { TableColumn } from '@/types/table'
 import { getConfigPageApi, deleteConfigApi } from '@/api/infra/config'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import newGeneralReminder from './components/newGeneralReminder.vue'
+import { ElTable } from 'element-plus'
 
 const { t } = useI18n()
 let tabsName = ref('currency')
@@ -100,9 +101,10 @@ const columns: TableColumn[] = [
   }
 ]
 let dialogVisible = ref(false) // 弹窗是否展示
+let tableRef = ref<InstanceType<typeof ElTable>>()
 // 操作：新增
 function handleAdd() {
-  console.log('add')
+  console.log('add', tableRef.value)
   dialogVisible.value = true
 }
 
