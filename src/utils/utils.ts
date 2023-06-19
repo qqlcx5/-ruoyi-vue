@@ -3,7 +3,7 @@ const { wsCache } = useCache()
 import { MenuTreeList } from '@/views/system/business/business'
 import { useAppStore } from '@/store/modules/app'
 const appStore = useAppStore()
-
+import dayjs from 'dayjs'
 /**
  * 过滤树形结构 更改对应的属性值
  * @param    treeData array              树结构数组对象 其中对象 children属性可有可无
@@ -226,4 +226,12 @@ const judge = (idx: any, dateArr: any) => {
     }
   }
   return true
+}
+
+export const dateFormat = (val, format = 'YYYY-MM-DD HH:mm:ss') => {
+  try {
+    return dayjs(val).format(format)
+  } catch (e) {
+    return val
+  }
 }

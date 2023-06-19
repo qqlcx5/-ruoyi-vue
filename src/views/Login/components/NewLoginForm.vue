@@ -14,7 +14,9 @@
         <img src="@/assets/imgs/company.png" alt="" class="m-auto" />
       </div>
       <div class="flex justify-between items-center mb-22px mt-70px">
-        <div class="text-20px font-bold form-title !leading-50px">{{ LoginFormTitle }}</div>
+        <div class="text-20px font-bold form-title !leading-50px">{{
+          getLoginState !== LoginStateEnum.QR_CODE ? LoginFormTitle : ''
+        }}</div>
         <div
           v-show="
             [LoginStateEnum.LOGIN, LoginStateEnum.MOBILE, LoginStateEnum.QR_CODE].includes(
