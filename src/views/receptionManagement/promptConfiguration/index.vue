@@ -103,8 +103,9 @@ const columns: TableColumn[] = [
 let dialogVisible = ref(false) // 弹窗是否展示
 let tableRef = ref<InstanceType<typeof ElTable>>()
 // 操作：新增
-function handleAdd() {
-  console.log('add', tableRef.value)
+async function handleAdd() {
+  const list = await tableRef.value?.tableMethods?.getSelections()
+  console.log('add', list)
   dialogVisible.value = true
 }
 
