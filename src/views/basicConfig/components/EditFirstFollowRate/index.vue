@@ -139,8 +139,8 @@ watch(
       console.log(ruleForm)
       const id = props.curInfo['id']
       editFlag.value = !!id
-      getPostList()
-      Promise.all([getExistRuleShop(), id && getInfo(id)]).then(() => {
+      id && (await getInfo(id))
+      Promise.all([getPostList(), getExistRuleShop()]).then(() => {
         const list = cloneDeep(props.shopList)
         const ids: string[] = ruleForm.applicableShopId
         checkedList.value = difference(checkedList.value, ids).map((d) => +d)
@@ -174,6 +174,7 @@ const rules: FormRules = reactive<FormRules>({
 })
 
 const checkedPostNames = computed(() => {
+  console.log(postList, ruleForm.limitPositionTypeList)
   const list = ruleForm.limitPositionTypeList.reduce((arr, id) => {
     const obj = unref(postList).find((d) => d['id'] === id)
     obj && arr.push(obj['name'])
@@ -189,8 +190,8 @@ const getInfo = async (id) => {
     const data = await firstFollowRateDetail({ id })
     data.applicableShopId = data?.applicableShopId?.split(',') || []
     data.applicableShopId = data.applicableShopId.map((d) => +d)
-    data.limitPositionTypeList = data.limitPositionTypes.split(',').map((d) => +d)
     ruleForm = reactive(data)
+    ruleForm.limitPositionTypeList = data.limitPositionTypes.split(',').map((d) => +d)
     console.log(ruleForm, 'ruleFormruleForm')
   } finally {
     loading.value = false
