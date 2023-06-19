@@ -236,7 +236,7 @@ export default defineComponent({
                 align={v.align || align}
                 headerAlign={v.headerAlign || headerAlign}
                 label={v.label}
-                width="65px"
+                width={v.width || '65px'}
               ></ElTableColumn>
             )
           } else {

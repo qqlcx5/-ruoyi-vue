@@ -28,3 +28,7 @@ export const getLoginLogPageApi = (params: LoginLogReqVO) => {
 export const exportLoginLogApi = (params: LoginLogReqVO) => {
   return request.download({ url: '/system/login-log/export', params })
 }
+// 删除登录日志
+export const deleteLoginLogApi = (ids) => {
+  return request.delete({ url: `/system/login-log/delete?ids=${ids}` })
+}

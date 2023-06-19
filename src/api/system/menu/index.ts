@@ -17,6 +17,7 @@ export interface MenuVO {
   keepAlive: boolean
   alwaysShow?: boolean
   createTime: Date
+  entrance: string
 }
 
 // 查询菜单（精简）列表
@@ -26,7 +27,7 @@ export const getSimpleMenusList = () => {
 
 // 查询主体配置权限获取菜单（精简）列表
 export const getMajorIndividualSimpleMenusList = (params) => {
-  return request.get({ url: '/system/menu/list-for-tenant',params })
+  return request.get({ url: '/system/menu/list-for-tenant', params })
 }
 
 // 查询菜单列表

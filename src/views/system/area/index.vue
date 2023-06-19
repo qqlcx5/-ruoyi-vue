@@ -1,8 +1,9 @@
 <!--  行政区划  -->
 <template>
   <div class="total-content">
+    <!--  -1显示全部区划item 100000中国  -->
     <LeftSelectTree
-      :treeData="state.areaList.filter((item) => item.code !== '-1')"
+      :treeData="state.areaList.filter((item) => item.code !== '-1' && item.code !== '100000')"
       @sendCurrentSelect="sendCurrentSelect"
     />
     <el-card class="right-card" body-style="padding:0">
@@ -240,8 +241,13 @@ const onSubmit = async () => {
 
 //重置
 const resetForm = () => {
-  formRef.value.resetFields()
-  //TODO 这有坑 表单清空 这两玩意没被清空 有空再看看
+  // formRef.value.resetFields()
+  // //TODO 这有坑 表单清空 这两玩意没被清空 有空再看看
+  form.code = '' //区划编号
+  form.name = '' //区划名称
+  form.level = '' //区划等级
+  form.visible = true //是否显示区划
+
   form.sort = ''
   form.remark = ''
   console.log('form', form)

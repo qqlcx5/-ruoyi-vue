@@ -41,5 +41,6 @@
   "i18n-ally.enabledFrameworks": ["vue", "react"],
   "god.tsconfig": "./tsconfig.json",
   "vue-i18n.i18nPaths": "src/locales",
-  "vetur.validation.script": false
+  "vetur.validation.script": false,
+  "vue.codeActions.enabled": false
 }

@@ -64,6 +64,7 @@ service.interceptors.request.use(
     if (tenantEnable && tenantEnable === 'true') {
       const tenantId = getTenantId()
       if (tenantId) (config as Recordable).headers['tenant-id'] = tenantId
+      if (tenantId) (config as Recordable).headers['entrance'] = 'pc'
     }
     const params = config.params || {}
     const data = config.data || false
@@ -222,6 +223,7 @@ service.interceptors.response.use(
 
 const refreshToken = async () => {
   axios.defaults.headers.common['tenant-id'] = getTenantId()
+  axios.defaults.headers.common['entrance'] = 'pc'
   return await axios.post(base_url + '/system/auth/refresh-token?refreshToken=' + getRefreshToken())
 }
 const handleAuthorized = () => {

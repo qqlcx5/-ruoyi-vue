@@ -396,13 +396,31 @@ const switchLoginWay = (LoginState: number) => {
 const getCode = async () => {
   // 情况一，未开启：则直接登录
   if (loginData.captchaEnable === 'false') {
-    await handleLogin()
+    if (
+      getLoginState.value === LoginStateEnum.MOBILE &&
+      (mobileCodeTimer.value > 0 || loginData.loginForm.mobileNumber.length !== 11)
+    ) {
+      return
+    }
+    if (getLoginState.value === LoginStateEnum.LOGIN) {
+      const data = await validForm()
+      if (!data) {
+        return
+      }
+    }
+    onVerifySuccess()
   } else {
     if (
       getLoginState.value === LoginStateEnum.MOBILE &&
       (mobileCodeTimer.value > 0 || loginData.loginForm.mobileNumber.length !== 11)
     ) {
       return
+    }
+    if (getLoginState.value === LoginStateEnum.LOGIN) {
+      const data = await validForm()
+      if (!data) {
+        return
+      }
     }
     // 情况二，已开启：则展示验证码；只有完成验证码的情况，才进行登录
     verify.value.show()
@@ -422,7 +440,7 @@ const getCookie = () => {
   }
 }
 
-const onVerifySuccess = (data) => {
+const onVerifySuccess = (data?) => {
   if (getLoginState.value === LoginStateEnum.MOBILE) {
     getSmsCode()
   } else if (getLoginState.value === LoginStateEnum.LOGIN) {
@@ -432,8 +450,8 @@ const onVerifySuccess = (data) => {
 
 // 登录前请求是否有多主体可选
 const switchTenantRef = ref()
-const getTenant = async (data) => {
-  loginData.loginForm.captchaVerification = data.captchaVerification
+const getTenant = async (data?) => {
+  if (data) loginData.loginForm.captchaVerification = data.captchaVerification
   let res
   if (getLoginState.value === LoginStateEnum.LOGIN) {
     loginLoading.value = true
