@@ -37,7 +37,7 @@
         </el-form-item>
         <el-form-item label="最低跟进率" prop="minFollowRate">
           <el-input-number
-            v-model="ruleForm.minFollowRate"
+            v-model.number="ruleForm.minFollowRate"
             :controls="false"
             step-strictly
             :min="0"

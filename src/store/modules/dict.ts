@@ -40,7 +40,6 @@ export const useDictStore = defineStore('dict', {
   },
   actions: {
     async getTenantDictByType(type: string | string[]) {
-      await getDictDetailByCode(type as string)
       return new Promise(async (resolve) => {
         try {
           if (Array.isArray(type)) {

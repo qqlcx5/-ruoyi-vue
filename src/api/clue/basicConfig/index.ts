@@ -127,7 +127,7 @@ export const queryClueValidPage = (data) => {
 }
 // 分页 回收线索
 export const pageRecycleSchedule = (data) => {
-  return request.post({ url: 'clue/clueRecycleSchedule/page', data })
+  return request.post({ url: '/clue/clueRecycleSchedule/page', data })
 }
 // 详情 回收线索
 export const detailRecycleSchedule = ({ id }) => {
@@ -136,4 +136,41 @@ export const detailRecycleSchedule = ({ id }) => {
 // 执行回收 回收线索
 export const executeRecycleSchedule = ({ id }) => {
   return request.post({ url: `/clue/clueRecycleSchedule/execute/${id}` })
+}
+
+// 获取存在DCC规则门店
+export const existDccRuleShop = () => {
+  return request.get({ url: `/clue/clueExamineAllsetProductization/valid/exist-dcc-rule-shop` })
+}
+// 新增/编辑 DCC考核总设置(产品化)
+export const saveDccConfig = (data) => {
+  return request.post({ url: '/clue/clueExamineAllsetProductization/save-or-update', data })
+}
+// 获取分页 DCC考核总设置(产品化)
+export const queryDccPage = (data) => {
+  return request.post({ url: '/clue/clueExamineAllsetProductization/query-page', data })
+}
+// 获取DCC配置详情(产品化)
+export const detailDcc = ({ id }) => {
+  return request.post({ url: `/clue/clueExamineAllsetProductization/detail/${id}` })
+}
+
+export const validDccRuleName = ({ id, ruleName }) => {
+  return request.get({
+    url: `/clue/clueExamineAllsetProductization/valid/dcc-rule-name/${id}/${ruleName}`
+  })
+}
+
+// 更新启用状态
+export const dccOpenRule = ({ id, status }) => {
+  return request.get({
+    url: `/clue/clueExamineAllsetProductization/open-rule/${id}/${status}`
+  })
+}
+
+// 删除 DCC考核总设置(级联删除关联数据)
+export const deleteDcc = ({ id }) => {
+  return request.get({
+    url: `/clue/clueExamineAllsetProductization/delete/${id}`
+  })
 }

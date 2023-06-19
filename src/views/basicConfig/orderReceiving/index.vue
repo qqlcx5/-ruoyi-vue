@@ -24,6 +24,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
       <span>分钟再次推送接单提醒通知，直到接单为止</span>
@@ -46,6 +47,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
       <span>分钟再次推送接单提醒通知，直到接单为止</span>

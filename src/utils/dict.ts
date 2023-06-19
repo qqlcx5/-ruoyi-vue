@@ -140,5 +140,6 @@ export enum DICT_TYPE {
   POST_TYPE = 'post_type', // 岗位类型
 
   // ========== 租户字典 ==========
-  MANUAL_RECYCLING_REASON = 'MANUAL_RECYCLING_REASON' // 回收原因
+  MANUAL_RECYCLING_REASON = 'MANUAL_RECYCLING_REASON', // 回收原因
+  INTENTION_LEVEL = 'INTENTION_LEVEL' // 意向等级
 }
