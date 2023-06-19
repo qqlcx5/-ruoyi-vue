@@ -133,15 +133,15 @@ import Crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
 import { treeShopData } from '@/api/common/index'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { dispatch_strategy_res } from './dispatchStrategy.data'
-const message = useMessage()
-
+import { h } from 'vue'
+const { t } = useI18n() // 国际化
 onMounted(() => {
   getShopData()
   handleSearch()
 })
 
 const treeShopCascader = ref()
-
+const message = useMessage() // 消息弹窗
 const total = ref(0) // 列表的总页数
 const loading = ref(true) // 列表的加载中
 const searchForm = ref({
@@ -288,11 +288,24 @@ const editRule = (id) => {
 
 // 选中后批量操作
 const delDialog = ref(false)
-const selectedIds = ref(['0'])
+const selectedIds = ref<any[]>([])
 const selectedChange = (val: string[]): void => {
   selectedIds.value = val.map((item: any) => item.id)
 }
 const handleDelete = () => {
+  message
+    .wgConfirm(
+      '删除后，对应派发员将无法接受到线索派发',
+      <any>h('span', ['确定要删除 ', h('span', {style: { color: 'red' }}, '10'), ' 条派发策略吗？']),
+      {
+        confirmButtonText: t('common.confirmDel'),
+        cancelButtonText: t('common.cancel')
+      }
+    )
+    .then(() => {
+      console.log('=====999====')
+    })
+    .catch(() => {})
   if (selectedIds.value.length < 1) {
     return message.warning('未选择数据')
   } else {
@@ -314,9 +327,9 @@ const confirmDel = () => {
 
 // 派发成员数弹窗
 const staffTableRef = ref()
-const showStaffTable = (distributeShopId, id) => {
-  staffTableRef.value.openDialog(distributeShopId, id)
-}
+// const showStaffTable = (distributeShopId, id) => {
+//   staffTableRef.value.openDialog(distributeShopId, id)
+// }
 
 // 格式化级联选择器数据
 type ShopDataObj = {

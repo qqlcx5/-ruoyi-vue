@@ -12,6 +12,12 @@
       }"
       @add="handleAdd"
     >
+      <template #tableAppend>
+        <div class="edit-btn">
+          <el-button @click="handleDelete">删除</el-button>
+          <el-button @click="handleSource">线索来源管理</el-button>
+        </div>
+      </template>
       <template #needFilter="{ row }">
         <el-switch
           v-model="row.needFilter"
@@ -113,11 +119,14 @@ const formRef = ref<FormExpose>() // 表单 Ref
 const addChannelModalRef = ref()
 const { push } = useRouter() // 路由
 const handleAdd = () => {
+  // setDialogTitle('add')
+  addChannelModalRef.value.openModal()
+}
+const handleDelete = () => {}
+const handleSource = () => {
   push({
     path: '/clueChannel/source'
   })
-  // setDialogTitle('add')
-  // addChannelModalRef.value.openModal()
 }
 const handleUpdate = async (rowId: string) => {
   setDialogTitle('update')
@@ -162,4 +171,8 @@ const handleNeedFilterChange = async (row, type) => {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.edit-btn {
+  margin-left: 12px;
+}
+</style>

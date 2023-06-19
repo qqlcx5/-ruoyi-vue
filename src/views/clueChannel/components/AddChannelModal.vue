@@ -6,8 +6,8 @@
         :columns="tableColumns"
         :data="tableList"
         header-cell-class-name="table-header-style required-row"
-        height="100%"
-        class="flex flex-col flex-1 overflow-hidden"
+        height="40vh"
+        class="add-channel-table"
         headerAlign="left"
         align="left"
         @update:page-size="() => {}"
@@ -162,19 +162,7 @@ const tableColumns = [
   }
 ]
 // 岗位类型table
-const tableList = ref<ChannelVO[]>([
-  {
-    serialNumber: '1',
-    clueSource: '汽车之家',
-    shopName: '微博',
-    platformUsername: '123456789',
-    platformPassword: 'aaaa1111',
-    needFilter: '1',
-    autoDistribute: '0',
-    platformRule: '0',
-    isShow: '1'
-  }
-])
+const tableList = ref<ChannelVO[]>([])
 
 const handleAdd = () => {
   let addItem = {
@@ -243,6 +231,8 @@ const submitForm = async () => {
   console.log('======', tableList.value)
 }
 const openModal = () => {
+  tableList.value = []
+  handleAdd()
   dialogVisible.value = true
 }
 defineExpose({ openModal })
@@ -256,6 +246,9 @@ defineExpose({ openModal })
 }
 .add-row-btn {
   margin-top: 10px;
+  margin-bottom: 20px;
+}
+.add-channel-table {
   margin-bottom: 20px;
 }
 :deep(.is-link) {
