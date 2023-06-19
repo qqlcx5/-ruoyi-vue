@@ -35,10 +35,8 @@
             v-model="formValues.dccExplain"
             class="mb-20px"
             :height="220"
-            style="width: 540px"
+            style="width: 600px"
           />
-
-          <!-- <el-input v-model="formValues.remark" type="textarea" placeholder="请输入提示内容" /> -->
         </el-form-item>
       </el-form>
       <!-- 操作按钮 -->
@@ -69,16 +67,7 @@ const modelValue_ = computed({
 
 /* -------------------------------- // 弹窗的表单 -------------------------------- */
 let dialogLoading = ref(false) // 弹窗的加载中
-let formRef = ref()
-let editorId = ref('editorId')
 let valueHtml = ref('')
-let handleChange = (html: string) => {
-  valueHtml.value = html
-}
-// handleCreated
-let handleCreated = (editor) => {
-  console.log('🚀 ~ file: newGeneralReminder.vue:80 ~ handleCreated ~ editor:', editor)
-}
 let formRules = reactive({
   name: [
     {

@@ -39,7 +39,7 @@
       </template>
     </form-table>
     <!-- 新增-通用提示 -->
-    <newGeneralReminder v-model="dialogVisible" />
+    <newGeneralReminderModal v-model="dialogVisible" />
   </div>
 </template>
 
@@ -47,7 +47,7 @@
 import { TableColumn } from '@/types/table'
 import { getConfigPageApi, deleteConfigApi } from '@/api/infra/config'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import newGeneralReminder from './components/newGeneralReminder.vue'
+import newGeneralReminderModal from './components/newGeneralReminderModal.vue'
 import { ElTable } from 'element-plus'
 
 const { t } = useI18n()
