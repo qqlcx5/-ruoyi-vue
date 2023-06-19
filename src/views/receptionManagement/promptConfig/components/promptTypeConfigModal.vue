@@ -5,8 +5,7 @@
       <!-- 表单 -->
       <XTable @register="registerTable">
         <template #toolbar_buttons>
-          <!-- 操作：发起请假 -->
-          <XButton type="primary" preIcon="ep:plus" title="新增" />
+          <XButton type="primary" preIcon="ep:plus" title="新增" @click="handleAddTypeVisible" />
         </template>
         <template #actionbtns_default="{ row }">
           <!-- 操作: 编辑 -->
@@ -23,6 +22,19 @@
         <XButton title="取消" @click="modelValue_ = false" />
       </template>
     </XModal>
+
+    <!-- 新增类型 -->
+    <XModal v-model="addTypeVisible" title="提示类型配置">
+      <!-- 表单 -->
+      <Form :schema="addAllSchemas.formSchema" :rules="addRules" ref="formRef"> </Form>
+      <!-- 操作按钮 -->
+      <template #footer>
+        <!-- 按钮：保存 -->
+        <XButton type="primary" title="确认" :loading="dialogLoading" />
+        <!-- 按钮：关闭 -->
+        <XButton title="取消" @click="addTypeVisible = false" />
+      </template>
+    </XModal>
   </div>
 </template>
 
@@ -31,6 +43,7 @@ import { ref, reactive, computed } from 'vue'
 
 import { getConfigPageApi } from '@/api/infra/config'
 import { allSchemas } from './promptTypeConfigModal.data'
+import { addRules, addAllSchemas } from './promptTypeConfigModal.add.data'
 
 const { t } = useI18n() // 国际化
 let dialogLoading = ref(false) // 弹窗加载状态
@@ -49,6 +62,16 @@ function handleDel(row: any) {
   console.log(row)
 }
 
+/* --------------------------------- 新增类型 -------------------------------- */
+let addTypeVisible = ref(false) // 新增类型弹窗
+let formData = reactive({
+  name: '',
+  type: ''
+})
+function handleAddTypeVisible() {
+  console.log('新增类型')
+  addTypeVisible.value = true
+}
 /* ---------------------------------- 弹窗初始化 --------------------------------- */
 const props = defineProps({
   modelValue: {
