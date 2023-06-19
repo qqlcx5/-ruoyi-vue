@@ -3,7 +3,7 @@
     :class="prefixCls"
     class="h-[100%] relative flex justify-center items-center <xl:bg-v-dark <sm:px-10px <xl:px-10px <md:px-10px"
   >
-    <div class="flex w-1062px h-668px">
+    <div class="flex w-1062px h-668px z-1">
       <div :class="`login-left-block ${prefixCls}__left flex-1 pl-50px relative <xl:hidden`">
         <div class="mt-70px mb-20px text-40px">Hello</div>
         <div class="text-30px leading-tight">欢迎登录{{ underlineToHump(appStore.getTitle) }}</div>
