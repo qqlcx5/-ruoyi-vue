@@ -51,6 +51,28 @@ const whiteRouter: AppRouteRecordRaw[] = [
         }
       }
     ]
+  },
+  {
+    path: '/clueChannel',
+    component: Layout,
+    name: 'clueChannel',
+    meta: {
+      hidden: true
+    },
+    children: [
+      {
+        path: 'source',
+        component: () => import('@/views/clueChannel/source/index.vue'),
+        name: 'source',
+        meta: {
+          canTo: true,
+          hidden: true,
+          noTagsView: false,
+          icon: 'ep:user',
+          title: '线索来源管理'
+        }
+      }
+    ]
   }
 ]
 
