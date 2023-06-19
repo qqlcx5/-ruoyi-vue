@@ -41,6 +41,10 @@
           preIcon="svg-icon:add"
         />
         <XButton title="删除" v-hasPermi="['system:tenant-area:delete']" @click="openDeleteModal" />
+        <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">
+          <div>显示全部区划</div>
+          <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />
+        </div>
       </div>
       <div class="form-content">
         <el-form :model="form" label-width="120px" ref="formRef" :rules="rules">
@@ -120,7 +124,13 @@
 
 <script lang="ts" setup>
 // do not use same name with ref
-import { addChildArea, deleteArea, getAreaList, updateArea } from '@/api/system/area'
+import {
+  addChildArea,
+  deleteArea,
+  getAreaList,
+  updateArea,
+  visibleAllArea
+} from '@/api/system/area'
 import { handleTree } from '@/utils/tree'
 import type { FormRules } from 'element-plus'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -138,11 +148,13 @@ const form = reactive({
   remark: '' //区划备注
 })
 
-const state = reactive({
+const state: any = reactive({
   areaList: [], //行政区划 tree
+  isVisibleAllArea: {}, //显示全部区划item
   currentNode: {}, //当前选中的树节点
   operationType: '', //当前操作类型 add edit
-  isShow: false //删除modal
+  isShow: false, //删除modal
+  statusValue: false
 })
 
 const formRef = ref()
@@ -267,9 +279,22 @@ const modalDelete = async () => {
   getList()
 }
 
+//显示全部区划
+const statusChange = async () => {
+  await visibleAllArea({
+    id: state.isVisibleAllArea.id,
+    visible: state.statusValue ? 0 : 1
+  })
+  message.success('编辑显示全部区划成功')
+  getList()
+}
+
 const getList = async () => {
   state.areaList = await getAreaList()
   const tempArr = handleTree(state.areaList, 'code', 'parentCode', 'children')
+  state.isVisibleAllArea = state.areaList.find((item) => item.code === '-1')
+  state.statusValue = state.isVisibleAllArea.visible === 0 ? true : false
+  console.log('isVisibleAllArea', state.isVisibleAllArea)
   console.log('state.areaList', state.areaList)
   console.log('tempArr', tempArr)
 }
@@ -318,6 +343,14 @@ getList()
 }
 .message-img {
   margin-top: 3px;
+}
+.switch-content {
+  margin-left: 100px;
+  display: flex;
+  align-items: center;
+}
+.switch-style {
+  margin-left: 9px;
 }
 </style>
 
