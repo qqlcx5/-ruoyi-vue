@@ -90,6 +90,22 @@ export const getAllIds = (tree) => {
   return result
 }
 
+//获取树结构所有自定义key
+export const getAllCustomKeys = (tree, customKey) => {
+  let result = []
+  if (!Array.isArray(tree)) {
+    return result
+  }
+  tree.forEach((node) => {
+    // @ts-ignore
+    result.push(node[customKey])
+    if (Array.isArray(node.children)) {
+      result = result.concat(getAllCustomKeys(node.children, customKey))
+    }
+  })
+  return result
+}
+
 /**
  * 获取当前节点的 所有子id
  * @param nodeId 当前id
