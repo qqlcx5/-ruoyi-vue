@@ -77,7 +77,7 @@ const onQueryChanged = (query: string) => {
 }
 const filterMethod = (query: string, node: TreeNode) => {
   console.log('node', node)
-  return node.label!.includes(query)
+  return node.name!.includes(query)
 }
 
 const selectTree = (data, node) => {
