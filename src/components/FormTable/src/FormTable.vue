@@ -2,8 +2,8 @@
   <div class="form-table flex flex-col h-full">
     <ContentWrap>
       <Search v-bind="formProps" @search="handleSearch" @reset="handleSearch">
-        <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
-          <slot :name="item" v-bind="data || {}"></slot>
+        <template #[item]="data" v-for="item in Object.keys(formSlots)" :key="item">
+          <slot :name="`form-${item}`" v-bind="data || {}"></slot>
         </template>
       </Search>
     </ContentWrap>
@@ -123,6 +123,20 @@ const emits = defineEmits<{
 }>()
 
 const { t } = useI18n() // 国际化
+
+// form插槽是以form-xxx形式命名
+const formSlots = computed(() => {
+  const slots = useSlots()
+  const newSlots = {}
+  const slotReg = /^(form-)([a-zA-Z])*$/
+  for (let key in slots) {
+    if (slotReg.test(key)) {
+      const newKey = key.replace('form-', '')
+      newSlots[newKey] = slots[key]
+    }
+  }
+  return newSlots
+})
 
 const tableColumns = ref<TableColumn[]>([])
 
