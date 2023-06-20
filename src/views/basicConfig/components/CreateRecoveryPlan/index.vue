@@ -111,7 +111,7 @@
           <el-button type="primary" :disabled="loading" :loading="btnLoading" @click="handleConfirm"
             >确定</el-button
           >
-          <el-button :loading="loading" :disabled="btnLoading" @click="handleSearch"
+          <el-button v-if="false" :loading="loading" :disabled="btnLoading" @click="handleSearch"
             >查询</el-button
           >
           <el-button @click="handleClose">取消</el-button>
