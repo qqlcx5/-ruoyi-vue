@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="new-general-reminder-modal">
     <!-- 新增-通用提示 -->
     <XModal v-model="modelValue_" title="新增-通用提示">
-      <el-form ref="formRef" :model="formValues" :rules="formRules" label-width="80px">
+      <el-form ref="formRef" :model="formValues" :rules="formRules" label-width="100px">
         <el-form-item label="提示标题" prop="name" required>
           <el-input
             v-model="formValues.name"
@@ -11,11 +11,24 @@
             show-word-limit
           />
         </el-form-item>
+        <!-- 通用 -->
         <el-form-item label="提示类型" prop="region" required>
           <el-select v-model="formValues.region" placeholder="请选择上级主体">
             <el-option label="提示类型1" value="shanghai" />
             <el-option label="提示类型2" value="beijing" />
           </el-select>
+        </el-form-item>
+        <!-- 新增-必讲项提示 -->
+        <el-form-item label="提示有效期" prop="status" required>
+          <el-radio-group v-model="formValues.status">
+            <el-radio :key="1" label="永久"></el-radio>
+            <el-radio :key="2" label="自定义"></el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="提示时间节点" prop="status" required>
+          <div class="flxex">
+            开始接待 录音后，<el-input placeholder="请输入" style="width: 180px" /> 分钟，弹出提示
+          </div>
         </el-form-item>
         <el-form-item label="适用品牌" prop="status" required>
           <el-radio-group v-model="formValues.status">
@@ -31,12 +44,7 @@
         </el-form-item>
         <el-form-item label="提示内容" prop="remark" required>
           <!-- 编辑器 -->
-          <Editor
-            v-model="formValues.dccExplain"
-            class="mb-20px"
-            :height="220"
-            style="width: 600px"
-          />
+          <Editor v-model="formValues.dccExplain" class="mb-20px" :height="220" />
         </el-form-item>
       </el-form>
       <!-- 操作按钮 -->
@@ -67,7 +75,6 @@ const modelValue_ = computed({
 
 /* -------------------------------- // 弹窗的表单 -------------------------------- */
 let dialogLoading = ref(false) // 弹窗的加载中
-let valueHtml = ref('')
 let formRules = reactive({
   name: [
     {
@@ -108,4 +115,8 @@ let formValues = ref({
 </script>
 
 <style src="@wangeditor/editor/dist/css/style.css"></style>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-form-item__label) {
+  --el-form-label-font-size: 12px;
+}
+</style>

@@ -37,9 +37,12 @@
         <el-button type="primary" link @click="handlePreview(row)">预览</el-button>
       </template>
     </form-table>
-    <!-- 新增-通用提示 -->
-    <newGeneralReminderModal v-model="newGeneralVisible" />
-    <promptTypeConfigModal v-model="promptTypeVisible" />
+    <!-- 新增-通用提示 新增-必讲项提示 -->
+    <newGeneralReminderModal v-model="newGeneralVisible" :mode="tabsName" />
+    <!-- 提示类型配置 -->
+    <promptTypeConfigModal v-model="promptTypeVisible" :mode="tabsName" />
+    <!-- 预览 -->
+    <previewModal v-model="previewVisible" />
   </div>
 </template>
 
@@ -49,6 +52,7 @@ import { getConfigPageApi } from '@/api/infra/config'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import newGeneralReminderModal from './components/newGeneralReminderModal.vue'
 import promptTypeConfigModal from './components/promptTypeConfigModal.vue'
+import previewModal from './components/previewModal.vue'
 import { ElTable } from 'element-plus'
 
 const { t } = useI18n()
@@ -103,6 +107,7 @@ const columns: TableColumn[] = [
 ]
 let newGeneralVisible = ref(false) // 新增通用提示
 let promptTypeVisible = ref(false) // 提示类型配置
+let previewVisible = ref(false) // 预览
 let tableRef = ref<InstanceType<typeof ElTable>>()
 // 操作：新增
 async function handleAdd() {
@@ -129,7 +134,8 @@ function handleEdit(row) {
 
 // 操作：预览
 function handlePreview(row) {
-  console.log('preview', row)
+  console.log('preview222', row)
+  previewVisible.value = true
 }
 function handleSelectionChange(row) {
   console.log('handleSelectionChange', row)
