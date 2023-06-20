@@ -3,7 +3,6 @@ import { Table, TableExpose } from '@/components/Table'
 import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
 import { computed, nextTick, reactive, ref, unref, watch } from 'vue'
 import type { TableProps } from '@/components/Table/src/types'
-
 import { TableSetPropsType } from '@/types/table'
 
 const { t } = useI18n()
@@ -139,7 +138,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
       if (res) {
         tableObject.tableList = (res as unknown as ResponseType).list
 
-        if ((res as unknown as ResponseType).total) {
+        if (!isNaN(Number((res as unknown as ResponseType).total))) {
           tableObject.total = (res as unknown as ResponseType).total as unknown as number
         }
       }
