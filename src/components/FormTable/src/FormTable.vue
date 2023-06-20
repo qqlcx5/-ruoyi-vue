@@ -266,7 +266,7 @@ const handleExpandAll = () => {
   emits('expandAll', isExpandAll.value)
 }
 
-const { tableObject, tableMethods, register } = useTable({
+const { tableObject, tableMethods, register, elTableRef } = useTable({
   getListApi: tableProps.value.listApi!,
   delListApi: tableProps.value.delApi!,
   defaultParams: {
@@ -306,6 +306,7 @@ const handleToolClick = (key): void => {
 const handleSearch = (model: Recordable) => {
   tableObject.params = model
   tableMethods.getList()
+  elTableRef.value?.clearSelection()
 }
 
 /** 改变列的排序 */
