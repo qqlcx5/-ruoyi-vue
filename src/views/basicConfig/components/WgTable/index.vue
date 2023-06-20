@@ -20,7 +20,7 @@
       :data="data"
       @selection-change="handleSelectionChange"
       max-height="calc(100% + 54px)"
-      class="custom-table"
+      class="wg-custom-table"
       v-loading="loading"
     >
       <template #empty>
@@ -98,7 +98,17 @@ const props = withDefaults(defineProps<IProps>(), {
   tableConfig: () => ({ pageKey: '', queryParams: {} })
 })
 const { queryParams } = toRefs(props.tableConfig)
-const columns = ref(props.tableConfig.columns || [])
+const columns = ref(
+  props.tableConfig.columns?.map((item, index) => {
+    return {
+      sort: index + 1,
+      resizable: true,
+      ellipsis: true,
+      disabled: false,
+      ...item
+    }
+  }) || []
+)
 interface IEmit {
   (event: 'selectionChange', checkedList: object[]): void
   (event: 'refresh'): void
@@ -181,7 +191,23 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 </script>
 
 <style scoped lang="scss">
-@import '../../style/index';
+.wg-custom-table {
+  --el-table-header-bg-color: var(--table-bg-color);
+  --el-table-header-text-color: $title-color;
+  border: 1px solid $border-color;
+  :deep(.el-table__inner-wrapper)::before {
+    content: none;
+  }
+  :deep(.el-table__row):last-child {
+    td.el-table__cell {
+      border-bottom: none;
+    }
+  }
+  :deep(.el-table__cell) {
+    padding: 12px 0;
+    color: $title-color;
+  }
+}
 .el-table-wrap {
   flex: 1;
   min-height: 1px;

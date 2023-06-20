@@ -1,6 +1,6 @@
-<!--  租户菜单  -->
+<!--  菜单管理  -->
 <template>
-  <div class="total-content">
+  <div class="total-content" v-loading="tableLoading">
     <!-- 搜索工作栏 -->
     <ContentWrap style="min-height: 78px">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
@@ -28,7 +28,7 @@
           type="primary"
           html-type="submit"
           @click="getList()"
-          v-hasPermi="['system:tenant-menu:query']"
+          v-hasPermi="['system:menu:query']"
           >查询</a-button
         >
         <a-button @click="resetQuery">重置</a-button>
@@ -36,7 +36,7 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card :bordered="false" style="min-width: 1710px; height: 100%" id="card-content">
+    <a-card :bordered="false" style="height: 100%; overflow: auto" id="card-content">
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -45,7 +45,7 @@
       <div class="card-content">
         <!--  左侧按钮  -->
         <div class="button-content">
-          <a-button type="primary" @click="openModal" v-if="false">
+          <a-button type="primary" @click="openModal" v-hasPermi="['system:menu:create']">
             <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
             新增
           </a-button>
@@ -65,7 +65,12 @@
         <!--  右侧操作  -->
         <div class="operation-content">
           <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-          <Icon icon="svg-icon:full-screen" :size="50" class="cursor-pointer" @click="fullScreen" />
+          <Icon
+            icon="svg-icon:full-screen"
+            :size="50"
+            class="cursor-pointer"
+            @click="fullScreen()"
+          />
           <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
           <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
           <Icon
@@ -80,6 +85,7 @@
       <a-table
         :columns="state.columns"
         :data-source="list"
+        :scroll="{ x: 'max-content' }"
         :row-key="(record) => record.id"
         :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
         :defaultExpandAllRows="state.isExpandAll"
@@ -114,7 +120,7 @@
               <Icon icon="ep:caret-right" :size="12" />
             </div>
           </span>
-          <span v-else style="margin-right: 29px"></span>
+          <span v-else style="margin-right: 21px"></span>
         </template>
         <!--  单元格插槽  -->
         <template #bodyCell="{ column, record }">
@@ -131,15 +137,15 @@
             <span v-show="record.type === 2">菜单</span>
             <span v-show="record.type === 3">按钮</span>
           </template>
-          <!--  在职成员   -->
+          <!--  在职成员  -->
           <template v-if="column.key === 'employeesNumber'">
             <div class="employees-Number" @click="openDetails(record)">{{ record?.userCount }}</div>
           </template>
-          <!--  状态   -->
           <!--  菜单状态   -->
           <template v-if="column.key === 'status'">
             <a-switch
               v-model:checked="record.statusSwitch"
+              :disabled="!state.menuStatusHasPermission"
               @change="(value) => tableStatusChange(value, record)"
             />
           </template>
@@ -147,25 +153,39 @@
           <template v-if="column.key === 'visible'">
             <a-switch
               v-model:checked="record.visible"
+              :disabled="!state.menuVisibleHasPermission"
               @change="(value) => tableVisibleChange(value, record)"
             />
           </template>
           <!--  操作   -->
           <template v-if="column.key === 'operation'">
             <div class="operation-content">
-              <div class="text-color margin-right-5" @click="edit(record)" v-if="false">修改</div>
-              <div class="text-color margin-right-5" @click="openModal(record)" v-if="false"
+              <div
+                class="text-color margin-right-5"
+                @click="edit(record)"
+                v-hasPermi="['system:menu:update']"
+                >修改</div
+              >
+              <div
+                class="text-color margin-right-5"
+                @click="openModal(record)"
+                v-hasPermi="['system:menu:create-child']"
                 >新增子项</div
               >
               <div
                 class="text-color margin-right-5"
                 @click="detailsInfo(record)"
-                v-hasPermi="['system:tenant-menu:query-detail']"
+                v-hasPermi="['system:menu:query-detail']"
                 >详情</div
               >
-              <a-popover placement="bottom" v-if="false">
+              <a-popover placement="bottom">
                 <template #content>
-                  <div class="text-color margin-right-5" @click="setDeleteInfo(record)">删除</div>
+                  <div
+                    class="text-color margin-right-5"
+                    @click="setDeleteInfo(record)"
+                    v-hasPermi="['system:menu:delete']"
+                    >删除</div
+                  >
                 </template>
                 <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
               </a-popover>
@@ -188,13 +208,22 @@
     :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
   >
     <div class="base_info_content">
-      <a-form :model="state.formState" ref="formRef" v-bind="layout" autocomplete="off">
+      <a-form
+        :model="state.formState"
+        ref="formRef"
+        v-bind="layout"
+        :label-col="{ style: { width: '110px' } }"
+        autocomplete="off"
+      >
         <a-form-item
           :label="`${state.currentMenu}名称`"
           name="name"
           :rules="[{ required: true, message: `${state.currentMenu}名称不能为空` }]"
         >
-          <a-input v-model:value="state.formState.name" />
+          <a-input
+            v-model:value="state.formState.name"
+            :placeholder="`请输入${state.currentMenu}名称`"
+          />
         </a-form-item>
 
         <a-form-item
@@ -231,7 +260,12 @@
             show-search
             style="width: 100%"
             :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            placeholder="请选择上级目录"
+            :placeholder="
+              state.formState.type === SystemMenuTypeEnum.BUTTON
+                ? `请选择上级菜单`
+                : `请选择上级${state.currentMenu}`
+            "
+            treeDefaultExpandAll
             :tree-data="menuTree"
             :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
             treeNodeFilterProp="name"
@@ -252,7 +286,27 @@
           :rules="state.routerRules"
           v-if="state.formState.type !== SystemMenuTypeEnum.BUTTON"
         >
-          <a-input v-model:value="state.formState.path" />
+          <a-input v-model:value="state.formState.path" :placeholder="`请输入路由地址名称`" />
+        </a-form-item>
+
+        <a-form-item
+          label="适用主体类型"
+          name="tenantType"
+          v-if="state.formState.type !== SystemMenuTypeEnum.BUTTON"
+          :rules="[{ required: true, message: '适用主体类型不能为空' }]"
+        >
+          <a-checkbox-group v-model:value="state.formState.tenantType" class="checkbox-group">
+            <div class="major-individual-type">
+              <a-checkbox
+                v-for="item in state.majorIndividualTypeOptions"
+                :value="item.value"
+                :key="item.value"
+                class="checkbox-style"
+              >
+                {{ item.label }}
+              </a-checkbox>
+            </div>
+          </a-checkbox-group>
         </a-form-item>
 
         <a-form-item
@@ -260,7 +314,7 @@
           label="组件地址"
           name="component"
         >
-          <a-input v-model:value="state.formState.component" />
+          <a-input v-model:value="state.formState.component" :placeholder="`请输入组件地址`" />
         </a-form-item>
 
         <a-form-item
@@ -268,7 +322,7 @@
           label="组件名字"
           name="componentName"
         >
-          <a-input v-model:value="state.formState.componentName" />
+          <a-input v-model:value="state.formState.componentName" :placeholder="`请输入组件名字`" />
         </a-form-item>
 
         <a-form-item
@@ -277,7 +331,7 @@
           name="permission"
         >
           <div class="flex-content">
-            <a-input v-model:value="state.formState.permission" />
+            <a-input v-model:value="state.formState.permission" :placeholder="`请输入权限标识`" />
             <a-tooltip placement="topLeft" class="icon-tip">
               <template #title>
                 <span>
@@ -300,9 +354,9 @@
         >
           <a-switch
             v-model:checked="state.formState.statusSwitch"
-            :disabled="!state.menuStatusHasPermission"
             checked-children="开启"
             un-checked-children="关闭"
+            @change="addEditStatusChange"
           />
         </a-form-item>
 
@@ -314,9 +368,9 @@
         >
           <a-switch
             v-model:checked="state.formState.visible"
-            :disabled="!state.menuVisibleHasPermission"
             checked-children="开启"
             un-checked-children="关闭"
+            @change="(value) => addEditVisibleChange(value)"
           />
           <a-tooltip placement="topLeft" class="icon-tip">
             <template #title>
@@ -379,6 +433,7 @@
     v-model:visible="state.isShowStatus"
     destroyOnClose
     :closable="false"
+    @cancel="closeStatusModal"
     width="424px"
     :bodyStyle="{
       width: '100%',
@@ -403,10 +458,8 @@
           {{ state.tableStatusChangeInfo.statusTopText }} ，{{
             state.tableStatusChangeInfo.record.name
           }}底下
-          <span class="status-span">{{
-            state.tableStatusChangeInfo.record?.children?.length
-          }}</span>
-          个菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
+          <span class="status-span">{{ state.tableStatusChangeInfo?.tempTreeNum }}</span>
+          个子菜单将同步 {{ state.tableStatusChangeInfo.statusText }}，请谨慎操作。
         </div>
       </div>
     </div>
@@ -424,6 +477,7 @@
     v-model:visible="state.isShowDelete"
     destroyOnClose
     :closable="false"
+    @cancel="closeDeleteModal"
     :width="state.deleteModalWidth"
     :bodyStyle="{
       width: '100%',
@@ -481,7 +535,10 @@
     }"
     :footer="null"
   >
-    <div class="details-edit" @click="edit(state.currentRecord, true)" v-if="false"
+    <div
+      class="details-edit"
+      @click="edit(state.currentRecord, true)"
+      v-hasPermi="['system:menu:update']"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
     >
     <div class="details-content">
@@ -585,7 +642,10 @@
     >
       <div class="employees-info-card">
         <div v-html="item.role" class="role-style" v-if="state.employeesModalInfo?.needRole"></div>
-        <template v-for="(childrenItem, childrenIndex) in item.postInfo">
+        <template
+          v-for="(childrenItem, childrenIndex) in item.postInfo"
+          :key="`postStyle${childrenIndex}`"
+        >
           <div v-html="childrenItem.post" class="post-style"></div>
 
           <div class="employees-name-content">
@@ -611,17 +671,16 @@
     :allColumns="allColumns"
     :defaultKeys="state.defaultKeys"
     :changedColumnsObj="state.changedColumnsObj"
-    :pageKey="PageKeyObj.tenant"
+    :pageKey="PageKeyObj.menu"
   />
 </template>
 
 <script lang="tsx" setup>
 import * as MenuApi from '@/api/system/menu'
-import * as TenantMenuApi from '@/api/system/tenantMenu'
 import { handleTree } from '@/utils/tree'
 import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { message } from 'ant-design-vue'
-import { CommonStatusEnum, PageKeyObj, SystemMenuTypeEnum } from '@/utils/constants'
+import { CommonStatusEnum, SystemMenuTypeEnum, PageKeyObj } from '@/utils/constants'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache()
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -635,15 +694,19 @@ import {
   fullScreen,
   hasPermission
 } from '@/utils/utils'
-import { getPostList, getRolesList } from '@/api/system/member'
-import { getMemberNumList, getMemberNumRoleList, updateMenuVisibleStatus } from '@/api/system/menu'
 import { cloneDeep } from 'lodash-es'
+import { getPostList, getRolesList } from '@/api/system/member'
+import { getMemberNumList, getMemberNumRoleList } from '@/api/system/menu'
 import { getOrganizationTypeList } from '@/api/system/organization'
+import { watch, nextTick, reactive } from 'vue'
+// import { useAppStore } from '@/store/modules/app'
+// const appStore = useAppStore()
 
 const queryParams = reactive({
   name: undefined,
   status: undefined,
-  type: null
+  type: null,
+  entrance: ''
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -663,6 +726,8 @@ const routeValidator = (rule, value) => {
       } else {
         resolve()
       }
+    } else {
+      reject()
     }
   })
 }
@@ -785,6 +850,7 @@ const allColumns = [
 const state: any = reactive({
   menuStatusHasPermission: false, //table 状态switch 是否禁用 权限关禁用  菜单状态
   menuVisibleHasPermission: false, //table 状态switch 是否禁用 权限关禁用  显示状态
+  currentRecord: {}, //当前点击的table item
   menuArr: [], //菜单arr 用于详情查找上级菜单
   isExpandAll: false, //展开折叠
   treeIconIndex: 0,
@@ -806,6 +872,7 @@ const state: any = reactive({
     parentId: 0, //上级目录
     icon: '', //图标
     path: '', //路由地址
+    tenantType: [], //适用主体类型
     sort: 0, //排序
     status: CommonStatusEnum.ENABLE, //菜单状态
     statusSwitch: true, //菜单状态 - - switch boolean
@@ -817,7 +884,6 @@ const state: any = reactive({
     keepAlive: true //====菜单===缓存状态
   }, //新增表单
   tableStatusChangeInfo: {}, //存当前表格item项以及switch值
-  currentRecord: {}, //当前的record
   isShowDelete: false, //删除确认 modal
   deleteModalWidth: '488px', //删除modal width
   modalBtnLoading: false,
@@ -834,10 +900,10 @@ const state: any = reactive({
     'operation'
   ], //定制列默认的keys
   changedColumnsObj: {}, //定制列组件接收到的当前列信息
-  configureRolesOptions: [], //角色 Options tree  在职成员 modal
-  postListOptions: [], //岗位 Options tree  在职成员 modal
-  postList: [], //岗位  选中  在职成员 modal
-  configureRoles: [], //角色 选中  在职成员 modal
+  configureRolesOptions: [], //角色 Options tree  在职成员modal
+  postListOptions: [], //岗位 Options tree  在职成员modal
+  postList: [], //岗位  选中  在职成员modal
+  configureRoles: [], //角色 选中  在职成员modal
   employeesInfo: [
     {
       role: '角色：销售顾问 - 仅看本部门及以下',
@@ -895,7 +961,7 @@ const state: any = reactive({
     }
   ],
   testArr: [],
-  memberName: '', //在职成员 modal 姓名
+  memberName: '', //在职成员modal 姓名
   post: '', //岗位 modal 姓名
   employeesModalInfo: {
     width: '940px',
@@ -918,13 +984,13 @@ const layout = {
  * */
 const getList = async (isRefresh = false) => {
   //无查询按钮权限 不请求
-  // if (!hasPermission('system:tenant-menu:query')) {
+  // if (!hasPermission('system:menu:query')) {
   //   return
   // }
   loading.value = true
   try {
-    // const res = await MenuApi.getMenuList(queryParams)
-    const res = await TenantMenuApi.getMenuList(queryParams)
+    const res = await MenuApi.getMenuList(queryParams)
+    // const res = await TenantMenuApi.getMenuList(queryParams)
     res.map((item) => {
       item.statusSwitch = item.status === 0
       item.createTime = dayjs(item.createTime).format('YYYY-MM-DD HH:mm:ss')
@@ -983,6 +1049,23 @@ const toggleExpandAll = () => {
   })
 }
 
+// //全屏/退出
+// const fullScreen = () => {
+//   const elem = document.getElementById('card-content')
+//
+//   if (state.isFullScreen === false) {
+//     if (elem?.requestFullscreen) {
+//       elem?.requestFullscreen()
+//       state.isFullScreen = !state.isFullScreen
+//       appStore.setIsFullScreen(state.isFullScreen)
+//     }
+//   } else {
+//     document.exitFullscreen()
+//     state.isFullScreen = !state.isFullScreen
+//     appStore.setIsFullScreen(state.isFullScreen)
+//   }
+// }
+
 //打开Modal
 const openModal = (record = {}) => {
   if (!(Object.keys(record).length === 0)) {
@@ -1002,6 +1085,7 @@ const closeModal = () => {
     parentId: 0, //上级目录
     icon: '', //图标
     path: '', //路由地址
+    tenantType: [], //适用主体类型
     sort: 0, //排序
     status: CommonStatusEnum.ENABLE, //菜单状态
     statusSwitch: true, //菜单状态 - - switch boolean
@@ -1015,6 +1099,7 @@ const closeModal = () => {
 
   state.modalType = 'add'
   state.addEditTitle = '新增'
+  state.currentMenu = '目录'
 }
 
 const options = [
@@ -1069,6 +1154,11 @@ const saveForm = async () => {
   } else {
     params.status = 1
   }
+
+  const tempTenantTypeString = state.formState.tenantType.join() || ''
+
+  params.tenantType = tempTenantTypeString
+  params.entrance = queryParams.entrance
   state.modalBtnLoading = true
   //
   try {
@@ -1089,18 +1179,20 @@ const saveForm = async () => {
     state.modalBtnLoading = false
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    // 刷新浏览器
+    location.reload()
   }
 }
 /** 获取下拉框[上级菜单]的数据  */
 const menuTree = ref<Tree[]>([]) // 树形结构
 const getTree = async () => {
   menuTree.value = []
-  const res = await MenuApi.getSimpleMenusList()
+
+  const res = await MenuApi.getSimpleMenusList({ entrance: queryParams.entrance })
   let menu: Tree = { id: 0, name: '主类目', children: [] }
   menu.children = handleTree(res)
   menuTree.value.push(menu)
 }
-getTree()
 
 //菜单类型切换
 const typeChange = (type) => {
@@ -1124,9 +1216,9 @@ const edit = (record, isCloseDetails = false) => {
   //菜单状态 0开启 1关闭
   // record.statusSwitch = record.status === 0
   // record.status = record.status === 0
-
   state.modalType = 'edit'
   state.addEditTitle = '修改'
+  record.tenantType = record.tenantTypeList
   //赋值
   state.formState = { ...record }
   openModal()
@@ -1168,7 +1260,7 @@ const deleteFN = async (id: number) => {
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
   } finally {
-    state.modalBtnLoading = true
+    state.modalBtnLoading = false
   }
 }
 
@@ -1209,19 +1301,33 @@ const tableVisibleChange = async (value, record) => {
   }
 
   const params = {
-    menuId: record.id,
+    id: record.id,
+    name: record.name,
+    parentId: record.parentId,
+    sort: record.sort,
     status: record.statusSwitch === true ? 0 : 1,
+    type: record.type,
     visible: record.visible
   }
 
   try {
-    // await TenantMenuApi.updateMenuStatus(params)
-    await TenantMenuApi.updateMenuVisibleStatus(params)
+    // await MenuApi.updateMenuStatus(params)
+    await MenuApi.updateMenuVisibleStatus(params)
     message.success('修改显示状态成功')
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    // 刷新浏览器
+    location.reload()
     await getList()
   } finally {
+  }
+}
+
+//新增修改 modal 显示状态
+const addEditVisibleChange = (value) => {
+  if (state.formState.statusSwitch === false) {
+    state.formState.visible = !state.formState.visible
+    message.warning('菜单状态未开启，不允许开启显示状态')
   }
 }
 
@@ -1235,28 +1341,24 @@ const closeStatusModal = async () => {
 
 //表格状态开关 modal确认
 const tableStatusConfirm = async () => {
-  // const params = {
-  //   id: state.tableStatusChangeInfo.record.id,
-  //   name: state.tableStatusChangeInfo.record.name,
-  //   parentId: state.tableStatusChangeInfo.record.parentId,
-  //   sort: state.tableStatusChangeInfo.record.sort,
-  //   status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1,
-  //   type: state.tableStatusChangeInfo.record.type
-  // }
   const params = {
-    menuId: state.tableStatusChangeInfo.record.id,
+    id: state.tableStatusChangeInfo.record.id,
+    name: state.tableStatusChangeInfo.record.name,
+    parentId: state.tableStatusChangeInfo.record.parentId,
+    sort: state.tableStatusChangeInfo.record.sort,
     status: state.tableStatusChangeInfo.record.statusSwitch === true ? 0 : 1,
+    type: state.tableStatusChangeInfo.record.type,
     visible: state.tableStatusChangeInfo.record.visible
   }
 
   try {
-    // await MenuApi.updateMenuStatus(params)
-    await TenantMenuApi.updateMenuStatus(params)
-
+    await MenuApi.updateMenuStatus(params)
     message.success('修改状态成功')
     await closeStatusModal()
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
+    // 刷新浏览器
+    location.reload()
   } finally {
   }
 }
@@ -1431,11 +1533,18 @@ const changeColumn = (columnsObj, isCloseModal = false) => {
 allColumns.map((item, index) => {
   item.sort = index + 1
 })
-state.columns = getColumns(state, PageKeyObj.tenant, allColumns, state.defaultKeys)
+state.columns = getColumns(state, PageKeyObj.menu, allColumns, state.defaultKeys)
 
 //table 列伸缩
 const handleResizeColumn = (w, col) => {
   col.width = w
+}
+
+const addEditStatusChange = (checked: boolean, event: Event) => {
+  //菜单状态与显示状态同步开关
+  if (checked !== state.formState.visible) {
+    state.formState.visible = checked
+  }
 }
 
 //在职成员打开 弹窗
@@ -1497,7 +1606,7 @@ const openDetails = async (record) => {
   search()
 }
 
-//在职成员 高亮搜索
+//在职成员高亮搜索
 const search = async () => {
   switch (state.currentRecord.type) {
     case 2:
@@ -1627,7 +1736,7 @@ const search = async () => {
     })
   })
 }
-//在职成员 modal 重置
+//在职成员modal 重置
 const employeesReset = () => {
   state.configureRoles = []
   state.postList = []
@@ -1640,7 +1749,7 @@ const employeesReset = () => {
 const closeEmployees = () => {
   state.employeesInfo = []
   state.testArr = []
-  state.memberName = '' //在职成员 modal 姓名
+  state.memberName = '' //在职成员modal 姓名
   state.configureRoles = [] //角色
   state.postList = [] //岗位
 }
@@ -1648,16 +1757,29 @@ const closeEmployees = () => {
 //数据字典
 const getAllType = async () => {
   //获取数据字典
-  const dictRes = await getOrganizationTypeList()
+  const dictRes = await getOrganizationTypeList({ entrance: queryParams.entrance })
 
   //适用主体类型
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
 }
 
 //菜单状态
-state.menuStatusHasPermission = hasPermission('system:tenant-menu:update:status')
+state.menuStatusHasPermission = hasPermission('system:menu:update:status')
 //显示状态
-state.menuVisibleHasPermission = hasPermission('system:tenant-menu:update:visible')
+state.menuVisibleHasPermission = hasPermission('system:menu:update:visible')
+
+watch(
+  () => state.formState.type,
+  () => {
+    // 菜单 新增/修改 默认图标
+    if (state.formState.type === SystemMenuTypeEnum.MENU) {
+      state.formState.icon = 'fa:circle-o'
+    }
+  },
+  {
+    immediate: true
+  }
+)
 
 watch(
   () => state.columns,
@@ -1671,10 +1793,42 @@ watch(
   }
 )
 
-onMounted(async () => {
-  await getAllType()
-  await getList()
+// onMounted(async () => {
+//   await getAllType()
+//   await getList()
+// })
+/* --------------------------------- 初始化数据 --------------------------------- */
+const props = defineProps({
+  mode: {
+    type: String,
+    default: 'memberSide'
+  }
 })
+
+let tableLoading = ref(false)
+watch(
+  () => props.mode, // 源
+  (newValue, oldValue) => {
+    // 回调函数
+    queryParams.entrance = newValue
+    console.log(newValue, oldValue)
+    changeMode()
+  },
+  {
+    immediate: true // 立即触发
+    // deep: true // 深度监听
+  }
+)
+function changeMode() {
+  nextTick(async () => {
+    tableLoading.value = true
+    await getAllType()
+    await getList()
+    await getTree()
+    tableLoading.value = false
+  })
+}
+/* ---------------------------------- 初始化数据end --------------------------------- */
 </script>
 
 <style lang="scss" scoped>
@@ -1909,7 +2063,7 @@ onMounted(async () => {
 .icon-tip {
   margin-left: 8px;
 }
-//========================== 在职成员 modal search start ==================================
+//========================== 在职成员modal search start ==================================
 .total-search-content {
   display: flex;
   //justify-content: space-between;
@@ -1973,7 +2127,7 @@ onMounted(async () => {
   width: 100%;
 }
 
-//========================== 在职成员 modal search end ==================================
+//========================== 在职成员modal search end ==================================
 .employees-content {
   margin-top: 40px;
   width: 100%;
@@ -1983,6 +2137,17 @@ onMounted(async () => {
 
 :deep(.ant-table-tbody) {
   min-height: 520px;
+}
+.checkbox-group {
+  width: 100%;
+}
+.major-individual-type {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.checkbox-style {
+  margin-right: 15px;
 }
 </style>
 

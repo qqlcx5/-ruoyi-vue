@@ -123,7 +123,9 @@ const setVisible = () => {
         </ElButton>
       </div>
     </template>
-    <template v-for="(_slot, name) in slots" #[name]><slot :name="name"></slot></template>
+    <template v-for="(_slot, name) in slots" #[name]="data"
+      ><slot :name="name" v-bind="data" :model="data"></slot
+    ></template>
   </Form>
 
   <template v-if="layout === 'bottom'">

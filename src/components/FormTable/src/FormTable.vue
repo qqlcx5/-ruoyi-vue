@@ -2,8 +2,8 @@
   <div class="form-table flex flex-col h-full">
     <ContentWrap>
       <Search v-bind="formProps" @search="handleSearch" @reset="handleSearch">
-        <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
-          <slot :name="item" v-bind="data || {}"></slot>
+        <template #[item]="data" v-for="item in Object.keys(formSlots)" :key="item">
+          <slot :name="`form-${item}`" v-bind="data || {}" :model="data.model"></slot>
         </template>
       </Search>
     </ContentWrap>
@@ -88,7 +88,7 @@ import { useTable } from '@/hooks/web/useTable'
 import { TableColumn } from '@/types/table'
 import { TableProps, SearchProps, ActionButton } from './helper'
 import { hasPermission } from '@/utils/utils'
-import { isEmpty, isString, isBoolean } from 'lodash-es'
+import { isEmpty, isString, isBoolean, cloneDeep } from 'lodash-es'
 
 const props = defineProps({
   tableOptions: {
@@ -123,6 +123,20 @@ const emits = defineEmits<{
 }>()
 
 const { t } = useI18n() // 国际化
+
+// form插槽是以form-xxx形式命名
+const formSlots = computed(() => {
+  const slots = useSlots()
+  const newSlots = {}
+  const slotReg = /^(form-)([a-zA-Z])*$/
+  for (let key in slots) {
+    if (slotReg.test(key)) {
+      const newKey = key.replace('form-', '')
+      newSlots[newKey] = slots[key]
+    }
+  }
+  return newSlots
+})
 
 const tableColumns = ref<TableColumn[]>([])
 
@@ -202,8 +216,7 @@ watch(
   () => tableProps.value.columns,
   (val: TableColumn[]) => {
     const btnsWidth = getActionButtonsWidth()
-
-    tableColumns.value = [
+    const columns = [
       ...val,
       ...(!isEmpty(actionButtons.value)
         ? [
@@ -212,12 +225,16 @@ watch(
               field: 'action',
               width: btnsWidth,
               fixed: 'right',
-              showOverflowTooltip: false
+              showOverflowTooltip: false,
+              check: true,
+              disabled: false
             }
           ]
         : [])
     ]
-    drawerColumns.value = val
+
+    tableColumns.value = cloneDeep(columns)
+    drawerColumns.value = cloneDeep(columns)
   },
   {
     immediate: true
@@ -252,7 +269,7 @@ const handleExpandAll = () => {
   emits('expandAll', isExpandAll.value)
 }
 
-const { tableObject, tableMethods, register } = useTable({
+const { tableObject, tableMethods, register, elTableRef } = useTable({
   getListApi: tableProps.value.listApi!,
   delListApi: tableProps.value.delApi!,
   defaultParams: {
@@ -292,6 +309,7 @@ const handleToolClick = (key): void => {
 const handleSearch = (model: Recordable) => {
   tableObject.params = model
   tableMethods.getList()
+  elTableRef.value?.clearSelection()
 }
 
 /** 改变列的排序 */

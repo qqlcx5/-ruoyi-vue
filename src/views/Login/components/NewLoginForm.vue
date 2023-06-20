@@ -34,7 +34,7 @@
             alt="qrcode"
             class="w-50px inline-block cursor-pointer"
             @click="
-              setLoginState(
+              switchLoginWay(
                 getLoginState === LoginStateEnum.QR_CODE
                   ? LoginStateEnum.LOGIN
                   : LoginStateEnum.QR_CODE
@@ -138,7 +138,11 @@
         </el-col>
       </div>
       <!-- 二维码登录 -->
-      <NewQrCodeForm />
+      <NewQrCodeForm
+        ref="qrCodeRef"
+        v-show="getLoginState === LoginStateEnum.QR_CODE"
+        @success="handleQrCodeSuccess"
+      />
       <!--      表单按钮-->
       <el-col
         v-show="[LoginStateEnum.LOGIN, LoginStateEnum.MOBILE].includes(getLoginState)"
@@ -251,6 +255,7 @@ import validate from '@/utils/validate'
 const message = useMessage()
 const { t } = useI18n()
 const formLogin = ref()
+const qrCodeRef = ref()
 const { validForm } = useFormValid(formLogin)
 const { setLoginState, getLoginState } = useLoginState()
 const { currentRoute, push } = useRouter()
@@ -389,6 +394,9 @@ const getSmsCode = async () => {
 
 // 切换登录方式
 const switchLoginWay = (LoginState: number) => {
+  if (LoginState === LoginStateEnum.QR_CODE) {
+    qrCodeRef.value.initQrCode()
+  }
   setLoginState(LoginState)
 }
 
@@ -396,13 +404,31 @@ const switchLoginWay = (LoginState: number) => {
 const getCode = async () => {
   // 情况一，未开启：则直接登录
   if (loginData.captchaEnable === 'false') {
-    await handleLogin()
+    if (
+      getLoginState.value === LoginStateEnum.MOBILE &&
+      (mobileCodeTimer.value > 0 || loginData.loginForm.mobileNumber.length !== 11)
+    ) {
+      return
+    }
+    if (getLoginState.value === LoginStateEnum.LOGIN) {
+      const data = await validForm()
+      if (!data) {
+        return
+      }
+    }
+    onVerifySuccess()
   } else {
     if (
       getLoginState.value === LoginStateEnum.MOBILE &&
       (mobileCodeTimer.value > 0 || loginData.loginForm.mobileNumber.length !== 11)
     ) {
       return
+    }
+    if (getLoginState.value === LoginStateEnum.LOGIN) {
+      const data = await validForm()
+      if (!data) {
+        return
+      }
     }
     // 情况二，已开启：则展示验证码；只有完成验证码的情况，才进行登录
     verify.value.show()
@@ -422,7 +448,7 @@ const getCookie = () => {
   }
 }
 
-const onVerifySuccess = (data) => {
+const onVerifySuccess = (data?) => {
   if (getLoginState.value === LoginStateEnum.MOBILE) {
     getSmsCode()
   } else if (getLoginState.value === LoginStateEnum.LOGIN) {
@@ -432,8 +458,8 @@ const onVerifySuccess = (data) => {
 
 // 登录前请求是否有多主体可选
 const switchTenantRef = ref()
-const getTenant = async (data) => {
-  loginData.loginForm.captchaVerification = data.captchaVerification
+const getTenant = async (data?) => {
+  if (data) loginData.loginForm.captchaVerification = data.captchaVerification
   let res
   if (getLoginState.value === LoginStateEnum.LOGIN) {
     loginLoading.value = true
@@ -498,8 +524,20 @@ const onSwitchBodyConfirm = (data) => {
   handleLogin(data)
 }
 
+// 二维码登录
+const handleQrCodeSuccess = (data) => {
+  handleLogin(
+    {
+      tenantId: data.tenantId,
+      tenantName: data.tenantName,
+      tenantType: data.tenantType
+    },
+    data.token
+  )
+}
+
 // 登录
-const handleLogin = async (tenantData?) => {
+const handleLogin = async (tenantData?, qrToken?: string) => {
   loginLoading.value = true
   try {
     authUtil.setTenantData(tenantData)
@@ -515,6 +553,10 @@ const handleLogin = async (tenantData?) => {
       res = await LoginApi.smsLoginApi({
         code: loginData.loginForm.code,
         phone: loginData.loginForm.mobileNumber
+      })
+    } else if (getLoginState.value === LoginStateEnum.QR_CODE) {
+      res = await LoginApi.scanCodeLoginApi({
+        token: qrToken
       })
     }
     if (!res) {

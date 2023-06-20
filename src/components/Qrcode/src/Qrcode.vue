@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PropType, nextTick, ref, watch, computed, unref } from 'vue'
 import QRCode from 'qrcode'
-import { QRCodeRenderersOptions } from 'qrcode'
+// import { QRCodeRenderersOptions } from 'qrcode'
 import { cloneDeep } from 'lodash-es'
 import { propTypes } from '@/utils/propTypes'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -14,7 +14,7 @@ const props = defineProps({
   // 二维码内容
   text: {
     type: [String, Array] as PropType<string | Recordable[]>,
-    default: '刷新一下再扫吧'
+    default: ''
   },
   // qrcode.js配置项
   options: {
