@@ -102,7 +102,8 @@ const columns: TableColumn[] = [
     label: '登录端口',
     field: 'entrance',
     dictType: DICT_TYPE.ENTRANCE,
-    isSearch: true
+    isSearch: true,
+    width: 100
   },
   {
     label: '登录方式',
@@ -112,11 +113,13 @@ const columns: TableColumn[] = [
   },
   {
     label: '浏览器',
-    field: 'userAgent'
+    field: 'userAgent',
+    width: 120
   },
   {
     label: '操作系统',
-    field: 'operatingSystem'
+    field: 'operatingSystem',
+    width: 120
   },
   {
     label: '机型',
@@ -140,7 +143,8 @@ const columns: TableColumn[] = [
   {
     label: '登录情况',
     field: 'resultInfo',
-    dictType: DICT_TYPE.LOGIN_RESULT_INFO,
+    width: 160,
+    // dictType: DICT_TYPE.LOGIN_RESULT_INFO,
     disabled: true
   },
   {

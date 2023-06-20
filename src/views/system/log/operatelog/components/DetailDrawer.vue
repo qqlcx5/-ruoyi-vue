@@ -85,11 +85,40 @@ defineExpose({
     </template>
     <template #default>
       <div class="sub-title">基本信息</div>
-      <el-descriptions class="pl-26px mb-36px" :column="2">
-        <el-descriptions-item v-for="item in baseInfo" :key="item" :label="`${item.name}：`">
-          {{ detailInfo ? detailInfo[item.value] : '' }}
-        </el-descriptions-item>
-      </el-descriptions>
+      <el-row :gutter="30" class="pl-26px pr-20px mb-36px">
+        <el-col
+          class="description-item"
+          :span="12"
+          v-for="item in baseInfo"
+          :key="item"
+          :label="`${item.name}：`"
+        >
+          <div class="label">{{ item.name }}：</div>
+          <div class="content">
+            <template v-if="item.slot === 'depart'">
+              <el-tooltip
+                v-if="detailInfo"
+                :content="`${detailInfo.componentName ? detailInfo.componentName : ''}${
+                  detailInfo.organizationName ? '/' + detailInfo.organizationName : ''
+                }${detailInfo.postName ? '/' + detailInfo.postName : ''}`"
+                placement="top"
+              >
+                <div class="inline-block overflow-ellipsis whitespace-nowrap">
+                  <span v-if="detailInfo.organizationName">{{ detailInfo.organizationName }}</span>
+                  <span v-if="detailInfo.postName"> / {{ detailInfo.postName }}</span>
+                </div>
+              </el-tooltip>
+            </template>
+            <template v-else>
+              <span class="description-item-content">
+                <el-tooltip :content="detailInfo ? detailInfo[item.value] : ''" placement="top">
+                  {{ detailInfo ? detailInfo[item.value] : '' }}
+                </el-tooltip>
+              </span>
+            </template>
+          </div>
+        </el-col>
+      </el-row>
 
       <div class="sub-title">日志内容</div>
       <div class="pl-26px pr-120px">
@@ -154,6 +183,18 @@ defineExpose({
   .table-header {
     color: $title-color;
     background-color: #f6f6f6 !important;
+  }
+
+  .description-item {
+    display: flex;
+    margin-bottom: 18px;
+
+    .content {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
   }
 }
 </style>
