@@ -1,7 +1,7 @@
 <template>
   <ContentWrap>
     <form-table
-      ref="table"
+      ref="tableRef"
       :form-options="{ schema: allSchemas.searchSchema }"
       :table-options="{
         columns: allSchemas.tableColumns,
@@ -28,14 +28,11 @@
       </template>
     </form-table>
   </ContentWrap>
-  <AddChannelModal ref="addChannelModalRef" />
+  <AddChannelModal ref="addChannelModalRef" @refresh-list="refreshList" />
 </template>
 
 <script setup lang="ts" name="ClueChannel">
 import * as channelApi from '@/api/clue/channel'
-import { FormExpose } from '@/components/Form'
-import { unref } from 'vue'
-import { CommonStatusEnum } from '@/utils/constants'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { TableColumn } from '@/types/table'
 
@@ -90,10 +87,6 @@ const columns: TableColumn[] = [
   {
     label: '手动创建线索是否可选',
     field: 'isShow'
-  },
-  {
-    label: '操作',
-    field: 'action'
   }
 ]
 const actionButtons = [
@@ -107,14 +100,16 @@ const actionButtons = [
   {
     name: '删除',
     click: (row) => {
-      console.log(row)
+      handleDelete(row, 'single')
     }
   }
 ]
 
-const { allSchemas } = useCrudSchemas(columns)
+const refreshList = () => {
+  tableRef.value.tableMethods.reload()
+}
 
-const formRef = ref<FormExpose>() // 表单 Ref
+const { allSchemas } = useCrudSchemas(columns)
 
 const addChannelModalRef = ref()
 const { push } = useRouter() // 路由
@@ -122,52 +117,43 @@ const handleAdd = () => {
   // setDialogTitle('add')
   addChannelModalRef.value.openModal()
 }
-const handleDelete = () => {}
+const tableRef = ref()
+const handleDelete = async (row, type?: any) => {
+  let params: { ids: any[] } = { ids: [] }
+  let id: any[] = []
+  if (type == 'single') {
+    id = [row.id]
+  } else {
+    const selectedData = await tableRef.value.tableMethods.getSelections()
+    id = selectedData.map((item) => item.id)
+  }
+  params = { ids: id }
+  console.log(params)
+
+  message
+    .confirm('确认删除该数据吗？', t('common.reminder'))
+    .then(async () => {
+      let data = await channelApi.delClueChannel(params)
+      if (data) {
+        message.success('删除成功')
+      }
+    })
+    .catch(() => {})
+}
+
 const handleSource = () => {
   push({
     path: '/clueChannel/source'
   })
 }
-const handleUpdate = async (rowId: string) => {
-  setDialogTitle('update')
-  const res = await channelApi.getClueChannelById(rowId)
-  unref(formRef)?.setValues(res)
+const handleUpdate = async (row: any) => {
+  addChannelModalRef.value.openModal(row)
 }
 
-// 设置标题
-const setDialogTitle = (type: string) => {
-  console.log(type)
-  // dialogTitle.value = t('action.' + type)
-  // actionType.value = type
-  // dialogVisible.value = true
-}
-
-// 改变用户状态操作
+// 更改是否需要清洗
 const handleNeedFilterChange = async (row, type) => {
-  console.log('===========================', row)
-  return
-  const text = row.status === CommonStatusEnum.ENABLE ? '启用' : '停用'
-  let comfirmText = ''
-  if (type === 'needFilter') {
-    comfirmText = `是否确认${text}`
-  }
-  message
-    .confirm(comfirmText, t('common.reminder'))
-    .then(async () => {
-      let updateStatus = false
-      if (type === 'needFilter') {
-        updateStatus = await channelApi.updateChannelSwitch(row.id, row.needFilter)
-      }
-      if (updateStatus) {
-        message.success(text + '成功')
-      } else {
-        message.warning('sys.api.operationFailed')
-      }
-    })
-    .catch(() => {
-      row.status =
-        row.status === CommonStatusEnum.ENABLE ? CommonStatusEnum.DISABLE : CommonStatusEnum.ENABLE
-    })
+  if (!row.id) return
+  await channelApi.updateChannelSwitch(row.id, row.needFilter)
 }
 </script>
 

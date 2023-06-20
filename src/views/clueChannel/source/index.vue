@@ -22,31 +22,41 @@
               <div class="bnt-wrap">
                 <XTextButton :title="t('action.edit')" @click.stop="handleEdit()" />
                 <XTextButton :title="t('action.del')" @click.stop="handledelete()" />
-                <i class="iconfont icon-you" v-if="lItem.children.length > 0"></i>
+                <i class="iconfont icon-you"></i>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <AddSourceModal ref="addSourceModalRef" />
+    <AddSourceModal ref="addSourceModalRef" @refresh-list="getSourceList" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import AddSourceModal from './components/AddSourceModal.vue'
-import { source_res } from './sour.data'
+// import { source_res } from './sour.data'
+import * as channelApi from '@/api/clue/channel'
 const { t } = useI18n() // 国际化
 let levelList = ['一', '二', '三']
 let sourceList = ref<any[]>([])
-sourceList.value.push({ checkedData: {}, list: source_res.data })
+
+// 获取线索来源列表
+const getSourceList = async () => {
+  let data = await channelApi.getClueSourceManageList()
+  if (data) {
+    sourceList.value.push({ checkedData: {}, list: data })
+    console.log(data)
+  }
+}
+getSourceList()
 
 const selectedSource = (lItem, index) => {
   sourceList.value[index].checkedData = lItem
   sourceList.value = sourceList.value.slice(0, index + 1)
   let children = lItem.children || []
-  if (children && children.length > 0) {
+  if (index < 1) {
     sourceList.value.push({ checkedData: {}, list: children })
   }
 }
@@ -57,6 +67,7 @@ const addSource = (index: number) => {
   if (index > 0) {
     data = sourceList.value[index - 1].checkedData
   }
+  data.sourceHierarchy = index + 1
   addSourceModalRef.value.openModal(data)
 }
 const handleEdit = () => {}
@@ -114,6 +125,7 @@ const handledelete = () => {}
             font-weight: bold;
           }
           .add-bnt {
+            cursor: pointer;
             color: #1989fa;
           }
         }
