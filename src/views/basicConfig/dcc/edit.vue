@@ -159,7 +159,12 @@
     </el-form>
   </div>
   <div class="bottom-btns">
-    <el-button type="primary" size="large" :loading="btnLoading" @click="handleSave"
+    <el-button
+      type="primary"
+      size="large"
+      :disabled="id && !ruleForm.id"
+      :loading="btnLoading"
+      @click="handleSave"
       >保存设置</el-button
     >
   </div>
@@ -209,7 +214,7 @@ const handleAddRow = (index) => {
   console.log(cycle)
 }
 
-const id = route.query.id
+const id = route.params.id
 const loading = ref<boolean>(false)
 onMounted(async () => {
   try {

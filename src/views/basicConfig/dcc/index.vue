@@ -119,10 +119,10 @@ const { loading, list, getList, pageChange } = useQueryPage({
   params: tableConfig.queryParams
 })
 const handleCreate = () => {
-  router.push('/clue/basic-config/edit-dcc')
+  router.push('/clue/basic-config/create-dcc')
 }
 const handleDccEdit = (row) => {
-  router.push(`/clue/basic-config/edit-dcc?id=${row.id}`)
+  router.push(`/clue/basic-config/edit-dcc/${row.id}`)
   console.log(row)
 }
 const statusChange = async (val, row) => {
