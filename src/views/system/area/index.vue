@@ -257,6 +257,10 @@ const onSubmit = async () => {
         getList()
         break
       case 'edit':
+        if (state.currentNode.level === 0) {
+          //国家无父级 编辑的时候 前端不显示 但是 接口要传回去
+          params['parentCode'] = state.currentNode.parentCode //父区划编号
+        }
         params['id'] = state.currentNode.id
         await updateArea(params)
         message.success('编辑成功')

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PropType, nextTick, ref, watch, computed, unref } from 'vue'
 import QRCode from 'qrcode'
-// import { QRCodeRenderersOptions } from 'qrcode'
+import { QRCodeRenderersOptions } from 'qrcode'
 import { cloneDeep } from 'lodash-es'
 import { propTypes } from '@/utils/propTypes'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -42,7 +42,7 @@ const prefixCls = getPrefixCls('qrcode')
 
 const { toCanvas, toDataURL } = QRCode
 
-const loading = ref(true)
+const loading = ref(false)
 
 const wrapRef = ref<Nullable<HTMLCanvasElement | HTMLImageElement>>(null)
 
@@ -57,6 +57,7 @@ const wrapStyle = computed(() => {
 
 const initQrcode = async () => {
   await nextTick()
+  loading.value = true
   const options = cloneDeep(props.options || {})
   if (props.tag === 'canvas') {
     // 容错率，默认对内容少的二维码采用高容错率，内容多的二维码采用低容错率

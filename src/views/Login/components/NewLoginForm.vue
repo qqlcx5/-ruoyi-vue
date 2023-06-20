@@ -35,9 +35,9 @@
             class="w-50px inline-block cursor-pointer"
             @click="
               switchLoginWay(
-                getLoginState === LoginStateEnum.QR_CODE
-                  ? LoginStateEnum.LOGIN
-                  : LoginStateEnum.QR_CODE
+                getLoginState === LoginStateEnum.LOGIN
+                  ? LoginStateEnum.QR_CODE
+                  : LoginStateEnum.LOGIN
               )
             "
           />

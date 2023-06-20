@@ -4,7 +4,7 @@
     <Qrcode
       :width="250"
       :text="qrCodeId"
-      :disabled="qrCodeState === null"
+      :disabled="!qrCodeState"
       :disabledText="'二维码已过期'"
       @disabledClick="getQrcodeId"
     />
@@ -28,6 +28,9 @@ const getQrcodeId = async () => {
     timer.value = setInterval(async () => {
       await getQrcodeState()
     }, 1000)
+  } else {
+    qrCodeState.value = null
+    message.error('二维码已过期')
   }
 }
 
