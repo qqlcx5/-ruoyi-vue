@@ -929,7 +929,6 @@
                 v-if="state.isShowRightTree"
                 :selectable="false"
                 defaultExpandAll
-                :height="533"
                 :tree-data="state.selectTree"
                 :fieldNames="state.fieldNames"
               />
@@ -2489,7 +2488,8 @@ const hasSelectBtn = async () => {
     const idList = tempBtnArr.map((obj) => obj.id)
     //判断当前菜单项 是否有选中的 至少一项 btn
     const isIncludes = state.operationCheckedAllValue.some((value) => idList.includes(value))
-    if (!isIncludes) {
+    if (!isIncludes && idList.length > 0) {
+      //idList.length 没有配btn选项的 放行
       tempIem.isIncludes = false
       const currentMenu: any = state.allMenuTreeArr.find((item) => item.id === menuId)
       tempIem.currentMenu = currentMenu.name
