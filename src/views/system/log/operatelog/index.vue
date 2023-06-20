@@ -32,10 +32,19 @@
       }}</el-tag>
     </template>
     <template #organizationName="{ row }">
-      <el-tooltip :content="`${row.organizationName}/${row.postName}`" placement="top">
-        <div>{{ row.organizationName }} / {{ row.postName }}</div>
+      <el-tooltip
+        :content="`${row.organizationName ? row.organizationName : ''}${
+          row.postName ? '/' + row.postName : ''
+        }`"
+        placement="top"
+      >
+        <div class="w-140px overflow-ellipsis whitespace-nowrap">
+          <span v-if="row.organizationName">{{ row.organizationName }}</span>
+          <span v-if="row.postName"> / {{ row.postName }}</span>
+        </div>
       </el-tooltip>
     </template>
+    <!--    <template #resultData="{ row }"> </template>-->
   </form-table>
   <DetailDrawer ref="detailDrawerRef" />
 </template>
@@ -68,7 +77,8 @@ const columns: TableColumn[] = [
     label: '操作模块',
     field: 'module',
     width: 140,
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
     label: '请求地址',
@@ -77,9 +87,10 @@ const columns: TableColumn[] = [
   },
   {
     label: '操作人员',
-    field: 'username',
+    field: 'userNickname',
     width: 130,
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
     label: '部门',
@@ -88,7 +99,7 @@ const columns: TableColumn[] = [
     isTable: false
   },
   {
-    label: '部门/门店',
+    label: '部门/岗位',
     field: 'organizationName',
     width: 140,
     showOverflowTooltip: false
@@ -124,6 +135,12 @@ const columns: TableColumn[] = [
     width: 140,
     isSearch: true
   },
+  // {
+  //   label: '日志内容',
+  //   field: 'resultData',
+  //   width: 140,
+  //   disabled: true
+  // },
   {
     label: '操作结果',
     field: 'resultCode',
