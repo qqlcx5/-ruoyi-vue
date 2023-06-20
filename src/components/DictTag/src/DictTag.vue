@@ -20,14 +20,16 @@ export default defineComponent({
     const dictData = ref<DictDataType>()
     const getDictObj = (dictType: string, value: string) => {
       const dictOptions = getDictOptions(dictType)
-      dictOptions.forEach((dict: DictDataType) => {
-        if (dict.value === value) {
-          if (dict.colorType + '' === 'primary' || dict.colorType + '' === 'default') {
-            dict.colorType = ''
+      if (dictOptions) {
+        dictOptions.forEach((dict: DictDataType) => {
+          if (dict.value === value) {
+            if (dict.colorType + '' === 'primary' || dict.colorType + '' === 'default') {
+              dict.colorType = ''
+            }
+            dictData.value = dict
           }
-          dictData.value = dict
-        }
-      })
+        })
+      }
     }
     const rederDictTag = () => {
       if (!props.type) {

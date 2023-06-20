@@ -144,7 +144,7 @@ const columns: TableColumn[] = [
     label: '登录情况',
     field: 'resultInfo',
     width: 160,
-    // dictType: DICT_TYPE.LOGIN_RESULT_INFO,
+    dictType: DICT_TYPE.LOGIN_RESULT_INFO,
     disabled: true
   },
   {
