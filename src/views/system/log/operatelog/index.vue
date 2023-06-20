@@ -19,26 +19,32 @@
         <Iconfont name="icon-daochu" class="mr-4px" />
         导出
       </el-button>
-      <el-button @click="handleDelete">删除</el-button>
+      <el-button @click="handleDelete" v-hasPermi="['system:operate-log:delete']">删除</el-button>
     </template>
+
+    <template #form-organizationIds="{ model }">
+      <OrgTreeSelect v-model="model.organizationIds" multiple />
+    </template>
+
     <template #resultCode="{ row }">
       <el-tag :type="row.resultCode === 0 ? 'success' : 'danger'">{{
         row.resultCode === 0 ? '成功' : '失败'
       }}</el-tag>
     </template>
     <template #organizationName="{ row }">
-      <el-tooltip :content="`${row.organizationName}/${row.postName}`" placement="top">
-        <div>{{ row.organizationName }} / {{ row.postName }}</div>
+      <el-tooltip
+        :content="`${row.organizationName ? row.organizationName : ''}${
+          row.postName ? '/' + row.postName : ''
+        }`"
+        placement="top"
+      >
+        <div class="w-140px overflow-ellipsis whitespace-nowrap">
+          <span v-if="row.organizationName">{{ row.organizationName }}</span>
+          <span v-if="row.postName"> / {{ row.postName }}</span>
+        </div>
       </el-tooltip>
     </template>
-    <!--    <template #form-username="data">-->
-    <!--      &lt;!&ndash;      {{ data }}&ndash;&gt;-->
-    <!--      <el-input v-model="data.person" placeholder="123" />-->
-    <!--    </template>-->
-
-    <template #form-organizationName>
-      <OrgTreeSelect multiple />
-    </template>
+    <!--    <template #resultData="{ row }"> </template>-->
   </form-table>
   <DetailDrawer ref="detailDrawerRef" />
 </template>
@@ -71,7 +77,8 @@ const columns: TableColumn[] = [
     label: '操作模块',
     field: 'module',
     width: 140,
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
     label: '请求地址',
@@ -80,14 +87,20 @@ const columns: TableColumn[] = [
   },
   {
     label: '操作人员',
-    field: 'username',
+    field: 'userNickname',
     width: 130,
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
-    label: '部门/门店',
-    field: 'organizationName',
+    label: '部门',
+    field: 'organizationIds',
     isSearch: true,
+    isTable: false
+  },
+  {
+    label: '部门/岗位',
+    field: 'organizationName',
     width: 140,
     showOverflowTooltip: false
   },
@@ -122,6 +135,12 @@ const columns: TableColumn[] = [
     width: 140,
     isSearch: true
   },
+  // {
+  //   label: '日志内容',
+  //   field: 'resultData',
+  //   width: 140,
+  //   disabled: true
+  // },
   {
     label: '操作结果',
     field: 'resultCode',
@@ -164,7 +183,6 @@ const columns: TableColumn[] = [
 const actionButtons = [
   {
     name: '详情',
-    permission: 'system:tenant:config:update',
     click: (row) => {
       detailDrawerRef.value.openDrawer(row.id)
     }

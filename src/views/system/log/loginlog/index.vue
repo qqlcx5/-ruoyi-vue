@@ -14,23 +14,33 @@
     }"
   >
     <template #tableAppend>
-      <el-button type="primary" plain @click="handleExport">导出</el-button>
-      <el-button @click="handleDelete">删除</el-button>
+      <el-button type="primary" plain @click="handleExport"
+        ><Iconfont name="icon-daochu" class="mr-4px" />导出</el-button
+      >
+      <el-button @click="handleDelete" v-hasPermi="['system:login-log:delete']">删除</el-button>
     </template>
+
+    <template #form-organizationIds="{ model }">
+      <OrgTreeSelect v-model="model.organizationIds" multiple />
+    </template>
+
     <template #result="{ row }">
       <el-tag :type="row.result === 0 ? 'success' : 'danger'">{{
         row.result === 0 ? '成功' : '失败'
       }}</el-tag>
     </template>
     <template #organizationName="{ row }">
-      <el-tooltip :content="`${row.organizationName}/${row.postName}`" placement="top">
-        <div class="w-140px overflow-ellipsis whitespace-nowrap"
-          >{{ row.organizationName }} / {{ row.postName }}</div
-        >
+      <el-tooltip
+        :content="`${row.organizationName ? row.organizationName : ''}${
+          row.postName ? '/' + row.postName : ''
+        }`"
+        placement="top"
+      >
+        <div class="w-140px overflow-ellipsis whitespace-nowrap">
+          <span v-if="row.organizationName">{{ row.organizationName }}</span>
+          <span v-if="row.postName"> / {{ row.postName }}</span>
+        </div>
       </el-tooltip>
-    </template>
-    <template #form-organizationName>
-      <OrgTreeSelect multiple />
     </template>
   </form-table>
 </template>
@@ -57,12 +67,18 @@ const columns: TableColumn[] = [
     label: '成员名称',
     field: 'username',
     width: 140,
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
-    label: '部门/门店',
+    label: '部门',
+    field: 'organizationIds',
+    isSearch: true,
+    isTable: false
+  },
+  {
+    label: '部门/岗位',
     field: 'organizationName',
-    // isSearch: true,
     width: 140,
     showOverflowTooltip: false
   },
@@ -112,12 +128,14 @@ const columns: TableColumn[] = [
           { label: '失败', value: 1 }
         ]
       }
-    }
+    },
+    disabled: true
   },
   {
     label: '登录情况',
     field: 'resultInfo',
-    dictType: DICT_TYPE.LOGIN_RESULT_INFO
+    dictType: DICT_TYPE.LOGIN_RESULT_INFO,
+    disabled: true
   },
   {
     label: '执行时长',
