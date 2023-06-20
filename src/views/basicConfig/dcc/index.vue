@@ -34,9 +34,8 @@ import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import { queryDccPage, dccOpenRule, deleteDcc } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
-import { getAllStoreList } from '@/api/system/organization'
-import { cloneDeep } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const router = useRouter() // 路由
 const message = useMessage()
 
@@ -107,12 +106,11 @@ const handleSearch = () => {
 }
 let shopList = []
 const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopList = cloneDeep(data || [])
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
-getShopList()
+onMounted(async () => {
+  const res = await store.getShopList()
+  shopList = res.shopList
+  shopTreeList.value = res.shopTreeList
+})
 
 const { loading, list, getList, pageChange } = useQueryPage({
   path: queryDccPage,
