@@ -30,10 +30,16 @@
       }}</el-tag>
     </template>
     <template #organizationName="{ row }">
-      <el-tooltip :content="`${row.organizationName}/${row.postName}`" placement="top">
-        <div class="w-140px overflow-ellipsis whitespace-nowrap"
-          >{{ row.organizationName }} / {{ row.postName }}</div
-        >
+      <el-tooltip
+        :content="`${row.organizationName ? row.organizationName : ''}${
+          row.postName ? '/' + row.postName : ''
+        }`"
+        placement="top"
+      >
+        <div class="w-140px overflow-ellipsis whitespace-nowrap">
+          <span v-if="row.organizationName">{{ row.organizationName }}</span>
+          <span v-if="row.postName"> / {{ row.postName }}</span>
+        </div>
       </el-tooltip>
     </template>
   </form-table>
@@ -61,7 +67,8 @@ const columns: TableColumn[] = [
     label: '成员名称',
     field: 'username',
     width: 140,
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
     label: '部门',
@@ -70,7 +77,7 @@ const columns: TableColumn[] = [
     isTable: false
   },
   {
-    label: '部门/门店',
+    label: '部门/岗位',
     field: 'organizationName',
     width: 140,
     showOverflowTooltip: false
@@ -121,12 +128,14 @@ const columns: TableColumn[] = [
           { label: '失败', value: 1 }
         ]
       }
-    }
+    },
+    disabled: true
   },
   {
     label: '登录情况',
     field: 'resultInfo',
-    dictType: DICT_TYPE.LOGIN_RESULT_INFO
+    dictType: DICT_TYPE.LOGIN_RESULT_INFO,
+    disabled: true
   },
   {
     label: '执行时长',
