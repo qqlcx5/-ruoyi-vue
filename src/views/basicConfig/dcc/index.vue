@@ -45,31 +45,16 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
+    { title: 'DCC规则名称', key: 'dccRuleName' },
     {
-      sort: 1,
-      title: 'DCC规则名称',
-      key: 'dccRuleName',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 2,
       title: '适用门店',
       key: 'departName',
       minWidth: 250,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => row.applicableShopName.join('，')
     },
     {
-      sort: 3,
       title: '启用状态',
       key: 'openRules',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <el-switch
@@ -81,26 +66,18 @@ const tableConfig = reactive({
         )
       }
     },
-    { sort: 4, title: '创建人', key: 'creator', resizable: true, ellipsis: true, disabled: false },
+    { title: '创建人', key: 'creator' },
     {
-      sort: 5,
       title: '创建时间',
       key: 'createTime',
       minWidth: 190,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      sort: 6,
       title: '操作',
       key: 'operate',
       width: 120,
       fixed: null,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <div>
