@@ -1638,6 +1638,21 @@ const testCheck = (checkedKeys, e) => {
     state.operationCheckedAllValue = state.operationCheckedAllValue.filter(
       (item) => !currentNodeChildrenIds.includes(item)
     )
+  } else {
+    //  选中 需要 同步将操作权限对应的btn 显示出来 原本只是选节点 后面改需求了
+    //权限btn
+    state.operationCheckedList = state.allMenuTreeArr.filter(
+      (item) => item.parentId === e.node.id && item.type === 3
+    )
+    //获取复选框所有的id数组
+    const idList = state.operationCheckedList.map((item) => item.id)
+    //操作权限 btn 选中回显
+    state.operationCheckedValue = state.operationCheckedAllValue.filter((item) =>
+      idList.includes(item)
+    )
+    nextTick(() => {
+      state.selectedKeys = [e.node.id]
+    })
   }
 }
 
@@ -2459,8 +2474,40 @@ const openPermissionModal = async (id) => {
   state.isShowPermission = true
 }
 
+//判断菜单是否存在选中 但是操作权限btn一个都没选
+const hasSelectBtn = async () => {
+  const tempIem: any = {
+    isIncludes: true
+  }
+  //当前选中的菜单
+  await state.checkedKeys.some((menuId) => {
+    //当前菜单项所有的btn
+    const tempBtnArr = state.allMenuTreeArr.filter(
+      (item) => item.parentId === menuId && item.type === 3
+    )
+    //当前菜单所有的btn id
+    const idList = tempBtnArr.map((obj) => obj.id)
+    //判断当前菜单项 是否有选中的 至少一项 btn
+    const isIncludes = state.operationCheckedAllValue.some((value) => idList.includes(value))
+    if (!isIncludes) {
+      tempIem.isIncludes = false
+      const currentMenu: any = state.allMenuTreeArr.find((item) => item.id === menuId)
+      tempIem.currentMenu = currentMenu.name
+      //当有一项不满足条件时 跳出整个循环
+      return true
+    }
+  })
+  return tempIem
+}
+
 //配置菜单 Modal 确认
 const PermissionOk = async () => {
+  const hasSelectBtnItem: any = await hasSelectBtn()
+
+  if (!hasSelectBtnItem.isIncludes) {
+    message.warning(`${hasSelectBtnItem.currentMenu} 菜单未选择操作权限`)
+    return
+  }
   const params = {
     menuIds: state.idArr,
     tenantId: state.addSuccessId || state.permissionRecord!.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
@@ -2749,6 +2796,28 @@ const selectAllOperation = ({ target }) => {
     //全选
     // state.checkedKeys = state.parentCheckedKeys
     state.operationCheckedValue = getAllIds(state.operationCheckedList)
+    console.log('state.operationCheckedValue', state.operationCheckedValue)
+    console.log('state.allMenuTreeArr!!!', state.allMenuTreeArr)
+    //当前选中的 btn 第一项
+    const currentItem =
+      state.operationCheckedValue.length > 0 &&
+      state.allMenuTreeArr.find((item) => item.id === state.operationCheckedValue[0])
+    console.log('currentItem!!!', currentItem)
+
+    //通过当前选中的 btn第一项获取 父级 项
+    const parentItem =
+      state.operationCheckedValue.length > 0 &&
+      state.allMenuTreeArr.find((item) => item.id === currentItem.parentId)
+    if (!state.checkedKeys.includes(parentItem.id)) {
+      //选中了操作权限 btn 但是 左侧 菜单没有勾选 则勾选
+      state.checkedKeys.push(parentItem.id)
+      //  递归将上层父节点id 存入
+      const tempIds = findParentIds(state.operationCheckedValue[0], state.allMenuTreeArr)
+      //将所需的菜单id存入 直接去重
+      checkedKeysDirIds.value = [...new Set(checkedKeysDirIds.value.concat(tempIds))]
+      console.log('所有父级id', tempIds)
+      console.log('checkedKeysDirIds.value', checkedKeysDirIds.value)
+    }
   } else {
     //全不选
     state.operationCheckedValue = []
@@ -2758,8 +2827,10 @@ const selectAllOperation = ({ target }) => {
 
 //配置菜单 操作权限 btn change
 const operationCheckedValueChange = (checkedValue) => {
+  if (checkedValue.length === 0) {
+    return
+  }
   //  左侧 菜单 没有勾选则 勾选上
-  console.log('checkedValue', checkedValue)
   //当前选中的 btn 第一项
   const currentItem =
     checkedValue.length > 0 && state.allMenuTreeArr.find((item) => item.id === checkedValue[0])
@@ -2773,11 +2844,7 @@ const operationCheckedValueChange = (checkedValue) => {
     const tempIds = findParentIds(checkedValue[0], state.allMenuTreeArr)
     //将所需的菜单id存入 直接去重
     checkedKeysDirIds.value = [...new Set(checkedKeysDirIds.value.concat(tempIds))]
-    console.log('所有父级id', tempIds)
-    console.log('checkedKeysDirIds.value', checkedKeysDirIds.value)
   }
-  console.log('currentItem', currentItem)
-  console.log('parentItem=========>', parentItem)
 }
 
 //配置菜单 前台 展开折叠
