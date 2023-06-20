@@ -32,51 +32,19 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { pageNo: 1, pageSize: 10 },
   columns: [
+    { title: '线索所属成员', key: 'username', minWidth: 150 },
+    { title: '手动回收原因', key: 'recycleReasonName', minWidth: 120 },
+    { title: '回收线索所属门店', key: 'shopName', minWidth: 150 },
     {
-      sort: 1,
-      title: '线索所属成员',
-      key: 'username',
-      minWidth: 150,
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 2,
-      title: '手动回收原因',
-      key: 'recycleReasonName',
-      minWidth: 120,
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 3,
-      title: '回收线索所属门店',
-      key: 'shopName',
-      minWidth: 150,
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 4,
       title: '回收线索品牌',
       key: 'brandNameList',
       minWidth: 160,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => (row.brandNameList ? row.brandNameList.join('，') : '')
     },
     {
-      sort: 5,
       title: '回收线索派发时间 ',
       key: 'remark',
       minWidth: 200,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) =>
         row.distributeTimeType === 1 ? (
           '全部'
@@ -87,53 +55,17 @@ const tableConfig = reactive({
           </div>
         )
     },
+    { title: '备注', key: 'remark', minWidth: 150 },
+    { title: '应回收线索数', key: 'shouldRecycleClueNum', minWidth: 150 },
+    { title: '实际回收线索数', key: 'realRecycleClueNum', minWidth: 150 },
+    { title: '创建人', key: 'creator' },
     {
-      sort: 6,
-      title: '备注',
-      key: 'remark',
-      minWidth: 150,
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 7,
-      title: '应回收线索数',
-      key: 'shouldRecycleClueNum',
-      minWidth: 150,
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 8,
-      title: '实际回收线索数',
-      key: 'realRecycleClueNum',
-      minWidth: 150,
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 9,
-      title: '创建人',
-      key: 'creator',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 10,
       title: '创建时间',
       key: 'createTime',
       minWidth: 190,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      sort: 11,
       title: '操作',
       key: 'operate',
       width: 120,

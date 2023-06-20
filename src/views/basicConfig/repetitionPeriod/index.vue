@@ -105,10 +105,6 @@ const tableConfig = reactive({
     }
   ]
 })
-tableConfig.columns.forEach((item, index) => {
-  item['sort'] += index
-  Object.assign(item, { resizable: true, ellipsis: true, disabled: false })
-})
 const statusChange = async (val, row) => {
   try {
     await updateEnableRepetitionPeriod({ id: row.id, isEnable: val })

@@ -66,33 +66,18 @@ const visible = ref<boolean>(false)
 const tableConfig = reactive({
   pageKey: 'firstFollowRate',
   refresh: () => getList(),
-  queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10, total: 0 },
+  queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
+    { title: '规则名称', key: 'ruleName' },
     {
-      sort: 1,
-      title: '规则名称',
-      key: 'ruleName',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 2,
       title: '适用门店',
       key: 'applicableShopName',
       minWidth: 240,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
-      sort: 3,
       title: '启用状态',
       key: 'status',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <el-switch
@@ -104,53 +89,21 @@ const tableConfig = reactive({
         )
       }
     },
+    { title: '最低跟进率', key: 'minFollowRate', render: ({ row }) => row.minFollowRate + '%' },
+    { title: '计算周期', key: 'cycle', render: ({ row }) => row.cycle + '天' },
+    { title: '参与岗位', minWidth: 240, key: 'limitPositionTypesName' },
+    { title: '创建人', key: 'creator' },
     {
-      sort: 4,
-      title: '最低跟进率',
-      key: 'minFollowRate',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
-      render: ({ row }) => row.minFollowRate + '%'
-    },
-    {
-      sort: 5,
-      title: '计算周期',
-      key: 'cycle',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
-      render: ({ row }) => row.cycle + '天'
-    },
-    {
-      sort: 6,
-      title: '参与岗位',
-      minWidth: 240,
-      key: 'limitPositionTypesName',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    { sort: 7, title: '创建人', key: 'creator', resizable: true, ellipsis: true, disabled: false },
-    {
-      sort: 8,
       title: '创建时间',
       key: 'createTime',
       minWidth: '190',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      sort: 9,
       title: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <div>
