@@ -3,13 +3,13 @@
   <div class="total-content">
     <!--  -1显示全部区划item 100000中国  -->
     <LeftSelectTree
-      :treeData="state.areaList.filter((item) => item.code !== '-1' && item.code !== '100000')"
+      :treeData="state.areaList.filter((item) => item.code !== '-1')"
       @sendCurrentSelect="sendCurrentSelect"
     />
     <el-card class="right-card" body-style="padding:0">
       <div class="btn-content">
         <XButton
-          title="新增子项"
+          title="新增下级"
           v-hasPermi="['system:tenant-area:create']"
           type="primary"
           iconSize="10"
@@ -48,7 +48,12 @@
         </div>
       </div>
       <div class="form-content">
-        <el-form :model="form" label-width="120px" ref="formRef" :rules="rules">
+        <el-form
+          :model="form"
+          label-width="120px"
+          ref="formRef"
+          :rules="state.useDefRules ? rules : rulesNoParent"
+        >
           <el-form-item label="父区划编号" prop="parentCode">
             <el-input
               v-model="form.parentCode"
@@ -114,7 +119,7 @@
             />
           </el-form-item>
           <el-form-item v-if="state.operationType">
-            <el-button type="primary" @click="onSubmit">提交</el-button>
+            <el-button type="primary" @click="onSubmit" :loading="state.loading">提交</el-button>
             <el-button @click="resetForm">清空</el-button>
           </el-form-item>
         </el-form>
@@ -171,7 +176,9 @@ const state: any = reactive({
   operationType: '', //当前操作类型 add edit
   isShow: false, //删除modal
   statusValue: false,
-  isDisabled: true
+  isDisabled: true,
+  useDefRules: true, //使用默认校验
+  loading: false //提交加载中
 })
 
 const formRef = ref()
@@ -183,6 +190,27 @@ const rules = reactive<FormRules>({
       message: '请选择'
     }
   ],
+  code: [
+    {
+      required: true,
+      message: '请输入区划编号'
+    }
+  ],
+  name: [
+    {
+      required: true,
+      message: '请输入区划名称'
+    }
+  ],
+  level: [
+    {
+      required: true,
+      message: '请选择区划等级'
+    }
+  ]
+})
+
+const rulesNoParent = reactive<FormRules>({
   code: [
     {
       required: true,
@@ -220,19 +248,24 @@ const onSubmit = async () => {
     remark: form.remark //区划备注
   }
 
-  switch (state.operationType) {
-    case 'add':
-      await addChildArea(params)
-      message.success('新增子项成功')
-      getList()
-      break
-    case 'edit':
-      params['id'] = state.currentNode.data.id
-      await updateArea(params)
-      message.success('编辑成功')
-      delete params.id
-      getList()
-      break
+  state.loading = true
+  try {
+    switch (state.operationType) {
+      case 'add':
+        await addChildArea(params)
+        message.success('新增子项成功')
+        getList()
+        break
+      case 'edit':
+        params['id'] = state.currentNode.id
+        await updateArea(params)
+        message.success('编辑成功')
+        delete params.id
+        getList()
+        break
+    }
+  } finally {
+    state.loading = false
   }
 
   console.log('form', form)
@@ -255,39 +288,54 @@ const resetForm = () => {
 
 //接收选中的省市区节点
 const sendCurrentSelect = (currentSelectNode) => {
+  if (currentSelectNode.level === 0) {
+    //国家 无父级 特殊处理
+    state.useDefRules = false
+    form.parentCode = '' //父区划编号
+  } else {
+    state.useDefRules = true
+    form.parentCode = currentSelectNode.parentCode //父区划编号
+  }
   console.log('currentSelectNode', currentSelectNode)
   state.operationType = ''
   state.isDisabled = true
   state.currentNode = currentSelectNode
-  form.parentCode = currentSelectNode.data.parentCode //父区划编号
-  form.parentName = currentSelectNode.data.parentName //父区划名称
-  form.code = currentSelectNode.data.code //区划编号
-  form.name = currentSelectNode.data.name //区划名称
-  form.level = currentSelectNode.data.level //区划等级
-  form.visible = currentSelectNode.data.visible === 0 //是否显示区划
-  form.sort = currentSelectNode.data.sort //区划排序
-  form.remark = currentSelectNode.data.remark //区划备注
+
+  form.parentName = currentSelectNode.parentName //父区划名称
+  form.code = currentSelectNode.code //区划编号
+  form.name = currentSelectNode.name //区划名称
+  form.level = currentSelectNode.level //区划等级
+  form.visible = currentSelectNode.visible === 0 //是否显示区划
+  form.sort = currentSelectNode.sort //区划排序
+  form.remark = currentSelectNode.remark //区划备注
 }
 
 const addEditArea = (type) => {
   state.operationType = type
+  console.log('state.currentNode===>', state.currentNode)
   switch (type) {
     case 'add':
-      form.parentCode = state.currentNode.data.code
-      form.parentName = state.currentNode.data.name
-      form.level = state.currentNode.data.level + 1
+      state.useDefRules = true
+      form.parentCode = state.currentNode.code
+      form.parentName = state.currentNode.name
+      form.level = state.currentNode.level + 1
       form.code = ''
       form.name = ''
       break
     case 'edit':
-      form.parentCode = state.currentNode.data.parentCode //父区划编号
-      form.parentName = state.currentNode.data.parentName //父区划名称
-      form.code = state.currentNode.data.code //区划编号
-      form.name = state.currentNode.data.name //区划名称
-      form.level = state.currentNode.data.level //区划等级
-      form.visible = state.currentNode.data.visible === 0 //是否显示区划
-      form.sort = state.currentNode.data.sort //区划排序
-      form.remark = state.currentNode.data.remark //区划备注
+      // form.parentCode = state.currentNode.parentCode //父区划编号
+      if (state.currentNode.level === 0) {
+        //国家无父级
+        state.useDefRules = false
+        form.parentCode = '' //父区划编号
+      }
+      form.parentName = state.currentNode.parentName //父区划名称
+      form.code = state.currentNode.code //区划编号
+      form.name = state.currentNode.name //区划名称
+      form.level = state.currentNode.level //区划等级
+      form.visible = state.currentNode.visible === 0 //是否显示区划
+      form.sort = state.currentNode.sort //区划排序
+      form.remark = state.currentNode.remark //区划备注
   }
   state.isDisabled = false
 }
@@ -298,7 +346,7 @@ const openDeleteModal = () => {
 }
 //删除 modal ok
 const modalDelete = async () => {
-  await deleteArea(state.currentNode.data.id)
+  await deleteArea(state.currentNode.id)
   message.success('删除成功')
   state.isShow = false
   getList()

@@ -30,9 +30,8 @@ import { ref } from 'vue'
 import { ElTreeV2 } from 'element-plus'
 import type { TreeNode } from 'element-plus/es/components/tree-v2/src/types'
 import { Search } from '@element-plus/icons-vue'
-import { getAllCustomKeys, getAllIds, reconstructedTreeData } from '@/utils/utils'
-import { provincesMunicipalitiesArea } from '@/constant/pr'
-import {handleTree} from "@/utils/tree";
+import { getAllCustomKeys, getTreeAllCustomKeys } from '@/utils/utils'
+import { handleTree } from '@/utils/tree'
 
 interface TreeDataProps {
   treeData?: Array<any>
@@ -77,14 +76,13 @@ const onQueryChanged = (query: string) => {
   treeRef.value!.filter(query)
 }
 const filterMethod = (query: string, node: TreeNode) => {
-  console.log('node', node)
   return node.name!.includes(query)
 }
 
 const selectTree = (data, node) => {
-  console.log('data', data)
-  console.log('node', node)
-  emit('sendCurrentSelect', node)
+  console.log('data??????????', data)
+  console.log('node????', node)
+  emit('sendCurrentSelect', data)
 }
 
 // onMounted(() => {
@@ -100,36 +98,35 @@ const selectTree = (data, node) => {
 watch(
   () => props.treeData,
   (val) => {
-    console.log('val', val)
     if (val.length === 0) {
       return
     }
     // state.treeData = val
     state.treeData = handleTree(val, 'code', 'parentCode', 'children')
     //默认选中第一个节点
-    state.currentNodeKey = props.treeData[0]?.children[0]?.children[0]?.code
-    console.log('props.treeData[0]?.children[0]?.children[0]', props.treeData[0])
+    const tempFirstItem = state.treeData[0].children[0].children[0].children[0]
+    state.currentNodeKey = tempFirstItem.code
+    console.log('state.treeData', state.treeData)
     if (state.isFirst) {
       //首次
       emit('sendCurrentSelect', {
-        data: {
-          id: props.treeData[0].children[0].children[0].id,
-          parentCode: props.treeData[0].children[0].children[0].parentCode,
-          parentName: props.treeData[0].children[0].children[0].parentName,
-          code: props.treeData[0].children[0].children[0].code,
-          name: props.treeData[0].children[0].children[0].name,
-          level: props.treeData[0].children[0].children[0].level,
-          visible: props.treeData[0].children[0].children[0].visible,
-          sort: props.treeData[0].children[0].children[0].sort,
-          remark: props.treeData[0].children[0].children[0].remark
-        }
+        id: tempFirstItem.id,
+        parentCode: tempFirstItem.parentCode,
+        parentName: tempFirstItem.parentName,
+        code: tempFirstItem.code,
+        name: tempFirstItem.name,
+        level: tempFirstItem.level,
+        visible: tempFirstItem.visible,
+        sort: tempFirstItem.sort,
+        remark: tempFirstItem.remark
       })
+      //  默认展开第一项省市区
+      state.defaultExpandedKeys = getTreeAllCustomKeys(tempFirstItem.code, state.treeData, 'code')
       state.isFirst = false
     }
     state.isShow = false
-    //  默认展开全部
-    state.defaultExpandedKeys = getAllCustomKeys(props.treeData, 'code')
-    console.log('state.defaultExpandedKeys', state.defaultExpandedKeys)
+    // //  默认展开全部
+    // state.defaultExpandedKeys = getAllCustomKeys(props.treeData, 'code')
     nextTick(() => {
       state.isShow = true
     })

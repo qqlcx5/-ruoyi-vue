@@ -107,6 +107,44 @@ export const getAllCustomKeys = (tree, customKey) => {
 }
 
 /**
+ * 获取树结构所有自定义key
+ * @param childId 当前自定义的 key 如id
+ * @param treeData tree
+ * @param customKey 自定义的 key
+ * @return list 所有父节点id 不包括本身
+ * */
+export const getTreeAllCustomKeys = (
+  childId: string | number,
+  treeData: any,
+  customKey: string | number
+) => {
+  const keys = []
+
+  const traverse = (node) => {
+    if (node[customKey] === childId) {
+      return true
+    }
+
+    if (node.children) {
+      for (const child of node.children) {
+        if (traverse(child)) {
+          keys.push(node[customKey])
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  for (const node of treeData) {
+    traverse(node)
+  }
+
+  return keys
+}
+
+/**
  * 获取当前节点的 所有子id
  * @param nodeId 当前id
  * @param menuItems 存在id与parentId的数组
