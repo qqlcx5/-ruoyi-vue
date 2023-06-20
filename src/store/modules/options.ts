@@ -17,21 +17,19 @@ export const useOption = defineStore('options', {
   getters: {},
   actions: {
     async getShopList() {
-      return new Promise(async (resolve) => {
-        try {
-          if (this.shopList.length && this.shopTreeList.length) {
-            resolve(cloneDeep({ shopList: this.shopList, shopTreeList: this.shopTreeList }))
-          }
-          const data = await getAllStoreList()
-          const shopList = cloneDeep(data || [])
-          const shopTreeList = listToTree(data || [], { pid: 'parentId' })
-          this.shopList = shopList
-          this.shopTreeList = shopTreeList
-          resolve(cloneDeep({ shopList, shopTreeList }))
-        } catch (e) {
-          resolve({ shopList: [], shopTreeList: [] })
+      try {
+        if (this.shopList.length && this.shopTreeList.length) {
+          return cloneDeep({ shopList: this.shopList, shopTreeList: this.shopTreeList })
         }
-      })
+        const data = await getAllStoreList()
+        const shopList = cloneDeep(data || [])
+        const shopTreeList = listToTree(data || [], { pid: 'parentId' })
+        this.shopList = shopList
+        this.shopTreeList = shopTreeList
+        return cloneDeep({ shopList, shopTreeList })
+      } catch (e) {
+        return { shopList: [], shopTreeList: [] }
+      }
     },
     dealShopList(list, arr1, arr2) {
       const shopList = cloneDeep(list)
