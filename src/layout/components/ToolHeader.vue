@@ -91,8 +91,7 @@ export default defineComponent({
         background: 'rgba(0, 0, 0, 0.7)'
       })
       const loginData = getLoginData()
-      let params: any = { tenantId: data.tenantId }
-      console.log(loginData.loginType === LoginStateEnum.MOBILE)
+      let params: any = { tenantId: data.tenantId, loginTypeEnum: 'USERNAME' }
       if (loginData.loginType === LoginStateEnum.MOBILE) {
         params = {
           tenantId: data.tenantId,
