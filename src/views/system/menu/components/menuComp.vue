@@ -1,6 +1,6 @@
 <!--  菜单管理  -->
 <template>
-  <div class="total-content">
+  <div class="total-content" v-loading="tableLoading">
     <!-- 搜索工作栏 -->
     <ContentWrap style="min-height: 78px">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
@@ -36,12 +36,7 @@
     </ContentWrap>
 
     <!--  表格  -->
-    <a-card
-      :bordered="false"
-      style="height: 100%; overflow: auto"
-      id="card-content"
-      :loading="tableLoading"
-    >
+    <a-card :bordered="false" style="height: 100%; overflow: auto" id="card-content">
       <!--  <ContentWrap>-->
       <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
       <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
@@ -1192,12 +1187,12 @@ const saveForm = async () => {
 const menuTree = ref<Tree[]>([]) // 树形结构
 const getTree = async () => {
   menuTree.value = []
-  const res = await MenuApi.getSimpleMenusList()
+
+  const res = await MenuApi.getSimpleMenusList({ entrance: queryParams.entrance })
   let menu: Tree = { id: 0, name: '主类目', children: [] }
   menu.children = handleTree(res)
   menuTree.value.push(menu)
 }
-getTree()
 
 //菜单类型切换
 const typeChange = (type) => {
@@ -1829,6 +1824,7 @@ function changeMode() {
     tableLoading.value = true
     await getAllType()
     await getList()
+    await getTree()
     tableLoading.value = false
   })
 }
