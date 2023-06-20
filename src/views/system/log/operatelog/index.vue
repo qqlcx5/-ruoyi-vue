@@ -33,9 +33,9 @@
     </template>
     <template #organizationName="{ row }">
       <el-tooltip
-        :content="`${row.organizationName ? row.organizationName : ''}${
-          row.postName ? '/' + row.postName : ''
-        }`"
+        :content="`${row.componentName ? row.componentName : ''}${
+          row.organizationName ? '/' + row.organizationName : ''
+        }${row.postName ? '/' + row.postName : ''}`"
         placement="top"
       >
         <div class="w-140px overflow-ellipsis whitespace-nowrap">
@@ -87,9 +87,15 @@ const columns: TableColumn[] = [
   },
   {
     label: '操作人员',
-    field: 'userNickname',
+    field: 'nameOrNumber',
     width: 130,
     isSearch: true,
+    isTable: false
+  },
+  {
+    label: '操作人员',
+    field: 'username',
+    width: 130,
     disabled: true
   },
   {
