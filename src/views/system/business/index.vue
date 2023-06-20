@@ -3200,10 +3200,10 @@ const setPreviewImage = (imgUrl = '') => {
 }
 
 //页码改变  伪分页
-const onPageChange = ({ pageNo, pageSize }) => {
+const onPageChange = () => {
   // 计算要显示的数据的起始索引和结束索引
-  const startIndex = (pageNo - 1) * pageSize
-  const endIndex = startIndex + pageSize
+  const startIndex = (state.pageNo - 1) * state.pageSize
+  const endIndex = startIndex + state.pageSize
 
   // 根据起始索引和结束索引提取要显示的数据
   state.tableDataPseudoPaginationList = state.tableDataList.slice(startIndex, endIndex)

@@ -1,3 +1,4 @@
+<!--  敏感词管理  -->
 <template>
   <FormTable
     ref="tableRef"
@@ -6,7 +7,7 @@
     }"
     :table-options="{
       columns: allSchemas.tableColumns,
-      listApi: getSensitiveWordPageApi,
+      listApi: getTableList,
       showAdd: hasPermission('system:sensitive-word:create'),
       actionButtons
     }"
@@ -63,7 +64,7 @@
       ref="formRef"
     >
       <template #tags="form">
-        <el-select v-model="form['tags']" multiple placeholder="请选择">
+        <el-select v-model="form['tags']" multiple placeholder="请选择" style="width: 100%">
           <el-option v-for="item in tagsOptions" :key="item" :label="item" :value="item" />
         </el-select>
       </template>
@@ -84,11 +85,19 @@ import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import * as SensitiveWordApi from '@/api/system/sensitiveWord'
 import { FormExpose } from '@/components/Form'
 import { hasPermission } from '@/utils/utils'
+import { FormItemProps } from '@/types/form'
 const message = useMessage() // 消息弹窗
 
 const { t } = useI18n()
 
 const tableRef = ref()
+
+const getTableList = (params) => {
+  return getSensitiveWordPageApi(params).then((res) => {
+    console.log('res', res)
+    return res
+  })
+}
 
 const columns: TableColumn[] = [
   {
@@ -229,7 +238,7 @@ const detailData = ref() // 详情 Ref
 // 表单校验
 const rules = reactive({
   name: [required],
-  tag: [required]
+  tags: [required]
 })
 
 const state = reactive({

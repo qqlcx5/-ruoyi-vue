@@ -419,7 +419,7 @@
         <!-- 分页 -->
         <Pagination
           :total="state.total"
-          v-model:page="queryParams.pageNo"
+          v-model:page="queryParams.current"
           v-model:limit="queryParams.pageSize"
           style="padding: 0 15px"
           @pagination="onPageChange"
@@ -2267,10 +2267,8 @@ const edit = async (record, isCloseDetails = false) => {
 // }
 
 //页码改变
-const onPageChange = ({ pageSize, pageNo }) => {
-  queryParams.current = pageNo
-  queryParams.pageSize = pageSize
-  getList()
+const onPageChange = () => {
+  getList(undefined)
 }
 
 //处理省市区数据
