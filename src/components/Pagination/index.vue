@@ -1,6 +1,7 @@
 <!-- 基于 ruoyi-vue3 的 Pagination 重构，核心是简化无用的属性，并使用 ts 重写 -->
 <template>
   <el-pagination
+    :small="small"
     v-model:current-page="currentPage"
     v-model:page-size="pageSize"
     :background="false"
@@ -8,7 +9,7 @@
     :pager-count="pagerCount"
     :total="total"
     class="custom-pagination float-right mt-15px mb-15px"
-    layout="sizes, total, prev, pager, next, jumper"
+    :layout="`${small ? 'prev, pager, next' : 'sizes, total, prev, pager, next, jumper'} `"
     :hide-on-single-page="false"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
@@ -18,6 +19,10 @@
 import { computed } from 'vue'
 
 const props = defineProps({
+  small: {
+    type: Boolean,
+    default: false
+  },
   // 总条目数
   total: {
     required: true,

@@ -14,6 +14,7 @@ export const CACHE_KEY = {
   LAYOUT: 'layout',
   ROLE_ROUTERS: 'roleRouters',
   DICT_CACHE: 'dictCache',
+  DICT_TENANT_CACHE: 'dictTenantCache',
   TABLE_COLUMN: 'tableColumn',
   TABLE_COLUMNS_OBJ: 'tableColumnsObj',
   DEPARTMENT: 'department',

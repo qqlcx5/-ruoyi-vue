@@ -9,7 +9,7 @@
       :loading="loading"
     >
       <template #btns>
-        <el-button type="primary" @click="handleCreate">新增</el-button>
+        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
         <el-button :disabled="!checkedList.length" @click="handleDelete">删除</el-button>
       </template>
       <template #tip>

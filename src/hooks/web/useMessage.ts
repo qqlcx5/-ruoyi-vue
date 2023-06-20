@@ -110,13 +110,14 @@ export const useMessage = () => {
       ElNotification.warning(content)
     },
     // 确认窗体
-    confirm(content: string | VNode | (() => VNode), tip?: string) {
+    confirm(content: string | VNode | (() => VNode), tip?: string, config: object = {}) {
       return ElMessageBox.confirm(content, tip ? tip : t('common.confirmTitle'), {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
         type: 'warning',
         lockScroll: false,
-        autofocus: false
+        autofocus: false,
+        ...config
       })
     },
     // 自定义确认窗体

@@ -32,3 +32,6 @@ VITE_BASE_PATH=/
 
 # 输出路径
 VITE_OUT_DIR=dist
+
+# 验证码的开关
+VITE_APP_CAPTCHA_ENABLE=false

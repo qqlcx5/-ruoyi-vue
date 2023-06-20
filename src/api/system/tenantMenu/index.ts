@@ -19,8 +19,8 @@ export interface MenuVO {
 }
 
 // 查询菜单（精简）列表
-export const getSimpleMenusList = () => {
-  return request.get({ url: '/system/menu/list-all-simple' })
+export const getSimpleMenusList = (params) => {
+  return request.get({ url: '/system/menu/list-all-simple', params })
 }
 
 // 查询菜单列表

@@ -34,3 +34,7 @@ export const deleteDictDataApi = (id: number) => {
 export const exportDictDataApi = (params: DictDataExportReqVO) => {
   return request.get({ url: '/system/tenant-dict-data/export', params })
 }
+// 根据字典组编码获得字典数据
+export const getDictDetailByCode = (dictType: string) => {
+  return request.get({ url: `/system/tenant-dict-data/getDictDetail/${dictType}` })
+}

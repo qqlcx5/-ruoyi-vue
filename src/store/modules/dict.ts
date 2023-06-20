@@ -4,6 +4,7 @@ import { DictDataVO } from '@/api/system/dict/types'
 import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 const { wsCache } = useCache('sessionStorage')
 import { listSimpleDictDataApi } from '@/api/system/dict/dict.data'
+import { getDictDetailByCode } from '@/api/system/dict-tenant/dict.data'
 
 export interface DictValueType {
   value: any
@@ -38,6 +39,26 @@ export const useDictStore = defineStore('dict', {
     }
   },
   actions: {
+    async getTenantDictByType(type: string | string[]) {
+      return new Promise(async (resolve) => {
+        try {
+          if (Array.isArray(type)) {
+            Promise.all(type.map((d) => getDictDetailByCode(d)))
+              .then((res) => {
+                resolve(res)
+              })
+              .catch(() => {
+                resolve([])
+              })
+          } else {
+            const data = await getDictDetailByCode(type)
+            resolve(data)
+          }
+        } catch (e) {
+          resolve([])
+        }
+      })
+    },
     async setDictMap() {
       const dictMap = wsCache.get(CACHE_KEY.DICT_CACHE)
       if (dictMap) {

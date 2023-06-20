@@ -3,7 +3,7 @@
     <ContentWrap>
       <Search v-bind="formProps" @search="handleSearch" @reset="handleSearch">
         <template #[item]="data" v-for="item in Object.keys(formSlots)" :key="item">
-          <slot :name="`form-${item}`" v-bind="data || {}"></slot>
+          <slot :name="`form-${item}`" v-bind="data || {}" :model="data.model"></slot>
         </template>
       </Search>
     </ContentWrap>

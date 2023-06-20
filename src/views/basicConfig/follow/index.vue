@@ -45,6 +45,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
       <span>次</span>
@@ -56,6 +57,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
       <span>小时后</span>
@@ -71,6 +73,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
       <span>小时后</span>
@@ -163,6 +166,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
       <span>分钟后，弹窗提醒对应接单人进行再次拨号；</span>
@@ -174,6 +178,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
     </div>
@@ -184,6 +189,7 @@
         class="number-input"
         step-strictly
         :step="1"
+        :min="0"
         :controls="false"
       />
     </div>
