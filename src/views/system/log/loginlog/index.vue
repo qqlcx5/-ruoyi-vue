@@ -14,9 +14,16 @@
     }"
   >
     <template #tableAppend>
-      <el-button type="primary" plain @click="handleExport">导出</el-button>
-      <el-button @click="handleDelete">删除</el-button>
+      <el-button type="primary" plain @click="handleExport"
+        ><Iconfont name="icon-daochu" class="mr-4px" />导出</el-button
+      >
+      <el-button @click="handleDelete" v-hasPermi="['system:login-log:delete']">删除</el-button>
     </template>
+
+    <template #form-organizationIds="{ model }">
+      <OrgTreeSelect v-model="model.organizationIds" multiple />
+    </template>
+
     <template #result="{ row }">
       <el-tag :type="row.result === 0 ? 'success' : 'danger'">{{
         row.result === 0 ? '成功' : '失败'
@@ -28,9 +35,6 @@
           >{{ row.organizationName }} / {{ row.postName }}</div
         >
       </el-tooltip>
-    </template>
-    <template #form-organizationName>
-      <OrgTreeSelect multiple />
     </template>
   </form-table>
 </template>
@@ -60,9 +64,14 @@ const columns: TableColumn[] = [
     isSearch: true
   },
   {
+    label: '部门',
+    field: 'organizationIds',
+    isSearch: true,
+    isTable: false
+  },
+  {
     label: '部门/门店',
     field: 'organizationName',
-    // isSearch: true,
     width: 140,
     showOverflowTooltip: false
   },
