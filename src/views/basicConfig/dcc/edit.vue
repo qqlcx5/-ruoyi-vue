@@ -159,7 +159,9 @@
     </el-form>
   </div>
   <div class="bottom-btns">
-    <el-button type="primary" size="large" @click="handleSave">保存设置</el-button>
+    <el-button type="primary" size="large" :loading="btnLoading" @click="handleSave"
+      >保存设置</el-button
+    >
   </div>
 </template>
 
@@ -255,18 +257,25 @@ const handleDelRow = (list, index) => {
   // console.log(item)
   list.splice(index, 1)
 }
+
+const btnLoading = ref<boolean>(false)
 const handleSave = async () => {
   ruleFormRef.value?.validate(async (vali) => {
     if (vali) {
-      const params: any = cloneDeep(ruleForm)
-      params.applicableShopId = params.applicableShopId.join(',')
-      if (id) {
-        await validDccRuleName({ id, ruleName: params.dccRuleName })
+      try {
+        loading.value = true
+        const params: any = cloneDeep(ruleForm)
+        params.applicableShopId = params.applicableShopId.join(',')
+        if (id) {
+          await validDccRuleName({ id, ruleName: params.dccRuleName })
+        }
+        await saveDccConfig(params)
+        message.success('提交成功')
+        router.push('/clue/basic-config/dcc')
+        tagsView.delVisitedView(route)
+      } finally {
+        loading.value = false
       }
-      await saveDccConfig(params)
-      message.success('提交成功')
-      router.push('/clue/basic-config/dcc')
-      tagsView.delVisitedView(route)
     } else {
       console.log(vali)
     }
