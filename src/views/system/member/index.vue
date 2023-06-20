@@ -788,8 +788,10 @@
                 <div>
                   <a-tree-select
                     v-model:value="record.department"
-                    style="width: 100%"
-                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                    dropdownClassName="department-tree-select-content"
+                    :dropdownMatchSelectWidth="false"
+                    show-search
+                    :dropdown-style="{ maxHeight: '400px', width: '500px', overflow: 'auto' }"
                     placeholder="请选择公司/门店/部门"
                     :tree-data="state.organizationIDOptions"
                     :field-names="{
@@ -797,6 +799,7 @@
                       label: 'title',
                       value: 'key'
                     }"
+                    treeNodeFilterProp="title"
                   />
                 </div>
               </template>
@@ -3687,7 +3690,7 @@ const addEditColumns = [
     sort: 3
   },
   {
-    title: '是否开通云服务',
+    title: '是否开通云录音',
     width: 120,
     dataIndex: 'isService',
     key: 'isService',
@@ -4879,6 +4882,10 @@ onMounted(async () => {
   .ant-modal-footer {
     border: 0;
   }
+}
+
+.department-tree-select-content {
+  width: max-content !important;
 }
 
 //新增 编辑 modal
