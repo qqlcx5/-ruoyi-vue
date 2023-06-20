@@ -138,7 +138,9 @@ defineExpose({
               :label="item.field"
               label-class-name="log-label"
             >
-              {{ item.afterValue }}
+              <el-tooltip :content="item.afterValue" placement="top">
+                <div class="max-w-400px truncate">{{ item.afterValue }}</div>
+              </el-tooltip>
             </el-descriptions-item>
           </el-descriptions>
           <div v-else class="text-center text-tip mt-60px">暂无内容</div>
