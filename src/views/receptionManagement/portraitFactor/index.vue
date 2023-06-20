@@ -30,15 +30,13 @@
 import { TableColumn } from '@/types/table'
 import { getConfigPageApi } from '@/api/infra/config'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-
-import { ElTable } from 'element-plus'
-
 const { t } = useI18n()
-let tabsName = ref('currency')
+let tableRef = ref(null)
 const columns: TableColumn[] = [
   {
     label: '画像因子得分区间',
-    field: 'id'
+    field: 'id',
+    isSearch: true
   },
   {
     label: '对应评级名称',

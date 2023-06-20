@@ -8,7 +8,6 @@
     <form-table
       ref="tableRef"
       @add="handleAdd"
-      @selection-change="handleSelectionChange"
       :form-options="{
         schema: allSchemas.searchSchema
       }"
@@ -33,6 +32,7 @@
       <template #visible="{ row }">
         <el-switch v-model="row.visible" :active-value="true" :inactive-value="false" />
       </template>
+
       <template #prompt="{ row }">
         <el-button type="primary" link @click="handlePreview(row)">预览</el-button>
       </template>
