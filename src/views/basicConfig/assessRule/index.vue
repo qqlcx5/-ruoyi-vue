@@ -41,11 +41,10 @@ import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
 import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
-import { getAllStoreList } from '@/api/system/organization/index'
-
-import { listToTree } from '@/utils/tree'
-import { cloneDeep } from 'lodash-es'
 import { dateFormat } from '@/utils/utils'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
+
 const message = useMessage()
 
 const tableConfig = reactive({
@@ -139,12 +138,11 @@ const handleSearch = () => {
 }
 let shopList = []
 const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopList = cloneDeep(data || [])
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
-getShopList()
+onMounted(async () => {
+  const res = await store.getShopList()
+  shopList = res.shopList
+  shopTreeList.value = res.shopTreeList
+})
 const handleCreate = () => {
   curInfo.value = {}
   visible.value = true

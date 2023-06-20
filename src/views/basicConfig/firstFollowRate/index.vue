@@ -41,26 +41,23 @@
 import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import EditFirstFollowRate from '../components/EditFirstFollowRate/index.vue'
-import { getAllStoreList } from '@/api/system/organization'
-import { cloneDeep } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
 import {
   firstFollowRatePage,
   firstFollowRateUpdateStatus,
   firstFollowRateDelete
 } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
-
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const message = useMessage()
 
 let shopList = []
 const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopList = cloneDeep(data || [])
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
-getShopList()
+onMounted(async () => {
+  const res = await store.getShopList()
+  shopList = res.shopList
+  shopTreeList.value = res.shopTreeList
+})
 
 const visible = ref<boolean>(false)
 const tableConfig = reactive({

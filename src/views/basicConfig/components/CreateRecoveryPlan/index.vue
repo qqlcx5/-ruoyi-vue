@@ -124,11 +124,10 @@
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus'
 import { getListSimpleUsersApi } from '@/api/system/user'
-import { getAllStoreList } from '@/api/system/organization'
 import { DICT_TYPE, getTenantDictOptions } from '@/utils/dict'
-import { listToTree } from '@/utils/tree'
 import { saveRecycleSchedule } from '@/api/clue/basicConfig'
-
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const message = useMessage()
 
 interface IProps {
@@ -166,8 +165,8 @@ const getUsers = async () => {
 }
 const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+  const res = await store.getShopList()
+  shopTreeList.value = res.shopTreeList
 }
 
 const timeRange = ref<string[]>([])
