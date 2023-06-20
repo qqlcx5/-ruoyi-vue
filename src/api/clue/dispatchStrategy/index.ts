@@ -28,6 +28,10 @@ export const clueDistributeSaveV2 = (params) => {
 export const clueDistributeUser = (data) => {
   return request.post({ url: '/clue/clueDistributeUser/page', data })
 }
+// 批量删除
+export const batchDelClueDistributeUser = (data) => {
+  return request.post({ url: '/clue/clueDistributeUser/batch/delete', data })
+}
 // 获取分页 线索规则设置
 export const getClueDistributeRule = (data) => {
   return request.post({ url: '/clue/clueDistributeProductization/query-page', data })
@@ -36,6 +40,19 @@ export const getClueDistributeRule = (data) => {
 export const addClueDistributeRule = (data) => {
   return request.post({ url: '/clue/clueDistributeProductization/create', data })
 }
+// 开启-关闭考核规则设置(产品化)
+export const changeClueDistributeRule = (id: number, status: number) => {
+  return request.get({
+    url: `/clue/clueDistributeCheckProductization/update/open-rule/${id}/${status}`
+  })
+}
+//详情 线索考核规则设置(产品化)
+export const getClueDistributeRuleDetail = (id: number) => {
+  return request.get({
+    url: `/clue/clueDistributeProductization/detail/${id}`
+  })
+}
+
 //删除 线索规则设置
 export const delClueDistributeRule = (id: string) => {
   return request.get(`/clue/clueDistributeProductization/delete/${id}`)
