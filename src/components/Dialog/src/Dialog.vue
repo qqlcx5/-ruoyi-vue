@@ -80,7 +80,9 @@ const handleCancel = () => emits('cancel')
     <template #header>
       <div class="flex justify-between">
         <slot name="title">
-          {{ title }}
+          <div class="title">
+            {{ title }}
+          </div>
         </slot>
         <Icon
           v-if="fullscreen"
@@ -143,5 +145,9 @@ const handleCancel = () => emits('cancel')
   .#{$elNamespace}-dialog__footer {
     border-top: 1px solid var(--el-border-color);
   }
+}
+
+.title {
+  font-size: 16px;
 }
 </style>
