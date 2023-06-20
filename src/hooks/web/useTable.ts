@@ -68,6 +68,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
     () => tableObject.currentPage,
     () => {
       methods.getList()
+      elTableRef.value?.setScrollTop(0)
     }
   )
 
@@ -90,9 +91,9 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
   // ElTable实例
   const elTableRef = ref<ComponentRef<typeof ElTable>>()
 
-  const register = (ref: typeof Table & TableExpose, elRef: ComponentRef<typeof ElTable>) => {
+  const register = (ref: typeof Table & TableExpose, elRef: Ref<ComponentRef<typeof ElTable>>) => {
     tableRef.value = ref
-    elTableRef.value = elRef
+    elTableRef.value = elRef.value
   }
 
   const getTable = async () => {
@@ -224,6 +225,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
   return {
     register,
     elTableRef,
+    tableRef,
     tableObject,
     methods,
     // 返回 tableMethods 属性，和 tableObject 更统一

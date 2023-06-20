@@ -16,6 +16,9 @@ $btnWrapHeight: 86px;
     height: 20px;
     margin-right: 20px;
   }
+  .el-input-number :deep(.el-input__inner) {
+    text-align: left;
+  }
   .part-title {
     @include flex($alignItems: center);
     line-height: 25px;
