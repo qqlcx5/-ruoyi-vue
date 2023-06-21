@@ -1,6 +1,14 @@
 <template>
-  <el-card class="box-card">
-    <!--    <el-input v-model="filterText" :suffix-icon="Search" placeholder="Filter keyword" />-->
+  <el-card
+    class="box-card"
+    :body-style="{
+      paddingTop: '5px'
+    }"
+  >
+    <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">
+      <div>显示全部区划</div>
+      <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />
+    </div>
     <el-input
       v-model="query"
       :suffix-icon="Search"
@@ -30,19 +38,22 @@ import { ref } from 'vue'
 import { ElTreeV2 } from 'element-plus'
 import type { TreeNode } from 'element-plus/es/components/tree-v2/src/types'
 import { Search } from '@element-plus/icons-vue'
-import { getAllCustomKeys, getTreeAllCustomKeys } from '@/utils/utils'
+import { getTreeAllCustomKeys } from '@/utils/utils'
 import { handleTree } from '@/utils/tree'
 
 interface TreeDataProps {
   treeData?: Array<any>
+  statusValue?: boolean
 }
 
 const props = withDefaults(defineProps<TreeDataProps>(), {
-  treeData: () => []
+  treeData: () => [],
+  statusValue: false
 })
 
 const emit = defineEmits<{
   (e: 'sendCurrentSelect', key: any): void
+  (e: 'statusChange', key: any): void
 }>()
 
 interface State {
@@ -51,6 +62,7 @@ interface State {
   currentNodeKey: string
   treeData: Array<any>
   isFirst: boolean
+  statusValue: boolean
 }
 
 const state: State = reactive({
@@ -58,7 +70,8 @@ const state: State = reactive({
   treeData: [],
   defaultExpandedKeys: [], //默认展开的节点
   currentNodeKey: '', //当前选中的节点
-  isFirst: true //第一次 进来 默认值 单独处理
+  isFirst: true, //第一次 进来 默认值 单独处理
+  statusValue: false //显示全部区划
 })
 
 const query = ref('')
@@ -80,9 +93,12 @@ const filterMethod = (query: string, node: TreeNode) => {
 }
 
 const selectTree = (data, node) => {
-  console.log('data??????????', data)
-  console.log('node????', node)
   emit('sendCurrentSelect', data)
+}
+
+//显示全部区划
+const statusChange = () => {
+  emit('statusChange', state.statusValue ? 0 : 1)
 }
 
 // onMounted(() => {
@@ -135,16 +151,32 @@ watch(
     immediate: true
   }
 )
+
+watch(
+  () => props.statusValue,
+  (val) => {
+    state.statusValue = val
+  }
+)
 </script>
 
 <style lang="scss" scoped>
 .box-card {
   min-width: 322px;
   height: 100%;
-  padding-bottom: 30px;
-  margin-right: 10px;
+  //padding-bottom: 30px;
+  //margin-right: 10px;
 }
 .filter-tree {
   margin-top: 15px;
+}
+.switch-content {
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.switch-style {
+  margin-left: 9px;
 }
 </style>

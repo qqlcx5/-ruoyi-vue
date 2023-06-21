@@ -92,11 +92,10 @@ const { t } = useI18n()
 
 const tableRef = ref()
 
-const getTableList = (params) => {
-  return getSensitiveWordPageApi(params).then((res) => {
-    console.log('res', res)
-    return res
-  })
+const getTableList = async (params) => {
+  const res = getSensitiveWordPageApi(params)
+  console.log('res', res)
+  return res
 }
 
 const columns: TableColumn[] = [

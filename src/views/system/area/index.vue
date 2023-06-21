@@ -4,7 +4,9 @@
     <!--  -1显示全部区划item 100000中国  -->
     <LeftSelectTree
       :treeData="state.areaList.filter((item) => item.code !== '-1')"
+      :statusValue="state.statusValue"
       @sendCurrentSelect="sendCurrentSelect"
+      @statusChange="statusChange"
     />
     <el-card class="right-card" body-style="padding:0">
       <div class="btn-content">
@@ -42,10 +44,10 @@
           preIcon="svg-icon:add"
         />
         <XButton title="删除" v-hasPermi="['system:tenant-area:delete']" @click="openDeleteModal" />
-        <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">
-          <div>显示全部区划</div>
-          <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />
-        </div>
+        <!--        <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">-->
+        <!--          <div>显示全部区划</div>-->
+        <!--          <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />-->
+        <!--        </div>-->
       </div>
       <div class="form-content">
         <el-form
@@ -357,10 +359,11 @@ const modalDelete = async () => {
 }
 
 //显示全部区划
-const statusChange = async () => {
+const statusChange = async (visible) => {
   await visibleAllArea({
     id: state.isVisibleAllArea.id,
-    visible: state.statusValue ? 0 : 1
+    // visible: state.statusValue ? 0 : 1
+    visible: visible
   })
   message.success('编辑显示全部区划成功')
   getList()
