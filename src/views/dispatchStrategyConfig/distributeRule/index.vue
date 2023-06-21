@@ -118,10 +118,10 @@ const addRule = async () => {
   crudRef.value.openDialog('', shopTreeList.value)
 }
 const changeOpenRules = (row) => {
-  console.log(row)
-  // dispatchApi.changeClueDistributeRule(row.id, row.openRules).then((res) => {
-  //   console.log(res)
-  // })
+  console.log(11, row)
+  dispatchApi.changeClueDistributeRule(row.id, row.openRules).then((res) => {
+    console.log(res)
+  })
 }
 const { allSchemas } = useCrudSchemas(columns)
 </script>

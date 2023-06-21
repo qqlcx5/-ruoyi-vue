@@ -12,6 +12,23 @@
     }"
     @add="addMember"
   >
+    <template #status="{ row }">
+      <el-switch
+        v-model="row.status"
+        :active-value="1"
+        :inactive-value="0"
+        @change="changeStatus(row)"
+      />
+    </template>
+    <template #pushBackFactoryStatus="{ row }">
+      <el-switch
+        v-model="row.pushBackFactoryStatus"
+        :active-value="1"
+        :inactive-value="0"
+        @change="changePushBackFactoryStatus(row)"
+      />
+    </template>
+
     <template #tableAppend>
       <XButton type="danger" @click="handleDel">删除</XButton>
     </template>
@@ -29,7 +46,7 @@
       <el-button type="primary" @click="confirmDel">确 定</el-button>
     </template>
   </el-dialog>
-  <Crud ref="crudRef" />
+  <Crud ref="crudRef" @refresh="refresh" />
 </template>
 
 <script setup lang="ts" name="dispatchMember">
@@ -40,12 +57,18 @@ import { getAllStoreList } from '@/api/system/organization'
 import { listToTree } from '@/utils/tree'
 import { computed, ref } from 'vue'
 import Crud from './components/crud.vue'
+import { getAllBrand } from '@/api/model/brand'
 
 const message = useMessage()
 
 onMounted(() => {
   getShopList()
+  getBrandInfo()
 })
+
+const refresh = () => {
+  tableRef.value.tableMethods.reload()
+}
 const tableRef = ref()
 // 获取门店数据
 const shopTreeList = ref<object[]>([])
@@ -54,6 +77,11 @@ const getShopList = async () => {
   shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
 }
 
+const brandList = ref<object[]>([])
+const getBrandInfo = async () => {
+  const data = await getAllBrand()
+  brandList.value = data
+}
 let mergeItems = [
   {
     columnIndex: 1,
@@ -132,10 +160,7 @@ const columns: TableColumn[] = [
     label: '跟进是否回推厂家',
     field: 'pushBackFactoryStatus'
   },
-  {
-    label: '是否开启请假功能',
-    field: 'isEnableLeaveFunc'
-  },
+
   {
     label: '成员姓名',
     field: 'username',
@@ -171,10 +196,10 @@ const columns: TableColumn[] = [
       componentProps: {
         filterable: true,
         clearable: true,
-        options: computed(() => shopTreeList.value),
+        options: computed(() => brandList.value),
         props: {
-          label: 'name',
-          value: 'id',
+          label: 'brandName',
+          value: 'brandId',
           emitPath: false
         }
       }
@@ -204,7 +229,7 @@ const actionButtons = [
     permission: true,
     click: (row) => {
       console.log(row)
-      editMember(row.id)
+      editMember(row.distributeShopId)
     }
   },
   {
@@ -250,6 +275,14 @@ const deleteFun = async () => {
     message.error('报错了')
   }
 }
+
+const changeStatus = (row) => {
+  dispatchApi.updateClueDistributeUserStatus(row.id)
+}
+const changePushBackFactoryStatus = (row) => {
+  dispatchApi.updatePushBackFactoryStatus(row.id)
+}
+
 const { allSchemas } = useCrudSchemas(columns)
 </script>
 
