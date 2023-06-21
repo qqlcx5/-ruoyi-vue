@@ -113,7 +113,7 @@ const columns: TableColumn[] = [
   },
   {
     label: '浏览器',
-    field: 'userAgent',
+    field: 'browser',
     width: 120
   },
   {
@@ -162,7 +162,7 @@ const columns: TableColumn[] = [
       component: 'DatePicker',
       componentProps: {
         type: 'datetimerange',
-        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+        valueFormat: 'YYYY-MM-DD HH:mm:ss'
       }
     },
     formatter: (_, __, val: string) => {
