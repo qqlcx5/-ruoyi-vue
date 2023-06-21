@@ -33,20 +33,22 @@ import { Layout } from '@/utils/routerHelper'
 **/
 const whiteRouter: AppRouteRecordRaw[] = [
   {
-    path: '/roleexpand',
+    path: '/systemRole',
     component: Layout,
-    name: 'Roleexpand',
+    name: 'systemRole',
     meta: {
       hidden: true
     },
     children: [
       {
-        path: '/roleconfig',
+        path: 'config',
         component: () => import('@/views/system/role/config.vue'),
-        name: 'Roleconfig',
+        name: 'config',
         meta: {
           hidden: true,
-          noTagsView: false,
+          noTagsView: true,
+          activeMenu: '/system/role',
+          followAuth: '/system/role',
           title: '角色权限配置'
         }
       }
