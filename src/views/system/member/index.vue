@@ -690,10 +690,10 @@
                   </div>
                 </template>
 
-                <template v-if="column.key === 'existwxWork'">
+                <template v-if="column.key === 'existWxWork'">
                   <div>
                     <a-switch
-                      v-model:checked="record.existwxWork"
+                      v-model:checked="record.existWxWork"
                       checked-children="开启"
                       un-checked-children="关闭"
                     />
@@ -2094,7 +2094,7 @@ const closeModal = () => {
       phoneNum: '',
       useType: '1',
       isService: true,
-      existwxWork: true
+      existWxWork: true
     }
   ]
 
@@ -2155,7 +2155,7 @@ const edit = async (record, isCloseDetails = false) => {
       phoneNum: item.phone,
       useType: item.usageType,
       isService: item.recordEnable,
-      existwxWork: item.existwxWork
+      existWxWork: item.existWxWork
     })
   })
 
@@ -2182,7 +2182,7 @@ const edit = async (record, isCloseDetails = false) => {
       phoneNum: '',
       useType: '',
       isService: true,
-      existwxWork: true
+      existWxWork: true
     })
   }
 
@@ -2301,7 +2301,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existwxWork: item?.existwxWork, //是否开通企微
+        existWxWork: item?.existWxWork, //是否开通企微
         userId: formState.id,
         id: item.id
       })
@@ -2311,7 +2311,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existwxWork: item?.existwxWork //是否开通企微
+        existWxWork: item?.existWxWork //是否开通企微
       })
     }
 
@@ -2791,7 +2791,7 @@ const detailsInfo = async (record) => {
       phoneNum: item?.phone,
       useType: item?.usageType === '1' ? '私人' : '公司',
       isService: item?.recordEnable ? '是' : '否',
-      existwxWork: item?.existwxWork ? '已开通' : '未开通' //是否开通企微
+      existWxWork: item?.existWxWork ? '已开通' : '未开通' //是否开通企微
     })
   })
 
@@ -3016,8 +3016,8 @@ const detailsInfo = async (record) => {
     {
       title: '是否开通企微',
       width: 100,
-      dataIndex: 'existwxWork',
-      key: 'existwxWork',
+      dataIndex: 'existWxWork',
+      key: 'existWxWork',
       resizable: true,
       ellipsis: true,
       disabled: true,
@@ -3702,8 +3702,8 @@ const addEditColumns = [
   {
     title: '是否开通企微',
     width: 100,
-    dataIndex: 'existwxWork',
-    key: 'existwxWork',
+    dataIndex: 'existWxWork',
+    key: 'existWxWork',
     resizable: true,
     ellipsis: true,
     disabled: true,
@@ -3727,7 +3727,7 @@ const addDataSource = reactive({
       phoneNum: '',
       useType: '1',
       isService: true,
-      existwxWork: true
+      existWxWork: true
     }
   ]
 })
@@ -3746,7 +3746,7 @@ const addColumns = (index) => {
     phoneNum: '',
     useType: '1',
     isService: true,
-    existwxWork: true
+    existWxWork: true
   }
 
   addDataSource.addEditTableData.splice(index + 1, 0, tempObj)
