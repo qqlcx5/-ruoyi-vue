@@ -71,7 +71,7 @@ export const changeClueDistributeRule = (id: number, status: number) => {
   })
 }
 //详情 线索考核规则设置(产品化)
-export const getClueDistributeRuleDetail = (id: string) => {
+export const getClueDistributeRuleDetail = (id: number) => {
   return request.get({
     url: `/clue/clueDistributeProductization/detail/${id}`
   })
@@ -81,19 +81,15 @@ export const getClueDistributeRuleDetail = (id: string) => {
 export const delClueDistributeRule = (id: string) => {
   return request.get(`/clue/clueDistributeProductization/delete/${id}`)
 }
-// 详情
-export const detailClueDistributeRule = (id: string) => {
-  return request.get(`/clue/clueDistributeProductization/detail/${id}`)
-}
+
 // 编辑
 export const editClueDistributeRule = (data) => {
   return request.post({ url: '/clue/clueDistributeProductization/edit', data })
 }
-// 获取存在规则门店
-export const getExitRuleShop = (id: string) => {
-  return request.get({ url: `/clue/clueDistributeProductization/valid/exist-rule-shop`, id })
-}
+
 //校验规则名称是否已经存在
 export const checkValidRuleName = (id: number, ruleName: string) => {
-  return request.get(`/clue/clueDistributeProductization/valid/rule-name/${id}/${ruleName}`)
+  return request.get({
+    url: `/clue/clueDistributeProductization/valid/rule-name/${id}/${ruleName}`
+  })
 }

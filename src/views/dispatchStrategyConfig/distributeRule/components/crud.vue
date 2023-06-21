@@ -7,7 +7,13 @@
   >
     <el-form :model="form" ref="formRef" :hide-required-asterisk="false">
       <el-form-item label="适用名称">
-        <el-input v-model="form.distributeRuleName" maxlength="20" show-word-limit type="text" />
+        <el-input
+          v-model="form.distributeRuleName"
+          @change="changeRuleName"
+          maxlength="20"
+          show-word-limit
+          type="text"
+        />
       </el-form-item>
       <el-form-item label="适用门店">
         <el-cascader
@@ -78,18 +84,6 @@
             <el-table-column label="团队" prop="teamName" />
             <el-table-column label="关联岗位" width="200">
               <template #default="{ row }">
-                <!--                <el-tooltip effect="dark" placement="top">-->
-                <!--                  <template #content v-if="row.positionSunNameList.length > 0">-->
-                <!--                    {{ row.positionSunNameList.join(',') }}-->
-                <!--                  </template>-->
-                <!--                  <el-button @click="showPositionDialog(row)">-->
-                <!--                    {{-->
-                <!--                      row.positionSunNameList.length > 0-->
-                <!--                        ? row.positionSunNameList.join(',')-->
-                <!--                        : '请选择岗位'-->
-                <!--                    }}-->
-                <!--                  </el-button>-->
-
                 <el-select
                   v-model="row.positionSunTypeList"
                   multiple
@@ -105,7 +99,6 @@
                     :value="item.id"
                   />
                 </el-select>
-                <!--                </el-tooltip>-->
               </template>
             </el-table-column>
             <el-table-column label="允许独享人数" prop="permitEnjoyNum">
@@ -145,12 +138,21 @@ import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { cloneDeep } from 'lodash-es'
 import { listSimplePostsApi } from '@/api/system/post/info'
 import { RuleObj } from '../helpers'
+import { FormInstance } from 'element-plus'
+import { useOption } from '@/store/modules/options'
+import { existDccRuleShop } from '@/api/clue/basicConfig'
+const store = useOption()
+
+onMounted(() => {
+  getPostList()
+})
+
 const message = useMessage()
 const dialogVisible = ref(false)
 const shopTreeList = ref<object[]>([])
 const btnLoading = ref(false)
 const emit = defineEmits(['refresh'])
-const formRef = ref()
+const formRef = ref<FormInstance>()
 const initForm: RuleObj = {
   distributeRuleName: '',
   shopIdList: [],
@@ -165,26 +167,31 @@ const initForm: RuleObj = {
 }
 const form = ref(cloneDeep(initForm))
 const editFlag = ref<boolean>(false)
-const openDialog = (id: string, formshopTreeList: any) => {
+const editId = ref(0)
+const openDialog = (id: number) => {
   nextTick(() => {
+    let applicableShopId = []
+    editId.value = id
     editFlag.value = !!id
     formRef.value?.resetFields()
     form.value = cloneDeep(initForm)
-    shopTreeList.value = formshopTreeList
+    // shopTreeList.value = formshopTreeList
     if (id) {
       dispatchApi.getClueDistributeRuleDetail(id).then((res) => {
         form.value = res
         if (!res.teams) {
           form.value.teams = []
         }
-        let dataStrArr = res.applicableShopId.split(',')
-        form.value.shopIdList = dataStrArr.map((item) => +item)
-        console.log(form.value)
+        applicableShopId = res.applicableShopId.split(',')
+        form.value.shopIdList = applicableShopId.map((item) => +item)
+        console.log('opendialog')
       })
     }
+    getShopList(applicableShopId)
     dialogVisible.value = true
   })
 }
+
 const hide = () => {
   formRef.value?.resetFields()
   dialogVisible.value = false
@@ -195,9 +202,20 @@ const getPostList = async () => {
   postList.value = data
 }
 
-onMounted(() => {
-  getPostList()
-})
+const getShopList = async (applicableShopId) => {
+  const { shopList } = await store.getShopList()
+  const checkedList = await existDccRuleShop()
+  shopTreeList.value = store.dealShopList(shopList, unref(checkedList), applicableShopId)
+}
+
+const changeRuleName = (val) => {
+  if (!editFlag) return
+  const isValid = dispatchApi.checkValidRuleName(editId.value, val)
+  if (!isValid) {
+    form.value.distributeRuleName = ''
+    message.error('名称已经存在，请重新输入')
+  }
+}
 
 // 添加团队
 const addTeam = () => {
@@ -223,14 +241,12 @@ const changeReceivePattern = (id) => {
 }
 
 const deleteShopRule = (index) => {
-  console.log('删除')
   form.value.teams.splice(index, 1)
 }
 
 const onConfirm = () => {
   let params = cloneDeep(form.value)
   params.applicableShopId = params.shopIdList.join(',')
-  // delete params.shopIdList
 
   btnLoading.value = true
   unref(editFlag)

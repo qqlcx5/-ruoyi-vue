@@ -6,15 +6,15 @@
     width="60%"
     height="70%"
   >
-    <el-form :model="form" :rules="rules" ref="form">
+    <el-form :model="ruleForm" :rules="rules" ref="formRef">
       <el-form-item label="所属门店" prop="shopId">
         <el-cascader
           ref="treeShopCascader"
-          v-model="form.shopIdList"
+          v-model="ruleForm.shopIdList"
           placeholder="请选择门店"
           :options="shopTreeList"
           collapse-tags
-          @change="getDistributeShopIdList"
+          @visible-change="getDistributeShopIdList"
           :props="{
             label: 'name',
             value: 'id',
@@ -41,19 +41,13 @@
       </el-table-column>
       <el-table-column label="成员">
         <template #default="{ row }">
-          <el-select
+          <el-cascader
+            ref="cascaderRef"
             v-model="row.distributeUserId"
+            :options="userList"
+            :props="{ label: 'username', value: 'id' }"
             @change="changeUserById($event, row)"
-            filterable
-            collapse-tags
-          >
-            <el-option
-              v-for="item in userList"
-              :key="item.id"
-              :label="item.username"
-              :value="item.id"
-            />
-          </el-select>
+          />
         </template>
       </el-table-column>
       <el-table-column label="成员平台昵称">
@@ -82,14 +76,12 @@
       <el-table-column label="销售车系" show-overflow-tooltip>
         <template #default="{ row }">
           <template v-if="row.brandIds">
-            <el-select v-model="row.seriesIds" multiple filterable collapse-tags>
-              <el-option
-                v-for="item in userList"
-                :key="item.id"
-                :label="item.username"
-                :value="item.id"
-              />
-            </el-select>
+            <el-cascader
+              v-model="row.seriesIds"
+              :options="seriesOption"
+              :props="{ multiple: true, label: 'seriesDetailsName', value: 'seriesDetailsId' }"
+              @visible-change="changeSeriesEvent($event, row)"
+            />
           </template>
           <span v-else>请先选择品牌</span>
         </template>
@@ -129,18 +121,19 @@
 
 <script setup lang="ts" name="dipatchMemberCrud">
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
-import type { FormRules } from 'element-plus'
+import type { FormRules, FormInstance } from 'element-plus'
 import { getListSimpleUsersApi } from '@/api/system/user'
 import { ref } from 'vue'
 import { getAllBrand, querySeriesDetailsBelowBrand } from '@/api/model/brand'
-import { cloneDeep } from 'lodash-es'
+onMounted(() => {
+  getBrandInfo()
+})
 const message = useMessage()
-const tableRef = ref()
 const visible = ref(false)
 const btnLoading = ref(false)
 const emit = defineEmits(['refresh'])
-
-const form = ref({
+const formRef = ref<FormInstance>()
+const ruleForm = ref({
   shopIdList: []
 })
 const rules: FormRules = reactive({
@@ -154,38 +147,29 @@ const openDialog = (id: string, formShopTreeList: any) => {
   nextTick(() => {
     memberTableList.value = []
     shopTreeList.value = formShopTreeList
-    form.value = { shopIdList: [] }
     editFlag.value = !!id
     if (id) {
       dispatchApi.getClueDistributeUserDetail(id).then((res) => {
-        console.log(res)
-        form.value.shopIdList = res.shopId
+        ruleForm.value.shopIdList = res.shopId
         memberTableList.value = res.userList
       })
+    } else {
+      ruleForm.value = { shopIdList: [] }
     }
-    console.log(cloneDeep(form), 'form111')
     visible.value = true
-    console.log(form.value, 'form')
   })
 }
-watch(
-  () => form.value,
-  (val) => console.log(val, '11111'),
-  { deep: true }
-)
+// watch(
+//   () => ruleForm.value,
+//   (val) => console.log(val, '11111'),
+//   { deep: true }
+// )
 const userList = ref<object[]>([])
-// const getUsers = async () => {
-//   const data = await getUserPageApi({
-//     deptId: Number(form.value.shopIdList.join(',')),
-//     pageNo: 1,
-//     pageSize: 999
-//   })
-//   console.log(data)
-//   userList.value = data.list
-// }
+
 const getUsers = async () => {
-  const data = await getListSimpleUsersApi({ storeIds: form.value.shopIdList.join(',') })
-  console.log(data)
+  let str = ruleForm.value.shopIdList.join(',')
+  str += `,43`
+  const data = await getListSimpleUsersApi({ storeIds: str })
   userList.value = data
 }
 
@@ -194,10 +178,7 @@ const getBrandInfo = async () => {
   const data = await getAllBrand()
   brandList.value = data
 }
-onMounted(() => {
-  getUsers()
-  getBrandInfo()
-})
+
 const shopTreeList = ref<object[]>([])
 
 type brandObj = {
@@ -230,8 +211,7 @@ const memberTableList = ref<tableObj[]>([
   }
 ])
 const addMemberRule = () => {
-  console.log(form.value.shopIdList)
-  if (!form.value.shopIdList || form.value.shopIdList.length < 1) {
+  if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
   }
   let addItem: tableObj = {
@@ -250,45 +230,79 @@ const addMemberRule = () => {
   }
   memberTableList.value.push(addItem)
 }
-const getDistributeShopIdList = () => {
-  memberTableList.value = []
-  getUsers()
-  console.log(userList.value)
+const getDistributeShopIdList = (val) => {
+  if (!val) {
+    memberTableList.value = []
+    getUsers()
+  }
 }
 const deleteRow = (index) => {
-  console.log(index, 'index')
   memberTableList.value.splice(index, 1)
 }
-
+const cascaderRef = ref()
 const changeUserById = (val, row) => {
-  console.log(val, 'jfds')
-  row.shopId = '0'
-  row.shopName = '3333'
+  let cascaderList = cascaderRef.value.getCheckedNodes()
+  let cascaderData = cascaderList[0].data
+  row.shopId = cascaderData.belongStoreId
+  row.shopName = cascaderData.belongStoreName
 }
 const changeBrandId = (val, row) => {
   if (!val) {
-    console.log(val, row, 'brand')
+    seriesOption.value = []
     row.brandIds.length && getSeries(row.brandIds)
   }
 }
-const getSeries = (val) => {
-  querySeriesDetailsBelowBrand({ brandIds: val })
+
+const changeSeriesEvent = (val, row) => {
+  row.brandList = []
+  const obj = {}
+  row?.seriesIds?.map((item) => {
+    if (obj[item[0]]) {
+      obj[item[0]].push(item[1])
+    } else {
+      obj[item[0]] = [item[1]]
+    }
+  })
+  Object.keys(obj).forEach((key) => {
+    row.brandList.push({
+      brandId: key,
+      seriesIds: obj[key]
+    })
+  })
 }
-// const changeStatus = () => {}
-// const changePushBackFactoryStatus = () => {}
+type seriesParams = {
+  seriesDetailsName: string
+  seriesDetailsId: number
+  children: object[]
+}
+let seriesOption = ref<seriesParams[]>([])
+
+const getSeries = async (val) => {
+  const seriesData = await querySeriesDetailsBelowBrand({ brandIds: val })
+  seriesData.forEach((item) => {
+    let optionsObj: seriesParams = {
+      seriesDetailsName: item.brand.brandName,
+      seriesDetailsId: item.brand.brandId,
+      children: item.seriesList
+    }
+    seriesOption.value.push(optionsObj)
+  })
+}
 const onConfirm = () => {
-  if (form.value.shopIdList.length < 1) {
+  if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
   }
+
   interface IParams {
     shopIdList: object[]
     userList: object[]
   }
+
   let params: IParams = {
     shopIdList: [],
     userList: []
   }
-  params.shopIdList = form.value.shopIdList
+  params.shopIdList = ruleForm.value.shopIdList
   params.userList = memberTableList.value
   btnLoading.value = true
   unref(editFlag)
@@ -298,8 +312,6 @@ const onConfirm = () => {
   emit('refresh')
   visible.value = false
   btnLoading.value = false
-  console.log(tableRef.value.tableObject.tableList)
-  // dispatchApi.addClueDistributeUser()
 }
 
 defineExpose({ openDialog })
