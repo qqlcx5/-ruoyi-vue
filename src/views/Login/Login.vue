@@ -56,6 +56,7 @@ $prefix-cls: #{$namespace}-login;
   .login-left-block {
     color: #fff;
     background: url('@/assets/imgs/login-block.png') no-repeat center;
+    background-color: #fff;
     background-size: contain;
   }
 

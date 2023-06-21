@@ -26,6 +26,20 @@
           @change="handleNeedFilterChange(row, 'needFilter')"
         />
       </template>
+      <template #autoDistribute="{ row }">
+        <div>{{ FilterFun(row.autoDistribute) }}</div>
+      </template>
+      <template #platformRule="{ row }">
+        <div>{{ FilterFun(row.platformRule) }}</div>
+      </template>
+      <template #isShow="{ row }">
+        <el-switch
+          v-model="row.isShow"
+          :active-value="1"
+          :inactive-value="0"
+          @change="handleNeedFilterChange(row, 'isShow')"
+        />
+      </template>
     </form-table>
   </ContentWrap>
   <AddChannelModal ref="addChannelModalRef" @refresh-list="refreshList" />
@@ -40,6 +54,14 @@ import AddChannelModal from './components/AddChannelModal.vue'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
+
+const FilterFun = (val) => {
+  let obj = {
+    0: '否',
+    1: '是'
+  }
+  return obj[val]
+}
 
 const columns: TableColumn[] = [
   {
@@ -106,7 +128,8 @@ const actionButtons = [
 ]
 
 const refreshList = () => {
-  tableRef.value.tableMethods.reload()
+  console.log(tableRef.value.tableMethods)
+  tableRef.value.tableMethods.getList()
 }
 
 const { allSchemas } = useCrudSchemas(columns)
@@ -114,24 +137,26 @@ const { allSchemas } = useCrudSchemas(columns)
 const addChannelModalRef = ref()
 const { push } = useRouter() // 路由
 const handleAdd = () => {
-  // setDialogTitle('add')
   addChannelModalRef.value.openModal()
 }
 const tableRef = ref()
 const handleDelete = async (row, type?: any) => {
   let params: { ids: any[] } = { ids: [] }
   let id: any[] = []
+
   if (type == 'single') {
     id = [row.id]
   } else {
     const selectedData = await tableRef.value.tableMethods.getSelections()
     id = selectedData.map((item) => item.id)
   }
+  let msgContent = '确认删除该数据吗？'
+  if (id.length > 1) {
+    msgContent = `确认删除 ${id.length} 条数据吗？`
+  }
   params = { ids: id }
-  console.log(params)
-
   message
-    .confirm('确认删除该数据吗？', t('common.reminder'))
+    .confirm(msgContent, t('common.reminder'))
     .then(async () => {
       let data = await channelApi.delClueChannel(params)
       if (data) {
@@ -153,7 +178,12 @@ const handleUpdate = async (row: any) => {
 // 更改是否需要清洗
 const handleNeedFilterChange = async (row, type) => {
   if (!row.id) return
-  await channelApi.updateChannelSwitch(row.id, row.needFilter)
+  if (type == 'needFilter') {
+    await channelApi.updateChannelSwitch(row.id, row.needFilter)
+  } else {
+    await channelApi.updateIsShowSwitch(row.id, row.isShow)
+  }
+  refreshList()
 }
 </script>
 

@@ -2,9 +2,14 @@
   <div class="basic-config-content call-settings-container">
     <div class="config-form-item">
       <span class="mr-8px">每个客户每天允许打通电话次数</span>
-      <el-button type="primary" v-if="!editFlag" :loading="btnLoading" @click="toggleEdit(true)">{{
-        btnLoading ? '保存中' : '编辑'
-      }}</el-button>
+      <el-button
+        type="primary"
+        v-if="!editFlag"
+        :loading="btnLoading"
+        :disabled="loading"
+        @click="toggleEdit(true)"
+        >{{ btnLoading ? '保存中' : '编辑' }}</el-button
+      >
       <template v-else>
         <el-button type="primary" @click="toggleEdit(false)">保存</el-button>
         <el-button type="primary" @click="handleAddRow">新增行</el-button>
@@ -61,10 +66,11 @@
 
 <script setup lang="ts">
 import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicConfig'
-import { getAllStoreList } from '@/api/system/organization/index'
 import { listToTree } from '@/utils/tree'
 import { cloneDeep } from 'lodash-es'
 import { ElTable } from 'element-plus'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const loading = ref<boolean>(false)
 let ruleForm = reactive<{ canGetThroughVOs: any[] }>({ canGetThroughVOs: [] })
 const getInfo = async () => {
@@ -86,9 +92,11 @@ const getInfo = async () => {
 const shopList = ref<object[]>([])
 const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopList.value = cloneDeep(data)
-  shopTreeList.value = listToTree(data, { pid: 'parentId' })
+  const res = await store.getShopList()
+  shopList.value = res.shopList
+  shopTreeList.value = res.shopTreeList
+  shopList.value[0]['a'] = 1
+  console.log(store)
 }
 const visibleChange = async (val, row, index) => {
   if (val) {
@@ -97,17 +105,11 @@ const visibleChange = async (val, row, index) => {
     const checkedList = ruleForm.canGetThroughVOs.reduce((arr, item, itemIndex) => {
       const ids = item.joinCountShopIds || []
       if (itemIndex !== index && ids.length) {
-        console.log(ids, item)
         arr.push(...ids)
       }
       return arr
     }, [])
-    console.log(checkedList)
-    const list: any[] = cloneDeep(shopList.value)
-    list.forEach((item) => {
-      item.disabled = checkedList.includes(item.id)
-    })
-    shopTreeList.value = listToTree(list, { pid: 'parentId' })
+    shopTreeList.value = store.dealShopList(unref(shopList), checkedList, [])
   }
 }
 

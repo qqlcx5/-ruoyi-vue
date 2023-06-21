@@ -127,7 +127,7 @@ interface tableColumnsType {
   width?: string
   showOverflowTooltip?: boolean
 }
-const tableColumns: tableColumnsType[] = [
+const initTableColumns: tableColumnsType[] = [
   {
     label: '编号',
     field: 'serialNumber',
@@ -251,7 +251,9 @@ import { cloneDeep } from 'lodash-es'
 // 保存按钮
 const submitForm = async () => {
   let list = cloneDeep(tableList.value)
-
+  let isSerialNumberEmptyTool = false
+  let isClueSourceIdEmptyTool = false
+  let isClueShopIdEmptyTool = false
   let paramsList = list.map((item: any) => {
     if (
       item.clueSourceId &&
@@ -264,8 +266,29 @@ const submitForm = async () => {
       let len = item.shopId.length - 1 || 0
       item.shopId = item.shopId[len]
     }
+    if (!item.serialNumber) {
+      isSerialNumberEmptyTool = true
+    }
+    if (!item.clueSourceId) {
+      isClueSourceIdEmptyTool = true
+    }
+    if (!item.shopId) {
+      isClueShopIdEmptyTool = true
+    }
     return item
   })
+  if (isSerialNumberEmptyTool) {
+    message.error('编号不能为空')
+    return
+  }
+  if (isClueSourceIdEmptyTool) {
+    message.error('线索平台不能为空')
+    return
+  }
+  if (isClueShopIdEmptyTool) {
+    message.error('线索平台开通门店不能为空')
+    return
+  }
   let data = null
   if (dialogTitle.value == '编辑') {
     data = await channelApi.updateClueChannel(paramsList[0])
@@ -277,10 +300,12 @@ const submitForm = async () => {
   }
   emit('refreshList')
 }
+let tableColumns: tableColumnsType[] = []
 const openModal = (row) => {
   dialogVisible.value = true
   tableList.value = []
   dialogTitle.value = '新增'
+  tableColumns = cloneDeep(initTableColumns)
   if (row) {
     dialogTitle.value = '编辑'
     tableList.value = [row]
@@ -326,6 +351,16 @@ defineExpose({ openModal })
     }
   }
   &:nth-child(2) {
+    .cell {
+      position: relative;
+      &::before {
+        content: '*';
+        display: inline-block;
+        color: red;
+      }
+    }
+  }
+  &:nth-child(3) {
     .cell {
       position: relative;
       &::before {

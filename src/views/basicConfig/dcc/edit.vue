@@ -159,7 +159,12 @@
     </el-form>
   </div>
   <div class="bottom-btns">
-    <el-button type="primary" size="large" :loading="btnLoading" @click="handleSave"
+    <el-button
+      type="primary"
+      size="large"
+      :disabled="id && !ruleForm.id"
+      :loading="btnLoading"
+      @click="handleSave"
       >保存设置</el-button
     >
   </div>
@@ -178,6 +183,8 @@ import { cloneDeep, difference } from 'lodash-es'
 import { getAllStoreList } from '@/api/system/organization'
 import { listToTree } from '@/utils/tree'
 import { useTagsViewStoreWithOut } from '@/store/modules/tagsView'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
@@ -209,7 +216,7 @@ const handleAddRow = (index) => {
   console.log(cycle)
 }
 
-const id = route.query.id
+const id = route.params.id
 const loading = ref<boolean>(false)
 onMounted(async () => {
   try {
@@ -241,17 +248,9 @@ onMounted(async () => {
 })
 const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
-  const data = await getAllStoreList()
-  let checkedList = await existDccRuleShop()
-  const applicableShopId = ruleForm.applicableShopId.map((d) => +d)
-  checkedList = difference(
-    checkedList.map((item) => +item),
-    applicableShopId
-  )
-  data.forEach((item) => {
-    item.disabled = checkedList.includes(item['id'])
-  })
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+  const { shopList } = await store.getShopList()
+  const checkedList = await existDccRuleShop()
+  shopTreeList.value = store.dealShopList(shopList, unref(checkedList), ruleForm.applicableShopId)
 }
 const handleDelRow = (list, index) => {
   // console.log(item)

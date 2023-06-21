@@ -6,6 +6,7 @@
       :schema="allSchemas.formSchema"
       :rules="rules"
       ref="formRef"
+      :model="model"
     >
       <template #sourceName="form">
         <el-input v-model="form.sourceName" placeholder="请输入线索来源名称" />
@@ -57,13 +58,23 @@ interface ParentInfoType {
   sourceHierarchy: string
 }
 let parentInfo: ParentInfoType = { sourceHierarchy: '' }
-const openModal = (data) => {
-  parentInfo = {
-    sourceHierarchy: data.sourceHierarchy,
-    parentId: data.id || ''
-  }
+let model = ref({})
+const openModal = (data, type) => {
   dialogVisible.value = true
+  if (type == 'add') {
+    parentInfo = {
+      sourceHierarchy: data.sourceHierarchy,
+      parentId: data.id || ''
+    }
+  } else {
+    setTimeout(() => {
+      if (formRef.value) {
+        formRef.value.setValues(data)
+      }
+    }, 100)
+  }
 }
+
 defineExpose({ openModal })
 const emit = defineEmits(['refreshList'])
 // 保存按钮
@@ -80,14 +91,19 @@ const submitForm = async () => {
           ...data,
           ...parentInfo
         }
-        let res = await channelApi.clueSourceManageAdd(data)
+        let res = null
+        if (data.id) {
+          res = await channelApi.clueSourceManageUpdate(data)
+        } else {
+          res = await channelApi.clueSourceManageAdd(data)
+        }
+
         console.log(res)
 
         if (res) {
+          message.success('操作成功')
           emit('refreshList')
           dialogVisible.value = false
-        } else {
-          message.error(res.msg)
         }
       } finally {
         actionLoading.value = false

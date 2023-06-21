@@ -42,6 +42,10 @@ export const addClueChannel = (params: any) => {
 export const updateChannelSwitch = (id: string, needFilter: string) => {
   return request.post({ url: `/clue/clueChannel/updateNeedFilter/${id}/${needFilter}` })
 }
+// 更新状态 是否显示状态
+export const updateIsShowSwitch = (id: string, needFilter: string) => {
+  return request.post({ url: `/clue/clueChannel/updateIsShow/${id}/${needFilter}` })
+}
 
 // 获取 线索来源管理
 export const getClueSourceManageList = () => {

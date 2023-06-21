@@ -23,10 +23,6 @@
     </Form>
 
     <Table
-      :pagination="{
-        total: 100
-      }"
-      @update:current-page="hehe"
       :columns="tableColumns"
       :data="tableList"
       header-cell-class-name="table-header-style"
@@ -67,10 +63,6 @@ const props = {
   multiple: true,
   label: 'clueName',
   value: 'clueSourceId'
-}
-
-const hehe = (a) => {
-  console.log(a)
 }
 
 let options = ref(oa_source_res.data)

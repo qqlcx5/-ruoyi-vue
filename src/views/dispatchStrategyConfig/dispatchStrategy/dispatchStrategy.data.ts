@@ -89,7 +89,8 @@ export const options = [
 ]
 
 export const oa_source_res = {
-  data: [
+  total: 1,
+  list: [
     {
       children: [
         {

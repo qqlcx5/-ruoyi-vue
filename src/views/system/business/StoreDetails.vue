@@ -430,7 +430,7 @@ const detailsInfo = async (record) => {
   //维保品牌
   let tempMaintenanceString = ''
   const tempMaintenanceArr = state.maintenanceBrandOptions.filter((topItem) => {
-    return relVO?.saleBrand.some((item) => topItem.value === item)
+    return relVO?.maintenanceBrand.some((item) => topItem.value === item)
   })
 
   tempMaintenanceArr.map((item) => {
@@ -556,7 +556,7 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '是否提供救援：',
-          text: relVO?.isSale === 0 ? '是' : '否'
+          text: relVO?.isRescue === 0 ? '是' : '否'
         },
         {
           textSpan: '救援品牌：',
