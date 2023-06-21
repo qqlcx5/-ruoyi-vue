@@ -17,6 +17,7 @@
         v-model="row.status"
         :active-value="1"
         :inactive-value="0"
+        @click.stop
         @change="changeStatus(row)"
       />
     </template>
@@ -25,10 +26,16 @@
         v-model="row.pushBackFactoryStatus"
         :active-value="1"
         :inactive-value="0"
+        @click.stop
         @change="changePushBackFactoryStatus(row)"
       />
     </template>
-
+    <template #autoBrandNames="{ row }">
+      <span>{{ arrToStrFunc(row.autoBrandNames) }}</span>
+    </template>
+    <template #autoSeriesNames="{ row }">
+      <span>{{ arrToStrFunc(row.autoSeriesNames) }}</span>
+    </template>
     <template #tableAppend>
       <XButton type="danger" @click="handleDel">删除</XButton>
     </template>
@@ -67,7 +74,7 @@ onMounted(() => {
 })
 
 const refresh = () => {
-  tableRef.value.tableMethods.reload()
+  tableRef.value.tableMethods.getList()
 }
 const tableRef = ref()
 // 获取门店数据
@@ -79,9 +86,16 @@ const getShopList = async () => {
 
 const brandList = ref<object[]>([])
 const getBrandInfo = async () => {
-  const data = await getAllBrand()
-  brandList.value = data
+  const allBrand = await getAllBrand()
+  brandList.value = allBrand
 }
+const getTable = (params) => {
+  return dispatchApi.clueDistributeUser(params).then((data) => {
+    getSpanArr(data.list, mergeItems)
+    return data
+  })
+}
+// 需要合并的列号和列名
 let mergeItems = [
   {
     columnIndex: 1,
@@ -96,12 +110,8 @@ let mergeItems = [
     prop: 'distributeShopName'
   }
 ]
-const getTable = (params) => {
-  return dispatchApi.clueDistributeUser(params).then((data) => {
-    getSpanArr(data.list, mergeItems)
-    return data
-  })
-}
+
+// 合并行
 const objectSpanMethod = ({ rowIndex, columnIndex }) => {
   if (columnIndex === 1 || columnIndex === 2) {
     // 判断第几列需要合并
@@ -135,6 +145,11 @@ const getSpanArr = (data, array) => {
     }
   }
 }
+
+const arrToStrFunc = (arr) => {
+  return arr && JSON.parse(arr).join(',')
+}
+
 const columns: TableColumn[] = [
   {
     label: '分公司',
@@ -228,7 +243,6 @@ const actionButtons = [
     name: '编辑',
     permission: true,
     click: (row) => {
-      console.log(row)
       editMember(row.distributeShopId)
     }
   },
@@ -251,6 +265,7 @@ const addMember = () => {
 const editMember = (id) => {
   crudRef.value.openDialog(id, shopTreeList.value)
 }
+
 const delDialog = ref(false)
 const handleDel = async () => {
   const res = await tableRef.value.tableMethods.getSelections()
@@ -266,20 +281,18 @@ const confirmDel = () => {
   deleteFun()
 }
 const deleteFun = async () => {
-  const res = await dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
-  if (res) {
-    message.success('删除成功')
-    delDialog.value = false
-    tableRef.value.tableMethods.getList()
-  } else {
-    message.error('报错了')
-  }
+  dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
+  message.success('删除成功')
+  delDialog.value = false
+  tableRef.value.tableMethods.getList()
 }
 
 const changeStatus = (row) => {
+  if (!row.id) return
   dispatchApi.updateClueDistributeUserStatus(row.id)
 }
 const changePushBackFactoryStatus = (row) => {
+  if (!row.id) return
   dispatchApi.updatePushBackFactoryStatus(row.id)
 }
 
