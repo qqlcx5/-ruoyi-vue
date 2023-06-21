@@ -36,7 +36,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { ElTreeV2 } from 'element-plus'
-import type { TreeNode } from 'element-plus/es/components/tree-v2/src/types'
+// import type { TreeNode } from 'element-plus/es/components/tree-v2/src/types'
 import { Search } from '@element-plus/icons-vue'
 import { getTreeAllCustomKeys } from '@/utils/utils'
 import { handleTree } from '@/utils/tree'
@@ -89,6 +89,34 @@ const onQueryChanged = (query: string) => {
   treeRef.value!.filter(query)
 }
 const filterMethod = (query: string, node: any) => {
+  if (!query) {
+    //当搜索为空串时 恢复初始状态即 选中第一项 且展开
+    //默认选中第一个节点
+    const tempFirstItem = state.treeData[0]
+    state.currentNodeKey = tempFirstItem.code
+
+    emit('sendCurrentSelect', {
+      id: tempFirstItem.id,
+      parentCode: tempFirstItem.parentCode,
+      parentName: tempFirstItem.parentName,
+      code: tempFirstItem.code,
+      name: tempFirstItem.name,
+      level: tempFirstItem.level,
+      visible: tempFirstItem.visible,
+      sort: tempFirstItem.sort,
+      remark: tempFirstItem.remark
+    })
+    //  默认展开第一项省市区
+    state.defaultExpandedKeys = getTreeAllCustomKeys(
+      tempFirstItem.children[0].code,
+      state.treeData,
+      'code'
+    )
+    state.isShow = false
+    nextTick(() => {
+      state.isShow = true
+    })
+  }
   return node.name!.includes(query)
 }
 
@@ -120,7 +148,9 @@ watch(
       return
     }
     // state.treeData = val
-    state.treeData = handleTree(val, 'code', 'parentCode', 'children')
+    //   -1显示全部区划item
+    const tempArr = val.filter((item) => item.code !== '-1')
+    state.treeData = handleTree(tempArr, 'code', 'parentCode', 'children')
 
     if (state.isFirst) {
       //首次
@@ -146,6 +176,12 @@ watch(
         'code'
       )
       state.isFirst = false
+      state.isShow = false
+      // //  默认展开全部
+      // state.defaultExpandedKeys = getAllCustomKeys(props.treeData, 'code')
+      nextTick(() => {
+        state.isShow = true
+      })
     } else {
       //当前选中的节点
       const currentItem = val.find((item) => item.code === state.currentNodeKey)
@@ -163,12 +199,6 @@ watch(
         remark: currentItem.remark
       })
     }
-    state.isShow = false
-    // //  默认展开全部
-    // state.defaultExpandedKeys = getAllCustomKeys(props.treeData, 'code')
-    nextTick(() => {
-      state.isShow = true
-    })
   },
   {
     immediate: true

@@ -1,9 +1,8 @@
 <!--  行政区划  -->
 <template>
   <div class="total-content">
-    <!--  -1显示全部区划item 100000中国  -->
     <LeftSelectTree
-      :treeData="state.areaList.filter((item) => item.code !== '-1')"
+      :treeData="state.areaList"
       :statusValue="state.statusValue"
       @sendCurrentSelect="sendCurrentSelect"
       @statusChange="statusChange"

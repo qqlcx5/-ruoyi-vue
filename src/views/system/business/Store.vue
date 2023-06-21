@@ -615,7 +615,11 @@
 
             <a-form-item label="通知函" name="noticeLetter">
               <div style="height: 131px">
-                <UploadFile v-model:modelValue="state.noticeLetterSuccess" class="upload-file" />
+                <UploadFile
+                  v-model:modelValue="state.noticeLetterSuccess"
+                  limit="3"
+                  class="upload-file"
+                />
                 <!--                <a-upload-->
                 <!--                  v-model:file-list="state.noticeLetterUrl"-->
                 <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
@@ -698,6 +702,7 @@
               <div style="height: 131px">
                 <UploadFile
                   v-model:modelValue="state.notificationLetterSuccess"
+                  limit="3"
                   class="upload-file"
                 />
                 <!--                <a-upload-->
