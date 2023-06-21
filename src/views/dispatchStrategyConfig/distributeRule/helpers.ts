@@ -15,6 +15,6 @@ export type RuleObj = {
   distributeNum: number
   receivePattern: number
   teamEnjoyScope: number
-  clueDistributeTeamDTOs: TeamObj[]
+  teams: TeamObj[]
   receiveNum: number
 }
