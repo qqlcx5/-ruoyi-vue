@@ -40,7 +40,9 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button type="primary" @click="handleConfirm(ruleFormRef)">确定</el-button>
+        <el-button type="primary" :loading="btnLoading" @click="handleConfirm(ruleFormRef)"
+          >确定</el-button
+        >
         <el-button @click="handleClose">取消</el-button>
       </span>
     </template>
@@ -109,19 +111,25 @@ const handleClose = () => {
   ruleFormRef.value?.resetFields()
   emit('update:modelValue', false)
 }
+const btnLoading = ref<boolean>(false)
 const handleConfirm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      const params = {
-        id: ruleForm.id || null,
-        ruleType: ruleForm.ruleType,
-        repetitionPeriod: ruleForm.repetitionPeriod || ''
+      try {
+        btnLoading.value = true
+        const params = {
+          id: ruleForm.id || null,
+          ruleType: ruleForm.ruleType,
+          repetitionPeriod: ruleForm.repetitionPeriod || ''
+        }
+        unref(editFlag) ? await updateRepetitionPeriod(params) : await addRepetitionPeriod(params)
+        emit('success')
+        message.success('提交成功')
+        handleClose()
+      } finally {
+        btnLoading.value = false
       }
-      unref(editFlag) ? await updateRepetitionPeriod(params) : await addRepetitionPeriod(params)
-      emit('success')
-      message.success('提交成功')
-      handleClose()
     } else {
       console.log('error submit!', fields)
     }

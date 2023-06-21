@@ -100,7 +100,8 @@ import { listSimplePostsApi } from '@/api/system/post/info'
 import { cloneDeep, difference } from 'lodash-es'
 import { listToTree } from '@/utils/tree'
 import type { FormInstance, FormRules } from 'element-plus'
-
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const message = useMessage()
 
 interface IProps {
@@ -141,13 +142,11 @@ watch(
       editFlag.value = !!id
       id && (await getInfo(id))
       Promise.all([getPostList(), getExistRuleShop()]).then(() => {
-        const list = cloneDeep(props.shopList)
-        const ids: string[] = ruleForm.applicableShopId
-        checkedList.value = difference(checkedList.value, ids).map((d) => +d)
-        list.forEach((item: object) => {
-          item['disabled'] = checkedList.value.includes(item['id'])
-        })
-        shopTreeList.value = listToTree(list, { pid: 'parentId' })
+        shopTreeList.value = store.dealShopList(
+          props.shopList,
+          unref(checkedList),
+          ruleForm.applicableShopId
+        )
       })
     } else {
       ruleForm = reactive(_form)

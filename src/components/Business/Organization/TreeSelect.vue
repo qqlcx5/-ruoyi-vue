@@ -53,6 +53,7 @@ onMounted(() => {
   <el-tree-select
     v-model="localValue"
     ref="treeRef"
+    class="tree-select"
     :data="treeData"
     :props="defaultProps"
     check-strictly
@@ -66,3 +67,14 @@ onMounted(() => {
     @change="onChange"
   />
 </template>
+<style lang="scss" scoped>
+.tree-select {
+  :deep(.el-select__tags) {
+    flex-wrap: nowrap;
+  }
+
+  :deep(.el-select-tags-wrapper) {
+    display: flex;
+  }
+}
+</style>

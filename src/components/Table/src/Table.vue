@@ -280,6 +280,7 @@ export default defineComponent({
           >
             {{
               default: () => rnderTableColumn(),
+              empty: () => getSlot(slots, 'empty'),
               // @ts-ignore
               append: () => getSlot(slots, 'append')
             }}

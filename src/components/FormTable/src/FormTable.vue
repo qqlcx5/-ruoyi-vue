@@ -67,6 +67,9 @@
               </template>
             </el-dropdown>
           </template>
+          <template #empty>
+            <Empty />
+          </template>
           <template #[item]="data" v-for="item in Object.keys($slots)" :key="item">
             <slot :name="item" v-bind="data || {}"></slot>
           </template>
@@ -88,7 +91,7 @@ import { useTable } from '@/hooks/web/useTable'
 import { TableColumn } from '@/types/table'
 import { TableProps, SearchProps, ActionButton } from './helper'
 import { hasPermission } from '@/utils/utils'
-import { isEmpty, isString, isBoolean } from 'lodash-es'
+import { isEmpty, isString, isBoolean, cloneDeep } from 'lodash-es'
 
 const props = defineProps({
   tableOptions: {
@@ -216,8 +219,7 @@ watch(
   () => tableProps.value.columns,
   (val: TableColumn[]) => {
     const btnsWidth = getActionButtonsWidth()
-
-    tableColumns.value = [
+    const columns = [
       ...val,
       ...(!isEmpty(actionButtons.value)
         ? [
@@ -226,12 +228,16 @@ watch(
               field: 'action',
               width: btnsWidth,
               fixed: 'right',
-              showOverflowTooltip: false
+              showOverflowTooltip: false,
+              check: true,
+              disabled: false
             }
           ]
         : [])
     ]
-    drawerColumns.value = val
+
+    tableColumns.value = cloneDeep(columns)
+    drawerColumns.value = cloneDeep(columns)
   },
   {
     immediate: true

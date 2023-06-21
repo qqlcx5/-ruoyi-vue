@@ -33,9 +33,9 @@
     </template>
     <template #organizationName="{ row }">
       <el-tooltip
-        :content="`${row.organizationName ? row.organizationName : ''}${
-          row.postName ? '/' + row.postName : ''
-        }`"
+        :content="`${row.componentName ? row.componentName : ''}${
+          row.organizationName ? '/' + row.organizationName : ''
+        }${row.postName ? '/' + row.postName : ''}`"
         placement="top"
       >
         <div class="w-140px overflow-ellipsis whitespace-nowrap">
@@ -44,7 +44,35 @@
         </div>
       </el-tooltip>
     </template>
-    <!--    <template #resultData="{ row }"> </template>-->
+    <!--    <template #resultData="{ row }">-->
+    <!--      <el-popover-->
+    <!--        :width="400"-->
+    <!--        placement="right"-->
+    <!--        trigger="click"-->
+    <!--        :title="`日志内容(${getDictLabel(DICT_TYPE.SYSTEM_OPERATE_TYPE, row.type)})`"-->
+    <!--      >-->
+    <!--        <template #reference>-->
+    <!--          <el-link ref="checkBtnRef" type="primary" :underline="false" @click="getLogDetail(row.id)"-->
+    <!--            >查看</el-link-->
+    <!--          >-->
+    <!--        </template>-->
+    <!--        <el-descriptions v-if="row.requestMethod !== 'PUT'" :column="1" border>-->
+    <!--          <el-descriptions-item-->
+    <!--            v-for="(item, index) in baseDescription"-->
+    <!--            :key="index"-->
+    <!--            :label="item.name"-->
+    <!--            label-class-name="log-label"-->
+    <!--          >-->
+    <!--            {{ item.value }}-->
+    <!--          </el-descriptions-item>-->
+    <!--        </el-descriptions>-->
+    <!--        <el-table v-else :data="logInfo" border header-cell-class-name="table-header">-->
+    <!--          <el-table-column prop="field" label="字段名" />-->
+    <!--          <el-table-column prop="beforeValue" label="修改前" />-->
+    <!--          <el-table-column prop="afterValue" label="修改后" />-->
+    <!--        </el-table>-->
+    <!--      </el-popover>-->
+    <!--    </template>-->
   </form-table>
   <DetailDrawer ref="detailDrawerRef" />
 </template>
@@ -53,15 +81,16 @@
 import { TableColumn } from '@/types/table'
 import { formatDate } from '@/utils/formatTime'
 import download from '@/utils/download'
+import { DICT_TYPE } from '@/utils/dict'
 import {
   getOperateLogPageApi,
   deleteOperateLogApi,
   exportOperateLogApi
+  // getOperateLogDetailApi
 } from '@/api/system/operatelog'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import DetailDrawer from './components/DetailDrawer.vue'
 import OrgTreeSelect from '@/components/Business/Organization/TreeSelect.vue'
-import { DICT_TYPE } from '@/utils/dict'
 
 const message = useMessage()
 
@@ -87,9 +116,15 @@ const columns: TableColumn[] = [
   },
   {
     label: '操作人员',
-    field: 'userNickname',
+    field: 'nameOrNumber',
     width: 130,
     isSearch: true,
+    isTable: false
+  },
+  {
+    label: '操作人员',
+    field: 'username',
+    width: 130,
     disabled: true
   },
   {
@@ -188,8 +223,43 @@ const actionButtons = [
     }
   }
 ]
-
 const { allSchemas } = useCrudSchemas(columns)
+
+// const checkBtnRef = ref()
+// const baseDescription = ref<any[]>()
+// const logInfo = ref<any[]>([])
+// const logPopoverLoading = ref<boolean>(false)
+// const getLogDetail = async (id) => {
+//   logPopoverLoading.value = true
+//   await getOperateLogDetailApi({ id })
+//     .then((res) => {
+//       if (!res.exts) return
+//       const { beforeExecuteData, afterExecuteJson } = res.exts
+//       if (!beforeExecuteData || Object.keys(beforeExecuteData).length === 0) {
+//         baseDescription.value = Object.keys(afterExecuteJson).map((key) => {
+//           return {
+//             name: key,
+//             value: afterExecuteJson[key]
+//           }
+//         })
+//       } else {
+//         logInfo.value =
+//           Object.keys(beforeExecuteData).map((item) => {
+//             return {
+//               field: item,
+//               beforeValue: beforeExecuteData[item] || '',
+//               afterValue: afterExecuteJson[item] || ''
+//             }
+//           }) || []
+//       }
+//       if (beforeExecuteData && afterExecuteJson) {
+//       } else if (Object.keys(beforeExecuteData).length === 0 && afterExecuteJson) {
+//       }
+//     })
+//     .finally(() => {
+//       logPopoverLoading.value = false
+//     })
+// }
 
 const handleDelete = async () => {
   const selectedData = await tableRef.value.tableMethods.getSelections()
