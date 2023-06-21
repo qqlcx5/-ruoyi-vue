@@ -86,6 +86,7 @@ import * as SensitiveWordApi from '@/api/system/sensitiveWord'
 import { FormExpose } from '@/components/Form'
 import { hasPermission } from '@/utils/utils'
 import { FormItemProps } from '@/types/form'
+import { getOrganizationTypeList } from '@/api/system/organization'
 const message = useMessage() // 消息弹窗
 
 const { t } = useI18n()
@@ -223,8 +224,15 @@ const formState = [
 // 获取标签
 const tagsOptions = ref()
 const getTags = async () => {
-  const res = await SensitiveWordApi.getSensitiveWordTagsApi()
-  tagsOptions.value = res
+  // const res = await SensitiveWordApi.getSensitiveWordTagsApi()
+  //获取数据字典
+  const dictRes = await getOrganizationTypeList(null)
+  //字典标签数组对象
+  const sensitiveWordsTagsList = dictRes.filter((item) => item.dictType === 'sensitive_words_tags')
+  //获取字典标签中文list
+  const sensitiveWordsTagsTextList = sensitiveWordsTagsList.map((item) => item.label)
+  tagsOptions.value = sensitiveWordsTagsTextList
+  // tagsOptions.value = res
 }
 
 const actionLoading = ref(false) // 遮罩层

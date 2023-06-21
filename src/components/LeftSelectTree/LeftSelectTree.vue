@@ -125,7 +125,7 @@ watch(
     if (state.isFirst) {
       //首次
       //默认选中第一个节点
-      const tempFirstItem = state.treeData[0].children[0].children[0].children[0]
+      const tempFirstItem = state.treeData[0]
       state.currentNodeKey = tempFirstItem.code
 
       emit('sendCurrentSelect', {
@@ -140,7 +140,11 @@ watch(
         remark: tempFirstItem.remark
       })
       //  默认展开第一项省市区
-      state.defaultExpandedKeys = getTreeAllCustomKeys(tempFirstItem.code, state.treeData, 'code')
+      state.defaultExpandedKeys = getTreeAllCustomKeys(
+        tempFirstItem.children[0].code,
+        state.treeData,
+        'code'
+      )
       state.isFirst = false
     } else {
       //当前选中的节点
