@@ -43,15 +43,26 @@ const getDetail = async (id) => {
       if (!res.exts) return
       let result: logChangeVO[] = []
       res.exts.forEach((item) => {
-        Object.keys(item.afterExecuteData).forEach((key) => {
-          result.push({
-            field: key,
-            afterValue: item.afterExecuteData[key] || '',
-            beforeValue: item.beforeExecuteData[key] || ''
+        let data
+        if (Object.keys(item.afterExecuteData).length) {
+          data = Object.keys(item.afterExecuteData)
+        }
+        if (Object.keys(item.beforeExecuteData).length) {
+          data = Object.keys(item.beforeExecuteData)
+        }
+        console.log(data)
+        if (data) {
+          data.forEach((key) => {
+            result.push({
+              field: key,
+              afterValue: item.afterExecuteData[key],
+              beforeValue: item.beforeExecuteData[key]
+            })
           })
-        })
+        }
       })
       logInfo.value = result || []
+      console.log(logInfo.value)
     })
     .finally(() => {
       drawerLoading.value = false
