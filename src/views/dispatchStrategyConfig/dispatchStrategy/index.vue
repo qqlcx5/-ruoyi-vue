@@ -18,19 +18,6 @@
       <XButton type="danger" @click="handleDel">删除</XButton>
     </template>
   </form-table>
-  <el-dialog title="提示" v-model="delDialog" width="30%">
-    <p class="mb10"
-      ><i class="el-icon-warning Danger"></i>确认要删除这<span class="Danger">{{
-        selectedIds.length
-      }}</span
-      >条派发策略吗？
-    </p>
-    <p>删除后，对应派发成员将无法接收到线索派发。</p>
-    <template #footer>
-      <el-button @click="delDialog = false">取 消</el-button>
-      <el-button type="primary" @click="confirmDel">确 定</el-button>
-    </template>
-  </el-dialog>
   <crud ref="crudRef" @refresh="() => {}" />
 </template>
 
@@ -42,9 +29,9 @@ import { getAllStoreList } from '@/api/system/organization'
 import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
 import Crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
-import { dispatch_strategy_res } from './dispatchStrategy.data'
 
 const message = useMessage()
+const { t } = useI18n() // 国际化
 
 onMounted(() => {
   getShopList()
@@ -58,8 +45,9 @@ const getShopList = async () => {
 }
 
 const getTable = (params) => {
-  return dispatchApi.clueDistributeUser(params).then((data) => {
-    data = dispatch_strategy_res.data
+  return dispatchApi.getClueDistribute(params).then((data) => {
+    // data = dispatch_strategy_res.data
+    data.list = data.list || []
     let newArr: any[] = []
     data.list.forEach((item: any, index) => {
       item.index = index + 1
@@ -74,7 +62,6 @@ const getTable = (params) => {
             ...item,
             ...aItem
           }
-
           newArr.push(JSON.parse(JSON.stringify(item)))
         })
       } else {
@@ -133,16 +120,12 @@ const tableRowClassName = ({ row, column }): string => {
 }
 const columns: TableColumn[] = [
   {
-    label: '线索ID',
-    field: 'id'
-  },
-  {
     label: '线索平台来源',
     field: 'clueChannelName',
     isSearch: true
   },
   {
-    label: '所属区域',
+    label: '所属区域/门店',
     field: 'parentName'
   },
   {
@@ -180,10 +163,6 @@ const columns: TableColumn[] = [
     field: 'isExternalDistribute'
   },
   {
-    label: '接单模式',
-    field: 'receivePattern'
-  },
-  {
     label: '创建人',
     field: 'createBy'
   },
@@ -202,8 +181,7 @@ const actionButtons = [
     name: '编辑',
     permission: true,
     click: (row) => {
-      console.log(row)
-      editMember(row.id)
+      editMember(row)
     }
   },
   {
@@ -211,7 +189,7 @@ const actionButtons = [
     permission: true,
     click: (row) => {
       selectedIds.value = [row.id]
-      deleteFun()
+      confirmDel()
     }
   }
 ]
@@ -220,12 +198,11 @@ const selectedIds = ref<number[]>([])
 
 const crudRef = ref()
 const addMember = () => {
-  crudRef.value.openDialog('', shopTreeList.value)
+  crudRef.value.openDialog('create')
 }
-const editMember = (id) => {
-  crudRef.value.openDialog(id, shopTreeList.value)
+const editMember = (row) => {
+  crudRef.value.openDialog('update', row)
 }
-const delDialog = ref(false)
 const handleDel = async () => {
   const res = await tableRef.value.tableMethods.getSelections()
   if (res) {
@@ -234,16 +211,38 @@ const handleDel = async () => {
   if (selectedIds.value.length < 1) {
     return message.warning('未选择数据')
   }
-  delDialog.value = true
+  confirmDel()
 }
 const confirmDel = () => {
-  deleteFun()
+  if (selectedIds.value.length < 1) {
+    return message.warning('未选择数据')
+  } 
+
+  message
+    .wgConfirm(
+      '删除后，对应派发员将无法接受到线索派发',
+      <any>h('span', ['确定要删除 ', <any>h('span', {style: { color: 'red' }}, selectedIds.value.length), ' 条派发策略吗？']),
+      {
+        confirmButtonText: t('common.confirmDel'),
+        cancelButtonText: t('common.cancel')
+      }
+    )
+    .then(() => {
+      deleteFun()
+    })
+    .catch(() => {})
+  
+  
 }
 const deleteFun = async () => {
-  const res = await dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
+  
+  let params = {
+    ids: selectedIds.value.join(',')
+  }
+  console.log(params);
+  const res = await dispatchApi.delStrategy(params)
   if (res) {
     message.success('删除成功')
-    delDialog.value = false
     tableRef.value.tableMethods.getList()
   } else {
     message.error('报错了')

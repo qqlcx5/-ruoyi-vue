@@ -1,28 +1,33 @@
 import request from '@/config/axios'
 
+// 派发策略详情
+export const getClueChannelTree = () => {
+  return request.get({ url: '/clue/clueChannel/getTree' })
+}
+
 // 派发策略门店成员列表
-export const getDistributeShopUserList = (params) => {
-  return request.post({ url: 'clue/v2.0/mange/clueDistribute/shop/user/list', params })
+export const getDistributeShopUserList = (data) => {
+  return request.post({ url: 'clue/v2.0/mange/clueDistribute/shop/user/list', data })
 }
 // 分页查询线索派发策略
-export const getClueDistribute = (params) => {
-  return request.post({ url: '/clue/v2.0/mange/clueDistribute/page', params })
+export const getClueDistribute = (data) => {
+  return request.post({ url: '/clue/v2.0/mange/clueDistribute/page', data })
 }
 // 删除派发策略
 export const delStrategy = (params) => {
-  return request.post({ url: '/clue/mange/clueDistribute/batchDelete', params })
+  return request.get({ url: `/clue/v2.0/mange/clueDistribute/delete`, params })
 }
 // 派发策略详情
 export const clueDistributeDetailV2 = (id: string) => {
   return request.get(`clue/v2.0/mange/clueDistribute/detail/${id}`)
 }
 // 编辑派发策略 新
-export const clueDistributeUpdateV2 = (params) => {
-  return request.post({ url: 'clue/v2.0/mange/clueDistribute/update', params })
+export const clueDistributeUpdateV2 = (data) => {
+  return request.post({ url: 'clue/v2.0/mange/clueDistribute/update', data })
 }
 // 新增派发策略 新
-export const clueDistributeSaveV2 = (params) => {
-  return request.post({ url: 'clue/v2.0/mange/clueDistribute/insert', params })
+export const clueDistributeSaveV2 = (data) => {
+  return request.post({ url: 'clue/v2.0/mange/clueDistribute/insert', data })
 }
 // 派发成员配置
 export const clueDistributeUser = (data) => {
@@ -72,4 +77,9 @@ export const getExitRuleShop = (id: string) => {
 //校验规则名称是否已经存在
 export const checkValidRuleName = (id: number, ruleName: string) => {
   return request.get(`/clue/clueDistributeProductization/valid/rule-name/${id}/${ruleName}`)
+}
+
+//
+export const hehe = () => {
+  return request.get({ url: '/clue/clueChannel/getTree' })
 }

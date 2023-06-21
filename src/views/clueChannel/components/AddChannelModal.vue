@@ -29,6 +29,7 @@
             :options="sourceList"
             :props="clueSourceProps"
             :show-all-levels="false"
+            @change="handleChange"
           />
         </template>
         <template #shopId="{ row }">
@@ -207,16 +208,16 @@ const getSourceList = async () => {
 }
 getSourceList()
 
-// const cascaderRef = ref()
-// const handleChange = () => {
-//   try {
-//     let cascaderList = cascaderRef.value.getCheckedNodes()
-//     let cascaderData = cascaderList
-//     console.log(cascaderData)
-//   } catch (error) {
-//     console.log(error)
-//   }
-// }
+const cascaderRef = ref()
+const handleChange = () => {
+  try {
+    let cascaderList = cascaderRef.value.getCheckedNodes()
+    let cascaderData = cascaderList
+    console.log(cascaderData[0].data)
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 const clueSourceProps = {
   label: 'name',

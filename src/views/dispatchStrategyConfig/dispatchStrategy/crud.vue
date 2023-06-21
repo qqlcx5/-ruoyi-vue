@@ -7,17 +7,36 @@
       :rules="rules"
       ref="formRef"
     >
-      <template #code="form">
-        <el-input v-model="form.code" placeholder="请输入线索来源名称" />
-      </template>
-      <template #status="form">
+      <template #clueChannelId="form">
         <el-cascader
-          :options="options"
-          :props="props"
-          v-model="form.status"
+          :options="clueChannelTreeList"
+          :props="clueChannelIdProps"
+          v-model="form.clueChannelId"
           collapse-tags
           collapse-tags-tooltip
           clearable
+        />
+      </template>
+      <template #filterUserId="form">
+        <el-cascader
+          :options="options"
+          :props="filterUserIdProps"
+          v-model="form.filterUserId"
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+        />
+        <!-- <div v-else>请先选择线索渠道</div> -->
+      </template>
+      <template #distributeShopIdList="form">
+        <el-cascader
+          :options="shopOptions"
+          :props="props"
+          v-model="form.distributeShopIdList"
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+          @change="changeShopIdList"
         />
       </template>
     </Form>
@@ -50,32 +69,144 @@
 import { ref } from 'vue'
 import { FormExpose } from '@/components/Form'
 import { rules, allSchemas, oa_source_res } from './dispatchStrategy.data'
+import * as dispatchApi from '@/api/clue/dispatchStrategy'
+import * as postApi from '@/api/system/post/info'
+import { getAllStoreList } from '@/api/system/organization/index'
+import { listToTree } from '@/utils/tree'
 
 const formRef = ref<FormExpose>() // 表单 Ref
 const { t } = useI18n() // 国际化
+const message = useMessage()
 
 let dialogVisible = ref(false)
 let dialogTitle = ref('新增')
 const actionLoading = ref(false) // 遮罩层
-const actionType = ref('create') // 操作按钮的类型
+let actionType = ref('create') // 操作按钮的类型
 
 const props = {
   multiple: true,
-  label: 'clueName',
-  value: 'clueSourceId'
+  label: 'name',
+  value: 'id',
+  emitPath: false
 }
 
-let options = ref(oa_source_res.data)
+// 获取线索渠道
+let clueChannelTreeList = ref<any[]>([])
+const getShopUserList = async () => {
+  let data = await dispatchApi.getClueChannelTree()
+  if (data && data.length > 0) {
+    data = data.map((item) => {
+      item.label = item.companyShopName
+      item.value = ''
+      item.children = item.list.map((lItem) => {
+        lItem.label = lItem.sourceName
+        lItem.value = lItem.clueChannelId
+        return lItem
+      })
+      return item
+    })
+    clueChannelTreeList.value = data
+  }
+}
+const clueChannelIdProps = {
+  emitPath: false
+}
+const filterUserIdProps = {
+  label: 'clueName',
+  value: 'clueSourceId',
+  emitPath: false
+}
+// 获取岗位精简信息列表
+const getListSimplePosts = async () => {
+  let data = await postApi.listSimplePostsApi()
+  if (data) {
+    console.log(data)
+    getfilterUserId()
+  }
+}
+// 根据岗位岗位获取清洗员
+const getfilterUserId = async () => {
+  let data = await dispatchApi.hehe()
+  if (data) {
+    console.log(data)
+  }
+}
+getListSimplePosts()
 
-const openDialog = (data) => {
+// 获取门店
+let shopOptions = []
+const getShopList = async () => {
+  const data = await getAllStoreList()
+  shopOptions = listToTree(data || [], { pid: 'parentId' })
+  console.log(shopOptions)
+}
+const changeShopIdList = (val) => {
+  console.log(val)
+  // let ids = val.reduce((prev, cur) => {
+  //   console.log(prev, cur)
+
+  //   return [...prev, ...cur]
+  // }, [])
+  // console.log(ids)
+
+  getDistributeShopUserList(val)
+}
+getShopList()
+
+// 根据门店获取成员
+const getDistributeShopUserList = async (ids) => {
+  let params = {
+    shopIdList: ids
+  }
+  let data = await dispatchApi.getDistributeShopUserList(params)
+  if (data) {
+    let userList = data.userList || []
+    tableList.value = userList
+    // for (let index = 0; index < 100; index++) {
+    //   tableList.value.push({
+    //     serialNumber: '厦门分公司-中埔哈弗红蓝标4S店',
+    //     clueSource: '池小妹',
+    //     shopName: '池小妹',
+    //     platformUsername: '哈弗,皮卡',
+    //     platformPassword: 'aaaa1111',
+    //     needFilter: '开启',
+    //     autoDistribute: '0',
+    //     platformRule: '0',
+    //     isShow: '1'
+    //   })
+    // }
+  }
   console.log(data)
+}
+onMounted(() => {
+  console.log('======')
+})
+let options = ref<any[]>(oa_source_res.list)
+
+const openDialog = (editType, data) => {
+  console.log(editType, data)
 
   dialogVisible.value = true
+  actionType.value = editType
+  getShopUserList()
+  setTimeout(() => {
+    // let params = {
+    //   clueChannelId: `${data.clueChannelId}`,
+    //   filterUserId: data.filterUserId,
+    //   distributeShopIdList: ''
+    // }
+    // console.log(params)
+
+    data.distributeShopIdList = data.distributeShopList.map((item) => item.distributeShopId)
+
+    if (formRef.value) {
+      formRef.value.setValues(data)
+    }
+  }, 200)
 }
 defineExpose({ openDialog })
 // 保存按钮
 const submitForm = async () => {
-  console.log('======')
   const elForm = unref(formRef)?.getElFormRef()
   if (!elForm) return
   elForm.validate(async (valid) => {
@@ -83,8 +214,14 @@ const submitForm = async () => {
       actionLoading.value = true
       // 提交请求
       try {
-        const data = unref(formRef)?.formModel
+        const data: any = unref(formRef)?.formModel
         console.log(data)
+
+        if (actionType.value == 'create') {
+          clueDistributeSave(data)
+        } else {
+          clueDistributeUpdate(data)
+        }
 
         // dialogVisible.value = false
       } finally {
@@ -92,6 +229,36 @@ const submitForm = async () => {
       }
     }
   })
+}
+
+const clueDistributeSave = async (dataSource) => {
+  let clueChannelId = dataSource.clueChannelId || ''
+  let filterUserId = dataSource.filterUserId || ''
+  let clueAffiliation = {
+    clueChannelId: clueChannelId,
+    filterUserId: filterUserId
+  }
+
+  let distributeShopIdList = dataSource.distributeShopIdList || []
+  // let newDistributeShopIdList = distributeShopIdList.reduce((prev, cur) => {
+  //   return [...prev, ...cur]
+  // }, [])
+
+  let params = {
+    clueAffiliationList: [clueAffiliation],
+    distributeShopIdList: distributeShopIdList
+  }
+  let data = await dispatchApi.clueDistributeSaveV2(params)
+  if (data) {
+    message.success('操作成功')
+    dialogVisible.value = false
+  }
+}
+const clueDistributeUpdate = async (params) => {
+  let data = await dispatchApi.clueDistributeUpdateV2(params)
+  if (data) {
+    console.log(data)
+  }
 }
 
 const tableColumns = [
@@ -126,35 +293,8 @@ const tableColumns = [
     minWidth: '80px'
   }
 ]
-import { ChannelVO } from '@/api/clue/channel'
 // 岗位类型table
-const tableList = ref<ChannelVO[]>([
-  {
-    serialNumber: '厦门分公司-中埔哈弗红蓝标4S店',
-    clueSource: '池小妹',
-    shopName: '池小妹',
-    platformUsername: '哈弗,皮卡',
-    platformPassword: 'aaaa1111',
-    needFilter: '开启',
-    autoDistribute: '0',
-    platformRule: '0',
-    isShow: '1'
-  }
-])
-
-for (let index = 0; index < 100; index++) {
-  tableList.value.push({
-    serialNumber: '厦门分公司-中埔哈弗红蓝标4S店',
-    clueSource: '池小妹',
-    shopName: '池小妹',
-    platformUsername: '哈弗,皮卡',
-    platformPassword: 'aaaa1111',
-    needFilter: '开启',
-    autoDistribute: '0',
-    platformRule: '0',
-    isShow: '1'
-  })
-}
+const tableList = ref<any[]>([])
 </script>
 <style lang="scss" scoped>
 :deep(.el-cascader) {
