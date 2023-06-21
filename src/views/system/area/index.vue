@@ -235,8 +235,6 @@ const rulesNoParent = reactive<FormRules>({
 
 //提交
 const onSubmit = async () => {
-  console.log('form.level', typeof form.level)
-  console.log(' form.level', form.level)
   if (!formRef.value) return
   await formRef.value.validate()
 
@@ -273,9 +271,6 @@ const onSubmit = async () => {
   } finally {
     state.loading = false
   }
-
-  console.log('form', form)
-  console.log('submit!!!!')
 }
 
 //重置
@@ -289,7 +284,6 @@ const resetForm = () => {
 
   form.sort = ''
   form.remark = ''
-  console.log('form', form)
 }
 
 //接收选中的省市区节点
@@ -302,7 +296,7 @@ const sendCurrentSelect = (currentSelectNode) => {
     state.useDefRules = true
     form.parentCode = currentSelectNode.parentCode //父区划编号
   }
-  console.log('currentSelectNode', currentSelectNode)
+
   state.operationType = ''
   state.isDisabled = true
   state.currentNode = currentSelectNode
@@ -318,7 +312,7 @@ const sendCurrentSelect = (currentSelectNode) => {
 
 const addEditArea = (type) => {
   state.operationType = type
-  console.log('state.currentNode===>', state.currentNode)
+
   switch (type) {
     case 'add':
       state.useDefRules = true
@@ -371,12 +365,9 @@ const statusChange = async (visible) => {
 
 const getList = async () => {
   state.areaList = await getAreaList()
-  const tempArr = handleTree(state.areaList, 'code', 'parentCode', 'children')
+  // const tempArr = handleTree(state.areaList, 'code', 'parentCode', 'children')
   state.isVisibleAllArea = state.areaList.find((item) => item.code === '-1')
   state.statusValue = state.isVisibleAllArea.visible === 0 ? true : false
-  console.log('isVisibleAllArea', state.isVisibleAllArea)
-  console.log('state.areaList', state.areaList)
-  console.log('tempArr', tempArr)
 }
 getList()
 </script>

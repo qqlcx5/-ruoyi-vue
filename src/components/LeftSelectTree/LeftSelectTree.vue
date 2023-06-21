@@ -88,11 +88,13 @@ const onQueryChanged = (query: string) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   treeRef.value!.filter(query)
 }
-const filterMethod = (query: string, node: TreeNode) => {
+const filterMethod = (query: string, node: any) => {
   return node.name!.includes(query)
 }
 
-const selectTree = (data, node) => {
+const selectTree = (data) => {
+  //手动赋值 好像不支持 v-modal
+  state.currentNodeKey = data.code
   emit('sendCurrentSelect', data)
 }
 
@@ -119,12 +121,13 @@ watch(
     }
     // state.treeData = val
     state.treeData = handleTree(val, 'code', 'parentCode', 'children')
-    //默认选中第一个节点
-    const tempFirstItem = state.treeData[0].children[0].children[0].children[0]
-    state.currentNodeKey = tempFirstItem.code
-    console.log('state.treeData', state.treeData)
+
     if (state.isFirst) {
       //首次
+      //默认选中第一个节点
+      const tempFirstItem = state.treeData[0].children[0].children[0].children[0]
+      state.currentNodeKey = tempFirstItem.code
+
       emit('sendCurrentSelect', {
         id: tempFirstItem.id,
         parentCode: tempFirstItem.parentCode,
@@ -139,6 +142,22 @@ watch(
       //  默认展开第一项省市区
       state.defaultExpandedKeys = getTreeAllCustomKeys(tempFirstItem.code, state.treeData, 'code')
       state.isFirst = false
+    } else {
+      //当前选中的节点
+      const currentItem = val.find((item) => item.code === state.currentNodeKey)
+      state.currentNodeKey = currentItem.code
+
+      emit('sendCurrentSelect', {
+        id: currentItem.id,
+        parentCode: currentItem.parentCode,
+        parentName: currentItem.parentName,
+        code: currentItem.code,
+        name: currentItem.name,
+        level: currentItem.level,
+        visible: currentItem.visible,
+        sort: currentItem.sort,
+        remark: currentItem.remark
+      })
     }
     state.isShow = false
     // //  默认展开全部
