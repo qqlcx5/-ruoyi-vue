@@ -618,6 +618,10 @@ watch(
 )
 onMounted(() => {
   getCookie()
+  // 退出登录，初始化二维码
+  if (getLoginState.value === LoginStateEnum.QR_CODE) {
+    qrCodeRef.value.initQrCode()
+  }
 })
 </script>
 
