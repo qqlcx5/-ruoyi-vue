@@ -130,6 +130,20 @@ defineExpose({
 
       <div class="sub-title">日志内容</div>
       <div class="pl-26px pr-120px">
+        <el-popover
+          v-if="detailInfo && detailInfo.javaMethodArgs"
+          :width="550"
+          placement="right"
+          trigger="click"
+          effect="dark"
+          :content="detailInfo ? detailInfo.javaMethodArgs : ''"
+        >
+          <template #reference>
+            <el-link class="mb-16px" ref="checkBtnRef" type="primary" :underline="false"
+              >详情</el-link
+            >
+          </template>
+        </el-popover>
         <template v-if="onlyAfterChange">
           <el-descriptions v-if="logInfo.length > 0" :column="1" border>
             <el-descriptions-item
