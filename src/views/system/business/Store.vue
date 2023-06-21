@@ -617,6 +617,8 @@
               <div style="height: 131px">
                 <UploadFile
                   v-model:modelValue="state.noticeLetterSuccess"
+                  fileSize="16"
+                  :fileUnit="FileUnit.MB"
                   limit="3"
                   class="upload-file"
                 />
@@ -702,6 +704,8 @@
               <div style="height: 131px">
                 <UploadFile
                   v-model:modelValue="state.notificationLetterSuccess"
+                  fileSize="16"
+                  :fileUnit="FileUnit.MB"
                   limit="3"
                   class="upload-file"
                 />
