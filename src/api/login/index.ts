@@ -16,7 +16,7 @@ export interface SmsLoginVO {
   code: string
 }
 export interface ScanLoginVO {
-  token: string
+  token?: string
 }
 
 // 登录
@@ -115,7 +115,7 @@ export const getQrCodeStateApi = (params) => {
   return request.get({ url: '/system/scan/code/get-qrCode-state', params })
 }
 
-// 短信验证码登录
+// 二维码登录
 export const scanCodeLoginApi = (data: ScanLoginVO) => {
   return request.post({ url: '/system/auth/login/scanCode', data })
 }

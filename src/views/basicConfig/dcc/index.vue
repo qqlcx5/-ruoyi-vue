@@ -34,9 +34,8 @@ import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import { queryDccPage, dccOpenRule, deleteDcc } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
-import { getAllStoreList } from '@/api/system/organization'
-import { cloneDeep } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const router = useRouter() // 路由
 const message = useMessage()
 
@@ -45,31 +44,16 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
+    { title: 'DCC规则名称', key: 'dccRuleName' },
     {
-      sort: 1,
-      title: 'DCC规则名称',
-      key: 'dccRuleName',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 2,
       title: '适用门店',
       key: 'departName',
       minWidth: 250,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => row.applicableShopName.join('，')
     },
     {
-      sort: 3,
       title: '启用状态',
       key: 'openRules',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <el-switch
@@ -81,26 +65,18 @@ const tableConfig = reactive({
         )
       }
     },
-    { sort: 4, title: '创建人', key: 'creator', resizable: true, ellipsis: true, disabled: false },
+    { title: '创建人', key: 'creator' },
     {
-      sort: 5,
       title: '创建时间',
       key: 'createTime',
       minWidth: 190,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      sort: 6,
       title: '操作',
       key: 'operate',
       width: 120,
       fixed: null,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <div>
@@ -130,22 +106,21 @@ const handleSearch = () => {
 }
 let shopList = []
 const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopList = cloneDeep(data || [])
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
-getShopList()
+onMounted(async () => {
+  const res = await store.getShopList()
+  shopList = res.shopList
+  shopTreeList.value = res.shopTreeList
+})
 
 const { loading, list, getList, pageChange } = useQueryPage({
   path: queryDccPage,
   params: tableConfig.queryParams
 })
 const handleCreate = () => {
-  router.push('/clue/basic-config/edit-dcc')
+  router.push('/clue/basic-config/create-dcc')
 }
 const handleDccEdit = (row) => {
-  router.push(`/clue/basic-config/edit-dcc?id=${row.id}`)
+  router.push(`/clue/basic-config/edit-dcc/${row.id}`)
   console.log(row)
 }
 const statusChange = async (val, row) => {

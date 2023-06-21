@@ -45,7 +45,7 @@
             style="min-width: 180px"
           />
         </el-form-item>
-        <el-form-item label="线索品牌">
+        <el-form-item label="线索品牌" prop="brandIdList">
           <el-select
             v-model="ruleForm.brandIdList"
             filterable
@@ -53,7 +53,12 @@
             collapse-tags
             collapse-tags-tooltip
           >
-            <el-option label="1" value="2" />
+            <el-option
+              v-for="item in brandList"
+              :key="item.brandId"
+              :label="item.brandName"
+              :value="item.brandId"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="线索派发时间" prop="distributeTimeType">
@@ -111,7 +116,7 @@
           <el-button type="primary" :disabled="loading" :loading="btnLoading" @click="handleConfirm"
             >确定</el-button
           >
-          <el-button :loading="loading" :disabled="btnLoading" @click="handleSearch"
+          <el-button v-if="false" :loading="loading" :disabled="btnLoading" @click="handleSearch"
             >查询</el-button
           >
           <el-button @click="handleClose">取消</el-button>
@@ -124,11 +129,11 @@
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus'
 import { getListSimpleUsersApi } from '@/api/system/user'
-import { getAllStoreList } from '@/api/system/organization'
 import { DICT_TYPE, getTenantDictOptions } from '@/utils/dict'
-import { listToTree } from '@/utils/tree'
 import { saveRecycleSchedule } from '@/api/clue/basicConfig'
-
+import { useOption } from '@/store/modules/options'
+import { getAllBrand } from '@/api/model/brand'
+const store = useOption()
 const message = useMessage()
 
 interface IProps {
@@ -147,7 +152,7 @@ watch(
   () => props.modelValue,
   async (val) => {
     if (val) {
-      Promise.all([getUsers(), getShopList(), getDicts()])
+      Promise.all([getUsers(), getShopList(), getBrandInfo(), getDicts()])
     } else {
       timeRange.value = []
       formRef.value?.resetFields()
@@ -164,10 +169,16 @@ const getUsers = async () => {
   const data = await getListSimpleUsersApi()
   userList.value = data
 }
+const brandList = ref<object[]>([])
+const getBrandInfo = async () => {
+  const data = await getAllBrand()
+  brandList.value = data
+}
+
 const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+  const res = await store.getShopList()
+  shopTreeList.value = res.shopTreeList
 }
 
 const timeRange = ref<string[]>([])
@@ -190,7 +201,7 @@ let ruleForm = reactive({
   userId: '', // 成员id
   recycleReason: '', // 回收原因
   shopId: '', // 所属门店
-  brandIdList: [1, 2], // 线索品牌ids
+  brandIdList: [], // 线索品牌ids
   distributeTimeType: 1, // 派发时间类型  1全部 2部分
   distributeStartTime: '',
   distributeEndTime: '',
@@ -200,7 +211,8 @@ const rules: FormRules = reactive({
   userId: [{ required: true, message: '请选择线索所属成员', trigger: 'change' }],
   recycleReason: [{ required: true, message: '请选择手动回收原因', trigger: 'change' }],
   shopId: [{ required: true, message: '请选择所属门店', trigger: 'change' }],
-  distributeStartTime: [{ required: true, message: '请选择线索派发时间', trigger: 'change' }]
+  distributeStartTime: [{ required: true, message: '请选择线索派发时间', trigger: 'change' }],
+  brandIdList: [{ required: true, message: '请选择线索品牌', trigger: 'change' }]
 })
 const handleClose = () => {
   show.value = false

@@ -41,43 +41,31 @@ import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '../components/WgTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
 import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
-import dayjs from 'dayjs'
-import { getAllStoreList } from '@/api/system/organization/index'
+import { dateFormat } from '@/utils/utils'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 
-import { listToTree } from '@/utils/tree'
-import { cloneDeep } from 'lodash-es'
 const message = useMessage()
 
 const tableConfig = reactive({
   pageKey: 'assessRule',
   refresh: () => getList(),
-  queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10, total: 0 },
+  queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
     {
-      sort: 1,
       title: '考核规则名称',
       key: 'checkRuleName',
-      resizable: true,
-      ellipsis: true,
       disabled: false
     },
     {
-      sort: 2,
       title: '适用门店',
       key: 'applicableShopName',
       minWidth: 350,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
-      sort: 3,
       title: '状态',
       key: 'openRules',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <el-switch
@@ -89,28 +77,20 @@ const tableConfig = reactive({
         )
       }
     },
-    { sort: 4, title: '创建人', key: 'creator', resizable: true, ellipsis: true, disabled: false },
+    { title: '创建人', key: 'creator', disabled: false },
     {
-      sort: 5,
       title: '创建时间',
       key: 'createTime',
       minWidth: '180px',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
-        return row.createTime ? dayjs(row.createTime).format('YYYY-MM-DD HH:mm:ss') : ''
+        return row.createTime ? dateFormat(row.createTime) : ''
       }
     },
     {
-      sort: 6,
       title: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <div>
@@ -158,12 +138,11 @@ const handleSearch = () => {
 }
 let shopList = []
 const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopList = cloneDeep(data || [])
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
-getShopList()
+onMounted(async () => {
+  const res = await store.getShopList()
+  shopList = res.shopList
+  shopTreeList.value = res.shopTreeList
+})
 const handleCreate = () => {
   curInfo.value = {}
   visible.value = true

@@ -214,8 +214,7 @@
 import { judgeTimeList } from '@/utils/utils'
 import type { FormInstance, FormRules } from 'element-plus'
 import dayjs from 'dayjs'
-import { listToTree } from '@/utils/tree'
-import { cloneDeep, difference } from 'lodash-es'
+import { cloneDeep } from 'lodash-es'
 import {
   existRuleShop,
   createAssessRule,
@@ -223,6 +222,8 @@ import {
   editAssessRule,
   checkRuleName
 } from '@/api/clue/basicConfig'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const message = useMessage()
 interface IProps {
   modelValue: boolean
@@ -253,13 +254,11 @@ watch(
     if (val) {
       const id = props.curInfo['id']
       Promise.all([getExistRuleShop(), id && getInfo(id)]).then(() => {
-        const list = cloneDeep(props.shopList)
-        const ids: string[] = ruleForm.applicableShopId
-        checkedList.value = difference(checkedList.value, ids).map((d) => +d)
-        list.forEach((item: object) => {
-          item['disabled'] = checkedList.value.includes(item['id'])
-        })
-        shopTreeList.value = listToTree(list, { pid: 'parentId' })
+        shopTreeList.value = store.dealShopList(
+          props.shopList,
+          unref(checkedList),
+          ruleForm.applicableShopId
+        )
       })
     } else {
       formRef.value?.resetFields()

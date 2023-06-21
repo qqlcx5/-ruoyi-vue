@@ -12,10 +12,15 @@
     @add="addRule"
   >
     <template #openRules="{ row }">
-      <el-switch v-model="row.openRules" :active-value="1" :inactive-value="0" />
+      <el-switch
+        v-model="row.openRules"
+        :active-value="1"
+        :inactive-value="0"
+        @change="changeOpenRules(row)"
+      />
     </template>
   </form-table>
-  <Crud ref="crudRef" />
+  <Crud ref="crudRef" @refresh="refresh" />
 </template>
 
 <script setup lang="ts" name="dispatchRule">
@@ -31,6 +36,9 @@ onMounted(() => {
   getShopList()
 })
 
+const refresh = () => {
+  tableRef.value.tableMethods.reload()
+}
 // 获取门店数据
 const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
@@ -93,8 +101,8 @@ const columns: TableColumn[] = [
 const actionButtons = [
   {
     name: '编辑',
-    click: () => {
-      console.log('新增')
+    click: (row) => {
+      crudRef.value.openDialog(row.id, shopTreeList.value)
     }
   },
   {
@@ -107,7 +115,13 @@ const actionButtons = [
 
 const crudRef = ref()
 const addRule = async () => {
-  crudRef.value.openDialog(shopTreeList)
+  crudRef.value.openDialog('', shopTreeList.value)
+}
+const changeOpenRules = (row) => {
+  console.log(row)
+  // dispatchApi.changeClueDistributeRule(row.id, row.openRules).then((res) => {
+  //   console.log(res)
+  // })
 }
 const { allSchemas } = useCrudSchemas(columns)
 </script>

@@ -174,3 +174,12 @@ export const deleteDcc = ({ id }) => {
     url: `/clue/clueExamineAllsetProductization/delete/${id}`
   })
 }
+
+// 获取邀约配置
+export const detailInvite = () => {
+  return request.post({ url: `/clue/mange/inviteConfig/detail` })
+}
+// 修改邀约配置
+export const updateInvite = (data) => {
+  return request.post({ url: `/clue/mange/inviteConfig/update`, data })
+}

@@ -139,7 +139,7 @@ export enum DICT_TYPE {
   PERSON_TYPE = 'person_type', // 成员类型
   POST_TYPE = 'post_type', // 岗位类型
   LOGIN_LOG_TYPE = 'login_log_type', // 登录方式
-  LOGIN_RESULT_INFO = 'Login_result_info', // 登录结果详情
+  LOGIN_RESULT_INFO = 'login_result_info', // 登录结果详情
   ENTRANCE = 'entrance', // 登录端口
   // ========== 租户字典 ==========
   MANUAL_RECYCLING_REASON = 'MANUAL_RECYCLING_REASON', // 回收原因

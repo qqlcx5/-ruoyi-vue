@@ -14,7 +14,7 @@ const props = defineProps({
   // 二维码内容
   text: {
     type: [String, Array] as PropType<string | Recordable[]>,
-    default: '刷新一下再扫吧'
+    default: ''
   },
   // qrcode.js配置项
   options: {
@@ -42,7 +42,7 @@ const prefixCls = getPrefixCls('qrcode')
 
 const { toCanvas, toDataURL } = QRCode
 
-const loading = ref(true)
+const loading = ref(false)
 
 const wrapRef = ref<Nullable<HTMLCanvasElement | HTMLImageElement>>(null)
 
@@ -57,6 +57,7 @@ const wrapStyle = computed(() => {
 
 const initQrcode = async () => {
   await nextTick()
+  loading.value = true
   const options = cloneDeep(props.options || {})
   if (props.tag === 'canvas') {
     // 容错率，默认对内容少的二维码采用高容错率，内容多的二维码采用低容错率
