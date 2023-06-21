@@ -26,7 +26,7 @@
       :current-node-key="state.currentNodeKey"
       :filter-method="filterMethod"
       @node-click="selectTree"
-      :height="800"
+      :height="700"
       class="filter-tree"
       highlight-current
     />
