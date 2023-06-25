@@ -65,6 +65,7 @@ import { listToTree } from '@/utils/tree'
 import { computed, ref } from 'vue'
 import Crud from './components/crud.vue'
 import { getAllBrand } from '@/api/model/brand'
+import { formatDate } from '@/utils/formatTime'
 
 const message = useMessage()
 
@@ -234,7 +235,17 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
+    field: 'createTime',
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   }
 ]
 
