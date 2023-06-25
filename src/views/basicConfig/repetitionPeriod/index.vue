@@ -35,7 +35,7 @@ import { dateFormat } from '@/utils/utils'
 
 const message = useMessage()
 
-const typeObj = { 0: '不限', 1: '门店', 2: '分店' }
+const typeObj = { 0: '不限', 1: '门店', 2: '分公司' }
 const tableConfig = reactive({
   pageKey: 'repetitionPeriod',
   type: 'selection',
