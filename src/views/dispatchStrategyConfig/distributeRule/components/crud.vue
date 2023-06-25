@@ -48,7 +48,7 @@
         </el-radio-group>
       </el-form-item>
       <div class="mb10">
-        <div class="tit">派发设置</div>
+        <div class="tit">派发规则设置</div>
         <div class="divider-row"></div>
         <el-form-item label="是否允许规则外增加派发成员：">
           <el-switch
