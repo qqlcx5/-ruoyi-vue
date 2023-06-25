@@ -13,6 +13,7 @@ const request = (option: any) => {
     data,
     responseType: responseType,
     headers: {
+      entrance: 'pc',
       'Content-Type': headersType || default_headers,
       ...headers
     }

@@ -6,5 +6,5 @@ export const getAllBrand = async () => {
 }
 // 根据多个品牌查询车系列表(带上级品牌)
 export const querySeriesDetailsBelowBrand = async (data) => {
-  return await request.post({ url: '/models/series/details/querySeriesDetailsBelowBrand', data })
+  return await request.post({ url: '/model/series/details/querySeriesDetailsBelowBrand', data })
 }

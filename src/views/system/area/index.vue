@@ -1,9 +1,8 @@
 <!--  行政区划  -->
 <template>
   <div class="total-content">
-    <!--  -1显示全部区划item 100000中国  -->
     <LeftSelectTree
-      :treeData="state.areaList.filter((item) => item.code !== '-1')"
+      :treeData="state.areaList"
       :statusValue="state.statusValue"
       @sendCurrentSelect="sendCurrentSelect"
       @statusChange="statusChange"
@@ -253,7 +252,7 @@ const onSubmit = async () => {
     switch (state.operationType) {
       case 'add':
         await addChildArea(params)
-        message.success('新增子项成功')
+        message.success('新增下级成功')
         getList()
         break
       case 'edit':
