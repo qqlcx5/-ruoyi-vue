@@ -82,7 +82,7 @@ let dialogVisible = ref(false)
 let dialogTitle = ref('新增')
 const actionLoading = ref(false) // 遮罩层
 let actionType = ref('create') // 操作按钮的类型
-
+const emit = defineEmits(['refreshList'])
 const props = {
   multiple: true,
   label: 'name',
@@ -251,12 +251,16 @@ const clueDistributeSave = async (dataSource) => {
   let data = await dispatchApi.clueDistributeSaveV2(params)
   if (data) {
     message.success('操作成功')
+    emit('refreshList')
     dialogVisible.value = false
   }
 }
 const clueDistributeUpdate = async (params) => {
   let data = await dispatchApi.clueDistributeUpdateV2(params)
   if (data) {
+    message.success('操作成功')
+    emit('refreshList')
+    dialogVisible.value = false
     console.log(data)
   }
 }

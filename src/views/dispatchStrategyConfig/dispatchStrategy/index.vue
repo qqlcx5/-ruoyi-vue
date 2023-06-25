@@ -18,7 +18,7 @@
       <XButton type="danger" @click="handleDel">删除</XButton>
     </template>
   </form-table>
-  <crud ref="crudRef" @refresh="() => {}" />
+  <crud ref="crudRef" @refresh-list="refreshList" />
 </template>
 
 <script setup lang="ts" name="dispatchMember">
@@ -42,6 +42,11 @@ const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
   const data = await getAllStoreList()
   shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+}
+
+const refreshList = () => {
+  console.log(tableRef.value.tableMethods)
+  tableRef.value.tableMethods.getList()
 }
 
 const getTable = (params) => {
@@ -217,7 +222,6 @@ const confirmDel = () => {
   if (selectedIds.value.length < 1) {
     return message.warning('未选择数据')
   } 
-
   message
     .wgConfirm(
       '删除后，对应派发员将无法接受到线索派发',
@@ -243,7 +247,7 @@ const deleteFun = async () => {
   const res = await dispatchApi.delStrategy(params)
   if (res) {
     message.success('删除成功')
-    tableRef.value.tableMethods.getList()
+    refreshList()
   } else {
     message.error('报错了')
   }
