@@ -1,6 +1,6 @@
 <template>
   <div class="form-table flex flex-col h-full">
-    <ContentWrap>
+    <ContentWrap v-if="formProps.isSearch">
       <Search v-bind="formProps" @search="handleSearch" @reset="handleSearch">
         <template #[item]="data" v-for="item in Object.keys(formSlots)" :key="item">
           <slot :name="`form-${item}`" v-bind="data || {}" :model="data.model"></slot>
@@ -39,7 +39,7 @@
           }"
           :data="tableObject.tableList"
           :loading="tableObject.loading"
-          :expand-row-keys="expandRowKeys"
+          :expand-row-keys="expandKeys"
           row-key="id"
           header-cell-class-name="table-header-style"
           height="100%"
@@ -72,7 +72,7 @@
           <template #empty>
             <Empty />
           </template>
-          <template v-if="isTreeTable" #[firstColumnName]="{ column }">
+          <template v-if="isTree" #[firstColumnName]="{ column }">
             <div>
               {{ column.label }}
               <el-popover placement="bottom" title="展开层级" :width="200" trigger="click">
@@ -86,7 +86,7 @@
                 </el-select>
 
                 <template #reference>
-                  <XTextButton pre-icon="ep:setting" />
+                  <XTextButton type="info" pre-icon="ep:setting" />
                 </template>
               </el-popover>
             </div>
@@ -108,13 +108,12 @@
 
 <script lang="ts" setup>
 import { onMounted, watch, computed, PropType } from 'vue'
-import { useRoute } from 'vue-router'
 import { useTable } from '@/hooks/web/useTable'
 import { TableColumn } from '@/types/table'
 import { TableProps, SearchProps, ActionButton } from './helper'
 import { hasPermission } from '@/utils/utils'
 import { isEmpty, isString, isBoolean, cloneDeep } from 'lodash-es'
-import { useCache } from '@/hooks/web/useCache'
+import { useExpandTree } from '@/hooks/web/useExpandTree'
 
 const props = defineProps({
   tableOptions: {
@@ -138,7 +137,12 @@ const props = defineProps({
     default: () => ({})
   },
   formOptions: {
-    type: Object as PropType<SearchProps>,
+    type: Object as PropType<
+      SearchProps &
+        Partial<{
+          isSearch: boolean
+        }>
+    >,
     default: () => ({})
   }
 })
@@ -190,7 +194,6 @@ const firstColumnName = computed(() => {
   const columns = tableColumns.value.filter(
     (item) => item?.isTable !== false && item.type !== 'index'
   )
-  console.log(columns[0].field)
 
   return `${columns[0].field}-header`
 })
@@ -205,6 +208,7 @@ const tableProps = computed(() => {
 })
 const formProps = computed(() => {
   return {
+    isSearch: true,
     ...props.formOptions,
     schema: props.formOptions.schema?.map((item) => {
       if (item.component === 'Input') {
@@ -362,72 +366,9 @@ const handleColumnReset = () => {
 }
 
 // ====== 设置展开层级 ======
-const route = useRoute()
-const { wsCache } = useCache()
-const expandLevel = ref(wsCache.get(route.path) || 2)
-const expandRowKeys = ref<string[]>([])
-const dataList = computed(() =>
+const { isTree, expandKeys, expandLevel, expandLevelMax } = useExpandTree(
   isEmpty(tableProps.value.data) ? tableObject.tableList : tableProps.value.data || []
 )
-// 是否为树形结构
-const isTreeTable = computed(() => {
-  return dataList.value.some((item) => item.hasOwnProperty('children'))
-})
-const getExpandConfig = (showLevel?: number) =>
-  computed(() => {
-    const list = dataList.value
-    // 每条数据的层级
-    const level: number[] = []
-    // 需要展开的层级id
-    const rowKeys: string[] = []
-
-    const getLevel = (n: number, list: Recordable[], showLevel?: number) => {
-      const forFunc = () => {
-        for (let i = 0; i < list.length; i++) {
-          if (list[i].hasOwnProperty('children')) {
-            rowKeys.push(`${list[i].id}`)
-            getLevel(n + 1, list[i].children, showLevel)
-          } else {
-            level.push(n)
-          }
-        }
-        if (list.length === 0) {
-          level.push(n)
-        }
-      }
-
-      if (!n) n = 1
-      if (showLevel) {
-        if (n <= showLevel) {
-          forFunc()
-        }
-      } else {
-        forFunc()
-      }
-    }
-    getLevel(0, list, showLevel)
-
-    return {
-      // 最大层级
-      levelMax: level.length === 0 ? 0 : Math.max(...level),
-      rowKeys
-    }
-  })
-watch(
-  expandLevel,
-  (val: number) => {
-    if (!isTreeTable.value) return
-    const data = getExpandConfig(val)
-    expandRowKeys.value = data.value.rowKeys
-    wsCache.set(route.path, val)
-  },
-  { immediate: true }
-)
-// 获取最大层级数
-const expandLevelMax = computed(() => {
-  if (!isTreeTable.value) return []
-  return getExpandConfig().value.levelMax
-})
 // =========================
 
 onMounted(() => {
