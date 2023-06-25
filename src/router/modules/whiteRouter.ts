@@ -64,7 +64,8 @@ const whiteRouter: AppRouteRecordRaw[] = [
     children: [
       {
         path: 'source',
-        component: () => import('@/views/clueChannel/source/index.vue'),
+        // component: () => import('@/views/clueChannel/source/index.vue'),
+        component: () => import('@/views/dispatchStrategyConfig/dispatchStrategy/index.vue'),
         name: 'source',
         meta: {
           canTo: true,
@@ -77,5 +78,4 @@ const whiteRouter: AppRouteRecordRaw[] = [
     ]
   }
 ]
-
 export default whiteRouter
