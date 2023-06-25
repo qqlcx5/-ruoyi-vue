@@ -40,11 +40,11 @@
       <el-form-item prop="distributeType">
         <el-radio-group v-model="form.distributeType">
           <el-radio :label="1" style="margin: 6px 4px 0 0"
-            >规则分配（按照设定的规则自动分配）</el-radio
-          >
+            >规则分配（按照设定的规则自动分配）
+          </el-radio>
           <el-radio :label="2" style="margin: 6px 4px 0 0"
-            >手动分配（成员自行选择成员进行线索分配）</el-radio
-          >
+            >手动分配（成员自行选择成员进行线索分配）
+          </el-radio>
         </el-radio-group>
       </el-form-item>
       <div class="mb10">
@@ -61,7 +61,8 @@
         </el-form-item>
         <el-form-item label="单条线索派发给" prop="distributeNum">
           <div class="no-wrap">
-            <el-input v-model="form.distributeNum" placeholder="人数" type="number" min="0" />人
+            <el-input v-model="form.distributeNum" placeholder="人数" type="number" min="0" />
+            人
           </div>
         </el-form-item>
         <el-form-item label="接单模式:" prop="receivePattern">
@@ -80,7 +81,7 @@
         </el-form-item>
         <el-form-item v-if="form.receivePattern === 3">
           <el-button type="primary" size="small" @click="addTeam">添加团队</el-button>
-          <el-table :data="form.teams">
+          <el-table :data="form.teams" ref="teamTableRef">
             <el-table-column label="团队" prop="teamName" />
             <el-table-column label="关联岗位" width="200">
               <template #default="{ row }">
@@ -91,12 +92,14 @@
                   clearable
                   collapse-tags
                   style="width: 180px"
+                  @visible-change="changePosition($event, row)"
                 >
                   <el-option
                     v-for="item in postList"
                     :key="item.id"
                     :label="item.name"
                     :value="item.id"
+                    :disabled="item.disabled"
                   />
                 </el-select>
               </template>
@@ -120,7 +123,8 @@
             prop="receiveNum"
           >
             <div class="no-wrap">
-              <el-input v-model="form.receiveNum" placeholder="人数" type="number" min="0" />人
+              <el-input v-model="form.receiveNum" placeholder="人数" type="number" min="0" />
+              人
             </div>
           </el-form-item>
         </div>
@@ -141,11 +145,10 @@ import { RuleObj } from '../helpers'
 import { FormInstance } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 import { existDccRuleShop } from '@/api/clue/basicConfig'
-const store = useOption()
-
 onMounted(() => {
   getPostList()
 })
+const store = useOption()
 
 const message = useMessage()
 const dialogVisible = ref(false)
@@ -168,6 +171,8 @@ const initForm: RuleObj = {
 const form = ref(cloneDeep(initForm))
 const editFlag = ref<boolean>(false)
 const editId = ref(0)
+const selectedPositionId = ref<number[]>([])
+
 const openDialog = (id: number) => {
   nextTick(() => {
     let applicableShopId = []
@@ -184,9 +189,15 @@ const openDialog = (id: number) => {
         }
         applicableShopId = res.applicableShopId.split(',')
         form.value.shopIdList = applicableShopId.map((item) => +item)
-        console.log('opendialog')
+
+        if (res.teams.length > 0) {
+          res.teams.forEach((team) => {
+            selectedPositionId.value.push(...team.positionSunTypeList)
+          })
+        }
       })
     }
+    selectedPositionId.value = []
     getShopList(applicableShopId)
     dialogVisible.value = true
   })
@@ -196,10 +207,23 @@ const hide = () => {
   formRef.value?.resetFields()
   dialogVisible.value = false
 }
-const postList = ref<object[]>([])
+type positionObj = {
+  id: number
+  name: string
+  disabled: boolean
+}
+const postList = ref<positionObj[]>([])
 const getPostList = async () => {
   const data = await listSimplePostsApi()
   postList.value = data
+}
+const changePosition = (isShow, row) => {
+  let hasId = selectedPositionId.value
+  selectedPositionId.value = [...row.positionSunTypeList, ...hasId]
+  postList.value = postList.value.map((pos: positionObj) => {
+    pos['disabled'] = selectedPositionId.value.includes(pos.id)
+    return pos
+  })
 }
 
 const getShopList = async (applicableShopId) => {
@@ -297,5 +321,9 @@ defineExpose({ openDialog })
 .no-wrap {
   display: flex;
   flex-wrap: nowrap;
+}
+
+.el-table {
+  width: 99.9% !important;
 }
 </style>

@@ -79,6 +79,7 @@
             <el-cascader
               v-model="row.seriesIds"
               :options="seriesOption"
+              collapse-tags
               :props="{ multiple: true, label: 'seriesDetailsName', value: 'seriesDetailsId' }"
               @visible-change="changeSeriesEvent($event, row)"
             />
