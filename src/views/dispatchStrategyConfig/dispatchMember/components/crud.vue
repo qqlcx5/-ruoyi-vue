@@ -1,14 +1,20 @@
 <template>
-  <XModal :title="id ? '修改' : '新增'" v-model="visible" width="50%">
-    <el-form :model="form" :rules="rules" ref="form">
+  <XModal
+    :loading="btnLoading"
+    :title="editFlag ? '修改' : '新增'"
+    v-model="visible"
+    width="60%"
+    height="70%"
+  >
+    <el-form :model="ruleForm" :rules="rules" ref="formRef">
       <el-form-item label="所属门店" prop="shopId">
         <el-cascader
           ref="treeShopCascader"
-          v-model="form.shopIdList"
+          v-model="ruleForm.shopIdList"
           placeholder="请选择门店"
           :options="shopTreeList"
           collapse-tags
-          @change="getDistributeShopIdList"
+          @visible-change="getDistributeShopIdList"
           :props="{
             label: 'name',
             value: 'id',
@@ -22,41 +28,291 @@
       </el-form-item>
     </el-form>
     <el-divider />
-    <div>派发人员配置</div>
-    <XButton type="primary">选择成员</XButton>
-    <StaffConfig v-if="form.shopIdList" :db-list="staffConfigList" ref="staffConfigRef" />
+    <div
+      >派发人员配置
+      <XButton type="primary" @click="addMemberRule">添加行</XButton>
+      (请先选择门店)
+    </div>
+    <el-table :data="memberTableList">
+      <el-table-column label="门店">
+        <template #default="{ row }">
+          <span>{{ row.shopName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="成员">
+        <template #default="{ row }">
+          <el-cascader
+            ref="cascaderRef"
+            v-model="row.distributeUserId"
+            :options="userList"
+            :props="{ label: 'username', value: 'id' }"
+            @change="changeUserById($event, row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="成员平台昵称">
+        <template #default="{ row }">
+          <el-input v-model="row.nickname" placeholder="昵称" />
+        </template>
+      </el-table-column>
+      <el-table-column label="销售品牌">
+        <template #default="{ row }">
+          <el-select
+            v-model="row.brandIds"
+            @visible-change="changeBrandId($event, row)"
+            multiple
+            filterable
+            collapse-tags
+          >
+            <el-option
+              v-for="item in brandList"
+              :key="item.brandId"
+              :label="item.brandName"
+              :value="item.brandId"
+            />
+          </el-select>
+        </template>
+      </el-table-column>
+      <el-table-column label="销售车系" show-overflow-tooltip>
+        <template #default="{ row }">
+          <template v-if="row.brandIds">
+            <el-cascader
+              v-model="row.seriesIds"
+              :options="seriesOption"
+              collapse-tags
+              :props="{ multiple: true, label: 'seriesDetailsName', value: 'seriesDetailsId' }"
+              @visible-change="changeSeriesEvent($event, row)"
+            />
+          </template>
+          <span v-else>请先选择品牌</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="派单状态">
+        <template #default="{ row }">
+          <el-switch
+            v-model="row.status"
+            active-color="#13ce66"
+            :active-value="1"
+            :inactive-value="0"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="跟进是否回推厂家">
+        <template #default="{ row }">
+          <el-switch
+            v-model="row.pushBackFactoryStatus"
+            active-color="#13ce66"
+            :active-value="1"
+            :inactive-value="0"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template #default="{ $index }">
+          <el-button @click="deleteRow($index)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <template #footer>
+      <XButton type="primary" @click="onConfirm">确定</XButton>
+      <XButton @click="hide">取消</XButton>
+    </template>
   </XModal>
 </template>
 
 <script setup lang="ts" name="dipatchMemberCrud">
-import StaffConfig from '@/views/dispatchStrategyConfig/components/staffConfig.vue'
+import * as dispatchApi from '@/api/clue/dispatchStrategy'
+import type { FormRules, FormInstance } from 'element-plus'
+import { getListSimpleUsersApi } from '@/api/system/user'
+import { ref } from 'vue'
+import { getAllBrand, querySeriesDetailsBelowBrand } from '@/api/model/brand'
+onMounted(() => {
+  getBrandInfo()
+})
+const message = useMessage()
 const visible = ref(false)
-
-const form = ref({
+const btnLoading = ref(false)
+const emit = defineEmits(['refresh'])
+const formRef = ref<FormInstance>()
+const ruleForm = ref({
   shopIdList: []
 })
-const rules = ref()
-const id = ref('')
-const shopTreeList = ref<object[]>([])
-
+const rules: FormRules = reactive({
+  shopIdList: [{ required: true, message: '请选择门店', trigger: 'change' }]
+})
+const hide = () => {
+  visible.value = false
+}
+const editFlag = ref<boolean>(false)
 const openDialog = (id: string, formShopTreeList: any) => {
-  // id.value = id
-  staffConfigList.value = []
-  if (id) {
-    // todo 编辑
-    console.log(id)
-  } else {
-    console.log('新增')
-  }
-  shopTreeList.value = formShopTreeList
-  visible.value = true
+  nextTick(() => {
+    memberTableList.value = []
+    shopTreeList.value = formShopTreeList
+    editFlag.value = !!id
+    if (id) {
+      dispatchApi.getClueDistributeUserDetail(id).then((res) => {
+        ruleForm.value.shopIdList = res.shopId
+        memberTableList.value = res.userList
+      })
+    } else {
+      ruleForm.value = { shopIdList: [] }
+    }
+    visible.value = true
+  })
+}
+// watch(
+//   () => ruleForm.value,
+//   (val) => console.log(val, '11111'),
+//   { deep: true }
+// )
+const userList = ref<object[]>([])
+
+const getUsers = async () => {
+  let str = ruleForm.value.shopIdList.join(',')
+  str += `,43`
+  const data = await getListSimpleUsersApi({ storeIds: str })
+  userList.value = data
 }
 
-const staffConfigList = ref<any[]>([])
+const brandList = ref<object[]>([])
+const getBrandInfo = async () => {
+  const data = await getAllBrand()
+  brandList.value = data
+}
 
-const getDistributeShopIdList = () => {
-  console.log(form.value.shopIdList)
-  staffConfigList.value = []
+const shopTreeList = ref<object[]>([])
+
+type brandObj = {
+  brandId: number
+  seriesIds: string[]
+}
+type tableObj = {
+  shopId: string
+  shopName: string
+  distributeUserId: string
+  nickname: string
+  status: number
+  pushBackFactoryStatus: number
+  brandList: brandObj[]
+}
+const memberTableList = ref<tableObj[]>([
+  {
+    shopId: '',
+    shopName: '',
+    distributeUserId: '',
+    nickname: '',
+    status: 0,
+    pushBackFactoryStatus: 0,
+    brandList: [
+      {
+        brandId: 0,
+        seriesIds: []
+      }
+    ]
+  }
+])
+const addMemberRule = () => {
+  if (ruleForm.value.shopIdList.length < 1) {
+    return message.error('请先选择所属门店')
+  }
+  let addItem: tableObj = {
+    shopId: '',
+    shopName: '',
+    distributeUserId: '',
+    nickname: '',
+    status: 0,
+    pushBackFactoryStatus: 0,
+    brandList: [
+      {
+        brandId: 0,
+        seriesIds: []
+      }
+    ]
+  }
+  memberTableList.value.push(addItem)
+}
+const getDistributeShopIdList = (val) => {
+  if (!val) {
+    memberTableList.value = []
+    getUsers()
+  }
+}
+const deleteRow = (index) => {
+  memberTableList.value.splice(index, 1)
+}
+const cascaderRef = ref()
+const changeUserById = (val, row) => {
+  let cascaderList = cascaderRef.value.getCheckedNodes()
+  let cascaderData = cascaderList[0].data
+  row.shopId = cascaderData.belongStoreId
+  row.shopName = cascaderData.belongStoreName
+}
+const changeBrandId = (val, row) => {
+  if (!val) {
+    seriesOption.value = []
+    row.brandIds.length && getSeries(row.brandIds)
+  }
+}
+
+const changeSeriesEvent = (val, row) => {
+  row.brandList = []
+  const obj = {}
+  row?.seriesIds?.map((item) => {
+    if (obj[item[0]]) {
+      obj[item[0]].push(item[1])
+    } else {
+      obj[item[0]] = [item[1]]
+    }
+  })
+  Object.keys(obj).forEach((key) => {
+    row.brandList.push({
+      brandId: key,
+      seriesIds: obj[key]
+    })
+  })
+}
+type seriesParams = {
+  seriesDetailsName: string
+  seriesDetailsId: number
+  children: object[]
+}
+let seriesOption = ref<seriesParams[]>([])
+
+const getSeries = async (val) => {
+  const seriesData = await querySeriesDetailsBelowBrand({ brandIds: val })
+  seriesData.forEach((item) => {
+    let optionsObj: seriesParams = {
+      seriesDetailsName: item.brand.brandName,
+      seriesDetailsId: item.brand.brandId,
+      children: item.seriesList
+    }
+    seriesOption.value.push(optionsObj)
+  })
+}
+const onConfirm = () => {
+  if (ruleForm.value.shopIdList.length < 1) {
+    return message.error('请先选择所属门店')
+  }
+
+  interface IParams {
+    shopIdList: object[]
+    userList: object[]
+  }
+
+  let params: IParams = {
+    shopIdList: [],
+    userList: []
+  }
+  params.shopIdList = ruleForm.value.shopIdList
+  params.userList = memberTableList.value
+  btnLoading.value = true
+  unref(editFlag)
+    ? dispatchApi.editClueDistributeUser(params)
+    : dispatchApi.addClueDistributeUser(params)
+  message.success('保存成功')
+  emit('refresh')
+  visible.value = false
+  btnLoading.value = false
 }
 
 defineExpose({ openDialog })

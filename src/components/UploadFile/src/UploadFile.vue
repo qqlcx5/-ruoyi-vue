@@ -107,7 +107,7 @@ const beforeUpload: UploadProps['beforeUpload'] = (file: UploadRawFile) => {
     const isLimit =
       (fileUnit.value === FileUnit.KB ? file.size / 1024 : file.size / 1024 / 1024) < props.fileSize
     if (!isLimit) {
-      message.error(`上传文件大小不能超过${props.fileSize}${fileUnit}!`)
+      message.error(`上传文件大小不能超过${props.fileSize}${fileUnit.value}!`)
       return false
     }
   }

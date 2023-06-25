@@ -391,7 +391,8 @@ const handleClose = () => {
 }
 const btnLoading = ref<boolean>(false)
 const handleConfirm = async (formEl: FormInstance | undefined) => {
-  Promise.all([editTimeFlag && timeEdit(false), formEl && formEl.validate()]).then(async () => {
+  Promise.all([editTimeFlag && timeEdit(false), formEl && formEl.validate()]).then(async (res) => {
+    if (res.some((d) => !d)) return
     try {
       btnLoading.value = true
       const params = cloneDeep(ruleForm)

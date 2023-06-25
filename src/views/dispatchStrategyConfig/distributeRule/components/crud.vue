@@ -1,8 +1,19 @@
 <template>
-  <XModal :loading="btnLoading" v-model="dialogVisible" title="设置" width="800">
+  <XModal
+    :loading="btnLoading"
+    v-model="dialogVisible"
+    :title="editFlag ? '编辑' : '新增'"
+    width="800"
+  >
     <el-form :model="form" ref="formRef" :hide-required-asterisk="false">
       <el-form-item label="适用名称">
-        <el-input v-model="form.distributeRuleName" maxlength="20" show-word-limit type="text" />
+        <el-input
+          v-model="form.distributeRuleName"
+          @change="changeRuleName"
+          maxlength="20"
+          show-word-limit
+          type="text"
+        />
       </el-form-item>
       <el-form-item label="适用门店">
         <el-cascader
@@ -29,11 +40,11 @@
       <el-form-item prop="distributeType">
         <el-radio-group v-model="form.distributeType">
           <el-radio :label="1" style="margin: 6px 4px 0 0"
-            >规则分配（按照设定的规则自动分配）</el-radio
-          >
+            >规则分配（按照设定的规则自动分配）
+          </el-radio>
           <el-radio :label="2" style="margin: 6px 4px 0 0"
-            >手动分配（成员自行选择成员进行线索分配）</el-radio
-          >
+            >手动分配（成员自行选择成员进行线索分配）
+          </el-radio>
         </el-radio-group>
       </el-form-item>
       <div class="mb10">
@@ -50,7 +61,8 @@
         </el-form-item>
         <el-form-item label="单条线索派发给" prop="distributeNum">
           <div class="no-wrap">
-            <el-input v-model="form.distributeNum" placeholder="人数" type="number" min="0" />人
+            <el-input v-model="form.distributeNum" placeholder="人数" type="number" min="0" />
+            人
           </div>
         </el-form-item>
         <el-form-item label="接单模式:" prop="receivePattern">
@@ -69,21 +81,10 @@
         </el-form-item>
         <el-form-item v-if="form.receivePattern === 3">
           <el-button type="primary" size="small" @click="addTeam">添加团队</el-button>
-          <el-table :data="form.clueDistributeTeamDTOs">
+          <el-table :data="form.teams" ref="teamTableRef">
             <el-table-column label="团队" prop="teamName" />
             <el-table-column label="关联岗位" width="200">
               <template #default="{ row }">
-                <!--                <el-tooltip effect="dark" placement="top">-->
-                <!--                  <template #content v-if="row.positionSunNameList.length > 0">-->
-                <!--                    {{ row.positionSunNameList.join(',') }}-->
-                <!--                  </template>-->
-                <!--                  <el-button @click="showPositionDialog(row)">-->
-                <!--                    {{-->
-                <!--                      row.positionSunNameList.length > 0-->
-                <!--                        ? row.positionSunNameList.join(',')-->
-                <!--                        : '请选择岗位'-->
-                <!--                    }}-->
-                <!--                  </el-button>-->
                 <el-select
                   v-model="row.positionSunTypeList"
                   multiple
@@ -91,15 +92,16 @@
                   clearable
                   collapse-tags
                   style="width: 180px"
+                  @visible-change="changePosition($event, row)"
                 >
                   <el-option
                     v-for="item in postList"
                     :key="item.id"
                     :label="item.name"
                     :value="item.id"
+                    :disabled="item.disabled"
                   />
                 </el-select>
-                <!--                </el-tooltip>-->
               </template>
             </el-table-column>
             <el-table-column label="允许独享人数" prop="permitEnjoyNum">
@@ -121,7 +123,8 @@
             prop="receiveNum"
           >
             <div class="no-wrap">
-              <el-input v-model="form.receiveNum" placeholder="人数" type="number" min="0" />人
+              <el-input v-model="form.receiveNum" placeholder="人数" type="number" min="0" />
+              人
             </div>
           </el-form-item>
         </div>
@@ -139,12 +142,20 @@ import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { cloneDeep } from 'lodash-es'
 import { listSimplePostsApi } from '@/api/system/post/info'
 import { RuleObj } from '../helpers'
+import { FormInstance } from 'element-plus'
+import { useOption } from '@/store/modules/options'
+import { existDccRuleShop } from '@/api/clue/basicConfig'
+onMounted(() => {
+  getPostList()
+})
+const store = useOption()
+
 const message = useMessage()
 const dialogVisible = ref(false)
 const shopTreeList = ref<object[]>([])
 const btnLoading = ref(false)
 const emit = defineEmits(['refresh'])
-const formRef = ref()
+const formRef = ref<FormInstance>()
 const initForm: RuleObj = {
   distributeRuleName: '',
   shopIdList: [],
@@ -154,44 +165,86 @@ const initForm: RuleObj = {
   distributeNum: 0,
   receivePattern: 1,
   teamEnjoyScope: 1,
-  clueDistributeTeamDTOs: [],
+  teams: [],
   receiveNum: 0
 }
 const form = ref(cloneDeep(initForm))
+const editFlag = ref<boolean>(false)
+const editId = ref(0)
+const selectedPositionId = ref<number[]>([])
 
-const openDialog = (id: number, formshopTreeList: any) => {
+const openDialog = (id: number) => {
   nextTick(() => {
+    let applicableShopId = []
+    editId.value = id
+    editFlag.value = !!id
     formRef.value?.resetFields()
     form.value = cloneDeep(initForm)
-    shopTreeList.value = formshopTreeList
+    // shopTreeList.value = formshopTreeList
     if (id) {
       dispatchApi.getClueDistributeRuleDetail(id).then((res) => {
         form.value = res
-        form.value.shopIdList = form.value.applicableShopId.split(',')
-        console.log(form.value)
+        if (!res.teams) {
+          form.value.teams = []
+        }
+        applicableShopId = res.applicableShopId.split(',')
+        form.value.shopIdList = applicableShopId.map((item) => +item)
+
+        if (res.teams.length > 0) {
+          res.teams.forEach((team) => {
+            selectedPositionId.value.push(...team.positionSunTypeList)
+          })
+        }
       })
     }
+    selectedPositionId.value = []
+    getShopList(applicableShopId)
     dialogVisible.value = true
   })
 }
+
 const hide = () => {
   formRef.value?.resetFields()
   dialogVisible.value = false
 }
-const postList = ref<object[]>([])
+type positionObj = {
+  id: number
+  name: string
+  disabled: boolean
+}
+const postList = ref<positionObj[]>([])
 const getPostList = async () => {
   const data = await listSimplePostsApi()
   postList.value = data
 }
+const changePosition = (isShow, row) => {
+  let hasId = selectedPositionId.value
+  selectedPositionId.value = [...row.positionSunTypeList, ...hasId]
+  postList.value = postList.value.map((pos: positionObj) => {
+    pos['disabled'] = selectedPositionId.value.includes(pos.id)
+    return pos
+  })
+}
 
-onMounted(() => {
-  getPostList()
-})
+const getShopList = async (applicableShopId) => {
+  const { shopList } = await store.getShopList()
+  const checkedList = await existDccRuleShop()
+  shopTreeList.value = store.dealShopList(shopList, unref(checkedList), applicableShopId)
+}
+
+const changeRuleName = (val) => {
+  if (!editFlag) return
+  const isValid = dispatchApi.checkValidRuleName(editId.value, val)
+  if (!isValid) {
+    form.value.distributeRuleName = ''
+    message.error('名称已经存在，请重新输入')
+  }
+}
 
 // 添加团队
 const addTeam = () => {
-  let count = form.value?.clueDistributeTeamDTOs.length
-  form.value?.clueDistributeTeamDTOs.push({
+  let count = form.value?.teams?.length || 0
+  form.value?.teams.push({
     id: Number(count) + 1,
     teamName: `团队${Number(count) + 1}`,
     permitEnjoyNum: 1,
@@ -203,7 +256,7 @@ const addTeam = () => {
 const receivePatternHasChange = ref(false)
 const changeReceivePattern = (id) => {
   if (id === 3) {
-    if (form.value.clueDistributeTeamDTOs.length < 1) {
+    if (form.value.teams.length < 1) {
       // 如果团队为空，则默认添加一条
       addTeam()
     }
@@ -211,33 +264,21 @@ const changeReceivePattern = (id) => {
   receivePatternHasChange.value = true
 }
 
-const deleteShopRule = () => {
-  console.log('删除')
+const deleteShopRule = (index) => {
+  form.value.teams.splice(index, 1)
 }
 
 const onConfirm = () => {
   let params = cloneDeep(form.value)
   params.applicableShopId = params.shopIdList.join(',')
-  // delete params.shopIdList
 
-  // let params = {
-  //   distributeRuleName: 123,
-  //   applicableShopId: '150,149',
-  //   distributeType: 1,
-  //   augment: 0,
-  //   distributeNum: 3,
-  //   receivePattern: 1,
-  //   teamEnjoyScope: 1,
-  //   clueDistributeTeamDTOs: [],
-  //   receiveNum: 0
-  // }
   btnLoading.value = true
-  dispatchApi.addClueDistributeRule(params).then((res) => {
-    console.log(res)
-    message.success('保存成功')
-    emit('refresh')
-    dialogVisible.value = false
-  })
+  unref(editFlag)
+    ? dispatchApi.editClueDistributeRule(params)
+    : dispatchApi.addClueDistributeRule(params)
+  message.success('保存成功')
+  emit('refresh')
+  dialogVisible.value = false
   btnLoading.value = false
 }
 defineExpose({ openDialog })
@@ -280,5 +321,9 @@ defineExpose({ openDialog })
 .no-wrap {
   display: flex;
   flex-wrap: nowrap;
+}
+
+.el-table {
+  width: 99.9% !important;
 }
 </style>

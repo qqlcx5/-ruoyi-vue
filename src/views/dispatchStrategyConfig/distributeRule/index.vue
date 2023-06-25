@@ -16,6 +16,7 @@
         v-model="row.openRules"
         :active-value="1"
         :inactive-value="0"
+        @click.stop
         @change="changeOpenRules(row)"
       />
     </template>
@@ -37,7 +38,7 @@ onMounted(() => {
 })
 
 const refresh = () => {
-  tableRef.value.tableMethods.reload()
+  tableRef.value.tableMethods.getList()
 }
 // 获取门店数据
 const shopTreeList = ref<object[]>([])
@@ -96,32 +97,26 @@ const columns: TableColumn[] = [
   }
 ]
 
-// const columns = ref<TableColumn[]>()
-
 const actionButtons = [
   {
     name: '编辑',
     click: (row) => {
-      crudRef.value.openDialog(row.id, shopTreeList.value)
+      crudRef.value.openDialog(row.id)
     }
   },
   {
     name: '删除',
-    click: () => {
-      console.log('删除')
-    }
+    click: () => {}
   }
 ]
 
 const crudRef = ref()
 const addRule = async () => {
-  crudRef.value.openDialog('', shopTreeList.value)
+  crudRef.value.openDialog('')
 }
 const changeOpenRules = (row) => {
-  console.log(row)
-  // dispatchApi.changeClueDistributeRule(row.id, row.openRules).then((res) => {
-  //   console.log(res)
-  // })
+  if (!row.id) return
+  dispatchApi.changeClueDistributeRule(row.id, row.openRules)
 }
 const { allSchemas } = useCrudSchemas(columns)
 </script>
