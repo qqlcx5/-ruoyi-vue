@@ -4,246 +4,232 @@
     v-loading="loading"
     :style="{ height: loading ? '100%' : '' }"
   >
-    <div class="part-title">
-      <span class="main-text">取消跟进设置</span>
-    </div>
-    <div class="config-form-item">
-      <span>客户到店后是否取消对应有效线索的跟进计划：</span>
-      <el-switch v-model="ruleForm.cancelFollowPlan" :active-value="1" :inactive-value="0" />
-    </div>
-    <div class="config-form-item-tip">
-      <div
-        >开启时：客户到店后，接待录音关联的邀约单对应的有效线索变为已到店，该有效线索下的待跟进计划变为已取消；</div
-      >
-      <div
-        >关闭时：客户到店后，接待录音关联的邀约单对应的有效线索变为已到店，不对该有效线索的待跟进计划进行取消操作；</div
-      >
-    </div>
-    <div class="part-title">
-      <span class="main-text">无通话录音设置</span>
-    </div>
-    <div class="config-form-item">
-      <span>无通话录音打通客户电话是否允许独享线索：</span>
-      <el-switch v-model="ruleForm.clueGrabEnjoyStatus" :active-value="1" :inactive-value="0" />
-    </div>
-    <div class="config-form-item-tip">
-      <div
-        >开启：跟进线索时，选择暂无通话记录，上传截图后，是否联系上客户选择【是】时，按照通话录音已接通的情况进行逻辑判断。</div
-      >
-      <div
-        >关闭：跟进线索时，选择暂无通话记录，上传截图后，是否联系上客户选择【是】时，不按照通话录音已接通的情况进行逻辑判断，其他成员依旧可以接单、跟进客户。</div
-      >
-    </div>
-    <div class="part-title">
-      <span class="main-text">未打通电话自动生成跟进记录</span>
-      <el-switch v-model="ruleForm.autoCreateFollowPlan" :active-value="1" :inactive-value="0" />
-    </div>
-    <div class="config-form-item">
-      <span>未打通客户电话每日最少跟进次数</span>
-      <el-input-number
-        v-model.number="ruleForm.notGetThroughLeastFollowNum"
-        class="number-input"
-        step-strictly
-        :step="1"
-        :min="0"
-        :controls="false"
-      />
-      <span>次</span>
-    </div>
-    <div class="config-form-item mt-15px">
-      <span>下次跟进时间</span>
-      <el-input-number
-        v-model.number="ruleForm.clueFollowConfigHour"
-        class="number-input"
-        step-strictly
-        :step="1"
-        :min="0"
-        :controls="false"
-      />
-      <span>小时后</span>
-    </div>
-    <div class="part-title mt-30px">
-      <span class="main-text">短信联系客户自动生成跟进记录</span>
-      <el-switch v-model="ruleForm.smsAutoCreateFollowPlan" :active-value="1" :inactive-value="0" />
-    </div>
-    <div class="config-form-item mt-15px" v-if="ruleForm.smsAutoCreateFollowPlan === 1">
-      <span>下次跟进时间</span>
-      <el-input-number
-        v-model.number="ruleForm.smsClueFollowConfigHour"
-        class="number-input"
-        step-strictly
-        :step="1"
-        :min="0"
-        :controls="false"
-      />
-      <span>小时后</span>
-    </div>
-    <div class="part-title mt-30px">
-      <span class="main-text">线索跟进方式配置</span>
-      <span class="sub-text">（跟进方式为电话时，必须配置为可选择）</span>
-    </div>
-    <el-button v-if="!editFlag" type="primary" class="mb-26px" @click="editFollowMethod(true)"
-      >编辑</el-button
-    >
-    <div v-else class="mb-26px">
-      <el-button type="primary" @click="editFollowMethod(false)">完成</el-button>
-      <el-button type="primary" @click="handleAddRow">新增行</el-button>
-    </div>
-    <el-form :model="ruleForm" :disabled="!editFlag">
-      <el-table
-        ref="tableRef"
-        :data="ruleForm.followMethodList"
-        class="custom-table"
-        max-height="300px"
-        style="max-width: 1220px"
-      >
-        <el-table-column type="index" width="50" />
-        <el-table-column prop="date" label="跟进方式" width="180">
-          <template #default="{ row }">
-            <el-select v-model="row.followMethod" @change="followMethodChange($event, row)">
-              <el-option
-                v-for="item in dictFollowMethod"
-                :label="item.text"
-                :value="+item.value"
-                :key="item.value"
-              />
-            </el-select>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="是否可选择" width="180">
-          <template #default="{ row }">
-            <el-switch
-              v-model="row.isSelect"
-              :disabled="row.followMethod === 1"
-              :active-value="1"
-              :inactive-value="0"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column prop="address" label="适用岗位">
-          <template #default="{ row }">
-            <el-select
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              value-key="roleId"
-              v-model="row.limitRoleList"
-              @change="roleChange($event, row)"
-            >
-              <el-option
-                v-for="item in postList"
-                :label="item.roleName"
-                :value="item"
-                :key="item.roleId"
-              />
-            </el-select>
-          </template>
-        </el-table-column>
-        <el-table-column prop="address" label="首次跟进是否允许选择">
-          <template #default="{ row }">
-            <el-switch v-model="row.isPermitFirstSelect" :active-value="1" :inactive-value="0" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="address" label="操作" width="100px">
-          <template #default="{ $index }">
-            <el-button type="primary" link @click="handleDeleteRow($index)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-form>
-    <div class="part-title mt-30px">
-      <span class="main-text">首次跟进未打通电话弹窗提示</span>
-      <el-switch
-        v-model="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintStatus"
-        :active-value="1"
-        :inactive-value="0"
-      />
-    </div>
-    <div class="config-form-item">
-      <span>首次跟进线索客户，未打通客户电话：</span>
-      <el-input-number
-        v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintMinute"
-        class="number-input"
-        step-strictly
-        :step="1"
-        :min="0"
-        :controls="false"
-      />
-      <span>分钟后，弹窗提醒对应接单人进行再次拨号；</span>
-    </div>
-    <div class="config-form-item mt-15px">
-      <span>当天最多弹窗提醒次数：</span>
-      <el-input-number
-        v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintDayNumber"
-        class="number-input"
-        step-strictly
-        :step="1"
-        :min="0"
-        :controls="false"
-      />
-    </div>
-    <div class="config-form-item mt-15px">
-      <span>单条线索最多弹窗提醒次数：</span>
-      <el-input-number
-        v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintTotalNumber"
-        class="number-input"
-        step-strictly
-        :step="1"
-        :min="0"
-        :controls="false"
-      />
-    </div>
-    <div class="config-form-item mt-15px">
-      <span>弹窗提醒时间段设置（在设置的时间段内才可弹窗提醒）：</span>
-    </div>
-    <div id="time-range" class="mt-15px">
-      <el-button v-if="!editTimeFlag" type="primary" @click="timeEdit(true)">编辑</el-button>
-      <template v-else>
-        <el-button type="primary" @click="timeEdit(false)">保存</el-button>
-        <el-button type="primary" @click="handleAddTime">增加时间段</el-button>
-      </template>
-    </div>
-
-    <div class="mb-36px">
-      <el-form ref="timeFormRef" :model="timeList" :disabled="!editTimeFlag" scroll-to-error>
+    <div class="part-wrap">
+      <div class="part-title">
+        <span class="main-text">取消跟进设置</span>
+      </div>
+      <div class="config-form-item">
+        <span>客户到店后是否取消对应有效线索的跟进计划：</span>
+        <el-switch v-model="ruleForm.cancelFollowPlan" :active-value="1" :inactive-value="0" />
+      </div>
+      <div class="config-form-item-tip">
         <div
-          v-for="(item, index) in timeList"
-          :key="item.timestamp"
-          class="config-form-item mt-15px"
+          >开启时：客户到店后，接待录音关联的邀约单对应的有效线索变为已到店，该有效线索下的待跟进计划变为已取消；</div
         >
-          <span class="mr-8px">时间段</span>
-          <el-form-item
-            :prop="`${index}.arr`"
-            :rules="[{ required: true, message: '请选择时间段', trigger: 'change' }]"
-            style="margin-bottom: 0"
-          >
-            <el-time-picker
-              v-model="item.arr"
-              is-range
-              format="HH:mm"
-              range-separator="至"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              class="mr-8px"
-              style="flex: unset; width: 240px"
-            />
-          </el-form-item>
-          <Icon
-            v-if="editTimeFlag"
-            icon="ep:remove"
-            class="toggle-icon"
-            @click="handleDelTime(index)"
-            color="#FF4141"
-            style="cursor: pointer"
-          />
-        </div>
+        <div
+          >关闭时：客户到店后，接待录音关联的邀约单对应的有效线索变为已到店，不对该有效线索的待跟进计划进行取消操作；</div
+        >
+      </div>
+    </div>
+    <div class="part-wrap">
+      <div class="part-title">
+        <span class="main-text">无通话录音设置</span>
+      </div>
+      <div class="config-form-item">
+        <span>无通话录音打通客户电话是否允许独享线索：</span>
+        <el-switch v-model="ruleForm.clueGrabEnjoyStatus" :active-value="1" :inactive-value="0" />
+      </div>
+      <div class="config-form-item-tip">
+        <div
+          >开启：跟进线索时，选择暂无通话记录，上传截图后，是否联系上客户选择【是】时，按照通话录音已接通的情况进行逻辑判断。</div
+        >
+        <div
+          >关闭：跟进线索时，选择暂无通话记录，上传截图后，是否联系上客户选择【是】时，不按照通话录音已接通的情况进行逻辑判断，其他成员依旧可以接单、跟进客户。</div
+        >
+      </div>
+    </div>
+    <div class="part-wrap">
+      <div class="part-title">
+        <span class="main-text">短信联系客户自动生成跟进记录</span>
+        <el-switch
+          v-model="ruleForm.smsAutoCreateFollowPlan"
+          :active-value="1"
+          :inactive-value="0"
+        />
+      </div>
+      <div class="config-form-item mt-15px" v-if="ruleForm.smsAutoCreateFollowPlan === 1">
+        <span>下次跟进时间</span>
+        <el-input-number
+          v-model.number="ruleForm.smsClueFollowConfigHour"
+          class="number-input"
+          step-strictly
+          :step="1"
+          :min="0"
+          :controls="false"
+        />
+        <span>小时后</span>
+      </div>
+    </div>
+    <div class="part-wrap">
+      <div class="part-title">
+        <span class="main-text">线索跟进方式配置</span>
+        <span class="sub-text">（跟进方式为电话时，必须配置为可选择）</span>
+      </div>
+      <el-button v-if="!editFlag" type="primary" class="mb-26px" @click="editFollowMethod(true)"
+        >编辑</el-button
+      >
+      <div v-else class="mb-26px">
+        <el-button type="primary" @click="editFollowMethod(false)">完成</el-button>
+        <el-button type="primary" @click="handleAddRow">新增行</el-button>
+      </div>
+      <el-form :model="ruleForm" :disabled="!editFlag">
+        <el-table
+          ref="tableRef"
+          :data="ruleForm.followMethodList"
+          class="custom-table"
+          max-height="300px"
+          style="max-width: 1220px"
+        >
+          <el-table-column type="index" width="50" />
+          <el-table-column prop="date" label="跟进方式" width="180">
+            <template #default="{ row }">
+              <el-select v-model="row.followMethod" @change="followMethodChange($event, row)">
+                <el-option
+                  v-for="item in dictFollowMethod"
+                  :label="item.text"
+                  :value="+item.value"
+                  :key="item.value"
+                />
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column prop="name" label="是否可选择" width="180">
+            <template #default="{ row }">
+              <el-switch
+                v-model="row.isSelect"
+                :disabled="row.followMethod === 1"
+                :active-value="1"
+                :inactive-value="0"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column prop="address" label="适用岗位">
+            <template #default="{ row }">
+              <el-select
+                multiple
+                collapse-tags
+                collapse-tags-tooltip
+                value-key="roleId"
+                v-model="row.limitRoleList"
+                @change="roleChange($event, row)"
+              >
+                <el-option
+                  v-for="item in postList"
+                  :label="item.roleName"
+                  :value="item"
+                  :key="item.roleId"
+                />
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column prop="address" label="首次跟进是否允许选择">
+            <template #default="{ row }">
+              <el-switch v-model="row.isPermitFirstSelect" :active-value="1" :inactive-value="0" />
+            </template>
+          </el-table-column>
+          <el-table-column prop="address" label="操作" width="100px">
+            <template #default="{ $index }">
+              <el-button type="primary" link @click="handleDeleteRow($index)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-form>
     </div>
-  </div>
-  <div class="bottom-btns">
-    <el-button type="primary" size="large" :loading="btnLoading" @click="handleSave"
-      >保存设置</el-button
-    >
+    <div class="part-wrap">
+      <div class="part-title">
+        <span class="main-text">首次跟进未打通电话弹窗提示</span>
+        <el-switch
+          v-model="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintStatus"
+          :active-value="1"
+          :inactive-value="0"
+        />
+      </div>
+      <div class="config-form-item">
+        <span>首次跟进线索客户，未打通客户电话：</span>
+        <el-input-number
+          v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintMinute"
+          class="number-input"
+          step-strictly
+          :step="1"
+          :min="0"
+          :controls="false"
+        />
+        <span>分钟后，弹窗提醒对应接单人进行再次拨号；</span>
+      </div>
+      <div class="config-form-item mt-15px">
+        <span>当天最多弹窗提醒次数：</span>
+        <el-input-number
+          v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintDayNumber"
+          class="number-input"
+          step-strictly
+          :step="1"
+          :min="0"
+          :controls="false"
+        />
+      </div>
+      <div class="config-form-item mt-15px">
+        <span>单条线索最多弹窗提醒次数：</span>
+        <el-input-number
+          v-model.number="ruleForm.clueNotGetThroughHintConfigVO.clueNotGetThroughHintTotalNumber"
+          class="number-input"
+          step-strictly
+          :step="1"
+          :min="0"
+          :controls="false"
+        />
+      </div>
+      <div class="config-form-item mt-15px">
+        <span>弹窗提醒时间段设置（在设置的时间段内才可弹窗提醒）：</span>
+      </div>
+      <div id="time-range" class="mt-15px">
+        <el-button v-if="!editTimeFlag" type="primary" @click="timeEdit(true)">编辑</el-button>
+        <template v-else>
+          <el-button type="primary" @click="timeEdit(false)">保存</el-button>
+          <el-button type="primary" @click="handleAddTime">增加时间段</el-button>
+        </template>
+      </div>
+
+      <div>
+        <el-form ref="timeFormRef" :model="timeList" :disabled="!editTimeFlag" scroll-to-error>
+          <div
+            v-for="(item, index) in timeList"
+            :key="item.timestamp"
+            class="config-form-item mt-15px"
+          >
+            <span class="mr-8px">时间段</span>
+            <el-form-item
+              :prop="`${index}.arr`"
+              :rules="[{ required: true, message: '请选择时间段', trigger: 'change' }]"
+              style="margin-bottom: 0"
+            >
+              <el-time-picker
+                v-model="item.arr"
+                is-range
+                format="HH:mm"
+                range-separator="至"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                class="mr-8px"
+                style="flex: unset; width: 240px"
+              />
+            </el-form-item>
+            <Icon
+              v-if="editTimeFlag"
+              icon="ep:remove"
+              class="toggle-icon"
+              @click="handleDelTime(index)"
+              color="#FF4141"
+              style="cursor: pointer"
+            />
+          </div>
+        </el-form>
+      </div>
+    </div>
+    <div class="bottom-btns">
+      <el-button type="primary" size="large" :loading="btnLoading" @click="handleSave"
+        >保存设置</el-button
+      >
+    </div>
   </div>
 </template>
 
@@ -410,17 +396,5 @@ const handleSave = async () => {
 .follow-container {
   min-height: 100%;
   padding-bottom: $btnWrapHeight;
-}
-.bottom-btns {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  text-align: center;
-  line-height: $btnWrapHeight;
-  height: $btnWrapHeight;
-  background-color: var(--page-bg-color);
-  box-shadow: 0px -5px 8px 0px rgba(210, 210, 210, 0.2);
 }
 </style>
