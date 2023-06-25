@@ -92,7 +92,6 @@
                   clearable
                   collapse-tags
                   style="width: 180px"
-                  @visible-change="changePosition($event, row)"
                 >
                   <el-option
                     v-for="item in postList"
@@ -146,7 +145,7 @@ import { FormInstance } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 import { existDccRuleShop } from '@/api/clue/basicConfig'
 onMounted(() => {
-  getPostList()
+  // getPostList()
 })
 const store = useOption()
 
@@ -181,6 +180,7 @@ const openDialog = (id: number) => {
     formRef.value?.resetFields()
     form.value = cloneDeep(initForm)
     // shopTreeList.value = formshopTreeList
+    selectedPositionId.value = []
     if (id) {
       dispatchApi.getClueDistributeRuleDetail(id).then((res) => {
         form.value = res
@@ -197,7 +197,7 @@ const openDialog = (id: number) => {
         }
       })
     }
-    selectedPositionId.value = []
+    getPostList()
     getShopList(applicableShopId)
     dialogVisible.value = true
   })
@@ -215,16 +215,20 @@ type positionObj = {
 const postList = ref<positionObj[]>([])
 const getPostList = async () => {
   const data = await listSimplePostsApi()
-  postList.value = data
-}
-const changePosition = (isShow, row) => {
-  let hasId = selectedPositionId.value
-  selectedPositionId.value = [...row.positionSunTypeList, ...hasId]
-  postList.value = postList.value.map((pos: positionObj) => {
+  postList.value = data.map((pos: positionObj) => {
     pos['disabled'] = selectedPositionId.value.includes(pos.id)
     return pos
   })
 }
+// const anotherRowPosId = ref<number[]>([])
+// const changePosition = (isShow, row) => {
+// let hasId = selectedPositionId.value
+// selectedPositionId.value = [...row.positionSunTypeList, ...hasId]
+// if (row.positionSunTypeList.length > 0) {
+//   anotherRowPosId.value = row.positionSunTypeList
+// }
+// selectedPositionId.value = difference(row.positionSunTypeList, anotherRowPosId.value)
+// }
 
 const getShopList = async (applicableShopId) => {
   const { shopList } = await store.getShopList()
@@ -268,18 +272,16 @@ const deleteShopRule = (index) => {
   form.value.teams.splice(index, 1)
 }
 
-const onConfirm = () => {
+const onConfirm = async () => {
   let params = cloneDeep(form.value)
   params.applicableShopId = params.shopIdList.join(',')
 
-  btnLoading.value = true
   unref(editFlag)
-    ? dispatchApi.editClueDistributeRule(params)
-    : dispatchApi.addClueDistributeRule(params)
+    ? await dispatchApi.editClueDistributeRule(params)
+    : await dispatchApi.addClueDistributeRule(params)
   message.success('保存成功')
   emit('refresh')
   dialogVisible.value = false
-  btnLoading.value = false
 }
 defineExpose({ openDialog })
 </script>
