@@ -204,10 +204,10 @@ const memberTableList = ref<tableObj[]>([
     status: 0,
     pushBackFactoryStatus: 0,
     brandList: [
-      {
-        brandId: 0,
-        seriesIds: []
-      }
+      // {
+      //   brandId: 0,
+      //   seriesIds: []
+      // }
     ]
   }
 ])
@@ -223,10 +223,10 @@ const addMemberRule = () => {
     status: 0,
     pushBackFactoryStatus: 0,
     brandList: [
-      {
-        brandId: 0,
-        seriesIds: []
-      }
+      // {
+      //   brandId: 0,
+      //   seriesIds: []
+      // }
     ]
   }
   memberTableList.value.push(addItem)
@@ -250,7 +250,11 @@ const changeUserById = (val, row) => {
 const changeBrandId = (val, row) => {
   if (!val) {
     seriesOption.value = []
+    row.brandList = []
     row.brandIds.length && getSeries(row.brandIds)
+    row.brandIds.forEach((b) => {
+      row.brandList.push({ brandId: b })
+    })
   }
 }
 
@@ -264,10 +268,11 @@ const changeSeriesEvent = (val, row) => {
       obj[item[0]] = [item[1]]
     }
   })
-  Object.keys(obj).forEach((key) => {
+  let selectedBrandIds = row.brandIds
+  selectedBrandIds.forEach((item) => {
     row.brandList.push({
-      brandId: key,
-      seriesIds: obj[key]
+      brandId: item,
+      seriesIds: obj[item] || []
     })
   })
 }
@@ -292,6 +297,28 @@ const getSeries = async (val) => {
 const onConfirm = () => {
   if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
+  }
+  if (memberTableList.value.length < 1) {
+    return message.error('请添加派发人员配置')
+  }
+  let isValidBrandList = ref(true)
+  let isValidDistributeUserId = ref(true)
+  memberTableList.value.forEach((item) => {
+    if (item.brandIds.length < 1) {
+      isValidBrandList.value = false
+    }
+    if (!item.distributeUserId) {
+      isValidDistributeUserId.value = false
+    } else {
+      item.distributeUserId = item.distributeUserId[0]
+      return item
+    }
+  })
+  if (!isValidDistributeUserId.value) {
+    return message.error('请选择成员')
+  }
+  if (!isValidBrandList.value) {
+    return message.error('请选择品牌')
   }
 
   interface IParams {
