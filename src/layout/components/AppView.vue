@@ -63,8 +63,9 @@ watch(
         '!h-[calc(100%-var(--top-tool-height))]': fixedHeader && layout === 'cutMenu' && footer,
 
         '!h-[calc(100%-var(--top-tool-height)-var(--tags-view-height))]':
-          !fixedHeader && layout === 'cutMenu' && footer,
-        '!h-[calc(100%-var(--tags-view-height))]': !footer
+          (!fixedHeader && layout === 'cutMenu' && footer) || (layout === 'top' && !footer),
+        '!h-[calc(100%-var(--tags-view-height))]': layout === 'cutMenu' && !footer,
+        '!h-[100%]': layout !== 'top' && !footer
       }
     ]"
   >
