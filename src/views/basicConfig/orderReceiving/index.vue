@@ -6,7 +6,7 @@
       </div>
       <div class="config-form-item">
         <span>线索被抢单状态变化：</span>
-        <el-radio-group v-model="ruleForm.clueGrabType" size="small">
+        <el-radio-group v-model="ruleForm.clueGrabType">
           <el-radio :label="1">自动变化</el-radio><el-radio :label="2">手动接单变化</el-radio>
         </el-radio-group>
       </div>
@@ -55,7 +55,7 @@
           :min="0"
           :controls="false"
         />
-        <span>分钟再次推送接单提醒通知，直到接单为止</span>
+        <span>分钟推送再次跟进客户提醒通知</span>
       </div>
     </div>
     <div class="bottom-btns">
