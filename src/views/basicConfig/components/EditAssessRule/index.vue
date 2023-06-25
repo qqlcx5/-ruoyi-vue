@@ -106,7 +106,7 @@
         </el-form-item>
         <el-form-item
           required
-          label="线索首次跟进判定“一般逾期”为派单后"
+          label="线索首次跟进判定“一般逾期”为接单后"
           prop="firstFollowGeneralOverdue"
         >
           <el-input-number
@@ -119,7 +119,7 @@
         </el-form-item>
         <el-form-item
           required
-          label="线索首次跟进判定“严重逾期”为派单后"
+          label="线索首次跟进判定“严重逾期”为接单后"
           prop="firstFollowSeriousOverdue"
         >
           <el-input-number

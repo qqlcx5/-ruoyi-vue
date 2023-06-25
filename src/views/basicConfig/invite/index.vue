@@ -1,95 +1,134 @@
 <template>
   <div class="basic-config-content" style="min-height: 100%" v-loading="loading">
     <el-form ref="formRef" :model="ruleForm" :rules="rules" v-if="!loading">
-      <div class="part-title">
-        <span class="main-text">接单逾期设置</span>
-        <el-switch v-model="ruleForm.receiveOpenRules" :active-value="1" :inactive-value="0" />
+      <div class="part-wrap">
+        <div class="part-title">
+          <span class="main-text">接单逾期设置</span>
+          <el-switch v-model="ruleForm.receiveOpenRules" :active-value="1" :inactive-value="0" />
+        </div>
+        <el-form-item
+          label="邀约单接单判定“一般逾期”为派单后"
+          :key="ruleForm.receiveOpenRules"
+          :prop="ruleForm.receiveOpenRules === 1 ? 'generalOverdue' : ''"
+        >
+          <el-input-number
+            v-model="ruleForm.generalOverdue"
+            :controls="false"
+            step-strictly
+            :step="1"
+            :min="0"
+          />
+          <span>分钟接单</span>
+        </el-form-item>
+        <el-form-item
+          label="邀约单接单判定“严重逾期”为派单后"
+          :key="ruleForm.receiveOpenRules"
+          :prop="ruleForm.receiveOpenRules === 1 ? 'seriousOverdue' : ''"
+          style="margin-bottom: 4px"
+        >
+          <el-input-number
+            v-model="ruleForm.seriousOverdue"
+            :controls="false"
+            step-strictly
+            :step="1"
+            :min="0"
+          />
+          <span>分钟接单</span>
+        </el-form-item>
       </div>
-      <el-form-item label="邀约单接单判定“一般逾期”为派单后" prop="generalOverdue">
-        <el-input-number
-          v-model="ruleForm.generalOverdue"
-          :controls="false"
-          step-strictly
-          :step="1"
-          :min="0"
-        />
-        <span>分钟接单</span>
-      </el-form-item>
-      <el-form-item label="邀约单接单判定“严重逾期”为派单后" prop="seriousOverdue">
-        <el-input-number
-          v-model="ruleForm.seriousOverdue"
-          :controls="false"
-          step-strictly
-          :step="1"
-          :min="0"
-        />
-        <span>分钟接单</span>
-      </el-form-item>
-
-      <div class="part-title">
-        <span class="main-text">沟通逾期设置</span>
-        <el-switch
-          v-model="ruleForm.communicationOpenRules"
-          :active-value="1"
-          :inactive-value="0"
-        />
+      <div class="part-wrap">
+        <div class="part-title">
+          <span class="main-text">沟通逾期设置</span>
+          <el-switch
+            v-model="ruleForm.communicationOpenRules"
+            :active-value="1"
+            :inactive-value="0"
+          />
+        </div>
+        <el-form-item
+          label="邀约单沟通判定“一般逾期”为派单后"
+          :key="ruleForm.communicationOpenRules"
+          :prop="ruleForm.communicationOpenRules === 1 ? 'communicationGeneralOverdue' : ''"
+        >
+          <el-input-number
+            v-model="ruleForm.communicationGeneralOverdue"
+            :controls="false"
+            step-strictly
+            :step="1"
+            :min="0"
+          />
+          <span>分钟接单</span>
+        </el-form-item>
+        <el-form-item
+          label="邀约单沟通判定“严重逾期”为派单后"
+          :key="ruleForm.communicationOpenRules"
+          :prop="ruleForm.communicationOpenRules === 1 ? 'communicationSeriousOverdue' : ''"
+          style="margin-bottom: 4px"
+        >
+          <el-input-number
+            v-model="ruleForm.communicationSeriousOverdue"
+            :controls="false"
+            step-strictly
+            :step="1"
+            :min="0"
+          />
+          <span>分钟接单</span>
+        </el-form-item>
       </div>
-      <el-form-item label="邀约单沟通判定“一般逾期”为派单后" prop="communicationGeneralOverdue">
-        <el-input-number
-          v-model="ruleForm.communicationGeneralOverdue"
-          :controls="false"
-          step-strictly
-          :step="1"
-          :min="0"
-        />
-        <span>分钟接单</span>
-      </el-form-item>
-      <el-form-item label="邀约单沟通判定“严重逾期”为派单后" prop="communicationSeriousOverdue">
-        <el-input-number
-          v-model="ruleForm.communicationSeriousOverdue"
-          :controls="false"
-          step-strictly
-          :step="1"
-          :min="0"
-        />
-        <span>分钟接单</span>
-      </el-form-item>
-      <div class="part-title">
-        <span class="main-text">邀约单接单逾期回收设置</span>
-        <el-switch v-model="ruleForm.receiveOverdueRecycle" :active-value="1" :inactive-value="0" />
+      <div class="part-wrap">
+        <div class="part-title">
+          <span class="main-text">邀约单接单逾期回收设置</span>
+          <el-switch
+            v-model="ruleForm.receiveOverdueRecycle"
+            :active-value="1"
+            :inactive-value="0"
+          />
+        </div>
+        <el-form-item
+          label="派单后"
+          :key="ruleForm.receiveOverdueRecycle"
+          :prop="ruleForm.receiveOverdueRecycle === 1 ? 'receiveOverdueTime' : ''"
+          style="margin-bottom: 4px"
+        >
+          <el-input-number
+            v-model="ruleForm.receiveOverdueTime"
+            :controls="false"
+            step-strictly
+            :step="1"
+            :min="0"
+          />
+          <span>分钟未接单，则对邀约单进行回收</span>
+        </el-form-item>
       </div>
-      <el-form-item label="派单后" prop="receiveOverdueTime">
-        <el-input-number
-          v-model="ruleForm.receiveOverdueTime"
-          :controls="false"
-          step-strictly
-          :step="1"
-          :min="0"
-        />
-        <span>分钟未接单，则对邀约单进行回收</span>
-      </el-form-item>
-      <div class="part-title">
-        <span class="main-text">邀约单沟通逾期回收设置</span>
-        <el-switch
-          v-model="ruleForm.communicationOverdueRecycle"
-          :active-value="1"
-          :inactive-value="0"
-        />
+      <div class="part-wrap">
+        <div class="part-title">
+          <span class="main-text">邀约单沟通逾期回收设置</span>
+          <el-switch
+            v-model="ruleForm.communicationOverdueRecycle"
+            :active-value="1"
+            :inactive-value="0"
+          />
+        </div>
+        <el-form-item
+          label="接单后"
+          :key="ruleForm.communicationOverdueRecycle"
+          :prop="ruleForm.communicationOverdueRecycle === 1 ? 'communicationOverdueTime' : ''"
+          style="margin-bottom: 4px"
+        >
+          <el-input-number
+            v-model="ruleForm.communicationOverdueTime"
+            :controls="false"
+            step-strictly
+            :step="1"
+            :min="0"
+          />
+          <span>分钟未沟通，则对邀约单进行回收</span>
+        </el-form-item>
       </div>
-      <el-form-item label="接单后" prop="communicationOverdueTime">
-        <el-input-number
-          v-model="ruleForm.communicationOverdueTime"
-          :controls="false"
-          step-strictly
-          :step="1"
-          :min="0"
-        />
-        <span>分钟未沟通，则对邀约单进行回收</span>
-      </el-form-item>
-      <el-button type="primary" class="mt-50px" :loading="btnLoading" @click="handleSave"
-        >保存设置</el-button
-      >
     </el-form>
+    <div class="bottom-btns">
+      <el-button type="primary" :loading="btnLoading" @click="handleSave">保存设置</el-button>
+    </div>
   </div>
 </template>
 
