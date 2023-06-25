@@ -46,13 +46,13 @@ pnpm dev
 
 ### 常用公共组件
 
- 组件名 | 说明 | 测试
- --- | ---
- Form | 表单组件
- FormTable | 表格查询组件
- Table | 表格组件
- Dialog | 弹窗组件 | 测试
- XButton | 按钮组件
- Icon | icon组件
- UploadFile | 上传组件
- Editor | 富文本组件
+ | 组件名 | 说明 |
+ | --- | --- |
+ | Form | 表单组件 |
+ | FormTable | 表格查询组件 |
+ | Table | 表格组件 |
+ | Dialog | 弹窗组件 |
+ | XButton | 按钮组件 |
+ | Icon | icon组件 |
+ | UploadFile | 上传组件 |
+ | Editor | 富文本组件 |
