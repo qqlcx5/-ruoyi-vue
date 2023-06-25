@@ -32,6 +32,7 @@ import { getAllStoreList } from '@/api/system/organization'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { listToTree } from '@/utils/tree'
 import Crud from './components/crud.vue'
+import { formatDate } from '@/utils/formatTime'
 
 onMounted(() => {
   getShopList()
@@ -93,7 +94,17 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
+    field: 'createTime',
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   }
 ]
 
