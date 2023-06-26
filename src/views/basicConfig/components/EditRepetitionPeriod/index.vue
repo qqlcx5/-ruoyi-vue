@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    class="custom-dialog"
+    class="wg-custom-dialog"
     :model-value="props.modelValue"
     :title="editFlag ? '编辑' : '新增'"
     width="500px"
@@ -138,5 +138,5 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 </script>
 
 <style lang="scss">
-@import '../../style/index';
+@import '@/styles/custom.scss';
 </style>

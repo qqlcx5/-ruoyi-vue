@@ -102,7 +102,7 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
 .order-receiving-container {
   min-height: 100%;
 }

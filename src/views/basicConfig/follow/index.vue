@@ -392,7 +392,7 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
 .follow-container {
   min-height: 100%;
   padding-bottom: $btnWrapHeight;

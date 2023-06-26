@@ -38,7 +38,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
 import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
@@ -52,11 +52,7 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    {
-      title: '考核规则名称',
-      key: 'checkRuleName',
-      disabled: false
-    },
+    { title: '考核规则名称', key: 'checkRuleName' },
     {
       title: '适用门店',
       key: 'applicableShopName',
@@ -77,7 +73,7 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '创建人', key: 'creator', disabled: false },
+    { title: '创建人', key: 'creator' },
     {
       title: '创建时间',
       key: 'createTime',

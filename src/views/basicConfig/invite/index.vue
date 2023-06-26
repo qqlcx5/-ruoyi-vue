@@ -192,7 +192,7 @@ const handleSave = () => {
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
 .el-input-number {
   margin-right: 12px;
   width: 120px;

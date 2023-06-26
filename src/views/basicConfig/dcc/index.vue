@@ -31,7 +31,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import { queryDccPage, dccOpenRule, deleteDcc } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
 import { useOption } from '@/store/modules/options'

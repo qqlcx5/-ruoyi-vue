@@ -1,7 +1,7 @@
 <template>
   <div class="edit-assess-rule-dialog" v-loading.fullscreen.lock="loading">
     <el-dialog
-      class="custom-dialog"
+      class="wg-custom-dialog"
       :model-value="props.modelValue"
       :title="props.curInfo['id'] ? '编辑' : '新增'"
       width="665px"
@@ -415,7 +415,7 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 
 <style lang="scss">
 .edit-assess-rule-dialog {
-  @import '../../style/index';
+  @import '@/styles/custom.scss';
   .el-form {
     padding: 0 20px;
   }

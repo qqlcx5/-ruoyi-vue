@@ -1,7 +1,7 @@
 <template>
   <div class="edit-first-follow-rate-dialog" v-loading.fullscreen.lock="loading">
     <el-dialog
-      class="custom-dialog"
+      class="wg-custom-dialog"
       :model-value="props.modelValue"
       :title="editFlag ? '编辑' : '新增'"
       width="665px"
@@ -97,8 +97,7 @@ import {
   firstFollowRateEdit
 } from '@/api/clue/basicConfig'
 import { listSimplePostsApi } from '@/api/system/post/info'
-import { cloneDeep, difference } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
+import { cloneDeep } from 'lodash-es'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 const store = useOption()
@@ -221,7 +220,7 @@ const handleConfirm = () => {
 
 <style lang="scss">
 .edit-first-follow-rate-dialog {
-  @import '../../style/index';
+  @import '@/styles/custom.scss';
   .checked-post {
     line-height: 20px;
     font-size: 14px;

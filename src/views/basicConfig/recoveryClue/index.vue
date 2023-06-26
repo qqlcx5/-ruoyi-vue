@@ -22,7 +22,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import CreateRecoveryPlan from '../components/CreateRecoveryPlan/index.vue'
 import { executeRecycleSchedule, pageRecycleSchedule } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
