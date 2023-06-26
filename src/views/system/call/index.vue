@@ -54,8 +54,19 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'cusname',
-    isSearch: true
+    field: 'createTime',
+    width: 180,
+    isSearch: true,
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   },
   {
     label: '客户',
@@ -91,17 +102,7 @@ const columns: TableColumn[] = [
   },
   {
     label: '结束时间',
-    field: 'department',
-    search: {
-      component: 'DatePicker',
-      componentProps: {
-        type: 'datetimerange',
-        valueFormat: 'YYYY-MM-DD hh:mm:ss'
-      }
-    },
-    formatter: (_, __, val: string) => {
-      return formatDate(new Date(val))
-    }
+    field: 'department'
   },
   {
     label: '云录音类型',
