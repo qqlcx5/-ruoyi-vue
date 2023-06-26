@@ -29,7 +29,13 @@
       :loading="loading"
     >
       <template #btns>
-        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
+        <XButton
+          type="primary"
+          v-hasPermi="['clue:basic-config:assess-rule:create']"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
     <EditAssessRule v-model="visible" :shopList="shopList" :curInfo="curInfo" @success="getList" />
@@ -63,6 +69,7 @@ const tableConfig = reactive({
       label: '状态',
       key: 'openRules',
       render: ({ row }) => {
+        row.openRules = row.openRules || 0
         return (
           <el-switch
             v-model={row.openRules}
@@ -90,10 +97,20 @@ const tableConfig = reactive({
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleDccEdit(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:assess-rule:edit']]}
+              link
+              onclick={() => handleDccEdit(row)}
+            >
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:assess-rule:delete']]}
+              link
+              onclick={() => handleDelete(row)}
+            >
               删除
             </el-button>
           </div>

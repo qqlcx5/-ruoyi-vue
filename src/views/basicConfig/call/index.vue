@@ -3,6 +3,7 @@
     <div class="config-form-item">
       <span class="mr-8px">每个客户每天允许打通电话次数</span>
       <el-button
+        v-hasPermi="['clue:basic-config:call:edit']"
         type="primary"
         v-if="!editFlag"
         :loading="btnLoading"

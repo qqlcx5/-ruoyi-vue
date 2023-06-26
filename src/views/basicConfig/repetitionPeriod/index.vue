@@ -9,8 +9,19 @@
       :loading="loading"
     >
       <template #btns>
-        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
-        <el-button :disabled="!checkedList.length" @click="handleDelete">删除</el-button>
+        <XButton
+          type="primary"
+          v-hasPermi="['clue:basic-config:repetition-period:create']"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
+        <el-button
+          v-hasPermi="['clue:basic-config:repetition-period:delete']"
+          :disabled="!checkedList.length"
+          @click="handleDelete"
+          >删除</el-button
+        >
       </template>
       <template #tip>
         <div class="mb-12px" style="line-height: 20px; font-size: 14px; color: #ff4141"
@@ -64,6 +75,7 @@ const tableConfig = reactive({
       label: '状态',
       key: 'isEnable',
       render: ({ row }) => {
+        row.isEnable = row.isEnable || 0
         return (
           <el-switch
             v-model={row.isEnable}
@@ -96,7 +108,12 @@ const tableConfig = reactive({
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleEdit(row)}>
+            <el-button
+              v-hasPermi={[['clue:basic-config:repetition-period:edit']]}
+              type="primary"
+              link
+              onclick={() => handleEdit(row)}
+            >
               编辑
             </el-button>
           </div>

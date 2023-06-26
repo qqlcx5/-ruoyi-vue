@@ -23,7 +23,13 @@
       @page-change="pageChange"
     >
       <template #btns>
-        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
+        <XButton
+          type="primary"
+          v-hasPermi="['clue:basic-config:first-follow-rate:create']"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
 
@@ -76,6 +82,7 @@ const tableConfig = reactive({
       label: '启用状态',
       key: 'status',
       render: ({ row }) => {
+        row.status = row.status || 0
         return (
           <el-switch
             v-model={row.status}
@@ -104,10 +111,20 @@ const tableConfig = reactive({
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleEdit(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:first-follow-rate:edit']]}
+              link
+              onclick={() => handleEdit(row)}
+            >
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:first-follow-rate:delete']]}
+              link
+              onclick={() => handleDelete(row)}
+            >
               删除
             </el-button>
           </div>

@@ -126,7 +126,7 @@
         </el-form-item>
       </div>
     </el-form>
-    <div class="bottom-btns">
+    <div class="bottom-btns" v-hasPermi="['clue:basic-config:invite:save']">
       <el-button type="primary" :loading="btnLoading" @click="handleSave">保存设置</el-button>
     </div>
   </div>
