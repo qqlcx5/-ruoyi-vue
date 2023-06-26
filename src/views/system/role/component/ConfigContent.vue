@@ -152,7 +152,6 @@
 
 <script lang="ts" setup>
 import { handleTree, defaultProps } from '@/utils/tree'
-import { getSimpleMenusList } from '@/api/system/menu'
 import { getRoleMenuDataScope } from '@/api/system/role'
 import { ElTree } from 'element-plus'
 import { TreeNodeData } from 'element-plus/es/components/tree/src/tree.type'
@@ -161,6 +160,7 @@ import SelectBusinessModal from '../../business/components/SelectBusinessModal/i
 import { cloneDeep } from 'lodash-es'
 import { getDictOptions } from '@/utils/dict'
 import { getTenantData } from '@/utils/auth'
+import { getAuthMenuList } from '@/api/system/tenantMenu'
 
 const { query } = useRoute()
 const message = useMessage()
@@ -345,12 +345,12 @@ const onBrandScopeChange = (value) => {
 
 // ================= 初始化 ====================
 const init = async () => {
-  const menuRes = await getSimpleMenusList()
-  btnPermissionsOptions.value = menuRes.filter((menu) => menu.type === 3)
   let result = { menuDataScopeItemList: [] }
   if (props.stage === 'front') {
     // result = await getRoleMenuDataScope({ roleId: query.id })
   } else if (props.stage === 'backstage') {
+    const menuRes = await getAuthMenuList()
+    btnPermissionsOptions.value = menuRes.filter((menu) => menu.type === 3)
     result = await getRoleMenuDataScope({ roleId: query.id })
     if (result) roleConfig.value = result.menuDataScopeItemList || []
     defaultCheckedKeys.value = roleConfig.value
