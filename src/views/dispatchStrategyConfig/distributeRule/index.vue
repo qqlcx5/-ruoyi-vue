@@ -6,13 +6,14 @@
       columns: allSchemas.tableColumns,
       listApi: dispatchApi.getClueDistributeRule,
       delApi: dispatchApi.delClueDistributeRule,
-      showAdd: true,
+      showAdd: hasPermission('dispatch-strategy-config:distribute-rule:add'),
       actionButtons
     }"
     @add="addRule"
   >
     <template #openRules="{ row }">
       <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:distribute-rule:edit')"
         v-model="row.openRules"
         :active-value="1"
         :inactive-value="0"
@@ -33,6 +34,7 @@ import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { listToTree } from '@/utils/tree'
 import Crud from './components/crud.vue'
 import { formatDate } from '@/utils/formatTime'
+import { hasPermission } from '@/utils/utils'
 
 onMounted(() => {
   getShopList()
@@ -111,12 +113,14 @@ const columns: TableColumn[] = [
 const actionButtons = [
   {
     name: '编辑',
+    permission: hasPermission('dispatch-strategy-config:distribute-rule:edit'),
     click: (row) => {
       crudRef.value.openDialog(row.id)
     }
   },
   {
     name: '删除',
+    permission: hasPermission('dispatch-strategy-config:distribute-rule:delete'),
     click: () => {}
   }
 ]

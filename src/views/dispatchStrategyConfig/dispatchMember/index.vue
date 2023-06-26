@@ -5,7 +5,7 @@
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: getTable,
-      showAdd: true,
+      showAdd: hasPermission('dispatch-strategy-config:dispatch-member:add'),
       actionButtons,
       selection: true,
       spanMethod: objectSpanMethod
@@ -14,6 +14,7 @@
   >
     <template #status="{ row }">
       <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
         v-model="row.status"
         :active-value="1"
         :inactive-value="0"
@@ -23,6 +24,7 @@
     </template>
     <template #pushBackFactoryStatus="{ row }">
       <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
         v-model="row.pushBackFactoryStatus"
         :active-value="1"
         :inactive-value="0"
@@ -66,6 +68,7 @@ import { computed, ref } from 'vue'
 import Crud from './components/crud.vue'
 import { getAllBrand } from '@/api/model/brand'
 import { formatDate } from '@/utils/formatTime'
+import { hasPermission } from '@/utils/utils'
 
 const message = useMessage()
 
@@ -252,14 +255,14 @@ const columns: TableColumn[] = [
 const actionButtons = [
   {
     name: '编辑',
-    permission: true,
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:edit'),
     click: (row) => {
       editMember(row.distributeShopId)
     }
   },
   {
     name: '删除',
-    permission: true,
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:delete'),
     click: (row) => {
       selectedIds.value = [row.id]
       deleteFun()
