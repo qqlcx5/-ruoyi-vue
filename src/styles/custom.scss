@@ -93,7 +93,10 @@ $btnWrapHeight: 86px;
     color: $title-color;
   }
 }
-.el-form .el-form-item {
+.el-form .el-form-item .el-form-item__label {
+  color: $title-color;
+}
+.el-form .el-form-item :deep(.el-form-item__label) {
   color: $title-color;
 }
 .wg-custom-dialog {
