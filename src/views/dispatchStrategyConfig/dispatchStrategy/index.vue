@@ -28,7 +28,7 @@ import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { getAllStoreList } from '@/api/system/organization'
 import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
-import Crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
+import crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
 
 const message = useMessage()
 const { t } = useI18n() // 国际化
@@ -221,29 +221,34 @@ const handleDel = async () => {
 const confirmDel = () => {
   if (selectedIds.value.length < 1) {
     return message.warning('未选择数据')
-  } 
-  message
-    .wgConfirm(
-      '删除后，对应派发员将无法接受到线索派发',
-      <any>h('span', ['确定要删除 ', <any>h('span', {style: { color: 'red' }}, selectedIds.value.length), ' 条派发策略吗？']),
+  }
+  const buttonConfig = {
+    confirmButtonText: t('common.confirmDel'),
+    cancelButtonText: t('common.cancel')
+  }
+  const contentStr: any = h('span', [
+    '确定要删除 ',
+    h(
+      'span',
       {
-        confirmButtonText: t('common.confirmDel'),
-        cancelButtonText: t('common.cancel')
-      }
-    )
+        style: { color: 'red' }
+      },
+      selectedIds.value.length
+    ),
+    ' 条派发策略吗？'
+  ])
+  message
+    .wgConfirm('删除后，对应派发员将无法接受到线索派发', contentStr, buttonConfig)
     .then(() => {
       deleteFun()
     })
     .catch(() => {})
-  
-  
 }
 const deleteFun = async () => {
-  
   let params = {
     ids: selectedIds.value.join(',')
   }
-  console.log(params);
+  console.log(params)
   const res = await dispatchApi.delStrategy(params)
   if (res) {
     message.success('删除成功')
