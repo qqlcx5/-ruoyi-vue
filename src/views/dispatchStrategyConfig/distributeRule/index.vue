@@ -5,7 +5,6 @@
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: dispatchApi.getClueDistributeRule,
-      delApi: dispatchApi.delClueDistributeRule,
       showAdd: hasPermission('dispatch-strategy-config:distribute-rule:add'),
       actionButtons
     }"
@@ -39,7 +38,7 @@ import { hasPermission } from '@/utils/utils'
 onMounted(() => {
   getShopList()
 })
-
+const message = useMessage()
 const refresh = () => {
   tableRef.value.tableMethods.getList()
 }
@@ -121,10 +120,16 @@ const actionButtons = [
   {
     name: '删除',
     permission: hasPermission('dispatch-strategy-config:distribute-rule:delete'),
-    click: () => {}
+    click: (row) => {
+      delClueDistributeRule(row.id)
+    }
   }
 ]
-
+const delClueDistributeRule = async (id: string) => {
+  await dispatchApi.delClueDistributeRule(id)
+  message.success('删除成功')
+  refresh()
+}
 const crudRef = ref()
 const addRule = async () => {
   crudRef.value.openDialog('')
