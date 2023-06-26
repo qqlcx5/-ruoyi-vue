@@ -44,15 +44,15 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { title: 'DCC规则名称', key: 'dccRuleName' },
+    { label: 'DCC规则名称', key: 'dccRuleName' },
     {
-      title: '适用门店',
+      label: '适用门店',
       key: 'departName',
       minWidth: 250,
       render: ({ row }) => row.applicableShopName.join('，')
     },
     {
-      title: '启用状态',
+      label: '启用状态',
       key: 'openRules',
       render: ({ row }) => {
         return (
@@ -65,15 +65,15 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '创建人', key: 'creator' },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: 190,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: null,

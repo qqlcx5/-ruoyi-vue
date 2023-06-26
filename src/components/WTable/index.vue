@@ -32,7 +32,7 @@
       <el-table-column v-if="tableConfig.type === 'selection'" type="selection" />
       <template v-for="column in curColumns" :key="column.prop">
         <el-table-column
-          :label="column.title"
+          :label="column.label"
           show-overflow-tooltip
           :prop="column.prop"
           :width="column.width"
@@ -61,23 +61,18 @@
       />
     </div>
     <!--  定制列  -->
-    <CustomColumn
-      id="card-content"
-      v-if="columnDialogShow"
-      @change-column="changeColumn"
-      :allColumns="columns"
-      :defaultKeys="defaultKeys"
-      :changedColumnsObj="changedColumnsObj"
-      :pageKey="tableConfig.pageKey"
+    <TableColumnDrawer
+      v-model="columnDialogShow"
+      :columns="drawerColumns"
+      @confirm="changeColumn"
+      @reset="handleColumnReset"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import Expand from './Expand'
-import CustomColumn from '@/components/CustomColumn/CustomColumn.vue'
 import { cloneDeep } from 'lodash-es'
-import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
 
 interface ITableConfig {
   pageKey: string
@@ -102,9 +97,7 @@ const columns = ref(
   props.tableConfig.columns?.map((item, index) => {
     return {
       sort: index + 1,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
+      check: true,
       ...item
     }
   }) || []
@@ -122,7 +115,6 @@ const onPageChange = (params) => {
 const refresh = () => {
   props.tableConfig.refresh && props.tableConfig.refresh()
 }
-const { wsCache } = useCache()
 const isFullScreen = ref(false)
 const fullScreen = () => {
   console.log(123)
@@ -137,55 +129,17 @@ const handleSelectionChange = (value) => {
   emit('selectionChange', value)
 }
 
-let defaultKeys = ref<any[]>(
-  columns.value.reduce((arr: string[], item: { key: string }) => {
-    if (item.key) arr.push(item.key)
-    return arr
-  }, [])
-)
-const curColumns = ref(columns.value)
-interface IColumnObj {
-  currentColumns: object[]
-  currentCheckedList: string[]
-}
-const changedColumnsObj = ref<IColumnObj>()
-const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
-console.log(props.tableConfig.pageKey, columnsObj)
-if (columnsObj[props.tableConfig.pageKey]) {
-  let curKeys = columnsObj[props.tableConfig.pageKey].currentColumns.map((d) => d.key)
-  console.log(curKeys)
-  if (!curKeys.length) {
-    curKeys = defaultKeys.value
-  }
-  changedColumnsObj.value = columnsObj[props.tableConfig.pageKey]
-  curColumns.value = curKeys.reduce((arr, key) => {
-    const obj = columns.value.find((d) => d.key === key)
-    if (obj) arr.push(obj)
-    return arr
-  }, [])
-  columns.value.filter((d) => curKeys.includes(d.key))
-} else {
-  curColumns.value = columns.value.filter((columnsItem) => {
-    return defaultKeys.value.some((item) => columnsItem.key === item)
-  })
-}
+const curColumns = ref(cloneDeep(columns.value))
+const drawerColumns = ref(cloneDeep(columns.value))
 
-const changeColumn = (columnsObj, isCloseModal = false) => {
-  if (isCloseModal) {
-    columnDialogShow.value = false
-    return
-  }
-  changedColumnsObj.value = cloneDeep(columnsObj)
-  console.log(changedColumnsObj.value)
-  let curKeys = changedColumnsObj.value?.currentColumns.map((d) => d['key']) || []
-  if (!curKeys.length) {
-    curKeys = defaultKeys.value
-  }
-  curColumns.value = curKeys.reduce((arr, key) => {
-    const obj = columns.value.find((d) => d.key === key)
-    if (obj) arr.push(obj)
-    return arr
-  }, [])
+const handleColumnReset = () => {
+  curColumns.value = cloneDeep(columns.value)
+  drawerColumns.value = cloneDeep(columns.value)
+  columnDialogShow.value = false
+}
+const changeColumn = (list: any[]) => {
+  curColumns.value = list.filter((item) => item.check)
+  drawerColumns.value = list
   columnDialogShow.value = false
 }
 </script>

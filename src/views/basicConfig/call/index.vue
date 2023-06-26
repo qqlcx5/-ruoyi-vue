@@ -66,8 +66,6 @@
 
 <script setup lang="ts">
 import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicConfig'
-import { listToTree } from '@/utils/tree'
-import { cloneDeep } from 'lodash-es'
 import { ElTable } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 const store = useOption()
