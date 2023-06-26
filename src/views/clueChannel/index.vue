@@ -150,6 +150,9 @@ const handleDelete = async (row, type?: any) => {
     const selectedData = await tableRef.value.tableMethods.getSelections()
     id = selectedData.map((item) => item.id)
   }
+  if (id.length == 0) {
+    return message.warning('未选择数据')
+  }
   let msgContent = '确认删除该数据吗？'
   if (id.length > 1) {
     msgContent = `确认删除 ${id.length} 条数据吗？`
