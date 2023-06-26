@@ -198,25 +198,52 @@ const delPostTypeLine = (index: number): void => {
 }
 
 let sourceList = ref<any[]>([])
+let initSourceList = ref<any[]>([])
 // 获取线索来源列表
 const getSourceList = async () => {
   let data = await channelApi.getClueSourceManageList()
   if (data) {
     sourceList.value = data
+    initSourceList.value = data
     console.log(data)
   }
 }
-getSourceList()
 
 const cascaderRef = ref()
 const handleChange = () => {
+  let sourceArr: any = cloneDeep(initSourceList.value)
+  let list: any = cloneDeep(tableList.value)
   try {
-    let cascaderList = cascaderRef.value.getCheckedNodes()
-    let cascaderData = cascaderList
-    console.log(cascaderData[0].data)
+    list.forEach((fItem) => {
+      let [id1, id2] = fItem.clueSourceId
+      sourceArr.map((item) => {
+        if (item.id == id1) {
+          let children = item.children
+          item.children = children.map((cItem) => {
+            if (cItem.id == id2) {
+              cItem.disabled = true
+              console.log('===========', id1, id2)
+            }
+            return cItem
+          })
+        }
+        return item
+      })
+    })
+    sourceList.value = sourceArr
+    console.log(sourceArr, sourceList)
   } catch (error) {
     console.log(error)
   }
+
+  // try {
+  //   let cascaderList = cascaderRef.value.getCheckedNodes()
+  //   let cascaderData = cascaderList[0]
+  //   cascaderData.disabled = true
+  //   console.log(cascaderData)
+  // } catch (error) {
+  //   console.log(error)
+  // }
 }
 
 const clueSourceProps = {
@@ -319,6 +346,7 @@ const openModal = (row) => {
     width: '70px',
     showOverflowTooltip: false
   })
+  getSourceList()
   handleAdd()
 }
 defineExpose({ openModal })

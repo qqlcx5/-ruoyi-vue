@@ -28,6 +28,7 @@ import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { getAllStoreList } from '@/api/system/organization'
 import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
+import { formatDate } from '@/utils/formatTime'
 import crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
 
 const message = useMessage()
@@ -173,7 +174,10 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
+    field: 'createTime',
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   },
   {
     label: '开通门店',
