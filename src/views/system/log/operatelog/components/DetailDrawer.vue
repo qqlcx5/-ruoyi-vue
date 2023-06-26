@@ -14,8 +14,10 @@ const drawerLoading = ref<boolean>(false)
 const detailInfo = ref<any>()
 const baseDescription = ref<any[]>()
 const logInfo = ref<any[]>([])
-const onlyAfterChange = computed(() => {
-  return logInfo.value!.every((item) => !item.beforeValue)
+const isUpdate = computed(() => {
+  return detailInfo.value?.exts
+    ? detailInfo.value?.exts.some((item) => item['操作类型'] === 'UPDATE')
+    : false
 })
 const baseInfo = reactive([
   { name: '操作人员', value: 'username' },
@@ -50,7 +52,6 @@ const getDetail = async (id) => {
         if (Object.keys(item.beforeExecuteData).length) {
           data = Object.keys(item.beforeExecuteData)
         }
-        console.log(data)
         if (data) {
           data.forEach((key) => {
             result.push({
@@ -62,7 +63,6 @@ const getDetail = async (id) => {
         }
       })
       logInfo.value = result || []
-      console.log(logInfo.value)
     })
     .finally(() => {
       drawerLoading.value = false
@@ -155,7 +155,7 @@ defineExpose({
             >
           </template>
         </el-popover>
-        <template v-if="onlyAfterChange">
+        <template v-if="!isUpdate">
           <el-descriptions v-if="logInfo.length > 0" :column="1" border>
             <el-descriptions-item
               v-for="(item, index) in logInfo"
@@ -170,7 +170,6 @@ defineExpose({
           </el-descriptions>
           <div v-else class="text-center text-tip mt-60px">暂无内容</div>
         </template>
-
         <el-table v-else :data="logInfo" border header-cell-class-name="table-header">
           <el-table-column prop="field" label="字段名" />
           <el-table-column prop="beforeValue" label="修改前" />
