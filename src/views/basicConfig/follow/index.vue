@@ -225,7 +225,7 @@
         </el-form>
       </div>
     </div>
-    <div class="bottom-btns">
+    <div class="bottom-btns" v-hasPermi="['clue:basic-config:follow:save']">
       <el-button type="primary" size="large" :loading="btnLoading" @click="handleSave"
         >保存设置</el-button
       >

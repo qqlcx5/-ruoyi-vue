@@ -58,7 +58,7 @@
         <span>分钟推送再次跟进客户提醒通知</span>
       </div>
     </div>
-    <div class="bottom-btns">
+    <div class="bottom-btns" v-hasPermi="['clue:basic-config:order-receiving:save']">
       <el-button type="primary" size="large" :loading="btnLoading" @click="handleSave"
         >保存设置</el-button
       >

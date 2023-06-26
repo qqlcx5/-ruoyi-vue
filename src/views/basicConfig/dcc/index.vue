@@ -23,7 +23,13 @@
       @page-change="pageChange"
     >
       <template #btns>
-        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
+        <XButton
+          v-hasPermi="['clue:basic-config:dcc:create']"
+          type="primary"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
   </div>
@@ -55,6 +61,7 @@ const tableConfig = reactive({
       label: '启用状态',
       key: 'openRules',
       render: ({ row }) => {
+        row.openRules = row.openRules || 0
         return (
           <el-switch
             v-model={row.openRules}
@@ -80,10 +87,20 @@ const tableConfig = reactive({
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleDccEdit(row)}>
+            <el-button
+              v-hasPermi={[['clue:basic-config:dcc:edit']]}
+              type="primary"
+              link
+              onclick={() => handleDccEdit(row)}
+            >
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row)}>
+            <el-button
+              v-hasPermi={[['clue:basic-config:dcc:delete']]}
+              type="primary"
+              link
+              onclick={() => handleDelete(row)}
+            >
               删除
             </el-button>
           </div>

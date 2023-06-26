@@ -9,6 +9,7 @@
     >
       <template #btns>
         <XButton
+          v-hasPermi="['clue:basic-config:recovery-clue:create']"
           type="primary"
           iconFont="icon-xinzeng"
           title="新增回收计划"
@@ -76,7 +77,13 @@ const tableConfig = reactive({
       render: ({ row }) => {
         const disabled: boolean = +row.executeStatus === 1
         return (
-          <el-button type="primary" disabled={disabled} link onclick={() => handleExecute(row)}>
+          <el-button
+            type="primary"
+            v-hasPermi={[['clue:basic-config:recovery-clue:execute']]}
+            disabled={disabled}
+            link
+            onclick={() => handleExecute(row)}
+          >
             {disabled ? <span style={{ color: '#666' }}>执行完成</span> : '执行回收'}
           </el-button>
         )
