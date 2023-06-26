@@ -79,7 +79,11 @@
         <el-form-item label="接单逾期设置" prop="receiveOpenRules">
           <el-switch v-model="ruleForm.receiveOpenRules" :active-value="1" :inactive-value="0" />
         </el-form-item>
-        <el-form-item required label="线索接单判定“一般逾期”为派单后" prop="generalOverdue">
+        <el-form-item
+          label="线索接单判定“一般逾期”为派单后"
+          :key="ruleForm.receiveOpenRules"
+          :prop="ruleForm.receiveOpenRules === 1 ? 'generalOverdue' : ''"
+        >
           <el-input-number
             v-model="ruleForm.generalOverdue"
             :controls="false"
@@ -88,7 +92,11 @@
             :step="1"
           /><span>分钟接单</span>
         </el-form-item>
-        <el-form-item required label="线索接单判定“严重逾期”为派单后" prop="seriousOverdue">
+        <el-form-item
+          label="线索接单判定“严重逾期”为派单后"
+          :key="ruleForm.receiveOpenRules"
+          :prop="ruleForm.receiveOpenRules === 1 ? 'seriousOverdue' : ''"
+        >
           <el-input-number
             v-model="ruleForm.seriousOverdue"
             :controls="false"
@@ -105,9 +113,9 @@
           />
         </el-form-item>
         <el-form-item
-          required
           label="线索首次跟进判定“一般逾期”为接单后"
-          prop="firstFollowGeneralOverdue"
+          :key="ruleForm.firstFollowOpenRules"
+          :prop="ruleForm.firstFollowOpenRules === 1 ? 'firstFollowGeneralOverdue' : ''"
         >
           <el-input-number
             v-model="ruleForm.firstFollowGeneralOverdue"
@@ -118,9 +126,9 @@
           /><span>分钟跟进</span>
         </el-form-item>
         <el-form-item
-          required
           label="线索首次跟进判定“严重逾期”为接单后"
-          prop="firstFollowSeriousOverdue"
+          :key="ruleForm.firstFollowOpenRules"
+          :prop="ruleForm.firstFollowOpenRules === 1 ? 'firstFollowSeriousOverdue' : ''"
         >
           <el-input-number
             v-model="ruleForm.firstFollowSeriousOverdue"
@@ -134,22 +142,22 @@
           <el-switch v-model="ruleForm.followOpenRules" :active-value="1" :inactive-value="0" />
         </el-form-item>
         <el-form-item
-          required
           label="线索常规跟进逾期界限时间配置：计划跟进时间当日"
-          prop="overdueLimitDate"
+          :key="ruleForm.followOpenRules"
+          :prop="ruleForm.followOpenRules === 1 ? 'overdueLimitDate' : ''"
         >
           <el-time-select
             v-model="ruleForm.overdueLimitDate"
             start="00:00"
-            step="00:01"
+            step="00:05"
             end="23:59"
             style="width: 120px"
           />
         </el-form-item>
         <el-form-item
-          required
           label="线索常规跟进判定“一般逾期”为计划跟进时间当日22:00+"
-          prop="followGeneralOverdue"
+          :key="ruleForm.followOpenRules"
+          :prop="ruleForm.followOpenRules === 1 ? 'followGeneralOverdue' : ''"
         >
           <el-input-number
             v-model="ruleForm.followGeneralOverdue"
@@ -160,9 +168,9 @@
           /><span>分钟后跟进</span>
         </el-form-item>
         <el-form-item
-          required
           label="线索常规跟进判定“严重逾期”为计划跟进时间当日22:00+"
-          prop="followSeriousOverdue"
+          :key="ruleForm.followOpenRules"
+          :prop="ruleForm.followOpenRules === 1 ? 'followSeriousOverdue' : ''"
         >
           <el-input-number
             v-model="ruleForm.followSeriousOverdue"
@@ -175,7 +183,11 @@
         <el-form-item label="回收设置" prop="recycle">
           <el-switch v-model="ruleForm.recycle" :active-value="1" :inactive-value="0" />
         </el-form-item>
-        <el-form-item label="" prop="recyclePostpone">
+        <el-form-item
+          label=""
+          :key="ruleForm.recycle"
+          :prop="ruleForm.recycle === 1 ? 'recyclePostpone' : ''"
+        >
           <el-input-number
             v-model="ruleForm.recyclePostpone"
             :controls="false"
