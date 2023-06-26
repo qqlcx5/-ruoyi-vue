@@ -147,7 +147,8 @@ const handleDelRow = (index) => {
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
+
 .call-settings-container {
   display: flex;
   flex-direction: column;

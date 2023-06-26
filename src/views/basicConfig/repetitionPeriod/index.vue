@@ -24,7 +24,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
 import {
   pageRepetitionPeriod,

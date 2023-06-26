@@ -281,7 +281,7 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
 .dcc-edit-container {
   .page-title {
     line-height: 25px;
