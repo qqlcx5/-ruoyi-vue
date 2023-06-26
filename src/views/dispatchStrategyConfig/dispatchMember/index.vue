@@ -8,7 +8,8 @@
       showAdd: hasPermission('dispatch-strategy-config:dispatch-member:add'),
       actionButtons,
       selection: true,
-      spanMethod: objectSpanMethod
+      spanMethod: objectSpanMethod,
+      border: true
     }"
     @add="addMember"
   >
@@ -39,7 +40,7 @@
       <span>{{ arrToStrFunc(row.autoSeriesNames) }}</span>
     </template>
     <template #tableAppend>
-      <XButton type="danger" @click="handleDel">删除</XButton>
+      <XButton @click="handleDel">删除</XButton>
     </template>
   </form-table>
   <el-dialog title="提示" v-model="delDialog" width="30%">
@@ -295,7 +296,7 @@ const confirmDel = () => {
   deleteFun()
 }
 const deleteFun = async () => {
-  dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
+  await dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
   message.success('删除成功')
   delDialog.value = false
   tableRef.value.tableMethods.getList()
