@@ -6,7 +6,7 @@
       :table-options="{
         columns: allSchemas.tableColumns,
         listApi: channelApi.getClueChannel,
-        showAdd: true,
+        showAdd: hasPermission('clue-channel:add'),
         actionButtons,
         selection: true
       }"
@@ -15,11 +15,14 @@
       <template #tableAppend>
         <div class="edit-btn">
           <el-button @click="handleDelete">删除</el-button>
-          <el-button @click="handleSource">线索来源管理</el-button>
+          <el-button v-hasPermi="['clue-channel:source-manage']" @click="handleSource"
+            >线索来源管理</el-button
+          >
         </div>
       </template>
       <template #needFilter="{ row }">
         <el-switch
+          :disabled="!hasPermission('clue-channel:edit')"
           v-model="row.needFilter"
           :active-value="1"
           :inactive-value="0"
@@ -34,6 +37,7 @@
       </template>
       <template #isShow="{ row }">
         <el-switch
+          :disabled="!hasPermission('clue-channel:edit')"
           v-model="row.isShow"
           :active-value="1"
           :inactive-value="0"
@@ -51,6 +55,7 @@ import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { TableColumn } from '@/types/table'
 
 import AddChannelModal from './components/AddChannelModal.vue'
+import { hasPermission } from '@/utils/utils'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -114,6 +119,7 @@ const columns: TableColumn[] = [
 const actionButtons = [
   {
     name: '编辑',
+    permission: hasPermission('clue-channel:edit'),
     click: (row) => {
       console.log(row)
       handleUpdate(row)
@@ -121,6 +127,7 @@ const actionButtons = [
   },
   {
     name: '删除',
+    permission: hasPermission('clue-channel:delete'),
     click: (row) => {
       handleDelete(row, 'single')
     }
