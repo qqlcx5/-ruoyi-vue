@@ -40,6 +40,36 @@
     </div>
     <div class="part-wrap">
       <div class="part-title">
+        <span class="main-text">未打通电话自动生成跟进记录</span>
+        <el-switch v-model="ruleForm.autoCreateFollowPlan" :active-value="1" :inactive-value="0" />
+      </div>
+      <div class="config-form-item">
+        <span>未打通客户电话每日最少跟进次数</span>
+        <el-input-number
+          v-model.number="ruleForm.notGetThroughLeastFollowNum"
+          class="number-input"
+          step-strictly
+          :step="1"
+          :min="0"
+          :controls="false"
+        />
+        <span>次</span>
+      </div>
+      <div class="config-form-item mt-15px">
+        <span>下次跟进时间</span>
+        <el-input-number
+          v-model.number="ruleForm.clueFollowConfigHour"
+          class="number-input"
+          step-strictly
+          :step="1"
+          :min="0"
+          :controls="false"
+        />
+        <span>小时后</span>
+      </div>
+    </div>
+    <div class="part-wrap">
+      <div class="part-title">
         <span class="main-text">短信联系客户自动生成跟进记录</span>
         <el-switch
           v-model="ruleForm.smsAutoCreateFollowPlan"
