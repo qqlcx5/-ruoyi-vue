@@ -43,13 +43,13 @@ const tableConfig = reactive({
   queryParams: { pageNo: 1, pageSize: 10 },
   columns: [
     {
-      title: '线索重复判断维度',
+      label: '线索重复判断维度',
       key: 'ruleType',
       minWidth: 150,
       render: ({ row }) => typeObj[row.ruleType]
     },
     {
-      title: '周期',
+      label: '周期',
       key: 'repetitionPeriod',
       minWidth: 180,
       render: ({ row }) => {
@@ -61,7 +61,7 @@ const tableConfig = reactive({
       }
     },
     {
-      title: '状态',
+      label: '状态',
       key: 'isEnable',
       render: ({ row }) => {
         return (
@@ -74,22 +74,22 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '创建人', key: 'creator' },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       minWidth: '190',
       key: 'createTime',
       render: ({ row }) => dateFormat(row.createTime)
     },
-    { title: '最近操作人', key: 'updater' },
+    { label: '最近操作人', key: 'updater' },
     {
-      title: '最近操作时间',
+      label: '最近操作时间',
       minWidth: '190',
       key: 'updateTime',
       render: ({ row }) => dateFormat(row.updateTime)
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 75,
       fixed: 'right',

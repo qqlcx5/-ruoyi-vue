@@ -52,15 +52,15 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { title: '考核规则名称', key: 'checkRuleName' },
+    { label: '考核规则名称', key: 'checkRuleName' },
     {
-      title: '适用门店',
+      label: '适用门店',
       key: 'applicableShopName',
       minWidth: 350,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
-      title: '状态',
+      label: '状态',
       key: 'openRules',
       render: ({ row }) => {
         return (
@@ -73,9 +73,9 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '创建人', key: 'creator' },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: '180px',
       render: ({ row }) => {
@@ -83,7 +83,7 @@ const tableConfig = reactive({
       }
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',

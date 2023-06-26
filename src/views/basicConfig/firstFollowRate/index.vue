@@ -65,15 +65,15 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { title: '规则名称', key: 'ruleName' },
+    { label: '规则名称', key: 'ruleName' },
     {
-      title: '适用门店',
+      label: '适用门店',
       key: 'applicableShopName',
       minWidth: 240,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
-      title: '启用状态',
+      label: '启用状态',
       key: 'status',
       render: ({ row }) => {
         return (
@@ -86,18 +86,18 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '最低跟进率', key: 'minFollowRate', render: ({ row }) => row.minFollowRate + '%' },
-    { title: '计算周期', key: 'cycle', render: ({ row }) => row.cycle + '天' },
-    { title: '参与岗位', minWidth: 240, key: 'limitPositionTypesName' },
-    { title: '创建人', key: 'creator' },
+    { label: '最低跟进率', key: 'minFollowRate', render: ({ row }) => row.minFollowRate + '%' },
+    { label: '计算周期', key: 'cycle', render: ({ row }) => row.cycle + '天' },
+    { label: '参与岗位', minWidth: 240, key: 'limitPositionTypesName' },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: '190',
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',
