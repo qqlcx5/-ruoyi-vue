@@ -84,7 +84,7 @@ export const getClueDistributeRuleDetail = (id: number) => {
 
 //删除 线索规则设置
 export const delClueDistributeRule = (id: string) => {
-  return request.get(`/clue/clueDistributeProductization/delete/${id}`)
+  return request.get({ url: `/clue/clueDistributeProductization/delete/${id}` })
 }
 
 // 编辑

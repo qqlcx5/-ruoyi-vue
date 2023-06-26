@@ -7,8 +7,8 @@
       <div class="source">
         <div class="source-column" v-for="(item, index) in sourceList" :key="index">
           <div class="header">
-            <span class="title">{{ levelList[index] }}级来源</span
-            ><span class="add-bnt" @click="addSource(index)">添加{{ levelList[index] }}级来源</span>
+            <span class="title">{{ levelList[index] }}级来源</span>
+            <span class="add-bnt" @click="addSource(index)">添加{{ levelList[index] }}级来源</span>
           </div>
           <div class="content">
             <div
@@ -27,6 +27,14 @@
             </div>
           </div>
         </div>
+        <div class="source-column" key="666" v-if="showTisColumnTool">
+          <div class="header">
+            <span class="title">{{ levelList[sourceList.length] }}级来源</span>
+          </div>
+          <div class="content">
+            <span class="text-tip">请从左侧选择</span>
+          </div>
+        </div>
       </div>
     </div>
     <AddSourceModal ref="addSourceModalRef" @refresh-list="getSourceList" />
@@ -36,27 +44,38 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AddSourceModal from './components/AddSourceModal.vue'
-// import { source_res } from './sour.data'
 import * as channelApi from '@/api/clue/channel'
 import { cloneDeep } from 'lodash-es'
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
-let levelList = ['一', '二', '三']
+let levelList = ['一', '二', '三', '四', '五']
 let sourceList = ref<any[]>([])
+let currentIndex = ref<number>(-999)
+let showTisColumnTool = ref(true)
+
+watch(sourceList, (sourceList: any) => {
+  let index: number = currentIndex.value
+  let key = index + 1
+  let list = sourceList[key].list
+  let tool = true
+  if (list.length == 0) {
+    tool = false
+  }
+  showTisColumnTool.value = tool
+})
 
 // 获取线索来源列表
 const getSourceList = async () => {
   let data = await channelApi.getClueSourceManageList()
+  // data = []
   if (data) {
     let oldSourceList: any[] = []
     if (sourceList.value.length > 1) {
       oldSourceList = cloneDeep(sourceList.value)
+    } else {
+      currentIndex.value = -1
     }
-
     sourceList.value = [{ checkedData: {}, list: data }]
-
-    console.log(oldSourceList)
-
     let list = data
     oldSourceList.forEach((item: any, index) => {
       let children = []
@@ -68,16 +87,17 @@ const getSourceList = async () => {
       })
       list = children
     })
-    console.log(sourceList.value)
+    console.log('数据源===', sourceList.value)
   }
 }
 getSourceList()
 
 const selectedSource = (lItem, index) => {
+  currentIndex.value = index
   sourceList.value[index].checkedData = lItem
   sourceList.value = sourceList.value.slice(0, index + 1)
   let children = lItem.children || []
-  if (index < 1) {
+  if (index < 5) {
     // 最后一级不加
     sourceList.value.push({ checkedData: {}, list: children })
   }
@@ -89,10 +109,12 @@ const addSource = (index: number) => {
     data = sourceList.value[index - 1].checkedData
   }
   data.sourceHierarchy = index + 1
+  data.levelList = levelList
   addSourceModalRef.value.openModal(data, 'add')
 }
 const handleEdit = (lItem, lIndex) => {
   console.log(lItem, lIndex)
+  lItem.levelList = levelList
   addSourceModalRef.value.openModal(lItem, 'edit')
 }
 const handledelete = (lItem) => {
@@ -137,7 +159,8 @@ const handledelete = (lItem) => {
   .part-content {
     flex: 1;
     display: flex;
-    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: auto;
     .source {
       display: flex;
       border: 1px solid $border-color;
@@ -167,6 +190,7 @@ const handledelete = (lItem) => {
           }
         }
         .content {
+          position: relative;
           flex: 1;
           overflow: auto;
           .list-row {
@@ -174,6 +198,12 @@ const handledelete = (lItem) => {
             padding-left: 18px;
             padding-right: 12px;
             cursor: pointer;
+            .label {
+              padding-right: 10px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
             .bnt-wrap {
               display: flex;
               align-items: center;
@@ -182,6 +212,13 @@ const handledelete = (lItem) => {
           .active {
             color: #1989fa;
             background-color: #ebf5ff;
+          }
+          .text-tip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
           }
           &::-webkit-scrollbar {
             display: none;
