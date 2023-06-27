@@ -11,7 +11,7 @@
       ref="tree"
       default-expand-all
       :data="treeData"
-      :props="{ children: 'childs', label: 'name' }"
+      :props="{ children: 'child', label: 'name' }"
     />
   </Dialog>
 </template>
