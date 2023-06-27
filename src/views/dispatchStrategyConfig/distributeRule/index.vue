@@ -76,11 +76,13 @@ const columns: TableColumn[] = [
   },
   {
     label: '规则名称',
-    field: 'distributeRuleName'
+    field: 'distributeRuleName',
+    disabled: true
   },
   {
     label: '适用门店',
-    field: 'applicableShopName'
+    field: 'applicableShopName',
+    disabled: true
   },
   {
     label: '状态',
