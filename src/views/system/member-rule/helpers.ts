@@ -15,6 +15,14 @@ export type TreeNode = {
 
 const { t } = useI18n()
 
+export const stringToArray = (str = '') => {
+  return str.split(',').map((val) => Number(val))
+}
+
+export const arrayToString = (array = []) => {
+  return array.join(',')
+}
+
 export const useColumnOptions = () => {
   const brandOptions = [
     {
@@ -64,10 +72,6 @@ export const useFormTable = () => {
   const dialogTreeTitle = ref('')
   const columns: TableColumn[] = reactive([
     {
-      label: '编码',
-      field: 'ruleCode'
-    },
-    {
       field: 'applicableShopIds',
       label: '门店名称',
       isSearch: true,
@@ -108,23 +112,11 @@ export const useFormTable = () => {
           }
         }
       }
-      // search: {
-      //   component: 'Cascader',
-      //   componentProps: {
-      //     options: getShopList(),
-      //     props: {
-      //       label: 'name',
-      //       value: 'id',
-      //       emitPath: false,
-      //       multiple: true
-      //     }
-      //   }
-      // }
     },
     {
       field: 'applicableShopInfoList',
       label: '适用门店',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -134,14 +126,14 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '适用门店'
           },
-          title: `共${value?.length}家门店`
+          title: `共${row.applicableShopId.split(',')?.length}家门店`
         })
       }
     },
     {
       field: 'dataRangShopIdInfoList',
       label: '门店数据范围',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -151,14 +143,14 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '门店数据范围'
           },
-          title: `共${value?.length}家门店`
+          title: `共${row.dataRangShopId.split(',')?.length}家门店`
         })
       }
     },
     {
       label: '岗位数据范围',
       field: 'dataRangPostNameList',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -168,14 +160,14 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '岗位数据范围'
           },
-          title: `共${value?.length}家岗位`
+          title: `共${row.dataRangPostId.split(',')?.length}家岗位`
         })
       }
     },
     {
       label: '成员数据范围',
       field: 'dataRangUserInfoList',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -185,7 +177,7 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '成员数据范围'
           },
-          title: `共${value?.length}人`
+          title: `共${row.dataRangUserId.split(',')?.length}人`
         })
       }
     },
@@ -231,6 +223,7 @@ export const useFormTable = () => {
 
   const showDialog = ref(false)
   const title = ref('')
+  const isEdit = ref(false)
 
   return {
     allSchemas,
@@ -238,6 +231,7 @@ export const useFormTable = () => {
     dialogTreeData,
     showTreeDialog,
     dialogTreeTitle,
+    isEdit,
     title,
     tableApi: getMemberRuleList
   }

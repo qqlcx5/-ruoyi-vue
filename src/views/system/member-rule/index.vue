@@ -28,13 +28,22 @@
           columns: allSchemas.tableColumns,
           listApi: tableApi,
           listParams,
-          showTools: false
+          showTools: false,
+          showAdd: hasPermission('system:member-rule:rule-list')
         }"
         @add="handleAdd"
       >
         <template #tableAppend>
-          <XButton title="批量删除" @click="handleListDel" />
-          <XButton title="批量编辑" @click="handleListEdit" />
+          <XButton
+            v-hasPermi="['system:member-rule:delete']"
+            title="批量删除"
+            @click="handleListDel"
+          />
+          <XButton
+            v-hasPermi="['system:member-rule:edit']"
+            title="批量编辑"
+            @click="handleListEdit"
+          />
           <div :class="`${tipsStatus ? 'tip-status-true' : ''} tip-status ml-3`">{{ tips }}</div>
         </template>
         <template #isEnable="{ row }">
@@ -61,17 +70,26 @@
 
 <script lang="ts" setup>
 import { onMounted } from 'vue'
-import { useFormTable, useRuleTree, TreeNode } from './helpers'
+import { useFormTable, useRuleTree, TreeNode, arrayToString } from './helpers'
 import ActionDialog from './components/ActionDialog.vue'
 import TreeViewDialog from './components/TreeViewDialog.vue'
-import { delMemberRule, addMemberRule, getTipsData } from '@/api/system/memberRule'
+import { delMemberRule, addMemberRule, getTipsData, setMemberRule } from '@/api/system/memberRule'
 import { isEmpty } from 'lodash-es'
+import { hasPermission } from '@/utils/utils'
 
 const message = useMessage()
 const { t } = useI18n()
 
-const { allSchemas, showDialog, title, dialogTreeData, showTreeDialog, dialogTreeTitle, tableApi } =
-  useFormTable()
+const {
+  allSchemas,
+  showDialog,
+  title,
+  dialogTreeData,
+  showTreeDialog,
+  dialogTreeTitle,
+  isEdit,
+  tableApi
+} = useFormTable()
 
 const { treeData, getTree, selectNode } = useRuleTree()
 
@@ -98,7 +116,9 @@ const handleAdd = () => {
     message.warning('请选择规则名称')
     return
   }
+  isEdit.value = false
   showDialog.value = true
+  dialogData.value = []
   title.value = '新增子规则'
 }
 
@@ -112,7 +132,7 @@ const handleListDel = async () => {
     message
       .wgOperateConfirm('是否确认删除成员规则？删除后无法恢复。', '提示')
       .then(async () => {
-        const res = await delMemberRule(selections)
+        const res = await delMemberRule({ ids: selections.join(',') })
         if (res) {
           message.success('删除成功')
           await tableMethods.getList()
@@ -135,27 +155,26 @@ const handleListEdit = async () => {
     message.warning('请选择成员规则')
     return
   }
+  isEdit.value = true
   showDialog.value = true
   title.value = '编辑成员规则'
 }
 
 /** 确认保存 */
 const handleSave = async (data: Recordable) => {
-  console.log(data)
-
-  await addMemberRule(
-    data.map((item) => ({
-      ...item,
-      applicableShopId: (item.applicableShopId || []).join(','),
-      dataRangShopId: (item.dataRangShopId || []).join(','),
-      dataRangPostId: (item.dataRangPostId || []).join(','),
-      dataRangUserId: (item.dataRangUserId || []).join(','),
-      belongBusinessCode: selectNode.value.ruleValue,
-      belongBusinessName: selectNode.value.ruleName
-    }))
-  )
+  const saveApi = isEdit.value ? setMemberRule : addMemberRule
+  const params = data.map((item) => ({
+    ...item,
+    applicableShopId: arrayToString(item.applicableShopId),
+    dataRangShopId: arrayToString(item.dataRangShopId),
+    dataRangPostId: arrayToString(item.dataRangPostId),
+    dataRangUserId: arrayToString(item.dataRangUserId),
+    belongBusinessCode: selectNode.value.ruleValue,
+    belongBusinessName: selectNode.value.ruleName
+  }))
+  await saveApi(params)
   showDialog.value = false
-  message.success(t('common.createSuccess'))
+  message.success(isEdit.value ? '编辑成功' : t('common.createSuccess'))
   const { tableMethods } = tableRef.value
   tableMethods.getList()
 }
