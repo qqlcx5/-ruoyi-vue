@@ -34,16 +34,13 @@
       />
     </template>
     <template #distributeUserName="{ row }">
-      <span>{{ row.distributeUserName + '-' + row.postName }}</span>
+      <span>{{ row.distributeUserName + '-' + row.positionName }}</span>
     </template>
     <template #autoBrandNames="{ row }">
       <span>{{ arrToStrFunc(row.autoBrandNames) }}</span>
     </template>
     <template #autoSeriesNames="{ row }">
-      <el-tooltip>
-        <template #content>{{ arrToStrFunc(row.autoSeriesNames) }}</template>
-        <span>{{ JSON.parse(row.autoSeriesNames)[0] }}</span>
-      </el-tooltip>
+      <span class="another-line">{{ arrToStrFunc(row.autoSeriesNames) }}</span>
     </template>
     <template #tableAppend>
       <XButton @click="handleDel">删除</XButton>
@@ -237,7 +234,8 @@ const columns: TableColumn[] = [
   },
   {
     label: '销售车系',
-    field: 'autoSeriesNames'
+    field: 'autoSeriesNames',
+    showOverflowTooltip: true
   },
   {
     label: '创建人',
