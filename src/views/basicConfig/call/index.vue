@@ -94,7 +94,6 @@ const getShopList = async () => {
   const res = await store.getShopList()
   shopList.value = res.shopList
   shopTreeList.value = res.shopTreeList
-  shopList.value[0]['a'] = 1
   console.log(store)
 }
 const visibleChange = async (val, row, index) => {
