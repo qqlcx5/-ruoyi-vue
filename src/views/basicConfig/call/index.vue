@@ -70,6 +70,8 @@ import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicCon
 import { ElTable } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 const store = useOption()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
 const loading = ref<boolean>(false)
 let ruleForm = reactive<{ canGetThroughVOs: any[] }>({ canGetThroughVOs: [] })
 const getInfo = async () => {
@@ -88,18 +90,9 @@ const getInfo = async () => {
   }
 }
 
-const shopList = ref<object[]>([])
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const res = await store.getShopList()
-  shopList.value = res.shopList
-  shopTreeList.value = res.shopTreeList
-  console.log(store)
-}
+const shopTreeList = ref(getSuitableShopList())
 const visibleChange = async (val, row, index) => {
   if (val) {
-    shopTreeList.value = []
-    await nextTick()
     const checkedList = ruleForm.canGetThroughVOs.reduce((arr, item, itemIndex) => {
       const ids = item.joinCountShopIds || []
       if (itemIndex !== index && ids.length) {
@@ -107,12 +100,12 @@ const visibleChange = async (val, row, index) => {
       }
       return arr
     }, [])
-    shopTreeList.value = store.dealShopList(unref(shopList), checkedList, [])
+    shopTreeList.value = store.dealShopList(shopTreeList.value, checkedList, [])
   }
 }
 
 loading.value = true
-Promise.all([getInfo(), getShopList()]).finally(() => {
+Promise.all([getInfo()]).finally(() => {
   loading.value = false
 })
 

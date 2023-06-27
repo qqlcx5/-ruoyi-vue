@@ -125,7 +125,7 @@
         </el-table-column>
       </el-table>
       <el-form-item label="" label-width="0">
-        <span class="mr-8px">线索有效率</span
+        <span class="mr-8px">线索无效率</span
         ><el-switch
           v-model="ruleForm.monthEffectiveRateStatus"
           :active-value="1"
@@ -182,6 +182,7 @@ import {
 import { cloneDeep } from 'lodash-es'
 import { useTagsViewStoreWithOut } from '@/store/modules/tagsView'
 import { useOption } from '@/store/modules/options'
+import { getShopDataList } from '@/api/common'
 const store = useOption()
 const route = useRoute()
 const router = useRouter()
@@ -193,7 +194,7 @@ let ruleForm = reactive<any>({
   applicableShopId: [],
   examineSetList: [],
   openRules: 1, // 状态是否开启
-  monthEffectiveRateStatus: 0, // 线索有效率
+  monthEffectiveRateStatus: 0, // 线索无效率
   effectiveRateType: 1, // 按天、按自然月
   effectiveRate: null, // 每个成员的线索无效率不超过
   dccExplainStatus: 0, // DCC规则说明
@@ -246,7 +247,7 @@ onMounted(async () => {
 })
 const shopTreeList = ref<object[]>([])
 const getShopList = async () => {
-  const { shopList } = await store.getShopList()
+  const shopList = await getShopDataList()
   const checkedList = await existDccRuleShop()
   shopTreeList.value = store.dealShopList(shopList, unref(checkedList), ruleForm.applicableShopId)
 }

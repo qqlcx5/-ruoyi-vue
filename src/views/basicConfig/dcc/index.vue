@@ -40,8 +40,8 @@ import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '@/components/WTable/index.vue'
 import { queryDccPage, dccOpenRule, deleteDcc } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
-import { useOption } from '@/store/modules/options'
-const store = useOption()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
 const router = useRouter() // 路由
 const message = useMessage()
 
@@ -116,18 +116,10 @@ const handleRest = () => {
   handleSearch()
 }
 const handleSearch = () => {
-  const obj = shopList.find((d) => tableConfig.queryParams.shopId === d['id']) || {}
-  tableConfig.queryParams.shopName = obj['name'] || null
   tableConfig.queryParams.pageNo = 1
   getList(tableConfig.queryParams)
 }
-let shopList = []
-const shopTreeList = ref<object[]>([])
-onMounted(async () => {
-  const res = await store.getShopList()
-  shopList = res.shopList
-  shopTreeList.value = res.shopTreeList
-})
+const shopTreeList = ref(getSuitableShopList())
 
 const { loading, list, getList, pageChange } = useQueryPage({
   path: queryDccPage,

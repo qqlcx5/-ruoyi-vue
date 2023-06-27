@@ -131,9 +131,9 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { getListSimpleUsersApi } from '@/api/system/user'
 import { DICT_TYPE, getTenantDictOptions } from '@/utils/dict'
 import { saveRecycleSchedule } from '@/api/clue/basicConfig'
-import { useOption } from '@/store/modules/options'
 import { getAllBrand } from '@/api/model/brand'
-const store = useOption()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
 const message = useMessage()
 
 interface IProps {
@@ -152,7 +152,7 @@ watch(
   () => props.modelValue,
   async (val) => {
     if (val) {
-      Promise.all([getUsers(), getShopList(), getBrandInfo(), getDicts()])
+      Promise.all([getUsers(), getBrandInfo(), getDicts()])
     } else {
       timeRange.value = []
       formRef.value?.resetFields()
@@ -175,11 +175,7 @@ const getBrandInfo = async () => {
   brandList.value = data
 }
 
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const res = await store.getShopList()
-  shopTreeList.value = res.shopTreeList
-}
+const shopTreeList = ref(getSuitableShopList())
 
 const timeRange = ref<string[]>([])
 watch(
