@@ -70,8 +70,6 @@ import { ref } from 'vue'
 import { FormExpose } from '@/components/Form'
 import { rules, allSchemas } from './dispatchStrategy.data'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
-import { getAllStoreList } from '@/api/system/organization/index'
-import { listToTree } from '@/utils/tree'
 import { useCommonList } from '@/hooks/web/useCommonList'
 const { getMemberList, getSuitableShopList } = useCommonList()
 
@@ -195,6 +193,7 @@ const openDialog = (editType, data) => {
       }
     }, 200)
   }
+  tableList.value = []
 }
 defineExpose({ openDialog })
 // 保存按钮
