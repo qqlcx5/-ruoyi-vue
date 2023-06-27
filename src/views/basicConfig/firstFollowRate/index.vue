@@ -36,7 +36,7 @@
     <!-- 首次跟进率新增/编辑弹框 -->
     <EditFirstFollowRate
       v-model="visible"
-      :shopList="shopList"
+      :shopList="shopTreeList"
       :curInfo="curInfo"
       @success="getList"
     />
@@ -53,17 +53,12 @@ import {
   firstFollowRateDelete
 } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
-import { useOption } from '@/store/modules/options'
-const store = useOption()
+
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
 const message = useMessage()
 
-let shopList = []
-const shopTreeList = ref<object[]>([])
-onMounted(async () => {
-  const res = await store.getShopList()
-  shopList = res.shopList
-  shopTreeList.value = res.shopTreeList
-})
+const shopTreeList = ref(getSuitableShopList())
 
 const visible = ref<boolean>(false)
 const tableConfig = reactive({
@@ -145,8 +140,6 @@ const handleRest = () => {
   handleSearch()
 }
 const handleSearch = () => {
-  const obj = shopList.find((d) => tableConfig.queryParams.shopId === d['id']) || {}
-  tableConfig.queryParams.shopName = obj['name'] || null
   tableConfig.queryParams.pageNo = 1
   getList(tableConfig.queryParams)
 }

@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
-import { getAllStoreList } from '@/api/system/organization'
-import { cloneDeep, difference } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
 
+import { cloneDeep, difference } from 'lodash-es'
 type IOptionState<T> = {
   [K in keyof T]: T[K]
 }
@@ -16,22 +14,6 @@ export const useOption = defineStore('options', {
   },
   getters: {},
   actions: {
-    async getShopList() {
-      try {
-        if (this.shopList.length && this.shopTreeList.length) {
-          return cloneDeep({ shopList: this.shopList, shopTreeList: this.shopTreeList })
-        }
-        const data = await getAllStoreList()
-        const shopList = cloneDeep(data || [])
-        const shopTreeList = listToTree(data || [], { pid: 'parentId' })
-        this.shopList = shopList
-        this.shopTreeList = shopTreeList
-        return cloneDeep({ shopList, shopTreeList })
-      } catch (e) {
-        return { shopList: [], shopTreeList: [] }
-      }
-    },
-
     dealShopList(list, arr1, arr2) {
       const shopList = cloneDeep(list)
       arr1 = arr1.map((d) => +d)

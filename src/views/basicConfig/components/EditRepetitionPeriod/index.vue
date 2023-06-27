@@ -40,7 +40,12 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button type="primary" :loading="btnLoading" @click="handleConfirm(ruleFormRef)"
+        <el-button
+          v-if="!flag"
+          type="primary"
+          :disabled="btnLoading"
+          :loading="btnLoading"
+          @click="handleConfirm(ruleFormRef)"
           >确定</el-button
         >
         <el-button @click="handleClose">取消</el-button>
@@ -77,6 +82,7 @@ watch(
   () => props.modelValue,
   (val) => {
     if (val) {
+      flag.value = false
       editFlag.value = !!props.curInfo.id
       if (unref(editFlag)) {
         ruleForm = reactive(cloneDeep(props.curInfo))
@@ -112,6 +118,7 @@ const handleClose = () => {
   emit('update:modelValue', false)
 }
 const btnLoading = ref<boolean>(false)
+const flag = ref<boolean>(false)
 const handleConfirm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
   await formEl.validate(async (valid, fields) => {
@@ -124,6 +131,7 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
           repetitionPeriod: ruleForm.repetitionPeriod || ''
         }
         unref(editFlag) ? await updateRepetitionPeriod(params) : await addRepetitionPeriod(params)
+        flag.value = true
         emit('success')
         message.success('提交成功')
         handleClose()

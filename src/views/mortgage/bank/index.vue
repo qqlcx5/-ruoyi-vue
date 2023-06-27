@@ -1,184 +1,74 @@
 <template>
-  <div class="basic-config-page-container">
-    <WgTable
-      class="table-wrap"
-      :data="list"
-      :tableConfig="tableConfig"
-      @selectionChange="getCheckedList"
-      @page-change="pageChange"
-      :loading="loading"
-    >
-      <template #btns>
-        <XButton
-          type="primary"
-          v-hasPermi="['clue:basic-config:repetition-period:create']"
-          iconFont="icon-xinzeng"
-          title="新增"
-          @click="handleCreate"
-        />
-        <el-button
-          v-hasPermi="['clue:basic-config:repetition-period:delete']"
-          :disabled="!checkedList.length"
-          @click="handleDelete"
-          >删除</el-button
-        >
-      </template>
-      <template #tip>
-        <div class="mb-12px" style="line-height: 20px; font-size: 14px; color: #ff4141"
-          >注：线索周期只可启用一条</div
-        >
-      </template>
-    </WgTable>
-  </div>
+  <form-table
+    ref="tableRef"
+    :form-options="{
+      schema: allSchemas.searchSchema
+    }"
+    :table-options="{
+      columns: allSchemas.tableColumns,
+      listApi: mortgageFinancePage,
+      showAdd: true,
+      selection: true
+    }"
+  >
+    <template #tableAppend>
+      <XButton title="删除" />
+    </template>
+    <template #action>
+      <!-- 操作：修改 -->
+      <XTextButton title="修改" />
+      <!-- 操作：详情 -->
+      <XTextButton title="删除" />
+    </template>
+    <template #financeStatus="{ row }">
+      <el-switch v-model="row.financeStatus" :active-value="1" :inactive-value="0" />
+    </template>
+  </form-table>
 </template>
 
-<script setup lang="tsx">
-import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '@/components/WTable/index.vue'
-import {
-  pageRepetitionPeriod,
-  deleteBatchRepetitionPeriod,
-  updateEnableRepetitionPeriod
-} from '@/api/clue/basicConfig'
-import { dateFormat } from '@/utils/utils'
+<script lang="ts" setup>
+import { TableColumn } from '@/types/table'
+import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
+import { mortgageFinancePage } from '@/api/mortgage'
 
-const message = useMessage()
+const columns: TableColumn[] = [
+  { label: '金融机构名称', field: 'financeName', width: 150 },
+  { label: '省份', field: 'provinceName' },
+  { label: '城市', field: 'cityName' },
+  { label: '区县', field: 'countyName' },
+  { label: '单位地址', field: 'address', width: 150 },
+  { label: '税号', field: 'taxNumber', width: 120 },
 
-const typeObj = { 0: '不限', 1: '门店', 2: '分公司' }
-const tableConfig = reactive({
-  pageKey: 'repetitionPeriod',
-  type: 'selection',
-  refresh: () => getList(),
-  queryParams: { pageNo: 1, pageSize: 10 },
-  columns: [
-    {
-      label: '线索重复判断维度',
-      key: 'ruleType',
-      minWidth: 150,
-      render: ({ row }) => typeObj[row.ruleType]
-    },
-    {
-      label: '周期',
-      key: 'repetitionPeriod',
-      minWidth: 180,
-      render: ({ row }) => {
-        return row.repetitionPeriod > 0 ? (
-          <span>线索{row.repetitionPeriod}天内不可重复</span>
-        ) : (
-          <span>线索不限时间重复</span>
-        )
-      }
-    },
-    {
-      label: '状态',
-      key: 'isEnable',
-      render: ({ row }) => {
-        row.isEnable = row.isEnable || 0
-        return (
-          <el-switch
-            v-model={row.isEnable}
-            active-value={1}
-            inactive-value={0}
-            onChange={(event) => statusChange(event, row)}
-          />
-        )
-      }
-    },
-    { label: '创建人', key: 'creator' },
-    {
-      label: '创建时间',
-      minWidth: '190',
-      key: 'createTime',
-      render: ({ row }) => dateFormat(row.createTime)
-    },
-    { label: '最近操作人', key: 'updater' },
-    {
-      label: '最近操作时间',
-      minWidth: '190',
-      key: 'updateTime',
-      render: ({ row }) => dateFormat(row.updateTime)
-    },
-    {
-      label: '操作',
-      key: 'operate',
-      width: 75,
-      fixed: 'right',
-      render: ({ row }) => {
-        return (
-          <div>
-            <el-button
-              v-hasPermi={[['clue:basic-config:repetition-period:edit']]}
-              type="primary"
-              link
-              onclick={() => handleEdit(row)}
-            >
-              编辑
-            </el-button>
-          </div>
-        )
+  {
+    label: '开启状态',
+    field: 'financeStatus',
+    isSearch: true,
+    search: {
+      component: 'Select',
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: [
+          { label: '开启', value: 1 },
+          { label: '关闭', value: 0 }
+        ]
       }
     }
-  ]
-})
-const statusChange = async (val, row) => {
-  try {
-    await updateEnableRepetitionPeriod({ id: row.id, isEnable: val })
-    getList()
-  } catch (e) {
-    message.error('修改失败')
-    row.isEnable = val === 1 ? 0 : 1
+  },
+  { label: '联系人', field: 'contactName', width: 110 },
+  { label: '电话', field: 'contactMobile', width: 110 },
+  { label: '职位', field: 'position', width: 110 },
+  { label: '新增说明', field: 'addExplain', width: 110 },
+  { label: '上级领导联系人', field: 'superiorsCount', width: 130 },
+  {
+    label: '操作',
+    field: 'action',
+    width: 110,
+    showOverflowTooltip: false
   }
-}
-const { loading, list, getList, pageChange } = useQueryPage({
-  path: pageRepetitionPeriod,
-  params: tableConfig.queryParams
-})
-const curItem = ref<object>({})
-const visible = ref<boolean>(false)
-const handleCreate = () => {
-  curItem.value = {}
-  visible.value = true
-}
+]
 
-const handleEdit = (row) => {
-  curItem.value = row
-  visible.value = true
-}
-const checkedList = ref<object[]>([])
-const getCheckedList = (value) => {
-  checkedList.value = value
-  console.log(checkedList)
-}
-const handleDelete = async () => {
-  try {
-    if (unref(checkedList).find((d) => d['isEnable'])) {
-      message.warning('启用的线索周期不可删除')
-      return
-    }
-    await message.confirm('是否确认删除？')
-    loading.value = true
-    const ids = unref(checkedList).map((d) => d['id'])
-    await deleteBatchRepetitionPeriod({ ids })
-    message.success('删除成功')
-    getList()
-  } catch (e) {
-    loading.value = false
-  }
-}
+const { allSchemas } = useCrudSchemas(columns)
 </script>
 
-<style scoped lang="scss">
-.basic-config-page-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  .top-search {
-    padding: 15px;
-    background-color: var(--page-bg-color);
-  }
-  .table-wrap {
-    padding: 15px;
-    background-color: var(--page-bg-color);
-  }
-}
-</style>
+<style lang="scss" scoped></style>

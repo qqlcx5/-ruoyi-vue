@@ -46,7 +46,7 @@
           />
         </div>
         <el-form-item
-          label="邀约单沟通判定“一般逾期”为派单后"
+          label="邀约单沟通判定“一般逾期”为接单后"
           :key="ruleForm.communicationOpenRules"
           :prop="ruleForm.communicationOpenRules === 1 ? 'communicationGeneralOverdue' : ''"
         >
@@ -57,10 +57,10 @@
             :step="1"
             :min="0"
           />
-          <span>分钟接单</span>
+          <span>分钟沟通</span>
         </el-form-item>
         <el-form-item
-          label="邀约单沟通判定“严重逾期”为派单后"
+          label="邀约单沟通判定“严重逾期”为接单后"
           :key="ruleForm.communicationOpenRules"
           :prop="ruleForm.communicationOpenRules === 1 ? 'communicationSeriousOverdue' : ''"
           style="margin-bottom: 4px"
@@ -72,7 +72,7 @@
             :step="1"
             :min="0"
           />
-          <span>分钟接单</span>
+          <span>分钟沟通</span>
         </el-form-item>
       </div>
       <div class="part-wrap">
