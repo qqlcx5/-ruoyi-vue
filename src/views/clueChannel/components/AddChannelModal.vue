@@ -48,44 +48,52 @@
           <el-input v-model="row.platformPassword" size="small" placeholder="请输入" />
         </template>
         <template #needFilter="{ row }">
-          <el-select v-model="row.needFilter" placeholder="请选择" size="small">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.needFilter"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
         </template>
         <template #autoDistribute="{ row }">
-          <el-select v-model="row.autoDistribute" size="small" placeholder="请选择">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.autoDistribute"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
         </template>
         <template #platformRule="{ row }">
-          <el-select v-model="row.platformRule" placeholder="请选择" size="small">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.platformRule"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
         </template>
         <template #isShow="{ row }">
-          <el-select v-model="row.isShow" placeholder="请选择" size="small">
+          <el-switch
+            v-model="row.isShow"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
+          <!-- <el-select v-model="row.isShow" placeholder="请选择" size="small">
             <el-option
               v-for="item in selectOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
             />
-          </el-select>
+          </el-select> -->
         </template>
         <template #action="scope">
           <XTextButton :title="t('action.del')" @click="delPostTypeLine(scope.$index)" />
@@ -185,10 +193,10 @@ const handleAdd = () => {
     shopId: '',
     platformUsername: '',
     platformPassword: '',
-    needFilter: '',
-    autoDistribute: '',
-    platformRule: '',
-    isShow: ''
+    needFilter: 0,
+    autoDistribute: 0,
+    platformRule: 0,
+    isShow: 0
   }
   tableList.value.push(addItem)
 }
@@ -251,17 +259,6 @@ const clueSourceProps = {
   value: 'id'
 }
 
-const selectOptions = [
-  {
-    value: 0,
-    label: '否'
-  },
-  {
-    value: 1,
-    label: '是'
-  }
-]
-
 const shopProps = {
   checkStrictly: true,
   label: 'name',
@@ -305,6 +302,8 @@ const submitForm = async () => {
     }
     return item
   })
+  console.log(paramsList)
+
   if (isSerialNumberEmptyTool) {
     message.error('编号不能为空')
     return
