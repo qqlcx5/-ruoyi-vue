@@ -128,11 +128,13 @@ const columns: TableColumn[] = [
   {
     label: '线索平台来源',
     field: 'clueChannelName',
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
     label: '所属区域/门店',
-    field: 'parentName'
+    field: 'parentName',
+    disabled: true
   },
   {
     label: '线索清洗员',
@@ -142,6 +144,7 @@ const columns: TableColumn[] = [
     label: '派发门店',
     field: 'distributeShopName',
     isSearch: true,
+    disabled: true,
     search: {
       component: 'Cascader',
       componentProps: {
@@ -150,7 +153,7 @@ const columns: TableColumn[] = [
         options: computed(() => shopTreeList.value),
         props: {
           label: 'name',
-          value: 'id',
+          value: 'name',
           emitPath: false
         }
       }
