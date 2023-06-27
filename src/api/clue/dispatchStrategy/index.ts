@@ -103,7 +103,12 @@ export const checkValidRuleName = (id: number, ruleName: string) => {
   })
 }
 
-//
-export const hehe = () => {
-  return request.get({ url: '/clue/clueChannel/getTree' })
+//设置派发门店 是否派发状态
+export const clueDistributeUpdateShopStatus = (data) => {
+  return request.post({ url: '/clue/v2.0/mange/clueDistribute/update/shop/status', data })
+}
+
+//设置派发门店 是否外部派发状态
+export const clueDistributeUpdateExternalStatus = (data) => {
+  return request.post({ url: '/clue/v2.0/mange/clueDistribute/update/shop/external/status', data })
 }

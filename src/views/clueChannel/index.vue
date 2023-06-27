@@ -47,7 +47,7 @@
   <AddChannelModal ref="addChannelModalRef" @refresh-list="refreshList" />
 </template>
 
-<script setup lang="ts" name="ClueChannel">
+<script setup lang="ts" name="clueChannel">
 import * as channelApi from '@/api/clue/channel'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { TableColumn } from '@/types/table'

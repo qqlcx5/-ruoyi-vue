@@ -222,42 +222,34 @@ const cascaderRef = ref()
 const handleChange = () => {
   let sourceArr: any = cloneDeep(initSourceList.value)
   let list: any = cloneDeep(tableList.value)
+  console.log(list, sourceArr)
+  list.forEach((lItem) => {
+    sourceArr = disabledSourceList(lItem.clueSourceId, sourceArr)
+  })
+  sourceList.value = sourceArr
+}
+const disabledSourceList = (clueSourceId, sourceArr) => {
   try {
-    list.forEach((fItem) => {
-      let [id1, id2] = fItem.clueSourceId
-      sourceArr.map((item) => {
-        if (item.id == id1) {
-          let children = item.children
-          item.children = children.map((cItem) => {
-            if (cItem.id == id2) {
-              cItem.disabled = true
-              console.log('===========', id1, id2)
-            }
-            return cItem
-          })
-        }
-        return item
-      })
+    sourceArr.map((sItem) => {
+      if (sItem.id == clueSourceId) {
+        sItem.disabled = true
+      }
+      let children = sItem.children
+      if (children.length > 0) {
+        sItem.children = disabledSourceList(clueSourceId, children)
+      }
+      return sItem
     })
-    sourceList.value = sourceArr
-    console.log(sourceArr, sourceList)
+    return sourceArr
   } catch (error) {
     console.log(error)
   }
-
-  // try {
-  //   let cascaderList = cascaderRef.value.getCheckedNodes()
-  //   let cascaderData = cascaderList[0]
-  //   cascaderData.disabled = true
-  //   console.log(cascaderData)
-  // } catch (error) {
-  //   console.log(error)
-  // }
 }
 
 const clueSourceProps = {
   label: 'name',
-  value: 'id'
+  value: 'id',
+  emitPath: false
 }
 
 const shopProps = {
