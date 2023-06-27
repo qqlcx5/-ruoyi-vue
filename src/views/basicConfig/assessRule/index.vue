@@ -29,7 +29,13 @@
       :loading="loading"
     >
       <template #btns>
-        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
+        <XButton
+          type="primary"
+          v-hasPermi="['clue:basic-config:assess-rule:create']"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
     <EditAssessRule v-model="visible" :shopList="shopList" :curInfo="curInfo" @success="getList" />
@@ -38,7 +44,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
 import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
@@ -52,21 +58,18 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
+    { label: '考核规则名称', key: 'checkRuleName' },
     {
-      title: '考核规则名称',
-      key: 'checkRuleName',
-      disabled: false
-    },
-    {
-      title: '适用门店',
+      label: '适用门店',
       key: 'applicableShopName',
       minWidth: 350,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
-      title: '状态',
+      label: '状态',
       key: 'openRules',
       render: ({ row }) => {
+        row.openRules = row.openRules || 0
         return (
           <el-switch
             v-model={row.openRules}
@@ -77,9 +80,9 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '创建人', key: 'creator', disabled: false },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: '180px',
       render: ({ row }) => {
@@ -87,17 +90,27 @@ const tableConfig = reactive({
       }
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleDccEdit(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:assess-rule:edit']]}
+              link
+              onclick={() => handleDccEdit(row)}
+            >
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:assess-rule:delete']]}
+              link
+              onclick={() => handleDelete(row)}
+            >
               删除
             </el-button>
           </div>

@@ -5,7 +5,8 @@ import {
   MemberListParams,
   getShopDataList,
   getUserMemberDataList,
-  UserMemberList
+  UserMemberList,
+  getMemberTreeDataList
 } from '@/api/common'
 import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
@@ -31,6 +32,17 @@ export const useCommonList = () => {
     }
     getList()
     return memberList
+  }
+
+  // 获取成员数据(树形)
+  const getMemberTreeList = (params: MemberListParams) => {
+    const memberTreeList = ref<Recordable[]>([])
+    const getTreeList = async () => {
+      const data = await getMemberTreeDataList(params)
+      memberTreeList.value = data
+    }
+    getTreeList()
+    return memberTreeList
   }
 
   /** 获取岗位数据 */
@@ -71,6 +83,7 @@ export const useCommonList = () => {
     getMemberList,
     getPostList,
     getUserMemberList,
-    getSuitableShopList
+    getSuitableShopList,
+    getMemberTreeList
   }
 }

@@ -31,15 +31,22 @@ export const useOption = defineStore('options', {
         return { shopList: [], shopTreeList: [] }
       }
     },
+
     dealShopList(list, arr1, arr2) {
       const shopList = cloneDeep(list)
       arr1 = arr1.map((d) => +d)
       arr2 = arr2.map((d) => +d)
       const checkedIds = difference(arr1, arr2)
-      shopList.forEach((item: object) => {
-        item['disabled'] = checkedIds.includes(item['id'])
-      })
-      return listToTree(shopList, { pid: 'parentId' })
+      const recursionFn = (ops) => {
+        ops.forEach((item) => {
+          item['disabled'] = checkedIds.includes(+item['id'])
+          if (item.children && item.children.length) {
+            recursionFn(item.children)
+          }
+        })
+      }
+      recursionFn(shopList)
+      return shopList
     }
   }
 })

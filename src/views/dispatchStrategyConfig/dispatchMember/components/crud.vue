@@ -81,7 +81,7 @@
               :options="seriesOption"
               collapse-tags
               :props="{ multiple: true, label: 'seriesDetailsName', value: 'seriesDetailsId' }"
-              @visible-change="changeSeriesEvent($event, row)"
+              @change="changeSeriesEvent($event, row)"
             />
           </template>
           <span v-else>请先选择品牌</span>
@@ -150,9 +150,17 @@ const openDialog = (id: string, formShopTreeList: any) => {
     shopTreeList.value = formShopTreeList
     editFlag.value = !!id
     if (id) {
+      getUsers()
       dispatchApi.getClueDistributeUserDetail(id).then((res) => {
-        ruleForm.value.shopIdList = res.shopId
-        memberTableList.value = res.userList
+        const shopIdArr = ref<number[]>([res.shopId])
+        ruleForm.value.shopIdList = shopIdArr.value
+        memberTableList.value = res.userList.map((item) => {
+          item.brandIds = parseBrandIds(item.autoBrandIds)
+          item.shopName = item.distributeShopName
+          getSeries(item.brandIds)
+          item.seriesIds = parseSeries(item.autoBrandIds)
+          return item
+        })
       })
     } else {
       ruleForm.value = { shopIdList: [] }
@@ -165,11 +173,23 @@ const openDialog = (id: string, formShopTreeList: any) => {
 //   (val) => console.log(val, '11111'),
 //   { deep: true }
 // )
+
+const parseBrandIds = (str) => {
+  return str && JSON.parse(str).map((item) => item.brandId)
+}
+const seriesData = ref<any[]>([])
+const parseSeries = (str) => {
+  seriesData.value = []
+  str &&
+    JSON.parse(str).map((item) => {
+      seriesData.value.push([item.brandId, ...item.seriesIds])
+    })
+  return seriesData.value
+}
 const userList = ref<object[]>([])
 
 const getUsers = async () => {
   let str = ruleForm.value.shopIdList.join(',')
-  str += `,43`
   const data = await getListSimpleUsersApi({ storeIds: str })
   userList.value = data
 }
@@ -294,7 +314,7 @@ const getSeries = async (val) => {
     seriesOption.value.push(optionsObj)
   })
 }
-const onConfirm = () => {
+const onConfirm = async () => {
   if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
   }
@@ -332,14 +352,12 @@ const onConfirm = () => {
   }
   params.shopIdList = ruleForm.value.shopIdList
   params.userList = memberTableList.value
-  btnLoading.value = true
   unref(editFlag)
-    ? dispatchApi.editClueDistributeUser(params)
-    : dispatchApi.addClueDistributeUser(params)
+    ? await dispatchApi.editClueDistributeUser(params)
+    : await dispatchApi.addClueDistributeUser(params)
   message.success('保存成功')
   emit('refresh')
   visible.value = false
-  btnLoading.value = false
 }
 
 defineExpose({ openDialog })

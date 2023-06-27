@@ -29,14 +29,12 @@
         >
       </template>
     </WgTable>
-    <EditRepetitionPeriod v-model="visible" :curInfo="curItem" @success="getList" />
   </div>
 </template>
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
 import WgTable from '@/components/WTable/index.vue'
-import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
 import {
   pageRepetitionPeriod,
   deleteBatchRepetitionPeriod,

@@ -4,7 +4,7 @@ const regVersion = import.meta.env.VITE_REG_VERSION
 
 export type MemberListParams = {
   /**  查询用户所属门店 */
-  belongShopid: number
+  belongShopid: number[]
   /** 业务所属品牌id */
   businessBrandValue?: number
   /** 业务所属市编码 */
@@ -14,7 +14,7 @@ export type MemberListParams = {
   /** 业务所属省编码	 */
   businessProvinceCode?: string
   /** 选择成员规则编码 */
-  childRuleValue: string
+  childRuleValue?: string
 }
 
 export type UserMemberList = {
@@ -44,6 +44,11 @@ export const treeShopData = async () => {
 /** 获取成员列表 */
 export const getMemberDataList = async (data: MemberListParams) => {
   return await request.post({ url: '/system/user-rules/query-user', data })
+}
+
+/** 获取成员列表（树形） */
+export const getMemberTreeDataList = async (data: MemberListParams) => {
+  return await request.post({ url: '/system/user-rules/query-user-tree', data })
 }
 
 /** 获取岗位列表 */

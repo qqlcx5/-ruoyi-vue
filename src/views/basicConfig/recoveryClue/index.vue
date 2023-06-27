@@ -9,6 +9,7 @@
     >
       <template #btns>
         <XButton
+          v-hasPermi="['clue:basic-config:recovery-clue:create']"
           type="primary"
           iconFont="icon-xinzeng"
           title="新增回收计划"
@@ -22,7 +23,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import CreateRecoveryPlan from '../components/CreateRecoveryPlan/index.vue'
 import { executeRecycleSchedule, pageRecycleSchedule } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
@@ -32,17 +33,17 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { pageNo: 1, pageSize: 10 },
   columns: [
-    { title: '线索所属成员', key: 'username', minWidth: 150 },
-    { title: '手动回收原因', key: 'recycleReasonName', minWidth: 120 },
-    { title: '回收线索所属门店', key: 'shopName', minWidth: 150 },
+    { label: '线索所属成员', key: 'username', minWidth: 150 },
+    { label: '手动回收原因', key: 'recycleReasonName', minWidth: 120 },
+    { label: '回收线索所属门店', key: 'shopName', minWidth: 150 },
     {
-      title: '回收线索品牌',
+      label: '回收线索品牌',
       key: 'brandNameList',
       minWidth: 160,
       render: ({ row }) => (row.brandNameList ? row.brandNameList.join('，') : '')
     },
     {
-      title: '回收线索派发时间 ',
+      label: '回收线索派发时间 ',
       key: 'remark',
       minWidth: 200,
       render: ({ row }) =>
@@ -55,18 +56,18 @@ const tableConfig = reactive({
           </div>
         )
     },
-    { title: '备注', key: 'remark', minWidth: 150 },
-    { title: '应回收线索数', key: 'shouldRecycleClueNum', minWidth: 150 },
-    { title: '实际回收线索数', key: 'realRecycleClueNum', minWidth: 150 },
-    { title: '创建人', key: 'creator' },
+    { label: '备注', key: 'remark', minWidth: 150 },
+    { label: '应回收线索数', key: 'shouldRecycleClueNum', minWidth: 150 },
+    { label: '实际回收线索数', key: 'realRecycleClueNum', minWidth: 150 },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: 190,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',
@@ -76,7 +77,13 @@ const tableConfig = reactive({
       render: ({ row }) => {
         const disabled: boolean = +row.executeStatus === 1
         return (
-          <el-button type="primary" disabled={disabled} link onclick={() => handleExecute(row)}>
+          <el-button
+            type="primary"
+            v-hasPermi={[['clue:basic-config:recovery-clue:execute']]}
+            disabled={disabled}
+            link
+            onclick={() => handleExecute(row)}
+          >
             {disabled ? <span style={{ color: '#666' }}>执行完成</span> : '执行回收'}
           </el-button>
         )

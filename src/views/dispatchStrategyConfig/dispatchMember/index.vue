@@ -5,15 +5,17 @@
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: getTable,
-      showAdd: true,
+      showAdd: hasPermission('dispatch-strategy-config:dispatch-member:add'),
       actionButtons,
       selection: true,
-      spanMethod: objectSpanMethod
+      spanMethod: objectSpanMethod,
+      border: true
     }"
     @add="addMember"
   >
     <template #status="{ row }">
       <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
         v-model="row.status"
         :active-value="1"
         :inactive-value="0"
@@ -23,6 +25,7 @@
     </template>
     <template #pushBackFactoryStatus="{ row }">
       <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
         v-model="row.pushBackFactoryStatus"
         :active-value="1"
         :inactive-value="0"
@@ -37,7 +40,7 @@
       <span>{{ arrToStrFunc(row.autoSeriesNames) }}</span>
     </template>
     <template #tableAppend>
-      <XButton type="danger" @click="handleDel">删除</XButton>
+      <XButton @click="handleDel">删除</XButton>
     </template>
   </form-table>
   <el-dialog title="提示" v-model="delDialog" width="30%">
@@ -65,6 +68,8 @@ import { listToTree } from '@/utils/tree'
 import { computed, ref } from 'vue'
 import Crud from './components/crud.vue'
 import { getAllBrand } from '@/api/model/brand'
+import { formatDate } from '@/utils/formatTime'
+import { hasPermission } from '@/utils/utils'
 
 const message = useMessage()
 
@@ -234,21 +239,31 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
+    field: 'createTime',
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   }
 ]
 
 const actionButtons = [
   {
     name: '编辑',
-    permission: true,
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:edit'),
     click: (row) => {
       editMember(row.distributeShopId)
     }
   },
   {
     name: '删除',
-    permission: true,
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:delete'),
     click: (row) => {
       selectedIds.value = [row.id]
       deleteFun()
@@ -281,7 +296,7 @@ const confirmDel = () => {
   deleteFun()
 }
 const deleteFun = async () => {
-  dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
+  await dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
   message.success('删除成功')
   delDialog.value = false
   tableRef.value.tableMethods.getList()

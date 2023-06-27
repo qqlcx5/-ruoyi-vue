@@ -212,22 +212,7 @@ const tableProps = computed(() => {
 const formProps = computed(() => {
   return {
     isSearch: true,
-    ...props.formOptions,
-    schema: props.formOptions.schema?.map((item) => {
-      if (item.component === 'Input') {
-        return {
-          ...item,
-          componentProps: {
-            ...item.componentProps,
-            style: {
-              ...item.componentProps?.style,
-              width: '200px'
-            }
-          }
-        }
-      }
-      return item
-    })
+    ...props.formOptions
   }
 })
 
@@ -383,7 +368,8 @@ onMounted(() => {
 
 defineExpose({
   tableMethods,
-  tableObject
+  tableObject,
+  elTableRef
 })
 </script>
 

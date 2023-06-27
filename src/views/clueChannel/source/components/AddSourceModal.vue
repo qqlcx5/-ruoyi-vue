@@ -60,13 +60,25 @@ interface ParentInfoType {
 let parentInfo: ParentInfoType = { sourceHierarchy: '' }
 let model = ref({})
 const openModal = (data, type) => {
+  let levelText = '来源'
+  try {
+    let levelList = data.levelList
+    let level = levelList[data.sourceHierarchy - 1]
+    levelText = `${level}级来源`
+    delete data.levelList
+  } catch (error) {
+    console.log(error)
+  }
+
   dialogVisible.value = true
   if (type == 'add') {
+    dialogTitle.value = '新增' + levelText
     parentInfo = {
       sourceHierarchy: data.sourceHierarchy,
       parentId: data.id || ''
     }
   } else {
+    dialogTitle.value = '编辑' + levelText
     setTimeout(() => {
       if (formRef.value) {
         formRef.value.setValues(data)

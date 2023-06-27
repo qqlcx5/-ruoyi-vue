@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    class="custom-dialog"
+    class="wg-custom-dialog"
     :model-value="props.modelValue"
     :title="editFlag ? '编辑' : '新增'"
     width="500px"
@@ -17,7 +17,7 @@
         <el-radio-group v-model="ruleForm.ruleType">
           <el-radio :label="0">不限</el-radio>
           <el-radio :label="1">门店</el-radio>
-          <el-radio :label="2">分店</el-radio>
+          <el-radio :label="2">分公司</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="线索重复判断维度">
@@ -138,5 +138,5 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 </script>
 
 <style lang="scss">
-@import '../../style/index';
+@import '@/styles/custom.scss';
 </style>

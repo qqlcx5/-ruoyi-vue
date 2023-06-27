@@ -23,7 +23,13 @@
       @page-change="pageChange"
     >
       <template #btns>
-        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
+        <XButton
+          type="primary"
+          v-hasPermi="['clue:basic-config:first-follow-rate:create']"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
 
@@ -39,7 +45,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import EditFirstFollowRate from '../components/EditFirstFollowRate/index.vue'
 import {
   firstFollowRatePage,
@@ -65,17 +71,18 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { title: '规则名称', key: 'ruleName' },
+    { label: '规则名称', key: 'ruleName' },
     {
-      title: '适用门店',
+      label: '适用门店',
       key: 'applicableShopName',
       minWidth: 240,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
-      title: '启用状态',
+      label: '启用状态',
       key: 'status',
       render: ({ row }) => {
+        row.status = row.status || 0
         return (
           <el-switch
             v-model={row.status}
@@ -86,28 +93,38 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '最低跟进率', key: 'minFollowRate', render: ({ row }) => row.minFollowRate + '%' },
-    { title: '计算周期', key: 'cycle', render: ({ row }) => row.cycle + '天' },
-    { title: '参与岗位', minWidth: 240, key: 'limitPositionTypesName' },
-    { title: '创建人', key: 'creator' },
+    { label: '最低跟进率', key: 'minFollowRate', render: ({ row }) => row.minFollowRate + '%' },
+    { label: '计算周期', key: 'cycle', render: ({ row }) => row.cycle + '天' },
+    { label: '参与岗位', minWidth: 240, key: 'limitPositionTypesName' },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: '190',
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleEdit(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:first-follow-rate:edit']]}
+              link
+              onclick={() => handleEdit(row)}
+            >
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:first-follow-rate:delete']]}
+              link
+              onclick={() => handleDelete(row)}
+            >
               删除
             </el-button>
           </div>

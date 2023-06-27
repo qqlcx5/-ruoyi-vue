@@ -57,3 +57,8 @@ export const updateMenuVisibleStatus = (data) => {
 export const deleteMenu = (id: number) => {
   return request.delete({ url: '/system/menu/delete?id=' + id })
 }
+
+// 权限配置菜单
+export const getAuthMenuList = () => {
+  return request.get({ url: '/system/tenant-menu/list-for-auth' })
+}
