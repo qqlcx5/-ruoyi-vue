@@ -10,6 +10,9 @@
     }"
     @add="addRule"
   >
+    <template #applicableShopName="{ row }">
+      {{ parseStr(row.applicableShopName) }}
+    </template>
     <template #openRules="{ row }">
       <el-switch
         :disabled="!hasPermission('dispatch-strategy-config:distribute-rule:edit')"
@@ -42,7 +45,10 @@ const refresh = () => {
   tableRef.value.tableMethods.getList()
 }
 const { getSuitableShopList } = useCommonList()
-
+// 数组转字符串展示
+const parseStr = (row) => {
+  return row.join('，')
+}
 // 获取门店数据
 const shopTreeList = ref(getSuitableShopList())
 

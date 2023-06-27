@@ -106,7 +106,7 @@
             </el-table-column>
             <el-table-column label="操作">
               <template #default="{ $index }">
-                <div @click="deleteShopRule($index)">删除</div>
+                <el-button text type="primary" @click="deleteShopRule($index)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
