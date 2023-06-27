@@ -17,14 +17,14 @@
         v-loading="loading"
       >
         <el-form-item label="线索所属成员" prop="userId">
-          <el-select v-model="ruleForm.userId" filterable>
-            <el-option
-              v-for="item in userList"
-              :key="item.id"
-              :label="item.username"
-              :value="item.id"
-            />
-          </el-select>
+          <el-cascader
+            v-model="ruleForm.userId"
+            :options="userList"
+            :props="{ label: 'name', value: 'id', children: 'users', emitPath: false }"
+            filterable
+            clearable
+            style="min-width: 180px"
+          />
         </el-form-item>
         <el-form-item label="手动回收原因" prop="recycleReason">
           <el-select v-model="ruleForm.recycleReason" filterable>
@@ -130,12 +130,11 @@
 
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus'
-import { getListSimpleUsersApi } from '@/api/system/user'
 import { DICT_TYPE, getTenantDictOptions } from '@/utils/dict'
 import { saveRecycleSchedule } from '@/api/clue/basicConfig'
 import { getAllBrand } from '@/api/model/brand'
 import { useCommonList } from '@/hooks/web/useCommonList'
-const { getSuitableShopList } = useCommonList()
+const { getSuitableShopList, getMemberTreeList } = useCommonList()
 const message = useMessage()
 
 interface IProps {
@@ -154,7 +153,7 @@ watch(
   () => props.modelValue,
   async (val) => {
     if (val) {
-      Promise.all([getUsers(), getBrandInfo(), getDicts()])
+      Promise.all([getBrandInfo(), getDicts()])
     } else {
       timeRange.value = []
       formRef.value?.resetFields()
@@ -166,11 +165,7 @@ const reason = ref<object[]>([])
 const getDicts = async () => {
   reason.value = await getTenantDictOptions(DICT_TYPE.MANUAL_RECYCLING_REASON)
 }
-const userList = ref<object[]>([])
-const getUsers = async () => {
-  const data = await getListSimpleUsersApi()
-  userList.value = data
-}
+const userList = ref(getMemberTreeList({ belongShopid: [] }))
 const brandList = ref<object[]>([])
 const getBrandInfo = async () => {
   const data = await getAllBrand()
