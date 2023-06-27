@@ -198,6 +198,7 @@ const openDialog = (editType, data) => {
 
   dialogVisible.value = true
   actionType.value = editType
+  dialogTitle.value = editType == 'create' ? '新增' : '编辑'
   getShopUserList()
   if (data && data.distributeShopList) {
     setTimeout(() => {
