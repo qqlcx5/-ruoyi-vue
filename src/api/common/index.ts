@@ -53,7 +53,7 @@ export const getMemberTreeDataList = async (data: MemberListParams) => {
 
 /** 获取岗位列表 */
 export const getPostDataList = () => {
-  return request.get({ url: '/system/post/list-all-simple' })
+  return request.get({ url: '/system/post/list-all-tree' })
 }
 
 /** 获取适用门店列表 */
