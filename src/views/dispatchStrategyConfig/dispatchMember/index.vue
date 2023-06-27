@@ -51,7 +51,7 @@
       ><i class="el-icon-warning Danger"></i>确认要删除这<span class="Danger">{{
         selectedIds.length
       }}</span
-      >条派发策略吗？
+      >条派发成员吗？
     </p>
     <p>删除后，对应派发成员将无法接收到线索派发。</p>
     <template #footer>
