@@ -3,6 +3,9 @@
     <!-- 新增-通用提示 -->
     <XModal v-model="modelValue_" title="新增-通用提示">
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px">
+        <el-form-item label="状态" prop="status" required>
+          <el-switch v-model="formData.status" :inactive-value="0" :active-value="1" />
+        </el-form-item>
         <el-form-item label="提示标题" prop="title" required>
           <el-input
             v-model="formData.title"
@@ -11,11 +14,14 @@
             show-word-limit
           />
         </el-form-item>
-        <!-- 通用 -->
         <el-form-item label="提示类型" prop="hintTypeId" required>
-          <el-select v-model="formData.hintTypeId" placeholder="请选择上级主体">
-            <el-option label="提示类型1" value="shanghai" />
-            <el-option label="提示类型2" value="beijing" />
+          <el-select v-model="formData.hintTypeId" placeholder="请选择提示类型">
+            <el-option
+              v-for="item in promptTypeList"
+              :key="item.id"
+              :label="item.typeName"
+              :value="item.id"
+            />
           </el-select>
         </el-form-item>
         <!-- 新增-必讲项提示 -->
@@ -43,14 +49,13 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="提示内容" prop="content" required>
-          <!-- 编辑器 -->
           <Editor v-model="formData.content" class="mb-20px" :height="220" />
         </el-form-item>
       </el-form>
       <!-- 操作按钮 -->
       <template #footer>
         <!-- 按钮：保存 -->
-        <XButton type="primary" title="确认" :loading="dialogLoading" />
+        <XButton type="primary" title="确认" :loading="dialogLoading" @click="submitForm" />
         <!-- 按钮：关闭 -->
         <XButton title="取消" @click="modelValue_ = false" />
       </template>
@@ -60,6 +65,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
+import * as promptConfig from '@/api/receptionManagement/promptConfig'
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -76,7 +82,13 @@ const modelValue_ = computed({
   get: () => props.modelValue,
   set: (val) => emits('update:modelValue', val)
 })
-
+/* -------------------------------- // 获取提示类型 ------------------------------- */
+let promptTypeList = ref([])
+async function getPromptType() {
+  const data = await promptConfig.receptionHintTypeAllListApi({})
+  promptTypeList.value = data
+}
+getPromptType()
 /* -------------------------------- // 弹窗的表单 -------------------------------- */
 let dialogLoading = ref(false) // 弹窗的加载中
 let formRules = reactive({
@@ -88,11 +100,36 @@ let formRules = reactive({
 let formData = ref({
   title: '',
   hintTypeId: '',
-  status: '',
+  status: 1,
   applyBrandType: 1,
   applyShopType: 1,
   content: ''
 })
+
+// 提交按钮
+import type { FormInstance, FormRules } from 'element-plus'
+const formRef = ref<FormInstance>()
+const message = useMessage() // 消息弹窗
+const { t } = useI18n() // 国际化
+
+const submitForm = async () => {
+  const elForm = formRef.value
+  if (!elForm) return
+  elForm.validate(async (valid) => {
+    if (!valid) return
+    try {
+      dialogLoading.value = true
+      const data = {
+        ...formData.value
+      }
+      await promptConfig.receptionHintConfigSaveOrUpdateApi(data)
+      message.success(t('common.createSuccess'))
+    } finally {
+      dialogLoading.value = false
+      modelValue_.value = false
+    }
+  })
+}
 </script>
 
 <style src="@wangeditor/editor/dist/css/style.css"></style>

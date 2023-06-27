@@ -25,13 +25,13 @@
         <XButton @click="handlePrompt"> 提示类型配置</XButton>
       </template>
 
+      <!-- 操作：修改 -->
       <template #action="{ row }">
-        <!-- 操作：修改 -->
         <XTextButton :title="t('action.edit')" @click="handleEdit(row)" />
       </template>
 
-      <template #visible="{ row }">
-        <el-switch v-model="row.visible" :active-value="true" :inactive-value="false" />
+      <template #status="{ row }">
+        <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
       </template>
 
       <template #prompt="{ row }">
@@ -60,43 +60,39 @@ let tabsName = ref('currency')
 const columns: TableColumn[] = [
   {
     label: '提示标题',
-    field: 'id',
+    field: 'title',
     isSearch: true
   },
   {
     label: '提示类型',
-    field: 'category'
+    field: 'hintTypeName'
   },
   {
     label: '提示内容',
-    field: 'prompt'
+    field: 'content'
   },
   {
     label: '适用品牌',
-    field: 'key'
+    field: 'applyBrandName'
   },
   {
     label: '适用车系车型',
-    field: 'value'
+    field: 'applyModelName'
   },
   {
     label: '适用门店',
-    field: 'type'
+    field: 'applyShopName'
   },
   {
     label: '状态',
-    field: 'visible'
+    field: 'status'
   },
   {
     label: '创建人',
-    field: 'creator'
+    field: 'createBy'
   },
   {
     label: '创建时间',
-    field: 'updater'
-  },
-  {
-    label: t('common.createTime'),
     field: 'createTime'
   },
   {
@@ -144,12 +140,6 @@ function listApi(params) {
     ? promptConfig.receptionHintConfigApi(params)
     : promptConfig.receptionMustSayConfigApi(params)
 }
-/* -------------------------------- // 获取提示类型 ------------------------------- */
-async function getPromptType() {
-  const { data } = await promptConfig.receptionHintTypeAllListApi({})
-  console.log('🚀 ~ file: index.vue:156 ~ getPromptType ~ data:', data)
-}
-getPromptType()
 // 切换tab
 async function handleTabChange() {
   await tableRef.value?.tableMethods.getList()

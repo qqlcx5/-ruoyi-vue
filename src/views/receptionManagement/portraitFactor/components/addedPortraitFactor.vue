@@ -1,38 +1,21 @@
 <template>
   <div>
-    <!-- 提示类型配置 -->
-    <XModal v-model="modelValue_" title="提示类型配置">
+    <!--  画像因子新增 类型 -->
+    <XModal v-model="modelValue_" title="新增">
       <!-- 表单 -->
-      <XTable @register="registerTable">
-        <template #toolbar_buttons>
-          <XButton type="primary" preIcon="ep:plus" title="新增" @click="handleAddTypeVisible" />
+      <Form :schema="allSchemas.formSchema" :rules="addRules" ref="formRef">
+        <template #score="form">
+          <div class="flex">
+            <el-input v-model="form.lowestScore" /> —— <el-input v-model="form.topScore" />
+          </div>
         </template>
-        <template #actionbtns_default="{ row }">
-          <!-- 操作: 编辑 -->
-          <XTextButton :title="t('action.update')" @click="handleEdit(row)" />
-          <!-- 操作: 删除 -->
-          <XTextButton :title="t('action.del')" @click="handleDel(row)" />
-        </template>
-      </XTable>
-      <!-- 操作按钮 -->
-      <template #footer>
-        <!-- 按钮：保存 -->
-        <XButton type="primary" title="确认" :loading="dialogLoading" />
-        <!-- 按钮：关闭 -->
-        <XButton title="取消" @click="modelValue_ = false" />
-      </template>
-    </XModal>
-
-    <!-- 新增类型 -->
-    <XModal v-model="addTypeVisible" title="提示类型配置">
-      <!-- 表单 -->
-      <Form :schema="addAllSchemas.formSchema" :rules="addRules" ref="formRef"> </Form>
+      </Form>
       <!-- 操作按钮 -->
       <template #footer>
         <!-- 按钮：保存 -->
         <XButton type="primary" title="确认" :loading="actionLoading" @click="submitForm" />
         <!-- 按钮：关闭 -->
-        <XButton title="取消" @click="addTypeVisible = false" />
+        <XButton title="取消" @click="modelValue_ = false" />
       </template>
     </XModal>
   </div>
@@ -42,8 +25,7 @@
 import { ref, reactive, computed } from 'vue'
 
 import * as promptConfig from '@/api/receptionManagement/promptConfig'
-import { allSchemas } from './promptTypeConfigModal.data'
-import { addRules, addAllSchemas } from './promptTypeConfigModal.add.data'
+import { allSchemas, addRules } from './addedPortraitFactor.data.js'
 
 const { t } = useI18n() // 国际化
 let dialogLoading = ref(false) // 弹窗加载状态

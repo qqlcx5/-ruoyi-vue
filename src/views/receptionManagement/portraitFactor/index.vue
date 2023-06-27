@@ -9,7 +9,7 @@
       }"
       :table-options="{
         columns: allSchemas.tableColumns,
-        listApi: allListApi,
+        listApi: promptConfig.portraitFactorLevelConfigAllListApi,
         showAdd: true,
         selection: true
       }"
@@ -25,13 +25,15 @@
         <XTextButton :title="t('action.modify')" @click="handleModify(row)" />
       </template>
     </form-table>
+    <addedPortraitFactor v-model="addTypeVisible" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { TableColumn } from '@/types/table'
-import { allListApi } from '@/api/receptionManagement/promptConfig'
+import * as promptConfig from '@/api/receptionManagement/promptConfig'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
+import addedPortraitFactor from './components/addedPortraitFactor.vue'
 const { t } = useI18n()
 let tableRef = ref()
 const columns: TableColumn[] = [
@@ -57,10 +59,11 @@ const columns: TableColumn[] = [
     showOverflowTooltip: false
   }
 ]
-
+let addTypeVisible = ref(false) // 新增类型弹窗
 // 操作：新增
 async function handleAdd() {
   const list = await tableRef.value?.tableMethods?.getSelections()
+  addTypeVisible.value = true
   console.log('🚀 ~ file: index.vue:68 ~ handleAdd ~ list:', list)
 }
 
