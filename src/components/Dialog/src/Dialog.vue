@@ -63,12 +63,18 @@ const dialogStyle = computed(() => {
   }
 })
 
+const dialogRef = ref()
 const handleConfirm = () => emits('confirm')
-const handleCancel = () => emits('cancel')
+const handleCancel = () => {
+  // @ts-ignore
+  emits('update:modelValue', false)
+  emits('cancel')
+}
 </script>
 
 <template>
   <ElDialog
+    ref="dialogRef"
     :close-on-click-modal="true"
     :fullscreen="isFullscreen"
     :width="width"

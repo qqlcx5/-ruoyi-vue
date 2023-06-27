@@ -103,3 +103,8 @@ export const deleteOrganization = (id: number) => {
 export const getAllStoreList = async () => {
   return await request.get({ url: '/system/organization/all-store-list' })
 }
+
+// 获取当前主题的门店信息列表   新
+export const getAreaStoreList = async () => {
+  return await request.get({ url: '/system/organization/area-store-list' })
+}

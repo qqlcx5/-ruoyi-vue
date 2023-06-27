@@ -65,6 +65,7 @@ const openModal = (data, type) => {
     let levelList = data.levelList
     let level = levelList[data.sourceHierarchy - 1]
     levelText = `${level}级来源`
+    delete data.levelList
   } catch (error) {
     console.log(error)
   }
