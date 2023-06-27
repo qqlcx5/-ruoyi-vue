@@ -25,25 +25,19 @@
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { getAllStoreList } from '@/api/system/organization'
-import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
 import { formatDate } from '@/utils/formatTime'
 import crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
 
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
+
 const message = useMessage()
 const { t } = useI18n() // 国际化
 
-onMounted(() => {
-  getShopList()
-})
 const tableRef = ref()
 // 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
+const shopTreeList = ref(getSuitableShopList())
 
 const refreshList = () => {
   console.log(tableRef.value.tableMethods)
