@@ -37,6 +37,7 @@
       <el-cascader
         v-model="memberList"
         ref="memberCasRef"
+        collapse-tags
         filterables
         :options="shopUserList"
         :props="{ label: 'name', value: 'id', children: 'users', emitPath: false, multiple: true }"
@@ -51,14 +52,15 @@
       </el-table-column>
       <el-table-column label="成员">
         <template #default="{ row }">
-          <el-cascader
-            ref="cascaderRef"
-            filterable
-            v-model="row.distributeUserId"
-            :options="shopUserList"
-            :props="{ label: 'name', value: 'id', children: 'users' }"
-            @change="changeUserById($event, row)"
-          />
+          <span>{{ row.distributeUserName + '-' + row.postName }}</span>
+          <!--          <el-cascader-->
+          <!--            ref="cascaderRef"-->
+          <!--            filterable-->
+          <!--            v-model="row.distributeUserId"-->
+          <!--            :options="shopUserList"-->
+          <!--            :props="{ label: 'name', value: 'id', children: 'users' }"-->
+          <!--            @change="changeUserById($event, row)"-->
+          <!--          />-->
         </template>
       </el-table-column>
       <el-table-column label="成员平台昵称">
@@ -241,6 +243,8 @@ type tableObj = {
   shopId: string
   shopName: string
   distributeUserId: string
+  distributeUserName: string
+  postName: string
   nickname: string
   status: number
   pushBackFactoryStatus: number
@@ -251,8 +255,10 @@ const memberTableList = ref<tableObj[]>([
     shopId: '',
     shopName: '',
     distributeUserId: '',
+    distributeUserName: '',
+    postName: '',
     nickname: '',
-    status: 0,
+    status: 1,
     pushBackFactoryStatus: 0,
     brandList: [
       // {
@@ -279,12 +285,16 @@ const addMemberRule = (val) => {
           shopId: '',
           shopName: '',
           distributeUserId: '',
+          distributeUserName: '',
+          postName: '',
           nickname: '',
-          status: 0,
+          status: 1,
           pushBackFactoryStatus: 0,
           brandList: []
         }
         newItem.distributeUserId = item.data.id
+        newItem.distributeUserName = item.data.name
+        newItem.postName = item.data.postName
         newItem.shopId = item.data.belongStoreId
         newItem.shopName = item.data.belongStoreName
         memberTableList.value.push(newItem)
@@ -309,6 +319,7 @@ const addMemberRule = (val) => {
 const getDistributeShopIdList = (val) => {
   if (!val) {
     memberTableList.value = []
+    memberList.value = []
     getMemberTreeListApi()
   }
 }
@@ -316,13 +327,13 @@ const deleteRow = (row, index) => {
   memberList.value = memberList.value.filter((item) => item !== row.distributeUserId)
   memberTableList.value.splice(index, 1)
 }
-const cascaderRef = ref()
-const changeUserById = (val, row) => {
-  let cascaderList = cascaderRef.value.getCheckedNodes()
-  let cascaderData = cascaderList[0].data
-  row.shopId = cascaderData.belongStoreId
-  row.shopName = cascaderData.belongStoreName
-}
+// const cascaderRef = ref()
+// const changeUserById = (val, row) => {
+//   let cascaderList = cascaderRef.value.getCheckedNodes()
+//   let cascaderData = cascaderList[0].data
+//   row.shopId = cascaderData.belongStoreId
+//   row.shopName = cascaderData.belongStoreName
+// }
 const changeBrandId = (val, row) => {
   if (!val) {
     seriesOption.value = []

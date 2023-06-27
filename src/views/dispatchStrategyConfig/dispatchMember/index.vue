@@ -33,11 +33,17 @@
         @change="changePushBackFactoryStatus(row)"
       />
     </template>
+    <template #distributeUserName="{ row }">
+      <span>{{ row.distributeUserName + '-' + row.postName }}</span>
+    </template>
     <template #autoBrandNames="{ row }">
       <span>{{ arrToStrFunc(row.autoBrandNames) }}</span>
     </template>
     <template #autoSeriesNames="{ row }">
-      <span>{{ arrToStrFunc(row.autoSeriesNames) }}</span>
+      <el-tooltip>
+        <template #content>{{ arrToStrFunc(row.autoSeriesNames) }}</template>
+        <span>{{ JSON.parse(row.autoSeriesNames)[0] }}</span>
+      </el-tooltip>
     </template>
     <template #tableAppend>
       <XButton @click="handleDel">删除</XButton>
@@ -151,7 +157,7 @@ const getSpanArr = (data, array) => {
 const arrToStrFunc = (arr) => {
   return arr && JSON.parse(arr).join(',')
 }
-
+// const toStr = (arr)
 const columns: TableColumn[] = [
   {
     label: '分公司',
@@ -266,7 +272,8 @@ const actionButtons = [
     permission: hasPermission('dispatch-strategy-config:dispatch-member:delete'),
     click: (row) => {
       selectedIds.value = [row.id]
-      deleteFun()
+      delDialog.value = true
+      // deleteFun()
     }
   }
 ]
