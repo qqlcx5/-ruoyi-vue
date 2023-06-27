@@ -177,7 +177,9 @@ const openDialog = (id: string, formShopTreeList: any) => {
           item.brandIds = parseBrandIds(item.autoBrandIds)
           item.shopName = item.distributeShopName
           getSeries(item.brandIds)
-          item.seriesIds = parseSeries(item.autoBrandIds)
+          if (item?.seriesIds) {
+            item.seriesIds = parseSeries(item.autoBrandIds)
+          }
           return item
         })
       })
