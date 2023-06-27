@@ -1,9 +1,12 @@
 <template>
   <div class="flex h-full">
-    <ContentWrap class="mr-3" title="规则名称" style="width: 222px">
+    <ContentWrap class="mr-3 tree-left" title="规则名称" style="width: 222px">
       <el-tree
         :data="treeData"
-        :props="{ children: 'childs', label: 'ruleName' }"
+        :props="{
+          children: 'childs',
+          label: 'ruleName'
+        }"
         highlight-current
         default-expand-all
         @node-click="handleNodeClick"
@@ -24,14 +27,15 @@
           selection: true,
           columns: allSchemas.tableColumns,
           listApi: tableApi,
-          listParams
+          listParams,
+          showTools: false
         }"
         @add="handleAdd"
       >
         <template #tableAppend>
           <XButton title="批量删除" @click="handleListDel" />
           <XButton title="批量编辑" @click="handleListEdit" />
-          <div class="ml-3">{{ tips }}</div>
+          <div :class="`${tipsStatus ? 'tip-status-true' : ''} tip-status ml-3`">{{ tips }}</div>
         </template>
         <template #isEnable="{ row }">
           <el-switch v-model="row.isEnable" :active-value="1" :inactive-value="0" />
@@ -66,22 +70,15 @@ import { isEmpty } from 'lodash-es'
 const message = useMessage()
 const { t } = useI18n()
 
-const {
-  allSchemas,
-  showDialog,
-  title,
-  dialogTreeData,
-  showTreeDialog,
-  dialogTreeTitle,
-  tableApi,
-  handleAdd
-} = useFormTable()
+const { allSchemas, showDialog, title, dialogTreeData, showTreeDialog, dialogTreeTitle, tableApi } =
+  useFormTable()
 
 const { treeData, getTree, selectNode } = useRuleTree()
 
 const tableRef = ref()
 const listParams = ref<Recordable>()
 const tips = ref('')
+const tipsStatus = ref(0)
 /** 选择规则名称节点 */
 const handleNodeClick = (node: TreeNode) => {
   selectNode.value = node
@@ -90,8 +87,19 @@ const handleNodeClick = (node: TreeNode) => {
   setTimeout(async () => {
     tableMethods.getList()
     const data = await getTipsData(node.ruleValue, node.ruleName)
-    tips.value = data
+    tips.value = data.text
+    tipsStatus.value = data.status
   }, 0)
+}
+
+/** 添加 */
+const handleAdd = () => {
+  if (isEmpty(selectNode.value)) {
+    message.warning('请选择规则名称')
+    return
+  }
+  showDialog.value = true
+  title.value = '新增子规则'
 }
 
 /** 批量删除 */
@@ -123,13 +131,18 @@ const dialogData = ref<Recordable[]>([])
 const handleListEdit = async () => {
   const { tableMethods } = tableRef.value
   dialogData.value = await tableMethods.getSelections()
-  if (isEmpty(dialogData.value)) return
+  if (isEmpty(dialogData.value)) {
+    message.warning('请选择成员规则')
+    return
+  }
   showDialog.value = true
   title.value = '编辑成员规则'
 }
 
 /** 确认保存 */
 const handleSave = async (data: Recordable) => {
+  console.log(data)
+
   await addMemberRule(
     data.map((item) => ({
       ...item,
@@ -164,6 +177,20 @@ onMounted(() => {
     & > div {
       height: 100%;
     }
+  }
+
+  .tip-status {
+    color: #faad14;
+  }
+
+  .tip-status-true {
+    color: $error-color;
+  }
+}
+
+.tree-left {
+  :deep(.is-current) {
+    color: var(--el-color-primary);
   }
 }
 </style>

@@ -28,7 +28,7 @@
             />
             <slot name="tableAppend"></slot>
           </div>
-          <div>
+          <div v-if="tableProps.showTools">
             <TableTools @tool-click="handleToolClick" />
           </div>
         </div>
@@ -132,6 +132,8 @@ const props = defineProps({
           listApi: (options: any) => Promise<any>
           /** 删除接口 */
           delApi: (options: any) => Promise<any>
+          /** 是否显示工具 */
+          showTools: boolean
         }>
     >,
     default: () => ({})
@@ -203,6 +205,7 @@ const tableProps = computed(() => {
     showAdd: true,
     align: 'left',
     headerAlign: 'left',
+    showTools: true,
     ...props.tableOptions
   }
 })
