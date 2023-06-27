@@ -155,7 +155,13 @@
         <span class="mr-8px">DCC规则说明</span
         ><el-switch v-model="ruleForm.dccExplainStatus" :active-value="1" :inactive-value="0" />
       </el-form-item>
-      <Editor v-model="ruleForm.dccExplain" class="mb-20px" :height="220" style="width: 600px" />
+      <Editor
+        v-model="ruleForm.dccExplain"
+        :toolbarConfig="{ excludeKeys: ['group-image', 'group-video', 'emotion'] }"
+        class="mb-20px"
+        :height="220"
+        style="width: 600px"
+      />
     </el-form>
     <div class="bottom-btns">
       <el-button
