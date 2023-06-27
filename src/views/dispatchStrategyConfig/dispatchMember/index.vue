@@ -63,18 +63,17 @@
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { getAllStoreList } from '@/api/system/organization'
-import { listToTree } from '@/utils/tree'
 import { computed, ref } from 'vue'
 import Crud from './components/crud.vue'
 import { getAllBrand } from '@/api/model/brand'
 import { formatDate } from '@/utils/formatTime'
 import { hasPermission } from '@/utils/utils'
+import { useCommonList } from '@/hooks/web/useCommonList'
 
 const message = useMessage()
+const { getSuitableShopList } = useCommonList()
 
 onMounted(() => {
-  getShopList()
   getBrandInfo()
 })
 
@@ -83,11 +82,9 @@ const refresh = () => {
 }
 const tableRef = ref()
 // 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
+// const getShopList = async () => {
+const shopTreeList = ref(getSuitableShopList())
+// }
 
 const brandList = ref<object[]>([])
 const getBrandInfo = async () => {
@@ -158,15 +155,18 @@ const arrToStrFunc = (arr) => {
 const columns: TableColumn[] = [
   {
     label: '分公司',
-    field: 'branchName'
+    field: 'branchName',
+    disabled: true
   },
   {
     label: '门店',
-    field: 'distributeShopName'
+    field: 'distributeShopName',
+    disabled: true
   },
   {
     label: '派发成员',
-    field: 'distributeUserName'
+    field: 'distributeUserName',
+    disabled: true
   },
   {
     label: '成员平台昵称',
