@@ -4,11 +4,13 @@
     v-model="dialogVisible"
     :title="editFlag ? '编辑' : '新增'"
     width="800"
+    height="80%"
   >
     <el-form :model="form" ref="formRef" :hide-required-asterisk="false">
-      <el-form-item label="适用名称">
+      <el-form-item label="规则名称">
         <el-input
           v-model="form.distributeRuleName"
+          placeholder="请输入规则名称"
           @change="changeRuleName"
           maxlength="20"
           show-word-limit
@@ -224,6 +226,9 @@ const getexistRuleShopApi = async () => {
 }
 
 const changeRuleName = (val) => {
+  if (!val) {
+    return message.error('请输入规则名称')
+  }
   if (!editFlag) return
   const isValid = dispatchApi.checkValidRuleName(editId.value, val)
   if (!isValid) {
@@ -261,7 +266,7 @@ const deleteShopRule = (index) => {
 
 const onConfirm = async () => {
   if (!form.value.distributeRuleName) {
-    return message.error('请填写适用名称')
+    return message.error('请填写规则名称')
   }
   if (form.value.shopIdList.length < 1) {
     return message.error('请选择适用门店')
