@@ -100,21 +100,43 @@ const setVisible = () => {
 </script>
 
 <template>
-  <Form
-    :is-custom="false"
-    :label-width="labelWidth"
-    hide-required-asterisk
-    :inline="inline"
-    :is-col="isCol"
-    :schema="newSchema"
-    @register="register"
-  >
-    <template #operate>
-      <div v-if="layout === 'inline'">
+  <div>
+    <Form
+      :is-custom="false"
+      :label-width="labelWidth"
+      hide-required-asterisk
+      :inline="inline"
+      :is-col="isCol"
+      :schema="newSchema"
+      @register="register"
+    >
+      <template #operate>
+        <div v-if="layout === 'inline'">
+          <ElButton v-if="showSearch" type="primary" @click="search">
+            {{ t('common.query') }}
+          </ElButton>
+          <ElButton v-if="showReset" @click="reset">
+            {{ t('common.reset') }}
+          </ElButton>
+          <ElButton v-if="expand" text @click="setVisible">
+            {{ t(visible ? 'common.shrink' : 'common.expand') }}
+            <Icon :icon="visible ? 'ep:arrow-up' : 'ep:arrow-down'" />
+          </ElButton>
+        </div>
+      </template>
+      <template v-for="(_slot, name) in slots" #[name]="data"
+        ><slot :name="name" v-bind="data" :model="data"></slot
+      ></template>
+    </Form>
+
+    <template v-if="layout === 'bottom'">
+      <div :style="bottonButtonStyle">
         <ElButton v-if="showSearch" type="primary" @click="search">
+          <Icon icon="ep:search" class="mr-5px" />
           {{ t('common.query') }}
         </ElButton>
         <ElButton v-if="showReset" @click="reset">
+          <Icon icon="ep:refresh-right" class="mr-5px" />
           {{ t('common.reset') }}
         </ElButton>
         <ElButton v-if="expand" text @click="setVisible">
@@ -123,25 +145,5 @@ const setVisible = () => {
         </ElButton>
       </div>
     </template>
-    <template v-for="(_slot, name) in slots" #[name]="data"
-      ><slot :name="name" v-bind="data" :model="data"></slot
-    ></template>
-  </Form>
-
-  <template v-if="layout === 'bottom'">
-    <div :style="bottonButtonStyle">
-      <ElButton v-if="showSearch" type="primary" @click="search">
-        <Icon icon="ep:search" class="mr-5px" />
-        {{ t('common.query') }}
-      </ElButton>
-      <ElButton v-if="showReset" @click="reset">
-        <Icon icon="ep:refresh-right" class="mr-5px" />
-        {{ t('common.reset') }}
-      </ElButton>
-      <ElButton v-if="expand" text @click="setVisible">
-        {{ t(visible ? 'common.shrink' : 'common.expand') }}
-        <Icon :icon="visible ? 'ep:arrow-up' : 'ep:arrow-down'" />
-      </ElButton>
-    </div>
-  </template>
+  </div>
 </template>

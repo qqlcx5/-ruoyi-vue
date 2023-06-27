@@ -3,7 +3,7 @@ import { formatDate } from '@/utils/formatTime'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { getMemberRuleTree, getMemberRuleList } from '@/api/system/memberRule'
-import { ref, createVNode, reactive, computed } from 'vue'
+import { ref, createVNode, reactive } from 'vue'
 import { XTextButton } from '@/components/XButton'
 import { isEmpty } from 'lodash-es'
 
@@ -58,8 +58,7 @@ export const useColumnOptions = () => {
 
 export const useFormTable = () => {
   const { brandOptions, areaOptions, choiceOptions } = useColumnOptions()
-  const { getSuitableShopList, getShopList } = useCommonList()
-  const shopList = ref(getShopList())
+  const { getSuitableShopList } = useCommonList()
   const dialogTreeData = ref<Recordable[]>([])
   const showTreeDialog = ref(false)
   const dialogTreeTitle = ref('')
@@ -76,13 +75,15 @@ export const useFormTable = () => {
       search: {
         component: 'Cascader',
         componentProps: {
-          options: getSuitableShopList().value,
+          options: getSuitableShopList(),
+          collapseTags: true,
+          collapseTagsTooltip: true,
+          filterable: true,
           props: {
             label: 'name',
             value: 'id',
-            multiple: true,
-            expandTrigger: 'hover',
-            emitPath: false
+            emitPath: false,
+            multiple: true
           }
         }
       }
@@ -93,14 +94,32 @@ export const useFormTable = () => {
       isSearch: true,
       isTable: false,
       search: {
-        component: 'Select',
+        component: 'Cascader',
+        collapseTags: true,
+        collapseTagsTooltip: true,
+        filterable: true,
         componentProps: {
-          options: computed(() =>
-            shopList.value.map((item) => ({ label: item.name, value: item.id }))
-          ),
-          multiple: true
+          options: getSuitableShopList(),
+          props: {
+            label: 'name',
+            value: 'id',
+            emitPath: false,
+            multiple: true
+          }
         }
       }
+      // search: {
+      //   component: 'Cascader',
+      //   componentProps: {
+      //     options: getShopList(),
+      //     props: {
+      //       label: 'name',
+      //       value: 'id',
+      //       emitPath: false,
+      //       multiple: true
+      //     }
+      //   }
+      // }
     },
     {
       field: 'applicableShopInfoList',
@@ -202,6 +221,7 @@ export const useFormTable = () => {
     {
       label: t('common.createTime'),
       field: 'createTime',
+      width: 180,
       formatter: (_, __, val: string) => {
         return formatDate(new Date(val))
       }
@@ -212,12 +232,6 @@ export const useFormTable = () => {
   const showDialog = ref(false)
   const title = ref('')
 
-  /** 添加 */
-  const handleAdd = () => {
-    showDialog.value = true
-    title.value = '新增子规则'
-  }
-
   return {
     allSchemas,
     showDialog,
@@ -225,14 +239,13 @@ export const useFormTable = () => {
     showTreeDialog,
     dialogTreeTitle,
     title,
-    tableApi: getMemberRuleList,
-    handleAdd
+    tableApi: getMemberRuleList
   }
 }
 
 export const useRuleTree = () => {
   const treeData = ref<Recordable[]>([])
-  const dictType = 'clue_choose_user_rule'
+  const dictType = 'clue_choose_user_rule,clue_choose_user_reception,clue_choose_user_visit'
   const selectNode = ref<Partial<TreeNode>>({})
 
   const getTree = async () => {

@@ -4,6 +4,8 @@ import {
   getPostDataList,
   MemberListParams,
   getShopDataList,
+  getUserMemberDataList,
+  UserMemberList,
   getMemberTreeDataList
 } from '@/api/common'
 import { listToTree } from '@/utils/tree'
@@ -48,7 +50,7 @@ export const useCommonList = () => {
     const postList = ref<Recordable[]>([])
     const getList = async () => {
       const data = await getPostDataList()
-      postList.value = listToTree(data || [], { pid: 'parentId' })
+      postList.value = data
     }
     getList()
     return postList
@@ -65,10 +67,22 @@ export const useCommonList = () => {
     return shopList
   }
 
+  /** 获取用户精简信息列表(成员列表) */
+  const getUserMemberList = (params?: UserMemberList) => {
+    const userMemberList = ref<Recordable[]>([])
+    const getList = async () => {
+      const data = await getUserMemberDataList(params)
+      userMemberList.value = data
+    }
+    getList()
+    return userMemberList
+  }
+
   return {
     getShopList,
     getMemberList,
     getPostList,
+    getUserMemberList,
     getSuitableShopList,
     getMemberTreeList
   }
