@@ -190,7 +190,6 @@ const userList = ref<object[]>([])
 
 const getUsers = async () => {
   let str = ruleForm.value.shopIdList.join(',')
-  str += `,43`
   const data = await getListSimpleUsersApi({ storeIds: str })
   userList.value = data
 }
