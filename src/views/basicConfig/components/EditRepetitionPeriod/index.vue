@@ -17,7 +17,7 @@
         <el-radio-group v-model="ruleForm.ruleType">
           <el-radio :label="0">不限</el-radio>
           <el-radio :label="1">门店</el-radio>
-          <el-radio :label="2">分公司</el-radio>
+          <el-radio :label="2">区域</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="线索重复判断维度">
