@@ -287,12 +287,12 @@ const tableColumns = [
     minWidth: '120px'
   },
   {
-    label: '销量品牌',
+    label: '销售品牌',
     field: 'autoBrandNames',
     minWidth: '100px'
   },
   {
-    label: '销量品牌',
+    label: '销售车系',
     field: 'autoSeriesNames',
     minWidth: '100px'
   },
