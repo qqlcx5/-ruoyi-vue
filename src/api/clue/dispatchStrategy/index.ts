@@ -86,6 +86,10 @@ export const getClueDistributeRuleDetail = (id: number) => {
 export const delClueDistributeRule = (id: string) => {
   return request.get({ url: `/clue/clueDistributeProductization/delete/${id}` })
 }
+// 获取存在规则门店(产品化)
+export const existRuleShop = () => {
+  return request.get({ url: `/clue/clueDistributeProductization/valid/exist-rule-shop` })
+}
 
 // 编辑
 export const editClueDistributeRule = (data) => {

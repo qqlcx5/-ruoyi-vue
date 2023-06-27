@@ -50,7 +50,7 @@
       <div class="mb10">
         <div class="tit">派发规则设置</div>
         <div class="divider-row"></div>
-        <el-form-item label="是否允许规则外增加派发成员：">
+        <el-form-item v-show="form.distributeType === 2" label="是否允许规则外增加派发成员：">
           <el-switch
             active-color="#13ce66"
             v-model="form.augment"
@@ -59,7 +59,11 @@
           />
           <div class="Grey mb10 tips-right">(开启后，清洗员可以手动新增派发成员)</div>
         </el-form-item>
-        <el-form-item label="单条线索派发给" prop="distributeNum">
+        <el-form-item
+          v-show="form.distributeType === 2"
+          label="单条线索派发给"
+          prop="distributeNum"
+        >
           <div class="no-wrap">
             <el-input v-model="form.distributeNum" placeholder="人数" type="number" min="0" />
             人
@@ -139,16 +143,17 @@
 <script setup lang="ts" name="rule_crud">
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { cloneDeep } from 'lodash-es'
-import { listSimplePostsApi } from '@/api/system/post/info'
 import { RuleObj } from '../helpers'
 import { FormInstance } from 'element-plus'
-import { useOption } from '@/store/modules/options'
-import { existDccRuleShop } from '@/api/clue/basicConfig'
-onMounted(() => {
-  // getPostList()
-})
-const store = useOption()
+// import { useOption } from '@/store/modules/options'
+import { useCommonList } from '@/hooks/web/useCommonList'
 
+// const store = useOption()
+const { getSuitableShopList, getPostList } = useCommonList()
+onMounted(() => {
+  // getSuitableShopListApi()
+  // getexistRuleShopApi()
+})
 const message = useMessage()
 const dialogVisible = ref(false)
 const shopTreeList = ref<object[]>([])
@@ -197,8 +202,10 @@ const openDialog = (id: number) => {
         }
       })
     }
-    getPostList()
-    getShopList(applicableShopId)
+    getPostListApi()
+    getShopList()
+    // todo
+    // getShopList(applicableShopId)
     dialogVisible.value = true
   })
 }
@@ -213,9 +220,9 @@ type positionObj = {
   disabled: boolean
 }
 const postList = ref<positionObj[]>([])
-const getPostList = async () => {
-  const data = await listSimplePostsApi()
-  postList.value = data.map((pos: positionObj) => {
+const getPostListApi = async () => {
+  const data = ref(await getPostList())
+  postList.value = data.value.map((pos: positionObj) => {
     pos['disabled'] = selectedPositionId.value.includes(pos.id)
     return pos
   })
@@ -229,11 +236,18 @@ const getPostList = async () => {
 // }
 // selectedPositionId.value = difference(row.positionSunTypeList, anotherRowPosId.value)
 // }
-
-const getShopList = async (applicableShopId) => {
-  const { shopList } = await store.getShopList()
-  const checkedList = await existDccRuleShop()
-  shopTreeList.value = store.dealShopList(shopList, unref(checkedList), applicableShopId)
+const shopList = ref(getSuitableShopList())
+// const getSuitableShopListApi = async () => {
+//   shopList.value = await getSuitableShopList()
+// }
+const existShopList = ref(dispatchApi.existRuleShop())
+// const getexistRuleShopApi = async () => {
+//   existShopList.value = await dispatchApi.existRuleShop()
+// }
+const getShopList = async () => {
+  console.log(shopList.value, existShopList.value)
+  shopTreeList.value = shopList.value
+  //store.dealShopList(shopList.value, existShopList.value, applicableShopId)
 }
 
 const changeRuleName = (val) => {
@@ -273,6 +287,12 @@ const deleteShopRule = (index) => {
 }
 
 const onConfirm = async () => {
+  if (!form.value.distributeRuleName) {
+    return message.error('请填写适用名称')
+  }
+  if (form.value.shopIdList.length < 1) {
+    return message.error('请选择适用门店')
+  }
   let params = cloneDeep(form.value)
   params.applicableShopId = params.shopIdList.join(',')
 
