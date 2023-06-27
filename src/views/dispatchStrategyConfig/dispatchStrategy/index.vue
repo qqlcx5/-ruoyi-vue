@@ -14,6 +14,28 @@
     }"
     @add="addMember"
   >
+    <template #status="{ row }">
+      <el-switch
+        v-model="row.status"
+        inline-prompt
+        active-text="是"
+        inactive-text="否"
+        :active-value="1"
+        :inactive-value="0"
+        @change="handleNeedFilterChange(row, 'status')"
+      />
+    </template>
+    <template #isExternalDistribute="{ row }">
+      <el-switch
+        v-model="row.isExternalDistribute"
+        inline-prompt
+        active-text="是"
+        inactive-text="否"
+        :active-value="1"
+        :inactive-value="0"
+        @change="handleNeedFilterChange(row, 'isExternalDistribute')"
+      />
+    </template>
     <template #tableAppend>
       <XButton type="danger" @click="handleDel">删除</XButton>
     </template>
@@ -21,7 +43,7 @@
   <crud ref="crudRef" @refresh-list="refreshList" />
 </template>
 
-<script setup lang="ts" name="dispatchMember">
+<script setup lang="ts" name="dispatchStrategy">
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
@@ -187,10 +209,8 @@ const columns: TableColumn[] = [
     label: '所属区域/门店',
     field: 'parentName',
     disabled: true,
-    formatter: (_, __, val: string) => {
-      console.log(_, __, val)
-
-      return `${_.parentName} - ${_.shopName}`
+    formatter: (val) => {
+      return `${val.parentName} - ${val.shopName}`
     }
   },
   // {
@@ -306,6 +326,26 @@ const deleteFun = async () => {
   } else {
     message.error('报错了')
   }
+}
+
+const handleNeedFilterChange = async (row, type) => {
+  console.log(row)
+
+  if (!row.id) return
+  if (type == 'status') {
+    await dispatchApi.clueDistributeUpdateShopStatus({
+      id: row.id,
+      shopId: row.shopId,
+      status: row.status
+    })
+  } else {
+    await dispatchApi.clueDistributeUpdateExternalStatus({
+      id: row.id,
+      shopId: row.shopId,
+      status: row.isExternalDistribute
+    })
+  }
+  // refreshList()
 }
 const { allSchemas } = useCrudSchemas(columns)
 </script>
