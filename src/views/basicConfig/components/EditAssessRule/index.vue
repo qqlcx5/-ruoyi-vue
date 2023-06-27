@@ -7,7 +7,7 @@
       width="665px"
       :before-close="handleClose"
     >
-      <div v-loading="loading" style="height: 100%">
+      <div v-loading="loading" style="height: 100%; padding: 25px 0; overflow: auto" @scroll="aaa">
         <el-form
           id="edit-form"
           ref="formRef"
@@ -26,6 +26,8 @@
           </el-form-item>
           <el-form-item label="适用门店" label-width="80px" prop="applicableShopId">
             <el-cascader
+              ref="shopRef"
+              :teleported="false"
               v-model="ruleForm.applicableShopId"
               :options="shopTreeList"
               :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
@@ -285,6 +287,10 @@ watch(
     }
   }
 )
+const shopRef = ref()
+const aaa = () => {
+  console.log(shopRef.value)
+}
 const loading = ref<boolean>(false)
 const getInfo = async (id) => {
   try {
@@ -442,8 +448,7 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
   .el-dialog__body {
     height: 550px;
     overflow: auto;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding: 0 !important;
     .el-divider {
       width: calc(100% + 40px);
       margin-left: -20px;
