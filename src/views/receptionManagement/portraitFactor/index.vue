@@ -9,7 +9,7 @@
       }"
       :table-options="{
         columns: allSchemas.tableColumns,
-        listApi: getConfigPageApi,
+        listApi: allListApi,
         showAdd: true,
         selection: true
       }"
@@ -17,6 +17,8 @@
       <template #tableAppend>
         <XButton @click="handleDel"> 删除</XButton>
       </template>
+      <!-- 画像因子得分区间 -->
+      <template #score="{ row }"> {{ row.lowestScore }} - {{ row.topScore }} </template>
 
       <template #action="{ row }">
         <!-- 操作：修改 -->
@@ -28,32 +30,26 @@
 
 <script lang="ts" setup>
 import { TableColumn } from '@/types/table'
-import { getConfigPageApi } from '@/api/infra/config'
+import { allListApi } from '@/api/receptionManagement/promptConfig'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 const { t } = useI18n()
-let tableRef = ref(null)
+let tableRef = ref()
 const columns: TableColumn[] = [
   {
     label: '画像因子得分区间',
-    field: 'id',
-    isSearch: true
+    field: 'score'
   },
   {
     label: '对应评级名称',
-    field: 'category'
+    field: 'level'
   },
   {
     label: '创建人',
-    field: 'prompt'
+    field: 'createBy'
   },
-  {
-    label: '创建人',
-    field: 'key'
-  },
-
   {
     label: '创建时间',
-    field: 'updater'
+    field: 'createTime'
   },
   {
     label: '操作',
@@ -65,6 +61,7 @@ const columns: TableColumn[] = [
 // 操作：新增
 async function handleAdd() {
   const list = await tableRef.value?.tableMethods?.getSelections()
+  console.log('🚀 ~ file: index.vue:68 ~ handleAdd ~ list:', list)
 }
 
 // 操作：删除

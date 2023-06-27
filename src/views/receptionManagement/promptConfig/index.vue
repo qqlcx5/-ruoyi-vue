@@ -1,7 +1,7 @@
 <template>
   <div class="prompt-configuration">
     <!-- 成员端、管理端、客户端  memberSide、managementEnd、client -->
-    <el-tabs type="border-card" v-model="tabsName">
+    <el-tabs type="border-card" v-model="tabsName" @tab-change="handleTabChange">
       <el-tab-pane label="通用提示配置" name="currency"></el-tab-pane>
       <el-tab-pane label="必讲项提示配置" name="needlessToSay"></el-tab-pane>
     </el-tabs>
@@ -13,11 +13,12 @@
       }"
       :table-options="{
         columns: allSchemas.tableColumns,
-        listApi: getConfigPageApi,
+        listApi,
         showAdd: true,
         selection: true
       }"
     >
+      <!-- listApi: tabsName === 'currency' ? receptionHintConfigApi : receptionMustSayConfigApi, -->
       <template #tableAppend>
         <XButton @click="handleDel"> 删除</XButton>
         <!-- 提示类型配置 -->
@@ -48,12 +49,11 @@
 
 <script lang="ts" setup>
 import { TableColumn } from '@/types/table'
-import { getConfigPageApi } from '@/api/infra/config'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import newGeneralReminderModal from './components/newGeneralReminderModal.vue'
 import promptTypeConfigModal from './components/promptTypeConfigModal.vue'
 import previewModal from './components/previewModal.vue'
-import { ElTable } from 'element-plus'
+import * as promptConfig from '@/api/receptionManagement/promptConfig'
 
 const { t } = useI18n()
 let tabsName = ref('currency')
@@ -105,10 +105,12 @@ const columns: TableColumn[] = [
     showOverflowTooltip: false
   }
 ]
+const { allSchemas } = useCrudSchemas(columns)
+
 let newGeneralVisible = ref(false) // 新增通用提示
 let promptTypeVisible = ref(false) // 提示类型配置
 let previewVisible = ref(false) // 预览
-let tableRef = ref<InstanceType<typeof ElTable>>()
+let tableRef = ref()
 // 操作：新增
 async function handleAdd() {
   const list = await tableRef.value?.tableMethods?.getSelections()
@@ -134,14 +136,24 @@ function handleEdit(row) {
 
 // 操作：预览
 function handlePreview(row) {
-  console.log('preview222', row)
+  console.log('preview', row)
   previewVisible.value = true
 }
-function handleSelectionChange(row) {
-  console.log('handleSelectionChange', row)
+function listApi(params) {
+  return tabsName.value === 'currency'
+    ? promptConfig.receptionHintConfigApi(params)
+    : promptConfig.receptionMustSayConfigApi(params)
 }
-
-const { allSchemas } = useCrudSchemas(columns)
+/* -------------------------------- // 获取提示类型 ------------------------------- */
+async function getPromptType() {
+  const { data } = await promptConfig.receptionHintTypeAllListApi({})
+  console.log('🚀 ~ file: index.vue:156 ~ getPromptType ~ data:', data)
+}
+getPromptType()
+// 切换tab
+async function handleTabChange() {
+  await tableRef.value?.tableMethods.getList()
+}
 </script>
 
 <style lang="scss" scoped>

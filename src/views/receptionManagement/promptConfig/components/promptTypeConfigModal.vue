@@ -30,7 +30,7 @@
       <!-- 操作按钮 -->
       <template #footer>
         <!-- 按钮：保存 -->
-        <XButton type="primary" title="确认" :loading="dialogLoading" />
+        <XButton type="primary" title="确认" :loading="actionLoading" @click="submitForm" />
         <!-- 按钮：关闭 -->
         <XButton title="取消" @click="addTypeVisible = false" />
       </template>
@@ -71,6 +71,31 @@ let formData = reactive({
 function handleAddTypeVisible() {
   console.log('新增类型')
   addTypeVisible.value = true
+}
+/* --------------------------------- // 新增类型 -------------------------------- */
+import { FormExpose } from '@/components/Form'
+import * as promptConfig from '@/api/receptionManagement/promptConfig'
+
+// 表单参数
+const actionLoading = ref(false) // 按钮 Loading
+const formRef = ref<FormExpose>() // 表单 Ref
+const message = useMessage() // 消息弹窗
+
+// 提交按钮
+const submitForm = async () => {
+  const elForm = unref(formRef)?.getElFormRef()
+  if (!elForm) return
+  elForm.validate(async (valid) => {
+    if (!valid) return
+    try {
+      actionLoading.value = true
+      const data = unref(formRef)?.formModel as promptConfig.ReceptionHintTypeSaveOrUpdateApiParams
+      await promptConfig.receptionHintTypeSaveOrUpdateApi(data)
+      message.success(t('common.createSuccess'))
+    } finally {
+      actionLoading.value = false
+    }
+  })
 }
 /* ---------------------------------- 弹窗初始化 --------------------------------- */
 const props = defineProps({

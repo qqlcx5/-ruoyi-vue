@@ -1,6 +1,6 @@
 import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
 
-const { t } = useI18n() // 国际化
+// const { t } = useI18n() // 国际化
 
 // 表单校验
 export const addRules = reactive({
@@ -15,11 +15,11 @@ const crudSchemas = reactive<VxeCrudSchema>({
   columns: [
     {
       title: '提示类型关键字',
-      field: 'reason'
+      field: 'typeKey'
     },
     {
       title: '提示类型名称',
-      field: 'reason'
+      field: 'typeName'
     }
   ]
 })
