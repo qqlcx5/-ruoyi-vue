@@ -133,23 +133,20 @@
               />
             </template>
           </el-table-column>
-          <el-table-column prop="address" label="适用岗位">
+          <el-table-column prop="limitRoleList" label="适用岗位">
             <template #default="{ row }">
-              <el-select
-                multiple
+              <el-cascader
+                ref="postRef"
+                v-model="row.limitRoleList"
+                :options="postList"
+                :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+                filterable
                 collapse-tags
                 collapse-tags-tooltip
-                value-key="roleId"
-                v-model="row.limitRoleList"
+                clearable
+                style="min-width: 240px"
                 @change="roleChange($event, row)"
-              >
-                <el-option
-                  v-for="item in postList"
-                  :label="item.roleName"
-                  :value="item"
-                  :key="item.roleId"
-                />
-              </el-select>
+              />
             </template>
           </el-table-column>
           <el-table-column prop="address" label="首次跟进是否允许选择">
@@ -268,8 +265,10 @@ import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicCon
 import { judgeTimeList } from '@/utils/utils'
 import type { FormInstance, ElTable } from 'element-plus'
 import dayjs from 'dayjs'
-import { listSimplePostsApi } from '@/api/system/post/info'
-
+import { useCommonList } from '@/hooks/web/useCommonList'
+import { cloneDeep } from 'lodash-es'
+import { treeToList } from '@/utils/tree'
+const { getPostList } = useCommonList()
 const message = useMessage()
 let ruleForm = reactive({
   cancelFollowPlan: 0, // 客户到店后是否取消对应有效线索的跟进计划
@@ -299,14 +298,8 @@ const followMethodChange = (val, row) => {
     row.isSelect = 1
   }
 }
-let postList = reactive<object[]>([])
-const getPostList = () => {
-  listSimplePostsApi().then((data) => {
-    console.log(data)
-    postList = reactive(data.map((d) => ({ roleId: d.id, roleName: d.name })))
-  })
-}
-getPostList()
+let postList = ref(getPostList())
+const postRef = ref()
 const roleChange = (val, row) => {
   row.applyPositionType = val.length ? 2 : 1
   console.log(val)
@@ -318,6 +311,9 @@ const getInfo = async () => {
   try {
     loading.value = true
     const data = await queryClueFollowConfig()
+    data.followMethodList.forEach((item: object) => {
+      item['limitRoleList'] = item['limitRoleList'].map((d) => d.roleId)
+    })
     ruleForm = reactive(data)
     const arr = ruleForm?.clueNotGetThroughHintConfigVO?.timeList || []
     dealTimeList(arr)
@@ -413,7 +409,19 @@ const handleSave = async () => {
     if (editTimeFlag.value && !(await timeEdit(false))) return
     editFlag.value = false
     btnLoading.value = true
-    await saveClueFollowConfig(ruleForm)
+    const params = cloneDeep(ruleForm)
+    const list = treeToList(postList.value)
+    params.followMethodList.forEach((item: object) => {
+      item['limitRoleList'] = item['limitRoleList'].map((id) => {
+        const item: object = { roleId: id }
+        const obj = list.find((d) => d.id === id)
+        if (obj.id) {
+          item['roleName'] = obj.name
+        }
+        return item
+      })
+    })
+    await saveClueFollowConfig(params)
     message.success('保存成功')
   } finally {
     btnLoading.value = false

@@ -39,7 +39,7 @@ export const useCommonList = () => {
     const memberTreeList = ref<Recordable[]>([])
     const getTreeList = async () => {
       const data = await getMemberTreeDataList(params)
-      memberTreeList.value = data
+      memberTreeList.value = data.trees
     }
     getTreeList()
     return memberTreeList
