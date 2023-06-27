@@ -177,9 +177,7 @@ const openDialog = (id: string, formShopTreeList: any) => {
           item.brandIds = parseBrandIds(item.autoBrandIds)
           item.shopName = item.distributeShopName
           getSeries(item.brandIds)
-          if (item?.seriesIds) {
-            item.seriesIds = parseSeries(item.autoBrandIds)
-          }
+          item.seriesIds = parseSeries(item.autoBrandIds)
           return item
         })
       })
@@ -204,7 +202,7 @@ const parseSeries = (str) => {
   seriesData.value = []
   str &&
     JSON.parse(str).map((item) => {
-      seriesData.value.push([item.brandId, ...item.seriesIds])
+      seriesData.value.push([item.brandId, ...item?.seriesIds])
     })
   return seriesData.value
 }
