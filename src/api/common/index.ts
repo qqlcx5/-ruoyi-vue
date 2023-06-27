@@ -17,6 +17,13 @@ export type MemberListParams = {
   childRuleValue: string
 }
 
+export type UserMemberList = {
+  /** 门店id */
+  storeIds: number[]
+  /** 岗位id */
+  postIds: number[]
+}
+
 /** 文件上传 */
 export const uploadFile = async (data) => {
   return await request.upload({
@@ -47,4 +54,9 @@ export const getPostDataList = () => {
 /** 获取适用门店列表 */
 export const getShopDataList = () => {
   return request.get({ url: '/system/organization/area-store-list' })
+}
+
+/** 获取用户精简信息列表 */
+export const getUserMemberDataList = (params?: Partial<UserMemberList>) => {
+  return request.get({ url: '/system/user/list-all-simple', params })
 }

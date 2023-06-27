@@ -1,5 +1,12 @@
 import { getAllStoreList } from '@/api/system/organization'
-import { getMemberDataList, getPostDataList, MemberListParams, getShopDataList } from '@/api/common'
+import {
+  getMemberDataList,
+  getPostDataList,
+  MemberListParams,
+  getShopDataList,
+  getUserMemberDataList,
+  UserMemberList
+} from '@/api/common'
 import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
 
@@ -31,7 +38,7 @@ export const useCommonList = () => {
     const postList = ref<Recordable[]>([])
     const getList = async () => {
       const data = await getPostDataList()
-      postList.value = listToTree(data || [], { pid: 'parentId' })
+      postList.value = data
     }
     getList()
     return postList
@@ -48,10 +55,22 @@ export const useCommonList = () => {
     return shopList
   }
 
+  /** 获取用户精简信息列表(成员列表) */
+  const getUserMemberList = (params?: UserMemberList) => {
+    const userMemberList = ref<Recordable[]>([])
+    const getList = async () => {
+      const data = await getUserMemberDataList(params)
+      userMemberList.value = data
+    }
+    getList()
+    return userMemberList
+  }
+
   return {
     getShopList,
     getMemberList,
     getPostList,
+    getUserMemberList,
     getSuitableShopList
   }
 }
