@@ -14,6 +14,7 @@
           placeholder="请选择门店"
           :options="shopTreeList"
           collapse-tags
+          filterable
           @visible-change="getDistributeShopIdList"
           :props="{
             label: 'name',
@@ -29,9 +30,16 @@
     </el-form>
     <el-divider />
     <div
-      >派发人员配置
-      <XButton type="primary" @click="addMemberRule">添加行</XButton>
-      (请先选择门店)
+      >派发人员配置(请先选择门店)
+      <!--      <XButton type="primary" @click="addMemberRule">添加行</XButton>-->
+      <el-cascader
+        v-model="memberList"
+        ref="memberCasRef"
+        filterables
+        :options="shopUserList"
+        :props="{ label: 'name', value: 'id', children: 'users', emitPath: false, multiple: true }"
+        @change="addMemberRule"
+      />
     </div>
     <el-table :data="memberTableList">
       <el-table-column label="门店">
@@ -43,9 +51,10 @@
         <template #default="{ row }">
           <el-cascader
             ref="cascaderRef"
+            filterable
             v-model="row.distributeUserId"
-            :options="userList"
-            :props="{ label: 'username', value: 'id' }"
+            :options="shopUserList"
+            :props="{ label: 'name', value: 'id', children: 'users' }"
             @change="changeUserById($event, row)"
           />
         </template>
@@ -80,6 +89,7 @@
               v-model="row.seriesIds"
               :options="seriesOption"
               collapse-tags
+              filterable
               :props="{ multiple: true, label: 'seriesDetailsName', value: 'seriesDetailsId' }"
               @change="changeSeriesEvent($event, row)"
             />
@@ -108,8 +118,8 @@
         </template>
       </el-table-column>
       <el-table-column label="操作">
-        <template #default="{ $index }">
-          <el-button @click="deleteRow($index)">删除</el-button>
+        <template #default="{ row, $index }">
+          <el-button @click="deleteRow(row, $index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -126,9 +136,14 @@ import type { FormRules, FormInstance } from 'element-plus'
 import { getListSimpleUsersApi } from '@/api/system/user'
 import { ref } from 'vue'
 import { getAllBrand, querySeriesDetailsBelowBrand } from '@/api/model/brand'
+// import { useCommonList } from '@/hooks/web/useCommonList'
+import { getMemberTreeDataList } from '@/api/common'
+import { difference } from 'lodash-es'
+// const { getMemberTreeList } = useCommonList()
 onMounted(() => {
   getBrandInfo()
 })
+const treeShopCascader = ref()
 const message = useMessage()
 const visible = ref(false)
 const btnLoading = ref(false)
@@ -164,6 +179,7 @@ const openDialog = (id: string, formShopTreeList: any) => {
       })
     } else {
       ruleForm.value = { shopIdList: [] }
+      memberList.value = []
     }
     visible.value = true
   })
@@ -192,6 +208,19 @@ const getUsers = async () => {
   let str = ruleForm.value.shopIdList.join(',')
   const data = await getListSimpleUsersApi({ storeIds: str })
   userList.value = data
+}
+const shopUserList = ref<Recordable[]>([])
+// const shopUserList = ref(getMemberTreeList({
+//   belongShopid: ruleForm.value.shopIdList,
+//   childRuleValue: 'clue_pfcy_rule'
+// }).value)
+
+const getMemberTreeListApi = async () => {
+  const data = await getMemberTreeDataList({
+    belongShopid: ruleForm.value.shopIdList,
+    childRuleValue: 'clue_pfcy_rule'
+  })
+  shopUserList.value = data.trees
 }
 
 const brandList = ref<object[]>([])
@@ -231,33 +260,59 @@ const memberTableList = ref<tableObj[]>([
     ]
   }
 ])
-const addMemberRule = () => {
+const memberCasRef = ref()
+const memberList = ref<number[]>([])
+const addMemberRule = (val) => {
   if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
   }
-  let addItem: tableObj = {
-    shopId: '',
-    shopName: '',
-    distributeUserId: '',
-    nickname: '',
-    status: 0,
-    pushBackFactoryStatus: 0,
-    brandList: [
-      // {
-      //   brandId: 0,
-      //   seriesIds: []
-      // }
-    ]
+  if (val.length > unref(memberTableList).length) {
+    const ids = memberTableList.value.map((d) => d.distributeUserId)
+    const diffIds = difference(val, ids) // 返回本次新增的
+
+    const curData = memberCasRef.value.getCheckedNodes(true)
+    curData.forEach((item) => {
+      if (diffIds.includes(item.data.id)) {
+      }
+      let newItem = {
+        shopId: '',
+        shopName: '',
+        distributeUserId: '',
+        nickname: '',
+        status: 0,
+        pushBackFactoryStatus: 0,
+        brandList: []
+      }
+      newItem.distributeUserId = item.data.id
+      newItem.shopId = item.data.belongStoreId
+      newItem.shopName = item.data.belongStoreName
+      memberTableList.value.push(newItem)
+    })
+
+    // const arr = diffIds.map((id) => {
+    //   return {
+    //     shopId: '',
+    //     shopName: '',
+    //     distributeUserId: id,
+    //     nickname: '',
+    //     status: 0,
+    //     pushBackFactoryStatus: 0,
+    //     brandList: []
+    //   }
+    // })
+    // memberTableList.value.push(...arr)
+  } else {
+    memberTableList.value = memberTableList.value.filter((d) => val.includes(d.distributeUserId))
   }
-  memberTableList.value.push(addItem)
 }
 const getDistributeShopIdList = (val) => {
   if (!val) {
     memberTableList.value = []
-    getUsers()
+    getMemberTreeListApi()
   }
 }
-const deleteRow = (index) => {
+const deleteRow = (row, index) => {
+  memberList.value = memberList.value.filter((item) => item !== row.distributeUserId)
   memberTableList.value.splice(index, 1)
 }
 const cascaderRef = ref()

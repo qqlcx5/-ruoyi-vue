@@ -89,22 +89,12 @@
             <el-table-column label="团队" prop="teamName" />
             <el-table-column label="关联岗位" width="200">
               <template #default="{ row }">
-                <el-select
-                  v-model="row.positionSunTypeList"
-                  multiple
+                <el-cascader
                   filterable
-                  clearable
-                  collapse-tags
-                  style="width: 180px"
-                >
-                  <el-option
-                    v-for="item in postList"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                    :disabled="item.disabled"
-                  />
-                </el-select>
+                  v-model="row.positionSunTypeList"
+                  :options="postList"
+                  :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+                />
               </template>
             </el-table-column>
             <el-table-column label="允许独享人数" prop="permitEnjoyNum">
@@ -147,9 +137,9 @@ import { RuleObj } from '../helpers'
 import { FormInstance } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 import { useCommonList } from '@/hooks/web/useCommonList'
-
+import { getPostDataList } from '@/api/common'
 const store = useOption()
-const { getSuitableShopList, getPostList } = useCommonList()
+const { getSuitableShopList } = useCommonList()
 onMounted(() => {
   // getSuitableShopListApi()
   // getexistRuleShopApi()
@@ -218,8 +208,8 @@ type positionObj = {
 }
 const postList = ref<positionObj[]>([])
 const getPostListApi = async () => {
-  const data = ref(await getPostList())
-  postList.value = data.value.map((pos: positionObj) => {
+  const data = await getPostDataList()
+  postList.value = data.map((pos: positionObj) => {
     pos['disabled'] = selectedPositionId.value.includes(pos.id)
     return pos
   })
