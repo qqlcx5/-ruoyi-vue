@@ -91,7 +91,8 @@ const objectSpanMethod = ({ row, column }) => {
     'receivePattern',
     'createBy',
     'createTime',
-    'shopName'
+    'shopName',
+    'action'
   ].includes(property) //需要合并的字段
   // ----------皮卡丘------------
   let num = row.distributeShopList.length
@@ -124,27 +125,51 @@ const tableRowClassName = ({ row, column }): string => {
   }
   return ''
 }
+
+// 获取线索渠道
+let clueChannelTreeList = ref<any[]>([])
+const getShopUserList = async () => {
+  let data = await dispatchApi.getClueChannelTree()
+  if (data && data.length > 0) {
+    data = data.map((item) => {
+      item.label = item.companyShopName
+      item.value = ''
+      item.children = item.list.map((lItem) => {
+        lItem.label = lItem.sourceName
+        lItem.value = lItem.clueChannelId
+        return lItem
+      })
+      return item
+    })
+    clueChannelTreeList.value = data
+  }
+}
+getShopUserList()
 const columns: TableColumn[] = [
   {
     label: '线索平台来源',
-    field: 'clueChannelName',
+    field: 'clueChannelId',
     isSearch: true,
-    disabled: true
-  },
-  {
-    label: '所属区域/门店',
-    field: 'parentName',
-    disabled: true
-  },
-  {
-    label: '线索清洗员',
-    field: 'filterUserName'
+    isTable: false,
+    search: {
+      component: 'Cascader',
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: computed(() => clueChannelTreeList.value),
+        props: {
+          label: 'label',
+          value: 'value',
+          emitPath: false
+        }
+      }
+    }
   },
   {
     label: '派发门店',
-    field: 'distributeShopName',
+    field: 'shopId',
     isSearch: true,
-    disabled: true,
+    isTable: false,
     search: {
       component: 'Cascader',
       componentProps: {
@@ -153,11 +178,39 @@ const columns: TableColumn[] = [
         options: computed(() => shopTreeList.value),
         props: {
           label: 'name',
-          value: 'name',
+          value: 'id',
           emitPath: false
         }
       }
     }
+  },
+  {
+    label: '线索平台来源',
+    field: 'clueChannelName',
+    disabled: true
+  },
+  {
+    label: '所属区域/门店',
+    field: 'parentName',
+    disabled: true,
+    formatter: (_, __, val: string) => {
+      console.log(_, __, val)
+
+      return `${_.parentName} - ${_.shopName}`
+    }
+  },
+  // {
+  //   label: '开通门店',
+  //   field: 'shopName'
+  // },
+  {
+    label: '线索清洗员',
+    field: 'filterUserName'
+  },
+  {
+    label: '派发门店',
+    field: 'distributeShopName',
+    disabled: true
   },
   {
     label: '实际派发成员数',
@@ -181,10 +234,6 @@ const columns: TableColumn[] = [
     formatter: (_, __, val: string) => {
       return formatDate(new Date(val))
     }
-  },
-  {
-    label: '开通门店',
-    field: 'shopName'
   }
 ]
 
