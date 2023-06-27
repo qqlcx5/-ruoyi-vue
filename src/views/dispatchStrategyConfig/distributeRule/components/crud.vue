@@ -145,10 +145,10 @@ import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { cloneDeep } from 'lodash-es'
 import { RuleObj } from '../helpers'
 import { FormInstance } from 'element-plus'
-// import { useOption } from '@/store/modules/options'
+import { useOption } from '@/store/modules/options'
 import { useCommonList } from '@/hooks/web/useCommonList'
 
-// const store = useOption()
+const store = useOption()
 const { getSuitableShopList, getPostList } = useCommonList()
 onMounted(() => {
   // getSuitableShopListApi()
@@ -176,7 +176,6 @@ const form = ref(cloneDeep(initForm))
 const editFlag = ref<boolean>(false)
 const editId = ref(0)
 const selectedPositionId = ref<number[]>([])
-
 const openDialog = (id: number) => {
   nextTick(() => {
     let applicableShopId = []
@@ -203,9 +202,7 @@ const openDialog = (id: number) => {
       })
     }
     getPostListApi()
-    getShopList()
-    // todo
-    // getShopList(applicableShopId)
+    getexistRuleShopApi()
     dialogVisible.value = true
   })
 }
@@ -227,27 +224,13 @@ const getPostListApi = async () => {
     return pos
   })
 }
-// const anotherRowPosId = ref<number[]>([])
-// const changePosition = (isShow, row) => {
-// let hasId = selectedPositionId.value
-// selectedPositionId.value = [...row.positionSunTypeList, ...hasId]
-// if (row.positionSunTypeList.length > 0) {
-//   anotherRowPosId.value = row.positionSunTypeList
-// }
-// selectedPositionId.value = difference(row.positionSunTypeList, anotherRowPosId.value)
-// }
+
 const shopList = ref(getSuitableShopList())
-// const getSuitableShopListApi = async () => {
-//   shopList.value = await getSuitableShopList()
-// }
-const existShopList = ref(dispatchApi.existRuleShop())
-// const getexistRuleShopApi = async () => {
-//   existShopList.value = await dispatchApi.existRuleShop()
-// }
-const getShopList = async () => {
-  console.log(shopList.value, existShopList.value)
-  shopTreeList.value = shopList.value
-  //store.dealShopList(shopList.value, existShopList.value, applicableShopId)
+
+const existShopList = ref<object[]>([])
+const getexistRuleShopApi = async () => {
+  existShopList.value = await dispatchApi.existRuleShop()
+  shopTreeList.value = store.dealShopList(shopList.value, existShopList.value, [])
 }
 
 const changeRuleName = (val) => {
