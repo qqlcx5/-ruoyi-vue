@@ -55,7 +55,7 @@ import AddChannelModal from './components/AddChannelModal.vue'
 import { hasPermission } from '@/utils/utils'
 
 import { useCommonList } from '@/hooks/web/useCommonList'
-const { getShopList } = useCommonList()
+const { getSuitableShopList } = useCommonList()
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -69,7 +69,10 @@ const FilterFun = (val) => {
 }
 
 // 获取门店数据
-const shopTreeList = ref(getShopList())
+const shopTreeList = ref(getSuitableShopList())
+
+// 获取门店数据
+// const shopTreeList = ref(getShopList())
 // console.log(getShopList())
 
 let sourceList = ref<any[]>([])

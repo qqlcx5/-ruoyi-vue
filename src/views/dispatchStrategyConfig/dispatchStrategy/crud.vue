@@ -19,7 +19,7 @@
       </template>
       <template #filterUserId="form">
         <el-cascader
-          :options="userOptions"
+          :options="userOptions.users"
           :props="filterUserIdProps"
           v-model="form.filterUserId"
           collapse-tags
@@ -70,11 +70,10 @@ import { ref } from 'vue'
 import { FormExpose } from '@/components/Form'
 import { rules, allSchemas } from './dispatchStrategy.data'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
-import * as postApi from '@/api/system/post/info'
 import { getAllStoreList } from '@/api/system/organization/index'
 import { listToTree } from '@/utils/tree'
-// import { useCommonList } from '@/hooks/web/useCommonList'
-// const { getMemberList } = useCommonList()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getMemberList, getSuitableShopList } = useCommonList()
 
 const formRef = ref<FormExpose>() // 表单 Ref
 const { t } = useI18n() // 国际化
@@ -114,35 +113,23 @@ const clueChannelIdProps = {
   emitPath: false
 }
 const filterUserIdProps = {
-  label: 'clueName',
-  value: 'clueSourceId',
+  label: 'name',
+  value: 'id',
   emitPath: false
 }
 // 获取岗位精简信息列表
-const getListSimplePosts = async () => {
-  let data = await postApi.listSimplePostsApi()
-  if (data) {
-    console.log(data)
-    getfilterUserId()
-  }
-}
 // 根据岗位岗位获取清洗员
-let userOptions = ref<any[]>([])
-const getfilterUserId = async () => {
-  // userOptions.value = getMemberList({
-  //   belongShopid: 0,
-  //   childRuleValue: ''
-  // }).value
-}
-getListSimplePosts()
+let userOptions = ref<any>(getMemberList({ childRuleValue: 'clue_qxy_rule' }))
 
 // 获取门店
-let shopOptions = []
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopOptions = listToTree(data || [], { pid: 'parentId' })
-  console.log(shopOptions)
-}
+// 获取门店数据
+const shopOptions = ref(getSuitableShopList())
+// let shopOptions = []
+// const getShopList = async () => {
+//   const data = await getAllStoreList()
+//   shopOptions = listToTree(data || [], { pid: 'parentId' })
+//   console.log(shopOptions)
+// }
 const changeShopIdList = (val) => {
   console.log(val)
   // let ids = val.reduce((prev, cur) => {
@@ -154,7 +141,7 @@ const changeShopIdList = (val) => {
 
   getDistributeShopUserList(val)
 }
-getShopList()
+// getShopList()
 
 // 根据门店获取成员
 const getDistributeShopUserList = async (ids) => {

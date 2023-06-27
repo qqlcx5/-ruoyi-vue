@@ -113,11 +113,12 @@
 </template>
 <script setup lang="ts">
 import { ChannelVO } from '@/api/clue/channel'
-// import * as channelApi from '@/api/clue/channel'
-import { getAllStoreList } from '@/api/system/organization/index'
-import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
 import * as channelApi from '@/api/clue/channel'
+
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
+
 defineProps({
   msg: String
 })
@@ -260,17 +261,20 @@ const clueSourceProps = {
 }
 
 const shopProps = {
-  checkStrictly: true,
+  // checkStrictly: true,
   label: 'name',
   value: 'id'
 }
-let shopOptions = []
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopOptions = listToTree(data || [], { pid: 'parentId' })
-  console.log(shopOptions)
-}
-getShopList()
+
+// 获取门店数据
+const shopOptions = ref(getSuitableShopList())
+// let shopOptions = []
+// const getShopList = async () => {
+//   const data = await getAllStoreList()
+//   shopOptions = listToTree(data || [], { pid: 'parentId' })
+//   console.log(shopOptions)
+// }
+// getShopList()
 
 import { cloneDeep } from 'lodash-es'
 // 保存按钮

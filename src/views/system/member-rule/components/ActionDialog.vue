@@ -32,7 +32,7 @@
               @change="handleSuitableShop"
             />
           </template>
-          <template #dataRangShopId="{ row }">
+          <template #dataRangShopId="{ row, $index }">
             <el-cascader
               v-model="row.dataRangShopId"
               clearable
@@ -41,10 +41,10 @@
               collapse-tags-tooltip
               :options="shopList"
               :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
-              @change="handleShopChange(row)"
+              @change="handleShopChange(row, $index)"
             />
           </template>
-          <template #dataRangPostId="{ row }">
+          <template #dataRangPostId="{ row, $index }">
             <el-cascader
               v-model="row.dataRangPostId"
               clearable
@@ -53,17 +53,17 @@
               collapse-tags-tooltip
               :options="postList"
               :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
-              @change="handleShopChange(row)"
+              @change="handleShopChange(row, $index)"
             />
           </template>
-          <template #dataRangUserId="{ row }">
+          <template #dataRangUserId="{ row, $index }">
             <el-cascader
               v-model="row.dataRangUserId"
               clearable
               filterable
               collapse-tags
               collapse-tags-tooltip
-              :options="memberList"
+              :options="allMemberList[$index]"
               :props="{ label: 'nickname', value: 'id', multiple: true, emitPath: false }"
             />
           </template>
@@ -91,14 +91,15 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, watch, onMounted, ComputedRef } from 'vue'
+import { reactive, watch, onMounted } from 'vue'
 import { TableColumn } from '@/types/table'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { cloneDeep, isEmpty } from 'lodash-es'
 import AddChildDialog from './AddChildDialog.vue'
-import { useColumnOptions } from '../helpers'
+import { useColumnOptions, stringToArray } from '../helpers'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { autoSetMemberRule, getHasShopId } from '@/api/system/memberRule'
+import { getUserMemberDataList } from '@/api/common'
 
 type RuleItem = {
   applicableShopId: string
@@ -123,21 +124,12 @@ const emits = defineEmits<{
   (e: 'save', data: Recordable): void
 }>()
 
-watch(
-  () => props.data,
-  (val) => {
-    if (!isEmpty(val)) {
-      val?.map((item) => tableData.push(item))
-    }
-  }
-)
-
-const { getPostList, getSuitableShopList, getUserMemberList } = useCommonList()
+const { getPostList, getSuitableShopList } = useCommonList()
 const suitableShop = getSuitableShopList()
 const shopList = ref<Recordable[]>([])
 const suitableShopList = ref<Recordable[]>([])
 const postList = ref(getPostList())
-let memberList: ComputedRef<Recordable[]>
+const allMemberList: Recordable[][] = reactive([])
 
 watch(
   suitableShop,
@@ -149,12 +141,12 @@ watch(
 )
 
 /** 改变门店数据范围 */
-const handleShopChange = (row: Recordable) => {
-  const list = getUserMemberList({
+const handleShopChange = async (row: Recordable, index: number) => {
+  const list = await getUserMemberDataList({
     storeIds: row.dataRangShopId,
     postIds: row.dataRangPostId
   })
-  memberList = computed(() => list.value)
+  allMemberList[index] = list
 }
 
 /** 改变适用门店 */
@@ -214,8 +206,25 @@ const columns: TableColumn[] = [
     showOverflowTooltip: false
   }
 ]
-
 const { allSchemas } = useCrudSchemas(columns)
+
+watch(
+  () => props.data,
+  (val) => {
+    if (!isEmpty(val)) {
+      val?.map((item) =>
+        tableData.push({
+          ...item,
+          applicableShopId: stringToArray(item.applicableShopId),
+          dataRangPostId: stringToArray(item.dataRangPostId),
+          dataRangShopId: stringToArray(item.dataRangShopId),
+          dataRangUserId: stringToArray(item.dataRangUserId)
+        })
+      )
+    }
+  },
+  { immediate: true }
+)
 
 /** 重新设置适用门店数据(已选的不可重复) */
 const resetShopId = () => {
@@ -311,10 +320,10 @@ const handleSave = async (params: Recordable) => {
   data?.map((item) =>
     tableData.push({
       ...item,
-      dataRangPostId: item.dataRangPostId?.split(',').map((item) => Number(item)),
-      applicableShopId: item.applicableShopId?.split(',').map((item) => Number(item)),
-      dataRangShopId: item.dataRangShopId?.split(',').map((item) => Number(item)),
-      dataRangUserId: item.dataRangUserId?.split(',').map((item) => Number(item))
+      applicableShopId: stringToArray(item.applicableShopId),
+      dataRangPostId: stringToArray(item.dataRangPostId),
+      dataRangShopId: stringToArray(item.dataRangShopId),
+      dataRangUserId: stringToArray(item.dataRangUserId)
     })
   )
 }

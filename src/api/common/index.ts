@@ -4,7 +4,7 @@ const regVersion = import.meta.env.VITE_REG_VERSION
 
 export type MemberListParams = {
   /**  查询用户所属门店 */
-  belongShopid: number[]
+  belongShopid?: number[]
   /** 业务所属品牌id */
   businessBrandValue?: number
   /** 业务所属市编码 */

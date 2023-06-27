@@ -56,9 +56,15 @@ let showTisColumnTool = ref(true)
 watch(sourceList, (sourceList: any) => {
   let index: number = currentIndex.value
   let key = index + 1
-  let list = sourceList[key].list
+  let list = []
+  if (sourceList.length < key) {
+    list = sourceList[key].list
+  }
   let tool = true
   if (list.length == 0) {
+    tool = false
+  }
+  if (sourceList.length == levelList.length) {
     tool = false
   }
   showTisColumnTool.value = tool
@@ -93,13 +99,18 @@ const getSourceList = async () => {
 getSourceList()
 
 const selectedSource = (lItem, index) => {
-  currentIndex.value = index
-  sourceList.value[index].checkedData = lItem
-  sourceList.value = sourceList.value.slice(0, index + 1)
-  let children = lItem.children || []
-  if (index < 5) {
-    // 最后一级不加
-    sourceList.value.push({ checkedData: {}, list: children })
+  try {
+    currentIndex.value = index
+    sourceList.value[index].checkedData = lItem
+    sourceList.value = sourceList.value.slice(0, index + 1)
+    if (index < levelList.length - 1) {
+      // 最后一级不加
+
+      let children = lItem.children || []
+      sourceList.value.push({ checkedData: {}, list: children })
+    }
+  } catch (error) {
+    console.log(error)
   }
 }
 const addSourceModalRef = ref()
