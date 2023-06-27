@@ -55,6 +55,7 @@
             inactive-text="否"
             :active-value="1"
             :inactive-value="0"
+            @change="(e) => handleNeedFilterChange(e, row)"
           />
         </template>
         <template #autoDistribute="{ row }">
@@ -65,6 +66,7 @@
             inactive-text="否"
             :active-value="1"
             :inactive-value="0"
+            :disabled="row.needFilter"
           />
         </template>
         <template #platformRule="{ row }">
@@ -343,6 +345,11 @@ const openModal = (row) => {
   })
   getSourceList()
   handleAdd()
+}
+const handleNeedFilterChange = (e, row) => {
+  if (e == 1) {
+    row.autoDistribute = 0
+  }
 }
 defineExpose({ openModal })
 </script>
