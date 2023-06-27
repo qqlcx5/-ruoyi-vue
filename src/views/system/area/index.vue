@@ -1,10 +1,11 @@
 <!--  行政区划  -->
 <template>
   <div class="total-content">
-    <!--  -1显示全部区划item 100000中国  -->
     <LeftSelectTree
-      :treeData="state.areaList.filter((item) => item.code !== '-1')"
+      :treeData="state.areaList"
+      :statusValue="state.statusValue"
       @sendCurrentSelect="sendCurrentSelect"
+      @statusChange="statusChange"
     />
     <el-card class="right-card" body-style="padding:0">
       <div class="btn-content">
@@ -42,10 +43,10 @@
           preIcon="svg-icon:add"
         />
         <XButton title="删除" v-hasPermi="['system:tenant-area:delete']" @click="openDeleteModal" />
-        <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">
-          <div>显示全部区划</div>
-          <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />
-        </div>
+        <!--        <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">-->
+        <!--          <div>显示全部区划</div>-->
+        <!--          <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />-->
+        <!--        </div>-->
       </div>
       <div class="form-content">
         <el-form
@@ -233,8 +234,6 @@ const rulesNoParent = reactive<FormRules>({
 
 //提交
 const onSubmit = async () => {
-  console.log('form.level', typeof form.level)
-  console.log(' form.level', form.level)
   if (!formRef.value) return
   await formRef.value.validate()
 
@@ -253,7 +252,7 @@ const onSubmit = async () => {
     switch (state.operationType) {
       case 'add':
         await addChildArea(params)
-        message.success('新增子项成功')
+        message.success('新增下级成功')
         getList()
         break
       case 'edit':
@@ -271,9 +270,6 @@ const onSubmit = async () => {
   } finally {
     state.loading = false
   }
-
-  console.log('form', form)
-  console.log('submit!!!!')
 }
 
 //重置
@@ -287,7 +283,6 @@ const resetForm = () => {
 
   form.sort = ''
   form.remark = ''
-  console.log('form', form)
 }
 
 //接收选中的省市区节点
@@ -300,7 +295,7 @@ const sendCurrentSelect = (currentSelectNode) => {
     state.useDefRules = true
     form.parentCode = currentSelectNode.parentCode //父区划编号
   }
-  console.log('currentSelectNode', currentSelectNode)
+
   state.operationType = ''
   state.isDisabled = true
   state.currentNode = currentSelectNode
@@ -316,7 +311,7 @@ const sendCurrentSelect = (currentSelectNode) => {
 
 const addEditArea = (type) => {
   state.operationType = type
-  console.log('state.currentNode===>', state.currentNode)
+
   switch (type) {
     case 'add':
       state.useDefRules = true
@@ -357,10 +352,11 @@ const modalDelete = async () => {
 }
 
 //显示全部区划
-const statusChange = async () => {
+const statusChange = async (visible) => {
   await visibleAllArea({
     id: state.isVisibleAllArea.id,
-    visible: state.statusValue ? 0 : 1
+    // visible: state.statusValue ? 0 : 1
+    visible: visible
   })
   message.success('编辑显示全部区划成功')
   getList()
@@ -368,12 +364,9 @@ const statusChange = async () => {
 
 const getList = async () => {
   state.areaList = await getAreaList()
-  const tempArr = handleTree(state.areaList, 'code', 'parentCode', 'children')
+  // const tempArr = handleTree(state.areaList, 'code', 'parentCode', 'children')
   state.isVisibleAllArea = state.areaList.find((item) => item.code === '-1')
   state.statusValue = state.isVisibleAllArea.visible === 0 ? true : false
-  console.log('isVisibleAllArea', state.isVisibleAllArea)
-  console.log('state.areaList', state.areaList)
-  console.log('tempArr', tempArr)
 }
 getList()
 </script>

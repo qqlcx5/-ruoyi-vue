@@ -1,7 +1,7 @@
 <template>
   <div class="edit-first-follow-rate-dialog" v-loading.fullscreen.lock="loading">
     <el-dialog
-      class="custom-dialog"
+      class="wg-custom-dialog"
       :model-value="props.modelValue"
       :title="editFlag ? '编辑' : '新增'"
       width="665px"
@@ -43,7 +43,7 @@
             :min="0"
             :max="100"
             :step="1"
-            style="width: 180px"
+            style="width: 240px"
           />
           <span class="ml-8px">%</span>
         </el-form-item>
@@ -54,7 +54,7 @@
             step-strictly
             :min="0"
             :step="1"
-            style="width: 180px"
+            style="width: 240px"
           />
           <span class="ml-8px">天</span>
         </el-form-item>
@@ -65,7 +65,7 @@
             filterable
             clearable
             collapse-tags
-            style="width: 180px"
+            style="width: 240px"
           >
             <el-option
               v-for="item in postList"
@@ -97,8 +97,7 @@ import {
   firstFollowRateEdit
 } from '@/api/clue/basicConfig'
 import { listSimplePostsApi } from '@/api/system/post/info'
-import { cloneDeep, difference } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
+import { cloneDeep } from 'lodash-es'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 const store = useOption()
@@ -173,7 +172,6 @@ const rules: FormRules = reactive<FormRules>({
 })
 
 const checkedPostNames = computed(() => {
-  console.log(postList, ruleForm.limitPositionTypeList)
   const list = ruleForm.limitPositionTypeList.reduce((arr, id) => {
     const obj = unref(postList).find((d) => d['id'] === id)
     obj && arr.push(obj['name'])
@@ -191,7 +189,6 @@ const getInfo = async (id) => {
     data.applicableShopId = data.applicableShopId.map((d) => +d)
     ruleForm = reactive(data)
     ruleForm.limitPositionTypeList = data.limitPositionTypes.split(',').map((d) => +d)
-    console.log(ruleForm, 'ruleFormruleForm')
   } finally {
     loading.value = false
   }
@@ -223,7 +220,7 @@ const handleConfirm = () => {
 
 <style lang="scss">
 .edit-first-follow-rate-dialog {
-  @import '../../style/index';
+  @import '@/styles/custom.scss';
   .checked-post {
     line-height: 20px;
     font-size: 14px;

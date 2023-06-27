@@ -5,17 +5,18 @@
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: dispatchApi.getClueDistributeRule,
-      delApi: dispatchApi.delClueDistributeRule,
-      showAdd: true,
+      showAdd: hasPermission('dispatch-strategy-config:distribute-rule:add'),
       actionButtons
     }"
     @add="addRule"
   >
     <template #openRules="{ row }">
       <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:distribute-rule:edit')"
         v-model="row.openRules"
         :active-value="1"
         :inactive-value="0"
+        @click.stop
         @change="changeOpenRules(row)"
       />
     </template>
@@ -31,13 +32,15 @@ import { getAllStoreList } from '@/api/system/organization'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { listToTree } from '@/utils/tree'
 import Crud from './components/crud.vue'
+import { formatDate } from '@/utils/formatTime'
+import { hasPermission } from '@/utils/utils'
 
 onMounted(() => {
   getShopList()
 })
-
+const message = useMessage()
 const refresh = () => {
-  tableRef.value.tableMethods.reload()
+  tableRef.value.tableMethods.getList()
 }
 // 获取门店数据
 const shopTreeList = ref<object[]>([])
@@ -92,36 +95,48 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
+    field: 'createTime',
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   }
 ]
-
-// const columns = ref<TableColumn[]>()
 
 const actionButtons = [
   {
     name: '编辑',
+    permission: hasPermission('dispatch-strategy-config:distribute-rule:edit'),
     click: (row) => {
-      crudRef.value.openDialog(row.id, shopTreeList.value)
+      crudRef.value.openDialog(row.id)
     }
   },
   {
     name: '删除',
-    click: () => {
-      console.log('删除')
+    permission: hasPermission('dispatch-strategy-config:distribute-rule:delete'),
+    click: (row) => {
+      delClueDistributeRule(row.id)
     }
   }
 ]
-
+const delClueDistributeRule = async (id: string) => {
+  await dispatchApi.delClueDistributeRule(id)
+  message.success('删除成功')
+  refresh()
+}
 const crudRef = ref()
 const addRule = async () => {
-  crudRef.value.openDialog('', shopTreeList.value)
+  crudRef.value.openDialog('')
 }
 const changeOpenRules = (row) => {
-  console.log(row)
-  // dispatchApi.changeClueDistributeRule(row.id, row.openRules).then((res) => {
-  //   console.log(res)
-  // })
+  if (!row.id) return
+  dispatchApi.changeClueDistributeRule(row.id, row.openRules)
 }
 const { allSchemas } = useCrudSchemas(columns)
 </script>

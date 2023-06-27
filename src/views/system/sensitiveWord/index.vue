@@ -59,15 +59,16 @@
     <!-- 对话框(添加 / 修改) -->
     <Form
       v-if="['create', 'update'].includes(state.modalType)"
-      :schema="formState"
+      :schema="state.formState"
       :rules="rules"
+      isCol
       ref="formRef"
     >
-      <template #tags="form">
-        <el-select v-model="form['tags']" multiple placeholder="请选择" style="width: 100%">
-          <el-option v-for="item in tagsOptions" :key="item" :label="item" :value="item" />
-        </el-select>
-      </template>
+      <!--      <template #tags="form">-->
+      <!--        <el-select v-model="form['tags']" multiple placeholder="请选择" style="width: 100%">-->
+      <!--          <el-option v-for="item in tagsOptions" :key="item" :label="item" :value="item" />-->
+      <!--        </el-select>-->
+      <!--      </template>-->
     </Form>
   </Dialog>
 </template>
@@ -75,28 +76,29 @@
 <script lang="ts" setup>
 import FormTable from '@/components/FormTable/src/FormTable.vue'
 
-import { exportSensitiveWordApi, getSensitiveWordPageApi } from '@/api/system/sensitiveWord'
+import * as SensitiveWordApi from '@/api/system/sensitiveWord'
+import { getSensitiveWordPageApi } from '@/api/system/sensitiveWord'
 
 import { TableColumn } from '@/types/table'
 import { DICT_TYPE } from '@/utils/dict'
 import { formatDate } from '@/utils/formatTime'
-import { getConfigPageApi } from '@/api/infra/config'
+// import { getConfigPageApi } from '@/api/infra/config'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import * as SensitiveWordApi from '@/api/system/sensitiveWord'
 import { FormExpose } from '@/components/Form'
 import { hasPermission } from '@/utils/utils'
-import { FormItemProps } from '@/types/form'
+// import { FormItemProps } from '@/types/form'
+import { getOrganizationTypeList } from '@/api/system/organization'
+
 const message = useMessage() // 消息弹窗
 
 const { t } = useI18n()
 
 const tableRef = ref()
 
-const getTableList = (params) => {
-  return getSensitiveWordPageApi(params).then((res) => {
-    console.log('res', res)
-    return res
-  })
+const getTableList = async (params) => {
+  const res = getSensitiveWordPageApi(params)
+  console.log('res', res)
+  return res
 }
 
 const columns: TableColumn[] = [
@@ -181,59 +183,26 @@ const columns: TableColumn[] = [
 
 const { allSchemas } = useCrudSchemas(columns)
 
-const formState = [
-  {
-    label: '敏感词',
-    field: 'name',
-    component: 'Input',
-    colProps: {
-      span: 24
-    }
-  },
-  {
-    label: '标签',
-    field: 'tags',
-    component: 'Input',
-    colProps: {
-      span: 24
-    }
-  },
-  {
-    label: '状态',
-    field: 'status',
-    component: 'Switch',
-    value: true,
-    colProps: {
-      span: 24
-    }
-  },
-  {
-    label: '描述',
-    field: 'description',
-    component: 'Input',
-    componentProps: {
-      type: 'textarea',
-      rows: 4
-    },
-    colProps: {
-      span: 24
-    }
-  }
-]
-
 // 获取标签
 const tagsOptions = ref()
 const getTags = async () => {
-  const res = await SensitiveWordApi.getSensitiveWordTagsApi()
-  tagsOptions.value = res
+  // const res = await SensitiveWordApi.getSensitiveWordTagsApi()
+  //获取数据字典
+  const dictRes = await getOrganizationTypeList(null)
+  //字典标签数组对象
+  const sensitiveWordsTagsList = dictRes.filter((item) => item.dictType === 'sensitive_words_tags')
+  //获取字典标签中文list
+  tagsOptions.value = sensitiveWordsTagsList.map((item) => item.label)
+  // tagsOptions.value = res
 }
 
 const actionLoading = ref(false) // 遮罩层
-const actionType = ref('') // 操作按钮的类型
-const dialogVisible = ref(false) // 是否显示弹出层
-const dialogTitle = ref('edit') // 弹出层标题
+// const actionType = ref('') // 操作按钮的类型
+// const dialogVisible = ref(false) // 是否显示弹出层
+// const dialogTitle = ref('edit') // 弹出层标题
 const formRef = ref<FormExpose>() // 表单 Ref
-const detailData = ref() // 详情 Ref
+// const detailData = ref() // 详情 Ref
+console.log('test')
 
 // 表单校验
 const rules = reactive({
@@ -243,13 +212,66 @@ const rules = reactive({
 
 const state = reactive({
   isShowAddEdit: false,
-  modalType: 'create'
+  modalType: 'create',
+  formState: [
+    {
+      label: '敏感词',
+      field: 'name',
+      component: 'Input',
+      colProps: {
+        span: 24
+      }
+    },
+    {
+      label: '标签',
+      field: 'tags',
+      component: 'Select',
+      componentProps: {
+        multiple: true,
+        style: {
+          width: '100%'
+        },
+        options: computed(() => {
+          return tagsOptions.value.map((item) => {
+            return {
+              label: item,
+              value: item
+            }
+          })
+        })
+      },
+      colProps: {
+        span: 24
+      }
+    },
+    {
+      label: '状态',
+      field: 'status',
+      component: 'Switch',
+      value: true,
+      colProps: {
+        span: 24
+      }
+    },
+    {
+      label: '描述',
+      field: 'description',
+      component: 'Input',
+      componentProps: {
+        type: 'textarea',
+        rows: 4
+      },
+      colProps: {
+        span: 24
+      }
+    }
+  ]
 })
 
 const exportList = (fileName) => {
   // exportSensitiveWordApi(fileName)
   //TODO 导出
-  console.log('导出')
+  console.log('导出', fileName)
 }
 
 const actionButtons = [
@@ -260,7 +282,7 @@ const actionButtons = [
       state.modalType = 'update'
       state.isShowAddEdit = true
       const res = await SensitiveWordApi.getSensitiveWordApi(id)
-      res.status = res.status === 0 ? true : false
+      res.status = res.status === 0
       unref(formRef)?.setValues(res)
     }
   },
@@ -292,7 +314,7 @@ const statusChange = async (e, { id }) => {
   }
   state.modalType = 'update'
   const res = await SensitiveWordApi.getSensitiveWordApi(id)
-  res.status = !(res.status === 0 ? true : false)
+  res.status = !(res.status === 0)
   const tempParams = res
   tempParams!.status = tempParams!.status ? '0' : '1'
   const data = tempParams as SensitiveWordApi.SensitiveWordVO

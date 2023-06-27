@@ -1,7 +1,7 @@
 <template>
   <div class="create-recovery-plan">
     <el-dialog
-      class="custom-dialog"
+      class="wg-custom-dialog"
       :model-value="props.modelValue"
       title="新增回收计划"
       width="max-content"
@@ -248,7 +248,7 @@ const handleConfirm = () => {
 
 <style lang="scss">
 .create-recovery-plan {
-  @import '../../style/index';
+  @import '@/styles/custom.scss';
   .el-dialog__body {
     display: flex;
     min-width: 550px;

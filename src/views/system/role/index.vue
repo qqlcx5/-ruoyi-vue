@@ -347,10 +347,7 @@ const goto = ({ id }) => {
 
 // ========== 权限配置 ==========
 const openConfigModal = ({ id }) => {
-  router.push({
-    name: 'Roleconfig',
-    query: { id }
-  })
+  router.push(`/systemRole/config?id=${id}`)
 }
 
 // ========== 初始化 ==========

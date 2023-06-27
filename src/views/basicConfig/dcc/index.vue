@@ -23,7 +23,13 @@
       @page-change="pageChange"
     >
       <template #btns>
-        <XButton type="primary" iconFont="icon-xinzeng" title="新增" @click="handleCreate" />
+        <XButton
+          v-hasPermi="['clue:basic-config:dcc:create']"
+          type="primary"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
   </div>
@@ -31,7 +37,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import { queryDccPage, dccOpenRule, deleteDcc } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
 import { useOption } from '@/store/modules/options'
@@ -44,17 +50,18 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { title: 'DCC规则名称', key: 'dccRuleName' },
+    { label: 'DCC规则名称', key: 'dccRuleName' },
     {
-      title: '适用门店',
+      label: '适用门店',
       key: 'departName',
       minWidth: 250,
       render: ({ row }) => row.applicableShopName.join('，')
     },
     {
-      title: '启用状态',
+      label: '启用状态',
       key: 'openRules',
       render: ({ row }) => {
+        row.openRules = row.openRules || 0
         return (
           <el-switch
             v-model={row.openRules}
@@ -65,25 +72,35 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '创建人', key: 'creator' },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: 190,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: null,
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleDccEdit(row)}>
+            <el-button
+              v-hasPermi={[['clue:basic-config:dcc:edit']]}
+              type="primary"
+              link
+              onclick={() => handleDccEdit(row)}
+            >
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row)}>
+            <el-button
+              v-hasPermi={[['clue:basic-config:dcc:delete']]}
+              type="primary"
+              link
+              onclick={() => handleDelete(row)}
+            >
               删除
             </el-button>
           </div>

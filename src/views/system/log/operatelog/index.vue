@@ -44,35 +44,6 @@
         </div>
       </el-tooltip>
     </template>
-    <!--    <template #resultData="{ row }">-->
-    <!--      <el-popover-->
-    <!--        :width="400"-->
-    <!--        placement="right"-->
-    <!--        trigger="click"-->
-    <!--        :title="`日志内容(${getDictLabel(DICT_TYPE.SYSTEM_OPERATE_TYPE, row.type)})`"-->
-    <!--      >-->
-    <!--        <template #reference>-->
-    <!--          <el-link ref="checkBtnRef" type="primary" :underline="false" @click="getLogDetail(row.id)"-->
-    <!--            >查看</el-link-->
-    <!--          >-->
-    <!--        </template>-->
-    <!--        <el-descriptions v-if="row.requestMethod !== 'PUT'" :column="1" border>-->
-    <!--          <el-descriptions-item-->
-    <!--            v-for="(item, index) in baseDescription"-->
-    <!--            :key="index"-->
-    <!--            :label="item.name"-->
-    <!--            label-class-name="log-label"-->
-    <!--          >-->
-    <!--            {{ item.value }}-->
-    <!--          </el-descriptions-item>-->
-    <!--        </el-descriptions>-->
-    <!--        <el-table v-else :data="logInfo" border header-cell-class-name="table-header">-->
-    <!--          <el-table-column prop="field" label="字段名" />-->
-    <!--          <el-table-column prop="beforeValue" label="修改前" />-->
-    <!--          <el-table-column prop="afterValue" label="修改后" />-->
-    <!--        </el-table>-->
-    <!--      </el-popover>-->
-    <!--    </template>-->
   </form-table>
   <DetailDrawer ref="detailDrawerRef" />
 </template>
@@ -162,6 +133,7 @@ const columns: TableColumn[] = [
     label: '操作端口',
     field: 'entrance',
     dictType: DICT_TYPE.ENTRANCE,
+    width: 100,
     isSearch: true
   },
   {
@@ -170,12 +142,6 @@ const columns: TableColumn[] = [
     width: 140,
     isSearch: true
   },
-  // {
-  //   label: '日志内容',
-  //   field: 'resultData',
-  //   width: 140,
-  //   disabled: true
-  // },
   {
     label: '操作结果',
     field: 'resultCode',
@@ -199,7 +165,7 @@ const columns: TableColumn[] = [
       component: 'DatePicker',
       componentProps: {
         type: 'datetimerange',
-        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+        valueFormat: 'YYYY-MM-DD HH:mm:ss'
       }
     },
     formatter: (_, __, val: string) => {
@@ -224,42 +190,6 @@ const actionButtons = [
   }
 ]
 const { allSchemas } = useCrudSchemas(columns)
-
-// const checkBtnRef = ref()
-// const baseDescription = ref<any[]>()
-// const logInfo = ref<any[]>([])
-// const logPopoverLoading = ref<boolean>(false)
-// const getLogDetail = async (id) => {
-//   logPopoverLoading.value = true
-//   await getOperateLogDetailApi({ id })
-//     .then((res) => {
-//       if (!res.exts) return
-//       const { beforeExecuteData, afterExecuteJson } = res.exts
-//       if (!beforeExecuteData || Object.keys(beforeExecuteData).length === 0) {
-//         baseDescription.value = Object.keys(afterExecuteJson).map((key) => {
-//           return {
-//             name: key,
-//             value: afterExecuteJson[key]
-//           }
-//         })
-//       } else {
-//         logInfo.value =
-//           Object.keys(beforeExecuteData).map((item) => {
-//             return {
-//               field: item,
-//               beforeValue: beforeExecuteData[item] || '',
-//               afterValue: afterExecuteJson[item] || ''
-//             }
-//           }) || []
-//       }
-//       if (beforeExecuteData && afterExecuteJson) {
-//       } else if (Object.keys(beforeExecuteData).length === 0 && afterExecuteJson) {
-//       }
-//     })
-//     .finally(() => {
-//       logPopoverLoading.value = false
-//     })
-// }
 
 const handleDelete = async () => {
   const selectedData = await tableRef.value.tableMethods.getSelections()

@@ -16,6 +16,11 @@ export type TableSlotDefault = {
   $index: number
 } & Recordable
 
+export type TableSlotHeader = {
+  column: TableColumn
+  $index: number
+}
+
 export interface Pagination {
   small?: boolean
   background?: boolean

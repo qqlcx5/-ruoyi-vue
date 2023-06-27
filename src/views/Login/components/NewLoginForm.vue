@@ -189,6 +189,7 @@
               class="w-[100%]"
               :title="t('login.login')"
               @click="getCode()"
+              :disabled="!loginData.loginForm.username || !loginData.loginForm.password"
             />
           </el-form-item>
           <!--          <el-link-->
@@ -207,6 +208,7 @@
               class="w-[100%]"
               :title="t('login.login')"
               @click="getTenant"
+              :disabled="!loginData.loginForm.mobileNumber || !loginData.loginForm.code"
             />
           </el-form-item>
         </template>
@@ -281,10 +283,6 @@ const validatePassword = (rule: any, value: any, callback: any) => {
   if (getLoginState.value === LoginStateEnum.RESET_PASSWORD && !value) {
     callback(new Error('请输入正确格式新密码'))
   } else {
-    // if (loginData.loginForm.newPassword !== '') {
-    //   if (!formLogin.value) return
-    //   formLogin.value.validateField('newPassword', () => null)
-    // }
     callback()
   }
 }
@@ -618,6 +616,10 @@ watch(
 )
 onMounted(() => {
   getCookie()
+  // 退出登录，初始化二维码
+  if (getLoginState.value === LoginStateEnum.QR_CODE) {
+    qrCodeRef.value.initQrCode()
+  }
 })
 </script>
 

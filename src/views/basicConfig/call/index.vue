@@ -3,6 +3,7 @@
     <div class="config-form-item">
       <span class="mr-8px">每个客户每天允许打通电话次数</span>
       <el-button
+        v-hasPermi="['clue:basic-config:call:edit']"
         type="primary"
         v-if="!editFlag"
         :loading="btnLoading"
@@ -66,8 +67,6 @@
 
 <script setup lang="ts">
 import { queryClueFollowConfig, saveClueFollowConfig } from '@/api/clue/basicConfig'
-import { listToTree } from '@/utils/tree'
-import { cloneDeep } from 'lodash-es'
 import { ElTable } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 const store = useOption()
@@ -147,7 +146,8 @@ const handleDelRow = (index) => {
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
+
 .call-settings-container {
   display: flex;
   flex-direction: column;

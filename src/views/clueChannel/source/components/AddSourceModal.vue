@@ -1,14 +1,15 @@
 <template>
-  <XModal v-model="dialogVisible" width="534px" :title="dialogTitle">
+  <XModal v-model="dialogVisible" width="534px" :title="dialogTitle" @close="heheMethod">
     <!-- 对话框(添加 / 修改) -->
     <Form
       v-if="['create', 'update'].includes(actionType)"
       :schema="allSchemas.formSchema"
       :rules="rules"
       ref="formRef"
+      :model="model"
     >
-      <template #code="form">
-        <el-input v-model="form.code" placeholder="请输入线索来源名称" />
+      <template #sourceName="form">
+        <el-input v-model="form.sourceName" placeholder="请输入线索来源名称" />
       </template>
       <template #status="form">
         <el-cascader :options="options" :props="props" v-model="form.status" clearable />
@@ -32,6 +33,7 @@
 import { ref } from 'vue'
 import { FormExpose } from '@/components/Form'
 import { rules, allSchemas, oa_source_res } from './source.form'
+import * as channelApi from '@/api/clue/channel'
 
 const formRef = ref<FormExpose>() // 表单 Ref
 const { t } = useI18n() // 国际化
@@ -39,24 +41,56 @@ let dialogVisible = ref(false)
 let dialogTitle = ref('新增')
 const actionLoading = ref(false) // 遮罩层
 const actionType = ref('create') // 操作按钮的类型
-
+const message = useMessage() // 消息弹窗
 const props = {
   checkStrictly: true,
   label: 'clueName',
   value: 'clueSourceId'
 }
 
-let options = ref(oa_source_res.data)
+const heheMethod = () => {
+  console.log('关闭啦啊啊啊')
+}
 
-const openModal = (data) => {
-  console.log(data)
+let options = ref(oa_source_res.data)
+interface ParentInfoType {
+  parentId?: string
+  sourceHierarchy: string
+}
+let parentInfo: ParentInfoType = { sourceHierarchy: '' }
+let model = ref({})
+const openModal = (data, type) => {
+  let levelText = '来源'
+  try {
+    let levelList = data.levelList
+    let level = levelList[data.sourceHierarchy - 1]
+    levelText = `${level}级来源`
+    delete data.levelList
+  } catch (error) {
+    console.log(error)
+  }
 
   dialogVisible.value = true
+  if (type == 'add') {
+    dialogTitle.value = '新增' + levelText
+    parentInfo = {
+      sourceHierarchy: data.sourceHierarchy,
+      parentId: data.id || ''
+    }
+  } else {
+    dialogTitle.value = '编辑' + levelText
+    setTimeout(() => {
+      if (formRef.value) {
+        formRef.value.setValues(data)
+      }
+    }, 100)
+  }
 }
+
 defineExpose({ openModal })
+const emit = defineEmits(['refreshList'])
 // 保存按钮
 const submitForm = async () => {
-  console.log('======')
   const elForm = unref(formRef)?.getElFormRef()
   if (!elForm) return
   elForm.validate(async (valid) => {
@@ -64,10 +98,25 @@ const submitForm = async () => {
       actionLoading.value = true
       // 提交请求
       try {
-        const data = unref(formRef)?.formModel
-        console.log(data)
+        let data = unref(formRef)?.formModel
+        data = {
+          ...data,
+          ...parentInfo
+        }
+        let res = null
+        if (data.id) {
+          res = await channelApi.clueSourceManageUpdate(data)
+        } else {
+          res = await channelApi.clueSourceManageAdd(data)
+        }
 
-        // dialogVisible.value = false
+        console.log(res)
+
+        if (res) {
+          message.success('操作成功')
+          emit('refreshList')
+          dialogVisible.value = false
+        }
       } finally {
         actionLoading.value = false
       }

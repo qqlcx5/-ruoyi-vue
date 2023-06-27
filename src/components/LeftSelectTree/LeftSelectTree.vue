@@ -1,6 +1,14 @@
 <template>
-  <el-card class="box-card">
-    <!--    <el-input v-model="filterText" :suffix-icon="Search" placeholder="Filter keyword" />-->
+  <el-card
+    class="box-card"
+    :body-style="{
+      paddingTop: '5px'
+    }"
+  >
+    <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">
+      <div>显示全部区划</div>
+      <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />
+    </div>
     <el-input
       v-model="query"
       :suffix-icon="Search"
@@ -18,7 +26,7 @@
       :current-node-key="state.currentNodeKey"
       :filter-method="filterMethod"
       @node-click="selectTree"
-      :height="800"
+      :height="700"
       class="filter-tree"
       highlight-current
     />
@@ -28,21 +36,24 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { ElTreeV2 } from 'element-plus'
-import type { TreeNode } from 'element-plus/es/components/tree-v2/src/types'
+// import type { TreeNode } from 'element-plus/es/components/tree-v2/src/types'
 import { Search } from '@element-plus/icons-vue'
-import { getAllCustomKeys, getTreeAllCustomKeys } from '@/utils/utils'
+import { getTreeAllCustomKeys } from '@/utils/utils'
 import { handleTree } from '@/utils/tree'
 
 interface TreeDataProps {
   treeData?: Array<any>
+  statusValue?: boolean
 }
 
 const props = withDefaults(defineProps<TreeDataProps>(), {
-  treeData: () => []
+  treeData: () => [],
+  statusValue: false
 })
 
 const emit = defineEmits<{
   (e: 'sendCurrentSelect', key: any): void
+  (e: 'statusChange', key: any): void
 }>()
 
 interface State {
@@ -51,6 +62,7 @@ interface State {
   currentNodeKey: string
   treeData: Array<any>
   isFirst: boolean
+  statusValue: boolean
 }
 
 const state: State = reactive({
@@ -58,7 +70,8 @@ const state: State = reactive({
   treeData: [],
   defaultExpandedKeys: [], //默认展开的节点
   currentNodeKey: '', //当前选中的节点
-  isFirst: true //第一次 进来 默认值 单独处理
+  isFirst: true, //第一次 进来 默认值 单独处理
+  statusValue: false //显示全部区划
 })
 
 const query = ref('')
@@ -75,14 +88,47 @@ const onQueryChanged = (query: string) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   treeRef.value!.filter(query)
 }
-const filterMethod = (query: string, node: TreeNode) => {
+const filterMethod = (query: string, node: any) => {
+  if (!query) {
+    //当搜索为空串时 恢复初始状态即 选中第一项 且展开
+    //默认选中第一个节点
+    const tempFirstItem = state.treeData[0]
+    state.currentNodeKey = tempFirstItem.code
+
+    emit('sendCurrentSelect', {
+      id: tempFirstItem.id,
+      parentCode: tempFirstItem.parentCode,
+      parentName: tempFirstItem.parentName,
+      code: tempFirstItem.code,
+      name: tempFirstItem.name,
+      level: tempFirstItem.level,
+      visible: tempFirstItem.visible,
+      sort: tempFirstItem.sort,
+      remark: tempFirstItem.remark
+    })
+    //  默认展开第一项省市区
+    state.defaultExpandedKeys = getTreeAllCustomKeys(
+      tempFirstItem.children[0].code,
+      state.treeData,
+      'code'
+    )
+    state.isShow = false
+    nextTick(() => {
+      state.isShow = true
+    })
+  }
   return node.name!.includes(query)
 }
 
-const selectTree = (data, node) => {
-  console.log('data??????????', data)
-  console.log('node????', node)
+const selectTree = (data) => {
+  //手动赋值 好像不支持 v-modal
+  state.currentNodeKey = data.code
   emit('sendCurrentSelect', data)
+}
+
+//显示全部区划
+const statusChange = () => {
+  emit('statusChange', state.statusValue ? 0 : 1)
 }
 
 // onMounted(() => {
@@ -102,13 +148,16 @@ watch(
       return
     }
     // state.treeData = val
-    state.treeData = handleTree(val, 'code', 'parentCode', 'children')
-    //默认选中第一个节点
-    const tempFirstItem = state.treeData[0].children[0].children[0].children[0]
-    state.currentNodeKey = tempFirstItem.code
-    console.log('state.treeData', state.treeData)
+    //   -1显示全部区划item
+    const tempArr = val.filter((item) => item.code !== '-1')
+    state.treeData = handleTree(tempArr, 'code', 'parentCode', 'children')
+
     if (state.isFirst) {
       //首次
+      //默认选中第一个节点
+      const tempFirstItem = state.treeData[0]
+      state.currentNodeKey = tempFirstItem.code
+
       emit('sendCurrentSelect', {
         id: tempFirstItem.id,
         parentCode: tempFirstItem.parentCode,
@@ -121,18 +170,45 @@ watch(
         remark: tempFirstItem.remark
       })
       //  默认展开第一项省市区
-      state.defaultExpandedKeys = getTreeAllCustomKeys(tempFirstItem.code, state.treeData, 'code')
+      state.defaultExpandedKeys = getTreeAllCustomKeys(
+        tempFirstItem.children[0].code,
+        state.treeData,
+        'code'
+      )
       state.isFirst = false
+      state.isShow = false
+      // //  默认展开全部
+      // state.defaultExpandedKeys = getAllCustomKeys(props.treeData, 'code')
+      nextTick(() => {
+        state.isShow = true
+      })
+    } else {
+      //当前选中的节点
+      const currentItem = val.find((item) => item.code === state.currentNodeKey)
+      state.currentNodeKey = currentItem.code
+
+      emit('sendCurrentSelect', {
+        id: currentItem.id,
+        parentCode: currentItem.parentCode,
+        parentName: currentItem.parentName,
+        code: currentItem.code,
+        name: currentItem.name,
+        level: currentItem.level,
+        visible: currentItem.visible,
+        sort: currentItem.sort,
+        remark: currentItem.remark
+      })
     }
-    state.isShow = false
-    // //  默认展开全部
-    // state.defaultExpandedKeys = getAllCustomKeys(props.treeData, 'code')
-    nextTick(() => {
-      state.isShow = true
-    })
   },
   {
     immediate: true
+  }
+)
+
+watch(
+  () => props.statusValue,
+  (val) => {
+    state.statusValue = val
   }
 )
 </script>
@@ -141,10 +217,19 @@ watch(
 .box-card {
   min-width: 322px;
   height: 100%;
-  padding-bottom: 30px;
-  margin-right: 10px;
+  //padding-bottom: 30px;
+  //margin-right: 10px;
 }
 .filter-tree {
   margin-top: 15px;
+}
+.switch-content {
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.switch-style {
+  margin-left: 9px;
 }
 </style>

@@ -8,13 +8,13 @@ export type TeamObj = {
 }
 export type RuleObj = {
   distributeRuleName: string
-  shopIdList: string[]
+  shopIdList: number[]
   applicableShopId: string
   distributeType: number
   augment: number
   distributeNum: number
   receivePattern: number
   teamEnjoyScope: number
-  clueDistributeTeamDTOs: TeamObj[]
+  teams: TeamObj[]
   receiveNum: number
 }

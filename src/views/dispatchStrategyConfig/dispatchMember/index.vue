@@ -5,15 +5,42 @@
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: getTable,
-      showAdd: true,
+      showAdd: hasPermission('dispatch-strategy-config:dispatch-member:add'),
       actionButtons,
       selection: true,
-      spanMethod: objectSpanMethod
+      spanMethod: objectSpanMethod,
+      border: true
     }"
     @add="addMember"
   >
+    <template #status="{ row }">
+      <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
+        v-model="row.status"
+        :active-value="1"
+        :inactive-value="0"
+        @click.stop
+        @change="changeStatus(row)"
+      />
+    </template>
+    <template #pushBackFactoryStatus="{ row }">
+      <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
+        v-model="row.pushBackFactoryStatus"
+        :active-value="1"
+        :inactive-value="0"
+        @click.stop
+        @change="changePushBackFactoryStatus(row)"
+      />
+    </template>
+    <template #autoBrandNames="{ row }">
+      <span>{{ arrToStrFunc(row.autoBrandNames) }}</span>
+    </template>
+    <template #autoSeriesNames="{ row }">
+      <span>{{ arrToStrFunc(row.autoSeriesNames) }}</span>
+    </template>
     <template #tableAppend>
-      <XButton type="danger" @click="handleDel">删除</XButton>
+      <XButton @click="handleDel">删除</XButton>
     </template>
   </form-table>
   <el-dialog title="提示" v-model="delDialog" width="30%">
@@ -29,7 +56,7 @@
       <el-button type="primary" @click="confirmDel">确 定</el-button>
     </template>
   </el-dialog>
-  <Crud ref="crudRef" />
+  <Crud ref="crudRef" @refresh="refresh" />
 </template>
 
 <script setup lang="ts" name="dispatchMember">
@@ -40,12 +67,20 @@ import { getAllStoreList } from '@/api/system/organization'
 import { listToTree } from '@/utils/tree'
 import { computed, ref } from 'vue'
 import Crud from './components/crud.vue'
+import { getAllBrand } from '@/api/model/brand'
+import { formatDate } from '@/utils/formatTime'
+import { hasPermission } from '@/utils/utils'
 
 const message = useMessage()
 
 onMounted(() => {
   getShopList()
+  getBrandInfo()
 })
+
+const refresh = () => {
+  tableRef.value.tableMethods.getList()
+}
 const tableRef = ref()
 // 获取门店数据
 const shopTreeList = ref<object[]>([])
@@ -54,6 +89,18 @@ const getShopList = async () => {
   shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
 }
 
+const brandList = ref<object[]>([])
+const getBrandInfo = async () => {
+  const allBrand = await getAllBrand()
+  brandList.value = allBrand
+}
+const getTable = (params) => {
+  return dispatchApi.clueDistributeUser(params).then((data) => {
+    getSpanArr(data.list, mergeItems)
+    return data
+  })
+}
+// 需要合并的列号和列名
 let mergeItems = [
   {
     columnIndex: 1,
@@ -68,12 +115,8 @@ let mergeItems = [
     prop: 'distributeShopName'
   }
 ]
-const getTable = (params) => {
-  return dispatchApi.clueDistributeUser(params).then((data) => {
-    getSpanArr(data.list, mergeItems)
-    return data
-  })
-}
+
+// 合并行
 const objectSpanMethod = ({ rowIndex, columnIndex }) => {
   if (columnIndex === 1 || columnIndex === 2) {
     // 判断第几列需要合并
@@ -107,6 +150,11 @@ const getSpanArr = (data, array) => {
     }
   }
 }
+
+const arrToStrFunc = (arr) => {
+  return arr && JSON.parse(arr).join(',')
+}
+
 const columns: TableColumn[] = [
   {
     label: '分公司',
@@ -132,10 +180,7 @@ const columns: TableColumn[] = [
     label: '跟进是否回推厂家',
     field: 'pushBackFactoryStatus'
   },
-  {
-    label: '是否开启请假功能',
-    field: 'isEnableLeaveFunc'
-  },
+
   {
     label: '成员姓名',
     field: 'username',
@@ -171,10 +216,10 @@ const columns: TableColumn[] = [
       componentProps: {
         filterable: true,
         clearable: true,
-        options: computed(() => shopTreeList.value),
+        options: computed(() => brandList.value),
         props: {
-          label: 'name',
-          value: 'id',
+          label: 'brandName',
+          value: 'brandId',
           emitPath: false
         }
       }
@@ -194,22 +239,31 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
+    field: 'createTime',
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   }
 ]
 
 const actionButtons = [
   {
     name: '编辑',
-    permission: true,
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:edit'),
     click: (row) => {
-      console.log(row)
-      editMember(row.id)
+      editMember(row.distributeShopId)
     }
   },
   {
     name: '删除',
-    permission: true,
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:delete'),
     click: (row) => {
       selectedIds.value = [row.id]
       deleteFun()
@@ -226,6 +280,7 @@ const addMember = () => {
 const editMember = (id) => {
   crudRef.value.openDialog(id, shopTreeList.value)
 }
+
 const delDialog = ref(false)
 const handleDel = async () => {
   const res = await tableRef.value.tableMethods.getSelections()
@@ -241,15 +296,21 @@ const confirmDel = () => {
   deleteFun()
 }
 const deleteFun = async () => {
-  const res = await dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
-  if (res) {
-    message.success('删除成功')
-    delDialog.value = false
-    tableRef.value.tableMethods.getList()
-  } else {
-    message.error('报错了')
-  }
+  await dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
+  message.success('删除成功')
+  delDialog.value = false
+  tableRef.value.tableMethods.getList()
 }
+
+const changeStatus = (row) => {
+  if (!row.id) return
+  dispatchApi.updateClueDistributeUserStatus(row.id)
+}
+const changePushBackFactoryStatus = (row) => {
+  if (!row.id) return
+  dispatchApi.updatePushBackFactoryStatus(row.id)
+}
+
 const { allSchemas } = useCrudSchemas(columns)
 </script>
 

@@ -14,8 +14,10 @@ const drawerLoading = ref<boolean>(false)
 const detailInfo = ref<any>()
 const baseDescription = ref<any[]>()
 const logInfo = ref<any[]>([])
-const onlyAfterChange = computed(() => {
-  return logInfo.value!.every((item) => !item.beforeValue)
+const isUpdate = computed(() => {
+  return detailInfo.value?.exts
+    ? detailInfo.value?.exts.some((item) => item['操作类型'] === 'UPDATE')
+    : false
 })
 const baseInfo = reactive([
   { name: '操作人员', value: 'username' },
@@ -43,13 +45,22 @@ const getDetail = async (id) => {
       if (!res.exts) return
       let result: logChangeVO[] = []
       res.exts.forEach((item) => {
-        Object.keys(item.afterExecuteData).forEach((key) => {
-          result.push({
-            field: key,
-            afterValue: item.afterExecuteData[key] || '',
-            beforeValue: item.beforeExecuteData[key] || ''
+        let data
+        if (Object.keys(item.afterExecuteData).length) {
+          data = Object.keys(item.afterExecuteData)
+        }
+        if (Object.keys(item.beforeExecuteData).length) {
+          data = Object.keys(item.beforeExecuteData)
+        }
+        if (data) {
+          data.forEach((key) => {
+            result.push({
+              field: key,
+              afterValue: item.afterExecuteData[key],
+              beforeValue: item.beforeExecuteData[key]
+            })
           })
-        })
+        }
       })
       logInfo.value = result || []
     })
@@ -130,7 +141,21 @@ defineExpose({
 
       <div class="sub-title">日志内容</div>
       <div class="pl-26px pr-120px">
-        <template v-if="onlyAfterChange">
+        <el-popover
+          v-if="detailInfo && detailInfo.javaMethodArgs"
+          :width="550"
+          placement="right"
+          trigger="click"
+          effect="dark"
+          :content="detailInfo ? detailInfo.javaMethodArgs : ''"
+        >
+          <template #reference>
+            <el-link class="mb-16px" ref="checkBtnRef" type="primary" :underline="false"
+              >详情</el-link
+            >
+          </template>
+        </el-popover>
+        <template v-if="!isUpdate">
           <el-descriptions v-if="logInfo.length > 0" :column="1" border>
             <el-descriptions-item
               v-for="(item, index) in logInfo"
@@ -145,7 +170,6 @@ defineExpose({
           </el-descriptions>
           <div v-else class="text-center text-tip mt-60px">暂无内容</div>
         </template>
-
         <el-table v-else :data="logInfo" border header-cell-class-name="table-header">
           <el-table-column prop="field" label="字段名" />
           <el-table-column prop="beforeValue" label="修改前" />

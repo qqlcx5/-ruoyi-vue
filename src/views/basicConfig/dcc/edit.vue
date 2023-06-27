@@ -1,5 +1,5 @@
 <template>
-  <div class="dcc-edit-container" v-loading="loading">
+  <div class="basic-config-content dcc-edit-container" v-loading="loading">
     <div class="page-title">DCC考核设置</div>
     <el-form
       ref="ruleFormRef"
@@ -157,16 +157,16 @@
       </el-form-item>
       <Editor v-model="ruleForm.dccExplain" class="mb-20px" :height="220" style="width: 600px" />
     </el-form>
-  </div>
-  <div class="bottom-btns">
-    <el-button
-      type="primary"
-      size="large"
-      :disabled="id && !ruleForm.id"
-      :loading="btnLoading"
-      @click="handleSave"
-      >保存设置</el-button
-    >
+    <div class="bottom-btns">
+      <el-button
+        type="primary"
+        size="large"
+        :disabled="id && !ruleForm.id"
+        :loading="btnLoading"
+        @click="handleSave"
+        >保存设置</el-button
+      >
+    </div>
   </div>
 </template>
 
@@ -179,9 +179,7 @@ import {
   validDccRuleName,
   saveDccConfig
 } from '@/api/clue/basicConfig'
-import { cloneDeep, difference } from 'lodash-es'
-import { getAllStoreList } from '@/api/system/organization'
-import { listToTree } from '@/utils/tree'
+import { cloneDeep } from 'lodash-es'
 import { useTagsViewStoreWithOut } from '@/store/modules/tagsView'
 import { useOption } from '@/store/modules/options'
 const store = useOption()
@@ -283,11 +281,8 @@ const handleSave = async () => {
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
 .dcc-edit-container {
-  min-height: 100%;
-  padding: 22px 30px $btnWrapHeight;
-  background-color: var(--page-bg-color);
   .page-title {
     line-height: 25px;
     font-size: 14px;
@@ -312,17 +307,5 @@ const handleSave = async () => {
   .cycle-item + .cycle-item {
     margin-top: 8px;
   }
-}
-.bottom-btns {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  text-align: center;
-  line-height: $btnWrapHeight;
-  height: $btnWrapHeight;
-  background-color: var(--page-bg-color);
-  box-shadow: 0px -5px 8px 0px rgba(210, 210, 210, 0.2);
 }
 </style>
