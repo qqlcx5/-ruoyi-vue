@@ -64,7 +64,7 @@
               collapse-tags
               collapse-tags-tooltip
               :options="memberList"
-              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+              :props="{ label: 'nickname', value: 'id', multiple: true, emitPath: false }"
             />
           </template>
           <template #brandCondition="{ row }">
