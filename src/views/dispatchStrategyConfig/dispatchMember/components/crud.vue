@@ -32,6 +32,8 @@
     <div
       >派发人员配置(请先选择门店)
       <!--      <XButton type="primary" @click="addMemberRule">添加行</XButton>-->
+    </div>
+    <div>
       <el-cascader
         v-model="memberList"
         ref="memberCasRef"
@@ -152,8 +154,8 @@ const formRef = ref<FormInstance>()
 const ruleForm = ref({
   shopIdList: []
 })
-const rules: FormRules = reactive({
-  shopIdList: [{ required: true, message: '请选择门店', trigger: 'change' }]
+const rules: FormRules = reactive<FormRules>({
+  shopIdList: [{ required: true, message: '请选择门店', trigger: 'blur' }]
 })
 const hide = () => {
   visible.value = false
@@ -273,22 +275,21 @@ const addMemberRule = (val) => {
     const curData = memberCasRef.value.getCheckedNodes(true)
     curData.forEach((item) => {
       if (diffIds.includes(item.data.id)) {
+        let newItem = {
+          shopId: '',
+          shopName: '',
+          distributeUserId: '',
+          nickname: '',
+          status: 0,
+          pushBackFactoryStatus: 0,
+          brandList: []
+        }
+        newItem.distributeUserId = item.data.id
+        newItem.shopId = item.data.belongStoreId
+        newItem.shopName = item.data.belongStoreName
+        memberTableList.value.push(newItem)
       }
-      let newItem = {
-        shopId: '',
-        shopName: '',
-        distributeUserId: '',
-        nickname: '',
-        status: 0,
-        pushBackFactoryStatus: 0,
-        brandList: []
-      }
-      newItem.distributeUserId = item.data.id
-      newItem.shopId = item.data.belongStoreId
-      newItem.shopName = item.data.belongStoreName
-      memberTableList.value.push(newItem)
     })
-
     // const arr = diffIds.map((id) => {
     //   return {
     //     shopId: '',
@@ -384,9 +385,6 @@ const onConfirm = async () => {
     }
     if (!item.distributeUserId) {
       isValidDistributeUserId.value = false
-    } else {
-      item.distributeUserId = item.distributeUserId[0]
-      return item
     }
   })
   if (!isValidDistributeUserId.value) {
