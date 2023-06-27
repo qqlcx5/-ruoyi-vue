@@ -1,6 +1,7 @@
 <template>
   <div class="create-recovery-plan">
     <el-dialog
+      :lock-scroll="false"
       class="wg-custom-dialog"
       :model-value="props.modelValue"
       title="新增回收计划"
@@ -73,6 +74,7 @@
               <el-date-picker
                 v-model="timeRange"
                 type="datetimerange"
+                align="right"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 range-separator="至"
                 start-placeholder="开始时间"
@@ -310,6 +312,7 @@ const handleConfirm = () => {
     }
   }
   .left-content {
+    height: 710px;
     .el-select,
     .el-cascader {
       width: 240px;
