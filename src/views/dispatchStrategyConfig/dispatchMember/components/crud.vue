@@ -200,9 +200,11 @@ const parseBrandIds = (str) => {
 const seriesData = ref<any[]>([])
 const parseSeries = (str) => {
   seriesData.value = []
+  const arr = JSON.parse(str)
+  console.log(arr, 'arr')
   str &&
-    JSON.parse(str).map((item) => {
-      seriesData.value.push([item.brandId, ...item?.seriesIds])
+    arr.map((item) => {
+      seriesData.value.push([item.brandId, ...(item?.seriesIds || [])])
     })
   return seriesData.value
 }
@@ -376,7 +378,7 @@ const getSeries = async (val) => {
     let optionsObj: seriesParams = {
       seriesDetailsName: item.brand.brandName,
       seriesDetailsId: item.brand.brandId,
-      children: item.seriesList
+      children: item?.seriesList
     }
     seriesOption.value.push(optionsObj)
   })
