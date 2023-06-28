@@ -8,3 +8,8 @@ export const getAllBrand = async () => {
 export const querySeriesDetailsBelowBrand = async (data) => {
   return await request.post({ url: '/model/series/details/querySeriesDetailsBelowBrand', data })
 }
+
+//查询车系树形列表
+export const querySeriesDetailsTree = async () => {
+  return await request.post({ url: '/model/series/details/querySeriesDetailsTree' })
+}
