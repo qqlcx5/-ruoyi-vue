@@ -66,11 +66,12 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { label: '规则名称', key: 'ruleName' },
+    { label: '规则名称', key: 'ruleName', disabled: true },
     {
       label: '适用门店',
       key: 'applicableShopName',
       minWidth: 240,
+      disabled: true,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {

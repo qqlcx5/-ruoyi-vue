@@ -50,11 +50,12 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { label: 'DCC规则名称', key: 'dccRuleName' },
+    { label: 'DCC规则名称', key: 'dccRuleName', disabled: true },
     {
       label: '适用门店',
       key: 'departName',
       minWidth: 250,
+      disabled: true,
       render: ({ row }) => row.applicableShopName.join('，')
     },
     {
