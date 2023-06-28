@@ -191,6 +191,9 @@ const openDialog = (editType, data) => {
       if (formRef.value) {
         formRef.value.setValues(data)
       }
+      if (data.distributeShopIdList.length > 0) {
+        getDistributeShopUserList(data.distributeShopIdList)
+      }
     }, 200)
   }
   tableList.value = []

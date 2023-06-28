@@ -7,7 +7,7 @@
     height="80%"
   >
     <el-form :model="form" ref="formRef" :hide-required-asterisk="false">
-      <el-form-item label="规则名称">
+      <el-form-item label="规则名称" style="margin-left: 0">
         <el-input
           v-model="form.distributeRuleName"
           placeholder="请输入规则名称"
@@ -17,7 +17,7 @@
           type="text"
         />
       </el-form-item>
-      <el-form-item label="适用门店">
+      <el-form-item label="适用门店" style="margin-left: 0">
         <el-cascader
           ref="treeShopCascader"
           v-model="form.shopIdList"
@@ -33,6 +33,7 @@
           :show-all-levels="false"
           clearable
           collapse-tags
+          collapse-tags-tooltip
           filterable
         />
       </el-form-item>
@@ -87,7 +88,11 @@
         </el-form-item>
         <el-form-item v-if="form.receivePattern === 3">
           <el-button type="primary" size="small" @click="addTeam">添加团队</el-button>
-          <el-table :data="form.teams" ref="teamTableRef">
+          <el-table
+            :data="form.teams"
+            ref="teamTableRef"
+            :header-cell-style="{ backgroundColor: '#F6F6F6' }"
+          >
             <el-table-column label="团队" prop="teamName" />
             <el-table-column label="关联岗位" width="200">
               <template #default="{ row }">
@@ -169,8 +174,8 @@ const editFlag = ref<boolean>(false)
 const editId = ref(0)
 const selectedPositionId = ref<number[]>([])
 const openDialog = (id: number) => {
-  nextTick(() => {
-    let applicableShopId = []
+  let applicableShopId = []
+  nextTick(async () => {
     editId.value = id
     editFlag.value = !!id
     formRef.value?.resetFields()
@@ -178,7 +183,7 @@ const openDialog = (id: number) => {
     // shopTreeList.value = formshopTreeList
     selectedPositionId.value = []
     if (id) {
-      dispatchApi.getClueDistributeRuleDetail(id).then((res) => {
+      await dispatchApi.getClueDistributeRuleDetail(id).then((res) => {
         form.value = res
         if (!res.teams) {
           form.value.teams = []
@@ -194,7 +199,7 @@ const openDialog = (id: number) => {
       })
     }
     getPostListApi()
-    getexistRuleShopApi()
+    getexistRuleShopApi(applicableShopId)
     dialogVisible.value = true
   })
 }
@@ -220,9 +225,9 @@ const getPostListApi = async () => {
 const shopList = ref(getSuitableShopList())
 
 const existShopList = ref<object[]>([])
-const getexistRuleShopApi = async () => {
+const getexistRuleShopApi = async (applicableShopId) => {
   existShopList.value = await dispatchApi.existRuleShop()
-  shopTreeList.value = store.dealShopList(shopList.value, existShopList.value, [])
+  shopTreeList.value = store.dealShopList(shopList.value, existShopList.value, applicableShopId)
 }
 
 const changeRuleName = (val) => {

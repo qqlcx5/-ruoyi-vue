@@ -16,11 +16,11 @@ export type TreeNode = {
 const { t } = useI18n()
 
 export const stringToArray = (str = '') => {
-  return str.split(',').map((val) => Number(val))
+  return str?.split(',').map((val) => Number(val))
 }
 
-export const arrayToString = (array = []) => {
-  return array.join(',')
+export const arrayToString = (array: number[] = []) => {
+  return array?.join(',')
 }
 
 export const useColumnOptions = () => {
@@ -160,7 +160,7 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '岗位数据范围'
           },
-          title: `共${row.dataRangPostId.split(',')?.length}家岗位`
+          title: `共${row.dataRangPostId.split(',')?.length}个岗位`
         })
       }
     },
