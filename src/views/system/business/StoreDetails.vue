@@ -20,7 +20,11 @@
       </div>
       <div class="info-content">
         <div
-          :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
+          :class="[
+            'text-style',
+            { 'super-admin-style': childItem?.isSuperAdmin },
+            { 'width-full': childItem?.isFull }
+          ]"
           v-for="(childItem, childIndex) in item.infoArr"
           :key="`childItem${childIndex}`"
           ><span>{{ childItem.textSpan }}</span>
@@ -446,6 +450,12 @@ const detailsInfo = async (record) => {
     }
   })
 
+  //地址 数据统计区域
+  let companyAddressData = ''
+  if (res?.province) {
+    companyAddressData = res?.province + res?.city + res?.county
+  }
+
   //地址
   let companyAddress = ''
   if (res?.province) {
@@ -507,6 +517,11 @@ const detailsInfo = async (record) => {
         {
           textSpan: '品牌：',
           text: tempBrandtring
+        },
+        {
+          textSpan: '数据统计区域：',
+          text: companyAddressData,
+          isFull: true
         },
         {
           textSpan: '门店地址：',
