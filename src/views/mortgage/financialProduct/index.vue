@@ -10,6 +10,7 @@
       showAdd: true,
       selection: true
     }"
+    @add="createProduct"
   >
     <template #tableAppend>
       <XButton title="删除" />
@@ -18,7 +19,7 @@
       <el-input
         v-model="model.searchKey"
         placeholder="请输入按揭银行名称、联系人、最近操作人进行搜索"
-        style="width: 360px"
+        style="width: 344px"
       />
     </template>
     <template #action>
@@ -38,14 +39,19 @@ import { TableColumn } from '@/types/table'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { mortgageFinancePage } from '@/api/mortgage'
 import { useCommonList } from '@/hooks/web/useCommonList'
+import { DICT_TYPE } from '@/utils/dict'
 const { getSuitableShopList } = useCommonList()
 const shopList = ref(getSuitableShopList())
+
+const router = useRouter()
+
 const columns: TableColumn[] = [
   {
     label: '所属资金方',
     field: 'mortgageFinanceIds',
     width: 150,
     isSearch: true,
+    disabled: true,
     search: {
       component: 'Select',
       componentProps: {
@@ -55,20 +61,15 @@ const columns: TableColumn[] = [
       }
     }
   },
-  { label: '金融产品名称', field: 'provinceName', width: 110 },
+
+  { label: '金融产品名称', field: 'provinceName', width: 110, disabled: true },
   {
     label: '金融产品类别',
     field: 'productType',
     width: 110,
     isSearch: true,
-    search: {
-      component: 'Select',
-      componentProps: {
-        filterable: true,
-        multiple: true,
-        clearable: true
-      }
-    }
+    // dictType: DICT_TYPE.FINANCE_PRODUCT_CATEGORY,
+    disabled: true
   },
   {
     label: '',
@@ -76,7 +77,7 @@ const columns: TableColumn[] = [
     isTable: false,
     isSearch: true
   },
-  { label: '金融产品明细', field: 'countyName', width: 110 },
+  { label: '金融产品明细', field: 'countyName', width: 110, disabled: true },
   {
     label: '适用门店',
     field: 'shopIds',
@@ -147,6 +148,10 @@ const columns: TableColumn[] = [
 ]
 
 const { allSchemas } = useCrudSchemas(columns)
+
+const createProduct = () => {
+  router.push('financial-product/create')
+}
 </script>
 
 <style lang="scss" scoped>
