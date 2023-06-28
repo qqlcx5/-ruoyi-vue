@@ -1661,6 +1661,7 @@ const getOrganizationTypeListFN = async () => {
     'belongTenantId',
     'children'
   )
+  console.log('state.majorIndividualOption', state.majorIndividualOption)
   const res = await getOrganizationTypeList()
   //机构类型
   state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
@@ -1710,8 +1711,6 @@ const getOrganizationTypeListFN = async () => {
 
   state.barnOptions = tempBarnOptions
 }
-//获取机构类型
-getOrganizationTypeListFN()
 
 const getOrganizationDetailsFN = async () => {
   if (props.useStoreList.needUseStore) {
@@ -1984,8 +1983,6 @@ const getOrganizationDetailsFN = async () => {
   }
 }
 
-getOrganizationDetailsFN()
-
 // //处理省市区数据
 // // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
 // let needReplaceKey = [
@@ -1995,8 +1992,16 @@ getOrganizationDetailsFN()
 // state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
 
 onMounted(async () => {
+  //获取机构类型
+  await getOrganizationTypeListFN()
+  await getOrganizationDetailsFN()
+  console.log('state.formState.belongTenantId>>>>>>>>>>>>>>>>', state.formState.belongTenantId)
+  console.log('props.storeRecord', props.storeRecord)
   const areaRes = await getCurrentStoreAreaList({
-    tenantId: props.storeRecord.id
+    tenantId:
+      props.storeRecord.organizationType === organizationType.store
+        ? props.storeRecord.tenantId
+        : props.storeRecord.id
   })
 
   state.proMunAreaList = state.proMunAreaListData = handleTree(

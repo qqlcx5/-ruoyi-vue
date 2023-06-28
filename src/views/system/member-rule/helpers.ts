@@ -239,11 +239,10 @@ export const useFormTable = () => {
 
 export const useRuleTree = () => {
   const treeData = ref<Recordable[]>([])
-  const dictType = 'clue_choose_user_rule,clue_choose_user_reception,clue_choose_user_visit'
   const selectNode = ref<Partial<TreeNode>>({})
 
   const getTree = async () => {
-    const data = await getMemberRuleTree(dictType)
+    const data = await getMemberRuleTree()
     treeData.value = data
   }
 

@@ -159,7 +159,7 @@
           v-if="state.refreshTable"
           :columns="state.columns"
           :data-source="state.tableDataPseudoPaginationList"
-          :scroll="{ x: '100%', y: 440 }"
+          :scroll="{ x: 'max-content', y: 440 }"
           :pagination="false"
           @change="onChange"
           :row-key="(record) => record.id"
@@ -498,13 +498,12 @@
       </a-card>
       <div class="test">
         <div class="test111"
-          ><storeProSelectTree
+          ><StoreProSelectTree
             :tree-data="state.areaListOptions"
             @sendCurrentSelect="sendCurrentSelect"
             :selectedKeys="state.selectedKeys"
             :testArr="state.testArr"
-          ></storeProSelectTree
-        ></div>
+        /></div>
         <div>
           <!-- 搜索工作栏 -->
           <a-card class="search-card width-715">
@@ -649,7 +648,7 @@
               v-if="state.refreshTableStore"
               :columns="state.columnsStore"
               :data-source="state.tableDataPseudoPaginationListStore"
-              :scroll="{ x: '100%', y: 440 }"
+              :scroll="{ x: 'max-content', y: 440 }"
               :pagination="false"
               @change="onChange"
               :row-key="(record) => record.id"
@@ -1514,7 +1513,7 @@
   >
     <div
       class="details-edit"
-      @click="edit(state.record, true)"
+      @click="edit(state.record, true, null, null, true)"
       v-hasPermi="['system:tenant:update']"
       ><img :src="editImg" alt="" class="edit-Img" />修改</div
     >
@@ -1828,10 +1827,10 @@ import Store from '@/views/system/business/Store.vue'
 import StoreDetails from '@/views/system/business/StoreDetails.vue'
 import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
-import storeProSelectTree from '@/views/system/business/components/storeProSelectTree.vue'
+import StoreProSelectTree from '@/views/system/business/components/StoreProSelectTree.vue'
 import { FileUnit } from '@/components/UploadFile/src/helper'
 import isBetween from 'dayjs/plugin/isBetween'
-import { getAreaList, getOrganizationTypeList } from '@/api/system/organization'
+import { getAreaList, getCurrentAreaList, getOrganizationTypeList } from '@/api/system/organization'
 import { majorIndividualType } from '@/utils/constants'
 import Pagination from '@/components/Pagination/index.vue'
 import loginLogo from '@/assets/imgs/system/loginLogo.png'
@@ -2619,9 +2618,17 @@ const getListStoreFN = async (isRefresh = false) => {
     status: queryParamsStore.status
   }
 
-  // switch (state?.currentSelectArea?.level) {
-  //   case ' '
-  // }
+  switch (state?.currentSelectArea?.level) {
+    case 1:
+      params['dataProvinceCode'] = state.currentSelectArea.key
+      break
+    case 2:
+      params['dataCityCode'] = state.currentSelectArea.key
+      break
+    case 3:
+      params['dataCountyCode'] = state.currentSelectArea.key
+      break
+  }
 
   try {
     const res = await getStoreList(params)
@@ -2977,7 +2984,8 @@ const edit = async (
   record,
   isCloseDetails = false,
   isStore = false,
-  currentTabs = 'basicInformation'
+  currentTabs = 'basicInformation',
+  unNeedRecord = false
 ) => {
   state.modalType = 'edit'
   state.modalTitle = '编辑'
@@ -3128,6 +3136,10 @@ const edit = async (
     })
   }
 
+  if (unNeedRecord) {
+    //催命似的催 没空 直接打个mark 详情内进修改 其实整块都得重新处理一下 - - 之前催得太紧又一会改一下 一会改一下 叠得有点乱 最好是让产品重新罗列一下所有情况 重新整理
+    state.record = {}
+  }
   majorIndividualTypeChange()
   openModal(record)
 }
@@ -3139,13 +3151,13 @@ const onChange = ({ pageSize, current }) => {
   getList()
 }
 
-//处理省市区数据
-// 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
-let needReplaceKey: any = [
-  ['label', 'fullname'],
-  ['value', 'code']
-]
-state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
+// //处理省市区数据
+// // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
+// let needReplaceKey: any = [
+//   ['label', 'fullname'],
+//   ['value', 'code']
+// ]
+// state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
 
 //新增主体
 const addMajorIndividualFN = async () => {
@@ -3809,28 +3821,12 @@ const detailsInfo = async (record) => {
           text: res.abbreviate
         },
         {
-          textSpan: '系统名称：',
-          text: res.systemName
-        },
-        {
-          textSpan: '系统logo：',
-          text: '暂无上传图片',
-          imgUrl: res.logoUrl
-        },
-        {
           textSpan: '负责人：',
           text: res.contactName
         },
         {
           textSpan: '负责人电话：',
           text: res.contactMobile
-        },
-        {
-          textSpan: '有效期：',
-          text:
-            res.expireTime === '2099-12-31'
-              ? '永久有效'
-              : `${res.effectiveStartDate}-${res.expireTime}`
         },
         {
           textSpan: '绑定域名：',
@@ -3849,6 +3845,62 @@ const detailsInfo = async (record) => {
           textSpan: '超级管理员：',
           text: res.username,
           isSuperAdmin: true
+        }
+      ]
+    },
+    {
+      baseTitle: '系统信息',
+      infoArr: [
+        {
+          textSpan: '系统名称：',
+          text: res.systemName
+        },
+        {
+          textSpan: '系统logo：',
+          text: '暂无上传图片',
+          imgUrl: res.logoUrl
+        },
+        {
+          textSpan: '登录页logo：',
+          text: '暂无上传图片',
+          imgUrl: res.loginLogoUrl
+        },
+        {
+          textSpan: '有效期：',
+          text:
+            res.expireTime === '2099-12-31'
+              ? '永久有效'
+              : `${res.effectiveStartDate}-${res.expireTime}`
+        },
+        {
+          textSpan: '可用名额：',
+          text: res?.accountCount
+        }
+      ]
+    },
+    {
+      baseTitle: '绑定域名',
+      infoArr: [
+        {
+          textSpan: '绑定域名：',
+          text: res?.domain
+        },
+        {
+          textSpan: '备案编号：',
+          text: res?.filingNumber
+        },
+        {
+          textSpan: '公网安备号：',
+          text: res?.securityNumber
+        }
+      ]
+    },
+    {
+      baseTitle: '企业文化',
+      infoArr: [
+        {
+          textSpan: '经营理念：',
+          text: res?.corporateCulture
         }
       ]
     },
@@ -4200,7 +4252,9 @@ const majorIndividualTypeChange = async () => {
       (item) => item.id === 0 || item.type === 'manufacturer'
     )
   }
-
+  console.log('state.record!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', state.record)
+  console.log('state.record.type?????????????', state.record.type)
+  console.log('state.record.type === manufacturer!!!', state.record.type === 'manufacturer')
   if (state.record.type === 'manufacturer') {
     // 厂家 新增子项 主体类型只能为经销商，上级主体只能为自己
     state.optionalMenuTreeChange = state.optionalMenuList.filter(
@@ -4297,10 +4351,21 @@ const sendCurrentSelect = async (currentKey) => {
   } else {
     state.currentSelectArea = null
   }
-  // await getListStoreFN()
+  await getListStoreFN()
 }
 
 currentSelectChange()
+
+const getCurrentAreaListFN = async () => {
+  const res = await getCurrentAreaList()
+  //去除 国家 '100000'为中国 定值
+  const tempRes = res.filter((item) => item.code !== '100000')
+  await tempRes.some((item) => {
+    item.label = item.name
+    item.value = item.code
+  })
+  state.proMunAreaList = handleTree(tempRes as any[], 'code', 'parentCode', 'children')
+}
 
 // //监听  左侧选中数据  更新 右侧展示数据
 // watch(
@@ -4425,6 +4490,7 @@ onMounted(async () => {
   await getAllType()
   await getList()
   await getListStoreFN()
+  getCurrentAreaListFN()
   //仅超管 有新增 btn
   const { roles = [] } = wsCache.get(CACHE_KEY.USER)
   state.isSuperAdmin = roles.includes('super_admin')
