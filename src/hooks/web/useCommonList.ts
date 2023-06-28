@@ -67,7 +67,7 @@ export const useCommonList = () => {
     return shopList
   }
 
-  /** 获取用户精简信息列表(成员列表) */
+  /** 获取门店岗位用户信息树(成员列表) */
   const getUserMemberList = (params?: UserMemberList) => {
     const userMemberList = ref<Recordable[]>([])
     const getList = async () => {

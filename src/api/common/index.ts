@@ -61,7 +61,7 @@ export const getShopDataList = () => {
   return request.get({ url: '/system/organization/area-store-list' })
 }
 
-/** 获取用户精简信息列表 */
+/** 获取门店岗位用户信息树(成员列表) */
 export const getUserMemberDataList = (params?: Partial<UserMemberList>) => {
-  return request.get({ url: '/system/user/list-all-simple', params })
+  return request.get({ url: '/system/user/list-all-tree', params })
 }
