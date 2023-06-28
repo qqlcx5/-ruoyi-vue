@@ -47,7 +47,12 @@
           <div :class="`${tipsStatus ? 'tip-status-true' : ''} tip-status ml-3`">{{ tips }}</div>
         </template>
         <template #isEnable="{ row }">
-          <el-switch v-model="row.isEnable" :active-value="1" :inactive-value="0" />
+          <el-switch
+            v-model="row.isEnable"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleChangStatus(row)"
+          />
         </template>
       </FormTable>
     </ContentWrap>
@@ -73,7 +78,13 @@ import { onMounted } from 'vue'
 import { useFormTable, useRuleTree, TreeNode, arrayToString } from './helpers'
 import ActionDialog from './components/ActionDialog.vue'
 import TreeViewDialog from './components/TreeViewDialog.vue'
-import { delMemberRule, addMemberRule, getTipsData, setMemberRule } from '@/api/system/memberRule'
+import {
+  delMemberRule,
+  addMemberRule,
+  getTipsData,
+  setMemberRule,
+  setSwitchStatus
+} from '@/api/system/memberRule'
 import { isEmpty } from 'lodash-es'
 import { hasPermission } from '@/utils/utils'
 
@@ -175,6 +186,13 @@ const handleSave = async (data: Recordable) => {
   await saveApi(params)
   showDialog.value = false
   message.success(isEdit.value ? '编辑成功' : t('common.createSuccess'))
+  const { tableMethods } = tableRef.value
+  tableMethods.getList()
+}
+
+/** 改变状态 */
+const handleChangStatus = async (row: Recordable) => {
+  await setSwitchStatus(row.id, row.isEnable)
   const { tableMethods } = tableRef.value
   tableMethods.getList()
 }

@@ -43,3 +43,10 @@ export const getHasShopId = (ruleValue) => {
     url: `/system/user-rules/query-assigned-shop/${ruleValue}`
   })
 }
+
+/** 更新是否启用状态 */
+export const setSwitchStatus = (id: number, status: number) => {
+  return request.get({
+    url: `/system/user-rules/update-enable/${id}/${status}`
+  })
+}
