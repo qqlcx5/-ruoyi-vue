@@ -70,7 +70,7 @@
             collapse-tags
             filterable
             :props="{ multiple: true, label: 'name', value: 'id' }"
-            @visible-change="brandAndSeriesChange($event, row)"
+            @change="brandAndSeriesChange($event, row)"
           />
         </template>
       </el-table-column>
@@ -311,9 +311,7 @@ const setBrandObj = (val) => {
 }
 const brandCasRef = ref()
 const brandAndSeriesChange = (val, row) => {
-  if (!val) {
-    row.brandList = setBrandObj(row.brandArr)
-  }
+  row.brandList = setBrandObj(row.brandArr)
 }
 
 const onConfirm = async () => {
@@ -325,7 +323,6 @@ const onConfirm = async () => {
   }
   let isValidBrandList = ref(true)
   let isValidDistributeUserId = ref(true)
-  console.log(memberTableList.value, 'submit')
   memberTableList.value.forEach((item) => {
     if (!item.hasOwnProperty('brandList') || item?.brandList.length < 1) {
       isValidBrandList.value = false
