@@ -46,12 +46,12 @@
       />
     </div>
     <el-table :data="memberTableList" :header-cell-style="{ backgroundColor: '#F6F6F6' }">
-      <el-table-column label="门店">
+      <el-table-column label="门店" width="200px">
         <template #default="{ row }">
           <span>{{ row.shopName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="成员">
+      <el-table-column label="成员" width="150px">
         <template #default="{ row }">
           <span>{{ row.distributeUserName + '-' + row.positionName }}</span>
         </template>
@@ -98,7 +98,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="操作">
+      <el-table-column label="操作" width="100px">
         <template #default="{ row, $index }">
           <el-button text type="primary" @click="deleteRow(row, $index)">删除</el-button>
         </template>
@@ -269,6 +269,7 @@ const addMemberRule = (val) => {
         newItem.distributeUserId = item.data.id
         newItem.distributeUserName = item.data.name
         newItem.positionName = item.data.positionName
+        newItem.nickname = item.data.name
         newItem.shopId = item.data.belongStoreId
         newItem.shopName = item.data.belongStoreName
         memberTableList.value.push(newItem)
