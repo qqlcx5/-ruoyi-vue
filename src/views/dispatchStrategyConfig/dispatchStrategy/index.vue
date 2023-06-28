@@ -91,6 +91,8 @@ const getTable = (params) => {
         newArr.push(JSON.parse(JSON.stringify(item)))
       }
     })
+    console.log(newArr)
+
     data.list = newArr
 
     return data

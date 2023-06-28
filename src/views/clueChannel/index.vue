@@ -23,6 +23,8 @@
       <el-switch
         :disabled="!hasPermission('clue-channel:edit')"
         v-model="row.needFilter"
+        active-text="是"
+        inactive-text="否"
         :active-value="1"
         :inactive-value="0"
         @change="handleNeedFilterChange(row, 'needFilter')"
@@ -38,6 +40,8 @@
       <el-switch
         :disabled="!hasPermission('clue-channel:edit')"
         v-model="row.isShow"
+        active-text="是"
+        inactive-text="否"
         :active-value="1"
         :inactive-value="0"
         @change="handleNeedFilterChange(row, 'isShow')"
