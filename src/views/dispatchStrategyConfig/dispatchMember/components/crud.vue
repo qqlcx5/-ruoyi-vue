@@ -322,7 +322,7 @@ const onConfirm = async () => {
   let isValidBrandList = ref(true)
   let isValidDistributeUserId = ref(true)
   memberTableList.value.forEach((item) => {
-    if (item.brandList.length < 1) {
+    if (!item.hasOwnProperty('brandList') || item?.brandList.length < 1) {
       isValidBrandList.value = false
     }
     if (!item.distributeUserId) {
