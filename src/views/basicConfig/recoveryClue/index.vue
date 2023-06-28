@@ -33,8 +33,8 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { pageNo: 1, pageSize: 10 },
   columns: [
-    { label: '线索所属成员', key: 'username', minWidth: 150 },
-    { label: '手动回收原因', key: 'recycleReasonName', minWidth: 120 },
+    { label: '线索所属成员', key: 'username', minWidth: 150, disabled: true },
+    { label: '手动回收原因', key: 'recycleReasonName', minWidth: 120, disabled: true },
     { label: '回收线索所属门店', key: 'shopName', minWidth: 150 },
     {
       label: '回收线索品牌',

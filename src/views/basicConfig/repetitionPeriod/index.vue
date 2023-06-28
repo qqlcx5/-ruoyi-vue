@@ -57,12 +57,14 @@ const tableConfig = reactive({
       label: '线索重复判断维度',
       key: 'ruleType',
       minWidth: 150,
+      disabled: true,
       render: ({ row }) => typeObj[row.ruleType]
     },
     {
       label: '周期',
       key: 'repetitionPeriod',
       minWidth: 180,
+      disabled: true,
       render: ({ row }) => {
         return row.repetitionPeriod > 0 ? (
           <span>线索{row.repetitionPeriod}天内不可重复</span>
