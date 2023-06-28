@@ -54,14 +54,6 @@
       <el-table-column label="成员">
         <template #default="{ row }">
           <span>{{ row.distributeUserName + '-' + row.positionName }}</span>
-          <!--          <el-cascader-->
-          <!--            ref="cascaderRef"-->
-          <!--            filterable-->
-          <!--            v-model="row.distributeUserId"-->
-          <!--            :options="shopUserList"-->
-          <!--            :props="{ label: 'name', value: 'id', children: 'users' }"-->
-          <!--            @change="changeUserById($event, row)"-->
-          <!--          />-->
         </template>
       </el-table-column>
       <el-table-column label="成员平台昵称">
@@ -69,47 +61,41 @@
           <el-input v-model="row.nickname" placeholder="昵称" />
         </template>
       </el-table-column>
-      <el-table-column label="销售品牌">
+      <el-table-column label="销售品牌/车系">
         <template #default="{ row }">
-          <el-select
-            v-model="row.brandIds"
-            @visible-change="changeBrandId($event, row)"
-            multiple
-            filterable
+          <el-cascader
+            ref="brandCasRef"
+            v-model="row.brandArr"
+            :options="brandAndSeriesOption"
             collapse-tags
-          >
-            <el-option
-              v-for="item in brandList"
-              :key="item.brandId"
-              :label="item.brandName"
-              :value="item.brandId"
-            />
-          </el-select>
-        </template>
-      </el-table-column>
-      <el-table-column label="销售车系" show-overflow-tooltip>
-        <template #default="{ row }">
-          <template v-if="row.brandIds">
-            <el-cascader
-              v-model="row.seriesIds"
-              :options="seriesOption"
-              collapse-tags
-              filterable
-              :props="{ multiple: true, label: 'seriesDetailsName', value: 'seriesDetailsId' }"
-              @change="changeSeriesEvent($event, row)"
-            />
-          </template>
-          <span v-else>请先选择品牌</span>
+            filterable
+            :props="{ multiple: true, label: 'name', value: 'id' }"
+            @visible-change="brandAndSeriesChange($event, row)"
+          />
         </template>
       </el-table-column>
       <el-table-column label="派单状态">
         <template #default="{ row }">
-          <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
+          <el-switch
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            active-text="是"
+            inactive-text="否"
+            inline-prompt
+          />
         </template>
       </el-table-column>
       <el-table-column label="跟进是否回推厂家">
         <template #default="{ row }">
-          <el-switch v-model="row.pushBackFactoryStatus" :active-value="1" :inactive-value="0" />
+          <el-switch
+            v-model="row.pushBackFactoryStatus"
+            :active-value="1"
+            :inactive-value="0"
+            active-text="是"
+            inactive-text="否"
+            inline-prompt
+          />
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -128,15 +114,13 @@
 <script setup lang="ts" name="dipatchMemberCrud">
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import type { FormRules, FormInstance } from 'element-plus'
-import { getListSimpleUsersApi } from '@/api/system/user'
 import { ref } from 'vue'
-import { getAllBrand, querySeriesDetailsBelowBrand } from '@/api/model/brand'
-// import { useCommonList } from '@/hooks/web/useCommonList'
+import { getAllBrand, querySeriesDetailsTree } from '@/api/model/brand'
 import { getMemberTreeDataList } from '@/api/common'
 import { difference } from 'lodash-es'
-// const { getMemberTreeList } = useCommonList()
 onMounted(() => {
   getBrandInfo()
+  getBrandAndSeriesTreeList()
 })
 const treeShopCascader = ref()
 const message = useMessage()
@@ -155,20 +139,20 @@ const hide = () => {
 }
 const editFlag = ref<boolean>(false)
 const openDialog = (id: string, formShopTreeList: any) => {
-  nextTick(() => {
+  nextTick(async () => {
     memberTableList.value = []
     shopTreeList.value = formShopTreeList
     editFlag.value = !!id
     if (id) {
-      getUsers()
+      await getMemberTreeListApi()
       dispatchApi.getClueDistributeUserDetail(id).then((res) => {
         const shopIdArr = ref<number[]>([res.shopId])
         ruleForm.value.shopIdList = shopIdArr.value
         memberTableList.value = res.userList.map((item) => {
-          item.brandIds = parseBrandIds(item.autoBrandIds)
           item.shopName = item.distributeShopName
-          getSeries(item.brandIds)
-          item.seriesIds = parseSeries(item.autoBrandIds)
+          item.shopId = item.distributeShopId
+          item.brandArr = parseGetSeries(item.autoBrandIds)
+          memberList.value.push(item.distributeUserId)
           return item
         })
       })
@@ -184,28 +168,25 @@ const openDialog = (id: string, formShopTreeList: any) => {
 //   (val) => console.log(val, '11111'),
 //   { deep: true }
 // )
-
-const parseBrandIds = (str) => {
-  return str && JSON.parse(str).map((item) => item.brandId)
+const brandAndSeriesOption = ref<object[]>([])
+const getBrandAndSeriesTreeList = async () => {
+  const data = await querySeriesDetailsTree()
+  brandAndSeriesOption.value = data
 }
-const seriesData = ref<any[]>([])
-const parseSeries = (str) => {
-  seriesData.value = []
-  const arr = JSON.parse(str)
-  console.log(arr, 'arr')
+
+const parseGetSeries = (str) => {
+  const seriesIds = ref<number[]>([])
   str &&
-    arr.map((item) => {
-      seriesData.value.push([item.brandId, ...(item?.seriesIds || [])])
+    JSON.parse(str).forEach((item) => {
+      if (item.seriesIds.length > 0 && item.seriesIds[0]) {
+        seriesIds.value.push(...item.seriesIds)
+      } else {
+        seriesIds.value.push(item.brandId)
+      }
     })
-  return seriesData.value
+  return seriesIds
 }
-const userList = ref<object[]>([])
 
-const getUsers = async () => {
-  let str = ruleForm.value.shopIdList.join(',')
-  const data = await getListSimpleUsersApi({ storeIds: str })
-  userList.value = data
-}
 const shopUserList = ref<Recordable[]>([])
 // const shopUserList = ref(getMemberTreeList({
 //   belongShopid: ruleForm.value.shopIdList,
@@ -229,7 +210,7 @@ const getBrandInfo = async () => {
 const shopTreeList = ref<object[]>([])
 
 type brandObj = {
-  brandId: number
+  brandId: number | string
   seriesIds: string[]
 }
 type tableObj = {
@@ -242,6 +223,7 @@ type tableObj = {
   status: number
   pushBackFactoryStatus: number
   brandList: brandObj[]
+  brandArr: number[]
 }
 const memberTableList = ref<tableObj[]>([
   {
@@ -253,12 +235,8 @@ const memberTableList = ref<tableObj[]>([
     nickname: '',
     status: 1,
     pushBackFactoryStatus: 0,
-    brandList: [
-      // {
-      //   brandId: 0,
-      //   seriesIds: []
-      // }
-    ]
+    brandArr: [],
+    brandList: []
   }
 ])
 const memberCasRef = ref()
@@ -270,7 +248,6 @@ const addMemberRule = (val) => {
   if (val.length > unref(memberTableList).length) {
     const ids = memberTableList.value.map((d) => d.distributeUserId)
     const diffIds = difference(val, ids) // 返回本次新增的
-
     const curData = memberCasRef.value.getCheckedNodes(true)
     curData.forEach((item) => {
       if (diffIds.includes(item.data.id)) {
@@ -283,6 +260,7 @@ const addMemberRule = (val) => {
           nickname: '',
           status: 1,
           pushBackFactoryStatus: 0,
+          brandArr: [],
           brandList: []
         }
         newItem.distributeUserId = item.data.id
@@ -293,18 +271,6 @@ const addMemberRule = (val) => {
         memberTableList.value.push(newItem)
       }
     })
-    // const arr = diffIds.map((id) => {
-    //   return {
-    //     shopId: '',
-    //     shopName: '',
-    //     distributeUserId: id,
-    //     nickname: '',
-    //     status: 0,
-    //     pushBackFactoryStatus: 0,
-    //     brandList: []
-    //   }
-    // })
-    // memberTableList.value.push(...arr)
   } else {
     memberTableList.value = memberTableList.value.filter((d) => val.includes(d.distributeUserId))
   }
@@ -320,60 +286,32 @@ const deleteRow = (row, index) => {
   memberList.value = memberList.value.filter((item) => item !== row.distributeUserId)
   memberTableList.value.splice(index, 1)
 }
-// const cascaderRef = ref()
-// const changeUserById = (val, row) => {
-//   let cascaderList = cascaderRef.value.getCheckedNodes()
-//   let cascaderData = cascaderList[0].data
-//   row.shopId = cascaderData.belongStoreId
-//   row.shopName = cascaderData.belongStoreName
-// }
-const changeBrandId = (val, row) => {
-  if (!val) {
-    seriesOption.value = []
-    row.brandList = []
-    row.brandIds.length && getSeries(row.brandIds)
-    row.brandIds.forEach((b) => {
-      row.brandList.push({ brandId: b })
-    })
-  }
-}
 
-const changeSeriesEvent = (val, row) => {
-  row.brandList = []
+const setBrandObj = (val) => {
   const obj = {}
-  row?.seriesIds?.map((item) => {
+  const brandList = ref<brandObj[]>([])
+  val.map((item) => {
     if (obj[item[0]]) {
       obj[item[0]].push(item[1])
     } else {
       obj[item[0]] = [item[1]]
     }
   })
-  let selectedBrandIds = row.brandIds
-  selectedBrandIds.forEach((item) => {
-    row.brandList.push({
+  Object.keys(obj).forEach((item) => {
+    brandList.value.push({
       brandId: item,
-      seriesIds: obj[item] || []
+      seriesIds: obj[item] !== undefined ? obj[item] : []
     })
   })
+  return brandList.value
 }
-type seriesParams = {
-  seriesDetailsName: string
-  seriesDetailsId: number
-  children: object[]
+const brandCasRef = ref()
+const brandAndSeriesChange = (val, row) => {
+  if (!val) {
+    row.brandList = setBrandObj(row.brandArr)
+  }
 }
-let seriesOption = ref<seriesParams[]>([])
 
-const getSeries = async (val) => {
-  const seriesData = await querySeriesDetailsBelowBrand({ brandIds: val })
-  seriesData.forEach((item) => {
-    let optionsObj: seriesParams = {
-      seriesDetailsName: item.brand.brandName,
-      seriesDetailsId: item.brand.brandId,
-      children: item?.seriesList
-    }
-    seriesOption.value.push(optionsObj)
-  })
-}
 const onConfirm = async () => {
   if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
@@ -384,7 +322,7 @@ const onConfirm = async () => {
   let isValidBrandList = ref(true)
   let isValidDistributeUserId = ref(true)
   memberTableList.value.forEach((item) => {
-    if (item.brandIds.length < 1) {
+    if (!item.hasOwnProperty('brandList') || item?.brandList.length < 1) {
       isValidBrandList.value = false
     }
     if (!item.distributeUserId) {

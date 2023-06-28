@@ -6,8 +6,8 @@
     width="800"
     height="80%"
   >
-    <el-form :model="form" ref="formRef" :hide-required-asterisk="false">
-      <el-form-item label="规则名称" style="margin-left: 0">
+    <el-form :model="form" ref="formRef" :rules="rules" :hide-required-asterisk="false">
+      <el-form-item label="规则名称" style="margin-left: 0" prop="distributeRuleName">
         <el-input
           v-model="form.distributeRuleName"
           placeholder="请输入规则名称"
@@ -17,8 +17,9 @@
           type="text"
         />
       </el-form-item>
-      <el-form-item label="适用门店" style="margin-left: 0">
+      <el-form-item label="适用门店" style="margin-left: 0" prop="shopIdList">
         <el-cascader
+          class="w-400"
           ref="treeShopCascader"
           v-model="form.shopIdList"
           placeholder="请选择"
@@ -59,6 +60,9 @@
             v-model="form.augment"
             :active-value="1"
             :inactive-value="0"
+            active-text="是"
+            inactive-text="否"
+            inline-prompt
           />
           <div class="Grey mb10 tips-right">(开启后，清洗员可以手动新增派发成员)</div>
         </el-form-item>
@@ -141,15 +145,20 @@
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { cloneDeep } from 'lodash-es'
 import { RuleObj } from '../helpers'
-import { FormInstance } from 'element-plus'
+import { FormInstance, FormRules } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { getPostDataList } from '@/api/common'
+
 const store = useOption()
 const { getSuitableShopList } = useCommonList()
 onMounted(() => {
   // getSuitableShopListApi()
   // getexistRuleShopApi()
+})
+const rules: FormRules = reactive<FormRules>({
+  distributeRuleName: [{ required: true, message: '请输入规则名称', trigger: 'blur' }],
+  shopIdList: [{ required: true, message: '请选择门店', trigger: 'blur' }]
 })
 const message = useMessage()
 const dialogVisible = ref(false)
@@ -330,5 +339,9 @@ defineExpose({ openDialog })
 
 .el-table {
   width: 99.9% !important;
+}
+
+.w-400 {
+  width: 400px;
 }
 </style>
