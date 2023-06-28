@@ -107,3 +107,8 @@ export const receptionHintConfigApi = (data: any) => {
 export const receptionHintTypePageApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionHintType/page', data })
 }
+// /admin-api/reception/mange/receptionHintType/batchDelete
+// 批量删除提示类型
+export const receptionHintTypeBatchDeleteApi = (data: any) => {
+  return request.post({ url: '/reception/mange/receptionHintType/batchDelete', data })
+}
