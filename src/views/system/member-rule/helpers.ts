@@ -160,7 +160,7 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '岗位数据范围'
           },
-          title: `共${row.dataRangPostId.split(',')?.length}家岗位`
+          title: `共${row.dataRangPostId.split(',')?.length}个岗位`
         })
       }
     },
