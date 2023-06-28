@@ -94,9 +94,9 @@
 import { reactive, watch, onMounted } from 'vue'
 import { TableColumn } from '@/types/table'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { cloneDeep, isEmpty } from 'lodash-es'
+import { cloneDeep, isEmpty, isArray } from 'lodash-es'
 import AddChildDialog from './AddChildDialog.vue'
-import { useColumnOptions, stringToArray } from '../helpers'
+import { useColumnOptions, stringToArray, arrayToString } from '../helpers'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { autoSetMemberRule, getHasShopId } from '@/api/system/memberRule'
 import { getUserMemberDataList } from '@/api/common'
@@ -144,8 +144,8 @@ watch(
 /** 改变门店数据范围 */
 const handleShopChange = async (row: Recordable, index: number) => {
   const list = await getUserMemberDataList({
-    storeIds: row.dataRangShopId,
-    postIds: row.dataRangPostId
+    storeIds: isArray(row.dataRangShopId) ? arrayToString(row.dataRangShopId) : row.dataRangShopId,
+    postIds: isArray(row.dataRangPostId) ? arrayToString(row.dataRangPostId) : row.dataRangPostId
   })
   allMemberList[index] = list
 }
@@ -326,6 +326,7 @@ const handleSave = async (params: Recordable) => {
   })
   message.success('新增成功')
   show.value = false
+  tableData.splice(0, tableData.length)
   data?.map((item) =>
     tableData.push({
       ...item,
@@ -335,6 +336,10 @@ const handleSave = async (params: Recordable) => {
       dataRangUserId: stringToArray(item.dataRangUserId)
     })
   )
+  resetShopId()
+  tableData.forEach((item, index) => {
+    handleShopChange(item, index)
+  })
 }
 </script>
 

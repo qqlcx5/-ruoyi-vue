@@ -16,11 +16,11 @@ export type TreeNode = {
 const { t } = useI18n()
 
 export const stringToArray = (str = '') => {
-  return str.split(',').map((val) => Number(val))
+  return str?.split(',').map((val) => Number(val))
 }
 
-export const arrayToString = (array = []) => {
-  return array.join(',')
+export const arrayToString = (array: number[] = []) => {
+  return array?.join(',')
 }
 
 export const useColumnOptions = () => {
