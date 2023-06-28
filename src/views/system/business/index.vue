@@ -106,7 +106,7 @@
               <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
               新增主体
             </a-button>
-            <a-button @click="toggleExpandAll">
+            <a-button @click="toggleExpandAll(false)">
               <template #icon>
                 <Icon
                   icon="svg-icon:expansion"
@@ -501,8 +501,6 @@
           ><StoreProSelectTree
             :tree-data="state.areaListOptions"
             @sendCurrentSelect="sendCurrentSelect"
-            :selectedKeys="state.selectedKeys"
-            :testArr="state.testArr"
         /></div>
         <div>
           <!-- 搜索工作栏 -->
@@ -577,7 +575,7 @@
                     type="primary"
                     html-type="submit"
                     @click="getListStoreFN()"
-                    v-hasPermi="['system:tenant:query']"
+                    v-hasPermi="['system:tenant:store-list']"
                     >查询</a-button
                   >
                   <a-button @click="resetQuery(PageKeyObj.businessStore)">重置</a-button>
@@ -606,17 +604,17 @@
                   /></template>
                   新增门店
                 </a-button>
-                <a-button @click="toggleExpandAll">
+                <a-button @click="toggleExpandAll(true)">
                   <template #icon>
                     <Icon
                       icon="svg-icon:expansion"
                       class="btn-icon"
                       :size="10"
-                      v-if="state.isExpandAll"
+                      v-if="state.isExpandAllStore"
                     />
                     <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
                   </template>
-                  {{ state.isExpandAll ? '收起全部' : '展开全部' }}
+                  {{ state.isExpandAllStore ? '收起全部' : '展开全部' }}
                 </a-button>
               </div>
               <!--  右侧操作  -->
@@ -654,7 +652,7 @@
               :row-key="(record) => record.id"
               :loading="state.loadingStore"
               :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
-              :defaultExpandAllRows="state.isExpandAll"
+              :defaultExpandAllRows="state.isExpandAllStore"
               @resizeColumn="handleResizeColumn"
               :expandIconColumnIndex="state.treeIconIndexStore"
             >
@@ -1271,7 +1269,34 @@
             tabBarGutter="40px"
             :tabBarStyle="{ paddingLeft: '10px', background: 'rgb(246, 246, 246)', margin: 0 }"
           >
-            <a-tab-pane key="frontDesk" tab="成员端" force-render>成员端</a-tab-pane>
+            <a-tab-pane key="frontDesk" tab="成员端" force-render>
+              <div class="tab-search-content">
+                <a-checkbox v-model:checked="state.selectAllFrontDesk" @change="selectAllFrontDesk"
+                  >全选</a-checkbox
+                >
+                <a-checkbox
+                  v-model:checked="state.isExpandAllTabFrontDesk"
+                  @change="expandAllFNFrontDesk"
+                  >展开/折叠</a-checkbox
+                >
+              </div>
+              <div>
+                <a-tree
+                  v-if="state.isShowTreeFrontDesk"
+                  v-model:selectedKeys="state.selectedKeysFrontDesk"
+                  v-model:checkedKeys="state.checkedKeysFrontDesk"
+                  :defaultExpandAll="state.defaultExpandAllFrontDesk"
+                  blockNode
+                  checkable
+                  class="backstage-tabs-tree"
+                  :height="533"
+                  :tree-data="state.menuTreeListFrontDesk"
+                  :fieldNames="state.fieldNames"
+                  @check="testCheckFrontDesk"
+                  @select="treeSelectFrontDesk"
+                />
+              </div>
+            </a-tab-pane>
             <a-tab-pane key="backstage" tab="管理端">
               <div class="tab-search-content">
                 <a-checkbox v-model:checked="state.selectAll" @change="selectAll">全选</a-checkbox>
@@ -1296,11 +1321,44 @@
                 />
               </div>
             </a-tab-pane>
-            <a-tab-pane key="client" tab="客户端" force-render>客户端</a-tab-pane>
           </a-tabs>
         </div>
 
-        <div class="right-content">
+        <!--  成员端  -->
+        <div class="right-content" v-if="state.activeKey === 'frontDesk'">
+          <div style="height: 20px"></div>
+          <div class="list-content border-1">
+            <div class="right-top-text">操作权限</div>
+            <div class="tab-search-content">
+              <a-checkbox
+                v-model:checked="state.selectAllOperationFrontDesk"
+                @change="selectAllOperationFrontDesk"
+                >全选</a-checkbox
+              >
+            </div>
+            <div>
+              <a-checkbox-group
+                v-model:value="state.operationCheckedValueFrontDesk"
+                @change="operationCheckedValueChangeFrontDesk"
+                class="checkbox-group"
+              >
+                <div class="operation-checkbox-content">
+                  <a-checkbox
+                    v-for="(item, index) in state.operationCheckedListFrontDesk"
+                    :value="item.id"
+                    :key="`operationCheckbox${index}`"
+                    class="operation-checkbox-style"
+                    @change="operationCheckedChangeFrontDesk"
+                  >
+                    {{ item.name }}
+                  </a-checkbox>
+                </div>
+              </a-checkbox-group>
+            </div>
+          </div>
+        </div>
+        <!--  管理端  -->
+        <div class="right-content" v-if="state.activeKey === 'backstage'">
           <div style="height: 20px"></div>
           <div class="list-content border-1">
             <div class="right-top-text">操作权限</div>
@@ -1331,27 +1389,51 @@
           </div>
         </div>
 
+        <!--  已选信息  -->
         <div class="right-content">
           <div v-if="state.isShowRightTree">已选信息：</div>
-          <div v-if="state.isShowRightTree">
-            <div class="right-top-text">管理端</div>
-            <div class="right-card-content">
-              <a-tree
-                v-if="state.isShowRightTree"
-                :selectable="false"
-                defaultExpandAll
-                :tree-data="state.selectTree"
-                :fieldNames="state.fieldNames"
-              >
-                <template #title="{ name, id }">
-                  <div class="tree-node" :class="`right-tree-item-${id}`">
-                    <span>{{ name }}</span>
-                  </div>
-                </template>
-              </a-tree>
-              <div v-if="state.selectTree?.length === 0" class="select-tip"
-                >请选择左侧要配置的菜单</div
-              >
+          <div class="overflow-auto">
+            <div v-if="state.isShowRightTree">
+              <div class="right-top-text">成员端</div>
+              <div class="right-card-content">
+                <a-tree
+                  v-if="state.isShowRightTree"
+                  :selectable="false"
+                  defaultExpandAll
+                  :tree-data="state.selectTreeFrontDesk"
+                  :fieldNames="state.fieldNames"
+                >
+                  <template #title="{ name, id }">
+                    <div class="tree-node" :class="`right-tree-item-front-desk-${id}`">
+                      <span>{{ name }}</span>
+                    </div>
+                  </template>
+                </a-tree>
+                <div v-if="state.selectTreeFrontDesk?.length === 0" class="select-tip"
+                  >请选择左侧要配置的菜单</div
+                >
+              </div>
+            </div>
+            <div v-if="state.isShowRightTree" class="margin-top-8 margin-bottom-8">
+              <div class="right-top-text">管理端</div>
+              <div class="right-card-content">
+                <a-tree
+                  v-if="state.isShowRightTree"
+                  :selectable="false"
+                  defaultExpandAll
+                  :tree-data="state.selectTree"
+                  :fieldNames="state.fieldNames"
+                >
+                  <template #title="{ name, id }">
+                    <div class="tree-node" :class="`right-tree-item-${id}`">
+                      <span>{{ name }}</span>
+                    </div>
+                  </template>
+                </a-tree>
+                <div v-if="state.selectTree?.length === 0" class="select-tip"
+                  >请选择左侧要配置的菜单</div
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -2039,7 +2121,8 @@ const state: any = reactive({
   tableDataPseudoPaginationListStore: [], //表格数据 伪分页 门店
   treeIconIndexStore: 0, //门店
 
-  isExpandAll: false, //展开折叠
+  isExpandAll: false, //展开折叠 主体
+  isExpandAllStore: false, //展开折叠 门店
   refreshTable: true, //v-if table
   refreshTableStore: true, //v-if table 门店
   isFullScreen: false, //全屏
@@ -2105,26 +2188,40 @@ const state: any = reactive({
   }, //新增表单
   addSuccessId: undefined, //创建主体成功ID 主要是用于创建主体后配置权限
   activeKey: 'backstage', // tabsKey frontDesk前台 backstage后台
-  selectAll: false, //权限配置 全选
+  selectAllFrontDesk: false, //权限配置 全选 成员端
+  selectAll: false, //权限配置 全选 管理端
+  isExpandAllTabFrontDesk: false, //权限配置 展开折叠 成员端
   isExpandAllTab: false, //权限配置 展开折叠
-  menuTreeList: [], //权限配置 前台列表 树 过滤btn
-  menuTreeArr: [], //权限配置 前台列表 数组 过滤btn
-  allMenuTreeArr: [], //权限配置 前台列表 数组 不过滤btn
+  menuTreeListFrontDesk: [], //权限配置 前台列表 树 过滤btn 成员端
+  menuTreeList: [], //权限配置 前台列表 树 过滤btn 管理端
+  menuTreeArrFrontDesk: [], //权限配置 前台列表 数组 过滤btn 成员端
+  menuTreeArr: [], //权限配置 前台列表 数组 过滤btn 管理端
+  allMenuTreeArrFrontDesk: [], //权限配置 前台列表 数组 不过滤btn 成员端
+  allMenuTreeArr: [], //权限配置 前台列表 数组 不过滤btn 管理端
   fieldNames: { children: 'children', title: 'name', key: 'id' }, //权限配置 前台列表 tree的对应字段替换
-  selectedKeys: [], //权限配置 前台列表 设置选中的树节点
-  checkedKeys: [], //权限配置 前台列表 选中复选框的树节点
+  selectedKeysFrontDesk: [], //权限配置 前台列表 设置选中的树节点 成员端
+  selectedKeys: [], //权限配置 前台列表 设置选中的树节点 管理端
+  checkedKeysFrontDesk: [], //权限配置 前台列表 选中复选框的树节点 成员端
+  checkedKeys: [], //权限配置 前台列表 选中复选框的树节点 管理端
   parentCheckedKeys: [], //权限配置 前台列表 所有一级菜单ID 用于 全选全不选
-  defaultExpandAll: false, //权限配置 前台列表 默认展开折叠
-  isShowTree: false, //权限配置 前台列表 v-if 主要是配合用来 展开折叠的
-  idArr: [], //权限配置 创建所需的 id
+  defaultExpandAllFrontDesk: false, //权限配置 前台列表 默认展开折叠 成员端
+  defaultExpandAll: false, //权限配置 前台列表 默认展开折叠 管理端
+  isShowTree: false, //权限配置 前台列表 v-if 主要是配合用来 展开折叠的 成员端
+  isShowTreeFrontDesk: false, //权限配置 前台列表 v-if 主要是配合用来 展开折叠的 管理端
+  idArrFrontDesk: [], //权限配置 创建所需的 id 成员端
+  idArr: [], //权限配置 创建所需的 id 管理端
   selectTree: [], //权限配置 选中的树 数据 右侧
   isShowRightTree: false, //权限配置 选中的树 是否显示
   permissionRecord: {}, //权限配置 操作 时 存的整条数据
   PermissionType: 'add', //权限配置 新增 修改
-  operationCheckedList: [], //权限配置 当前选中的 菜单 的btn list checkbox
-  selectAllOperation: false, //权限配置 当前选中的 菜单 的btn  全选 true/false
-  operationCheckedValue: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单
-  operationCheckedAllValue: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单
+  operationCheckedListFrontDesk: [], //权限配置 当前选中的 菜单 的btn list checkbox 成员端
+  operationCheckedList: [], //权限配置 当前选中的 菜单 的btn list checkbox 管理端
+  selectAllOperationFrontDesk: false, //权限配置 当前选中的 菜单 的btn  全选 true/false 成员端
+  selectAllOperation: false, //权限配置 当前选中的 菜单 的btn  全选 true/false 管理端
+  operationCheckedValueFrontDesk: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单 成员端
+  operationCheckedValue: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单 管理端
+  operationCheckedAllValueFrontDesk: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单 成员端
+  operationCheckedAllValue: [], //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单 管理端
   editPermissionID: undefined, //编辑功能配置时的id
   isShowDetails: false, //详细modal
   detailsInfo: [], //详情内容
@@ -2173,6 +2270,7 @@ const state: any = reactive({
 // const checkedKeysBack = ref([])
 // const checkedKeysDirIds = ref([])
 const checkedKeysDirIds: Ref<(string | number)[]> = ref([])
+const checkedKeysDirIdsFrontDesk: Ref<(string | number)[]> = ref([])
 
 // 有效期组件
 const effectiveRef = ref()
@@ -2184,7 +2282,55 @@ const handleModalScroll = () => {
   establishRef.value.blur()
 }
 
-//获取子节点的 父节点id
+//获取子节点的 父节点id 成员端
+const testCheckFrontDesk = (checkedKeys, e) => {
+  console.log('checkedKeys', checkedKeys)
+  console.log('e', e)
+  // //存放功能配置 选中的所有keys(包括父节点id)
+  // checkedKeysBack.value = checkedKeys.concat(e.halfCheckedKeys)
+  //存放功能配置 父节点id
+  checkedKeysDirIdsFrontDesk.value = e.halfCheckedKeys
+  console.log('checkedKeys', checkedKeys)
+  console.log('checkedKeysDirIds.value', checkedKeysDirIds.value)
+  if (e.checked === false) {
+    // //  取消勾选 获取取消勾选的子节点项
+    // // const currentNodeChildren = state.allMenuTreeArr.filter((item) => item.parentId === e.node.key)
+    // const currentNodeChildren = getAllChildIds(e.node.key, state.allMenuTreeArr)
+    // // 取消勾选 获取取消勾选的子节点项 id
+    // const currentNodeChildrenIds = currentNodeChildren.map((item) => item.id)
+    // 取消勾选 获取取消勾选的子节点项 id 递归
+    const currentNodeChildrenIds: any = getAllChildIds(e.node.key, state.allMenuTreeArrFrontDesk)
+    //清空当前操作权限 btn 选中的值
+    // state.operationCheckedValue = []
+    console.log('取消勾选的子节点项 idcurrentNodeChildrenIds', currentNodeChildrenIds)
+    // console.log('currentNodeChildren ', currentNodeChildren)
+    //过滤去除取消勾选的菜单 操作权限 对应的 btn
+    state.operationCheckedValueFrontDesk = state.operationCheckedValueFrontDesk.filter(
+      (item) => !currentNodeChildrenIds.includes(item)
+    )
+    //过滤去除取消勾选的菜单 操作权限 对应的 btn All
+    state.operationCheckedAllValueFrontDesk = state.operationCheckedAllValueFrontDesk.filter(
+      (item) => !currentNodeChildrenIds.includes(item)
+    )
+  } else {
+    //  选中 需要 同步将操作权限对应的btn 显示出来 原本只是选节点 后面改需求了
+    //权限btn
+    state.operationCheckedListFrontDesk = state.allMenuTreeArrFrontDesk.filter(
+      (item) => item.parentId === e.node.id && item.type === 3
+    )
+    //获取复选框所有的id数组
+    const idList = state.operationCheckedListFrontDesk.map((item) => item.id)
+    //操作权限 btn 选中回显
+    state.operationCheckedValueFrontDesk = state.operationCheckedAllValueFrontDesk.filter((item) =>
+      idList.includes(item)
+    )
+    nextTick(() => {
+      state.selectedKeysFrontDesk = [e.node.id]
+    })
+  }
+}
+
+//获取子节点的 父节点id 管理端
 const testCheck = (checkedKeys, e) => {
   console.log('checkedKeys', checkedKeys)
   console.log('e', e)
@@ -2232,6 +2378,25 @@ const testCheck = (checkedKeys, e) => {
   }
 }
 
+//成员端
+const treeSelectFrontDesk = (selectedKeys, e) => {
+  console.log('selectedKeys', selectedKeys)
+  console.log('selectedKeys===>e', e)
+  console.log('state.menuTreeArrFrontDesk', state.menuTreeArrFrontDesk)
+  //权限btn
+  state.operationCheckedListFrontDesk = state.allMenuTreeArrFrontDesk.filter(
+    (item) => item.parentId === selectedKeys[0] && item.type === 3
+  )
+  //获取复选框所有的id数组
+  const idList = state.operationCheckedListFrontDesk.map((item) => item.id)
+  //操作权限 btn 选中回显
+  state.operationCheckedValueFrontDesk = state.operationCheckedAllValueFrontDesk.filter((item) =>
+    idList.includes(item)
+  )
+  console.log('state.operationCheckedListFrontDesk', state.operationCheckedListFrontDesk)
+}
+
+//管理端
 const treeSelect = (selectedKeys, e) => {
   console.log('selectedKeys', selectedKeys)
   console.log('selectedKeys===>e', e)
@@ -2602,6 +2767,7 @@ const getList = async (isRefresh = false) => {
 
   await nextTick(() => {
     state.isShowTree = true
+    state.isShowTreeFrontDesk = true
   })
 }
 
@@ -2691,6 +2857,7 @@ const getListStoreFN = async (isRefresh = false) => {
 
   await nextTick(() => {
     state.isShowTree = true
+    state.isShowTreeFrontDesk = true
   })
 }
 
@@ -2711,13 +2878,23 @@ const resetQuery = (type = PageKeyObj.business) => {
 }
 
 //一键 展开 折叠 全部
-const toggleExpandAll = () => {
+const toggleExpandAll = (isStore) => {
   //由于antdV只提供了初始化时默认展开全部的 API 因此 此处利用v-if 来实现重新初始化
-  state.refreshTable = false
-  state.isExpandAll = !state.isExpandAll
-  nextTick(() => {
-    state.refreshTable = true
-  })
+  if (isStore) {
+    //  门店
+    state.refreshTableStore = false
+    state.isExpandAllStore = !state.isExpandAllStore
+    nextTick(() => {
+      state.refreshTableStore = true
+    })
+  } else {
+    //  主体
+    state.refreshTable = false
+    state.isExpandAll = !state.isExpandAll
+    nextTick(() => {
+      state.refreshTable = true
+    })
+  }
 }
 
 //打开 修改上级主体 门店
@@ -3306,35 +3483,78 @@ const closePermissionModal = () => {
   state.addSuccessId = undefined
   state.selectTree = []
   state.idArr = []
+  state.idArrFrontDesk = []
   state.checkedKeys = []
+  state.checkedKeysFrontDesk = []
   state.selectAll = false
+  state.selectAllFrontDesk = false
   state.isExpandAllTab = false
+  state.isExpandAllTabFrontDesk = false
   state.isShowTree = false
+  state.isShowTreeFrontDesk = false
   state.selectedKeys = []
-  state.operationCheckedList = [] //权限配置 当前选中的 菜单 的btn list checkbox
-  state.selectAllOperation = false //权限配置 当前选中的 菜单 的btn  全选 true/false
-  state.operationCheckedValue = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单
-  state.operationCheckedAllValue = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单
+  state.selectedKeysFrontDesk = []
+  state.operationCheckedList = [] //权限配置 当前选中的 菜单 的btn list checkbox 管理端
+  state.operationCheckedListFrontDesk = [] //权限配置 当前选中的 菜单 的btn list checkbox 成员端
+  state.selectAllOperation = false //权限配置 当前选中的 菜单 的btn  全选 true/false 管理端
+  state.selectAllOperationFrontDesk = false //权限配置 当前选中的 菜单 的btn  全选 true/false 成员端
+  state.operationCheckedValue = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单 管理端
+  state.operationCheckedValueFrontDesk = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 当前菜单 成员端
+  state.operationCheckedAllValueFrontDesk = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单 成员端
+  state.operationCheckedAllValue = [] //权限配置 当前选中的 菜单 的btn checkbox 的选中值 所有菜单 管理端
+  state.activeKey = 'backstage'
 }
 
 //开启功能配置 modal
 const openPermissionModal = async (id) => {
-  // //获取菜单列表
-  // state.menuTreeList = handleTree(await MenuApi.getSimpleMenusList())
-  // //获取菜单列表
-  // const menuList = await MenuApi.getSimpleMenusList()
   //获取菜单列表
-  const menuList = await MenuApi.getMajorIndividualSimpleMenusList({ id })
-  state.allMenuTreeArr = menuList
-  //不要展示按钮 默认按钮全选 后端处理
-  state.menuTreeArr = menuList.filter((item) => item.type !== 3)
+  const { managementEnd = [], memberSide = [] } = await MenuApi.getMajorIndividualSimpleMenusList({
+    id
+  })
+  state.allMenuTreeArr = managementEnd
+  state.allMenuTreeArrFrontDesk = memberSide
+
+  //不要展示按钮 默认按钮全选 后端处理 成员端
+  state.menuTreeArr = managementEnd.filter((item) => item.type !== 3)
+  //不要展示按钮 默认按钮全选 后端处理 管理端
+  state.menuTreeArrFrontDesk = memberSide.filter((item) => item.type !== 3)
 
   state.menuTreeList = handleTree(cloneDeep(state.menuTreeArr))
+  state.menuTreeListFrontDesk = handleTree(cloneDeep(state.menuTreeArrFrontDesk))
 
   state.isShowPermission = true
 }
 
-//判断菜单是否存在选中 但是操作权限btn一个都没选
+//判断菜单是否存在选中 但是操作权限btn一个都没选 成员端
+const hasSelectBtnFrontDesk = async () => {
+  const tempIem: any = {
+    isIncludes: true
+  }
+  //当前选中的菜单
+  await state.checkedKeysFrontDesk.some((menuId) => {
+    //当前菜单项所有的btn
+    const tempBtnArr = state.allMenuTreeArrFrontDesk.filter(
+      (item) => item.parentId === menuId && item.type === 3
+    )
+    //当前菜单所有的btn id
+    const idList = tempBtnArr.map((obj) => obj.id)
+    //判断当前菜单项 是否有选中的 至少一项 btn
+    const isIncludes = state.operationCheckedAllValueFrontDesk.some((value) =>
+      idList.includes(value)
+    )
+    if (!isIncludes && idList.length > 0) {
+      //idList.length 没有配btn选项的 放行
+      tempIem.isIncludes = false
+      const currentMenu: any = state.allMenuTreeArrFrontDesk.find((item) => item.id === menuId)
+      tempIem.currentMenu = currentMenu.name
+      //当有一项不满足条件时 跳出整个循环
+      return true
+    }
+  })
+  return tempIem
+}
+
+//判断菜单是否存在选中 但是操作权限btn一个都没选 管理端
 const hasSelectBtn = async () => {
   const tempIem: any = {
     isIncludes: true
@@ -3364,13 +3584,21 @@ const hasSelectBtn = async () => {
 //配置菜单 Modal 确认
 const PermissionOk = async () => {
   const hasSelectBtnItem: any = await hasSelectBtn()
+  const hasSelectBtnItemFrontDesk: any = await hasSelectBtnFrontDesk()
 
   if (!hasSelectBtnItem.isIncludes) {
     message.warning(`${hasSelectBtnItem.currentMenu} 菜单未选择操作权限`)
     return
   }
+  
+  if (!hasSelectBtnItemFrontDesk.isIncludes) {
+    message.warning(`${hasSelectBtnItemFrontDesk.currentMenu} 菜单未选择操作权限`)
+    return
+  }
   const params = {
     menuIds: state.idArr,
+    memberMenuIds: state.idArrFrontDesk,
+    clientMenuIds: [],
     tenantId: state.addSuccessId || state.permissionRecord!.id, //主体id,新增权限模板从新增主体的res里取，修改时取当前列
     status: 0
   }
@@ -3417,9 +3645,19 @@ const assignPermission = async (record) => {
   if (record.packageId != null) {
     const res = await getTenantPackage({ id: record.packageId })
     //... res 可能为null
-    const { menuIds = [], dirIds = [], buttonIds = [], id } = res || []
+    const {
+      menuIds = [],
+      dirIds = [],
+      buttonIds = [],
+      id,
+      memberMenuIds = [],
+      memberDirIds = [],
+      memberButtonIds = []
+    } = res || []
     state.editPermissionID = id
+    state.checkedKeysFrontDesk = memberMenuIds
     state.checkedKeys = menuIds
+    state.operationCheckedAllValueFrontDesk = memberButtonIds
     state.operationCheckedAllValue = buttonIds
     console.log('state.menuTreeList', state.menuTreeList)
     console.log('dirIds', dirIds)
@@ -3427,18 +3665,20 @@ const assignPermission = async (record) => {
     // nextTick(() => {
     //   state.selectTree = filterTree(state.menuTreeList, [...dirIds, ...menuIds])
     // })
-    // checkedKeysDirIds.value = [...dirIds]
+    checkedKeysDirIdsFrontDesk.value = [...memberDirIds]
     checkedKeysDirIds.value = [...dirIds]
     console.log('state.selectTree', state.selectTree)
   } else {
     state.selectTree = []
     checkedKeysDirIds.value = []
+    checkedKeysDirIdsFrontDesk.value = []
   }
   //右侧展开显示 左侧选中的数据
   state.isShowRightTree = false
   nextTick(() => {
     state.isShowRightTree = true
     state.isShowTree = true
+    state.isShowTreeFrontDesk = true
   })
   // await openPermissionModal(record.id)
 }
@@ -3647,7 +3887,22 @@ const dateOkModal = () => {
   closeDateModal()
 }
 
-//配置菜单 前台 全选全不选
+//配置菜单 前台 全选全不选 成员端
+const selectAllFrontDesk = ({ target }) => {
+  if (target.checked) {
+    //全选
+    // state.checkedKeys = state.parentCheckedKeys
+    state.checkedKeysFrontDesk = getAllIds(state.menuTreeListFrontDesk)
+  } else {
+    //全不选
+    state.checkedKeysFrontDesk = []
+    checkedKeysDirIdsFrontDesk.value = []
+    state.operationCheckedValueFrontDesk = []
+    state.operationCheckedAllValueFrontDesk = []
+  }
+}
+
+//配置菜单 前台 全选全不选 管理端
 const selectAll = ({ target }) => {
   if (target.checked) {
     //全选
@@ -3657,10 +3912,54 @@ const selectAll = ({ target }) => {
     //全不选
     state.checkedKeys = []
     checkedKeysDirIds.value = []
+    state.operationCheckedValue = []
+    state.operationCheckedAllValue = []
   }
 }
 
-//配置菜单 操作权限 btn 全选全不选
+//配置菜单 操作权限 btn 全选全不选 成员端
+const selectAllOperationFrontDesk = ({ target }) => {
+  if (target.checked) {
+    //全选
+    // state.checkedKeys = state.parentCheckedKeys
+    state.operationCheckedValueFrontDesk = getAllIds(state.operationCheckedListFrontDesk)
+    console.log('state.operationCheckedValueFrontDesk', state.operationCheckedValueFrontDesk)
+    console.log('state.allMenuTreeArr!!!', state.allMenuTreeArr)
+    //当前选中的 btn 第一项
+    const currentItem =
+      state.operationCheckedValueFrontDesk.length > 0 &&
+      state.allMenuTreeArrFrontDesk.find(
+        (item) => item.id === state.operationCheckedValueFrontDesk[0]
+      )
+    console.log('currentItem!!!', currentItem)
+
+    //通过当前选中的 btn第一项获取 父级 项
+    const parentItem =
+      state.operationCheckedValueFrontDesk.length > 0 &&
+      state.allMenuTreeArrFrontDesk.find((item) => item.id === currentItem.parentId)
+    if (!state.checkedKeysFrontDesk.includes(parentItem.id)) {
+      //选中了操作权限 btn 但是 左侧 菜单没有勾选 则勾选
+      state.checkedKeysFrontDesk.push(parentItem.id)
+      //  递归将上层父节点id 存入
+      const tempIds = findParentIds(
+        state.operationCheckedValueFrontDesk[0],
+        state.allMenuTreeArrFrontDesk
+      )
+      //将所需的菜单id存入 直接去重
+      checkedKeysDirIdsFrontDesk.value = [
+        ...new Set(checkedKeysDirIdsFrontDesk.value.concat(tempIds))
+      ]
+      console.log('所有父级id', tempIds)
+      console.log('checkedKeysDirIds.value', checkedKeysDirIds.value)
+    }
+  } else {
+    //全不选
+    state.operationCheckedValueFrontDesk = []
+    // checkedKeysDirIds.value = []
+  }
+}
+
+//配置菜单 操作权限 btn 全选全不选 管理端
 const selectAllOperation = ({ target }) => {
   if (target.checked) {
     //全选
@@ -3695,7 +3994,32 @@ const selectAllOperation = ({ target }) => {
   }
 }
 
-//配置菜单 操作权限 btn change
+//配置菜单 操作权限 btn change 成员端
+const operationCheckedValueChangeFrontDesk = (checkedValue) => {
+  console.log('checkedValue', checkedValue)
+  if (checkedValue.length === 0) {
+    return
+  }
+  //  左侧 菜单 没有勾选则 勾选上
+  //当前选中的 btn 第一项
+  const currentItem =
+    checkedValue.length > 0 &&
+    state.allMenuTreeArrFrontDesk.find((item) => item.id === checkedValue[0])
+  //通过当前选中的 btn第一项获取 父级 项
+  const parentItem =
+    checkedValue.length > 0 &&
+    state.allMenuTreeArrFrontDesk.find((item) => item.id === currentItem.parentId)
+  if (!state.checkedKeysFrontDesk.includes(parentItem.id)) {
+    //选中了操作权限 btn 但是 左侧 菜单没有勾选 则勾选
+    state.checkedKeysFrontDesk.push(parentItem.id)
+    //  递归将上层父节点id 存入
+    const tempIds = findParentIds(checkedValue[0], state.allMenuTreeArrFrontDesk)
+    //将所需的菜单id存入 直接去重
+    checkedKeysDirIdsFrontDesk.value = [...new Set(checkedKeysDirIds.value.concat(tempIds))]
+  }
+}
+
+//配置菜单 操作权限 btn change 管理端
 const operationCheckedValueChange = (checkedValue) => {
   console.log('checkedValue', checkedValue)
   if (checkedValue.length === 0) {
@@ -3718,6 +4042,21 @@ const operationCheckedValueChange = (checkedValue) => {
   }
 }
 
+//成员端
+const operationCheckedChangeFrontDesk = (e) => {
+  console.log('e', e)
+  console.log('e.target.value', e.target.value)
+  const dom = document.querySelector(`.right-tree-item-front-desk${e.target.value}`)
+  dom && dom.scrollIntoView({ behavior: 'smooth' })
+  console.log('dom !!!!!!!!!', dom)
+  setTimeout(() => {
+    const dom = document.querySelector(`.right-tree-item-front-desk${e.target.value}`)
+    dom && dom.scrollIntoView({ behavior: 'smooth' })
+    console.log('dom !!!!!!!!!', dom)
+  }, 0)
+}
+
+//管理端
 const operationCheckedChange = (e) => {
   console.log('e', e)
   console.log('e.target.value', e.target.value)
@@ -3731,7 +4070,24 @@ const operationCheckedChange = (e) => {
   }, 0)
 }
 
-//配置菜单 前台 展开折叠
+//配置菜单 前台 展开折叠 成员端
+const expandAllFNFrontDesk = ({ target }) => {
+  if (target.checked) {
+    state.isShowTreeFrontDesk = false
+    state.defaultExpandAllFrontDesk = true
+    nextTick(() => {
+      state.isShowTreeFrontDesk = true
+    })
+  } else {
+    state.isShowTreeFrontDesk = false
+    state.defaultExpandAllFrontDesk = false
+    nextTick(() => {
+      state.isShowTreeFrontDesk = true
+    })
+  }
+}
+
+//配置菜单 前台 展开折叠 管理端
 const expandAllFN = ({ target }) => {
   if (target.checked) {
     state.isShowTree = false
@@ -4388,6 +4744,51 @@ const getCurrentAreaListFN = async () => {
 //   }
 // )
 
+//成员端
+watch(
+  () => state.checkedKeysFrontDesk,
+  (val) => {
+    //权限配置 选中的菜单
+    console.log('state.checkedKeys ---- change')
+    console.log('state.checkedKeys, ------', state.checkedKeys)
+    console.log('checkedKeysDirIds.value ---------', checkedKeysDirIds.value)
+    console.log('state.menuTreeArr---------', state.menuTreeArr)
+    state.selectAllFrontDesk = val.length > 0 && val.length === state.menuTreeArrFrontDesk.length
+    if (
+      [...state.checkedKeysFrontDesk, ...checkedKeysDirIdsFrontDesk.value].length ===
+      state.menuTreeArrFrontDesk.length
+    ) {
+      //回显全选特殊处理 - - 目录 跟 菜单 length 等于 list length
+      state.selectAllFrontDesk = true
+    }
+    //确认请求入参
+    state.idArrFrontDesk = [
+      ...new Set(
+        checkedKeysDirIdsFrontDesk.value.concat(
+          state.checkedKeysFrontDesk,
+          state.operationCheckedAllValueFrontDesk
+        )
+      )
+    ]
+    //右侧树
+    // state.selectTree = filterTree(state.menuTreeList, state.idArr)
+    // state.selectTree = filterTree(handleTree(cloneDeep(state.allMenuTreeArr)), state.idArr)
+    state.selectTreeFrontDesk = filterTree(
+      handleTree(cloneDeep(state.allMenuTreeArrFrontDesk)),
+      state.idArrFrontDesk
+    )
+    state.isShowRightTree = false
+    //右侧展开显示 左侧选中的数据
+    nextTick(() => {
+      state.isShowRightTree = true
+    })
+  },
+  {
+    immediate: true
+  }
+)
+
+//管理端
 watch(
   () => state.checkedKeys,
   (val) => {
@@ -4425,6 +4826,56 @@ watch(
 // const arr = arr1.filter((item) => !arr2.includes(item))
 // console.log('arr!!!!!!!!!!!!', arr)
 
+//成员端
+watch(
+  () => state.operationCheckedValueFrontDesk,
+  (val) => {
+    //  权限配置 操作权限 即 btn 当前选中的菜单的
+    console.log('valBtn', val)
+    state.selectAllOperationFrontDesk =
+      val.length > 0 && val.length === state.operationCheckedListFrontDesk.length
+    //获取复选框所有的id数组
+    const idList = state.operationCheckedListFrontDesk.map((item) => item.id)
+    //当前菜单没有选中的值
+    console.log('state.operationCheckedListFrontDesk', state.operationCheckedListFrontDesk)
+    const noSelectValue = idList.filter((item) => !val.includes(item))
+    console.log('当前菜单没有选中的值noSelectValue', noSelectValue)
+    //去重
+    state.operationCheckedAllValueFrontDesk = [
+      ...new Set(state.operationCheckedAllValueFrontDesk.concat(val))
+    ]
+    //通过未选中的值反向过滤  获取所有操作权限 选中的btn
+    state.operationCheckedAllValueFrontDesk = state.operationCheckedAllValueFrontDesk.filter(
+      (item) => !noSelectValue.includes(item)
+    )
+    console.log('state.operationCheckedAllValue', state.operationCheckedAllValue)
+    //确认请求入参
+    state.idArrFrontDesk = [
+      ...new Set(
+        state.idArrFrontDesk.concat(
+          state.operationCheckedAllValueFrontDesk,
+          checkedKeysDirIdsFrontDesk.value
+        )
+      )
+    ]
+    //通过未选中的值反向过滤
+    state.idArrFrontDesk = state.idArrFrontDesk.filter((item) => !noSelectValue.includes(item))
+    //右侧树
+    state.selectTreeFrontDesk = filterTree(
+      handleTree(cloneDeep(state.allMenuTreeArrFrontDesk)),
+      state.idArrFrontDesk
+    )
+    console.log('state.idArr!!!', state.idArr)
+    console.log('state.selectTree!!!', state.selectTree)
+    state.isShowRightTree = false
+    //右侧展开显示 左侧选中的数据
+    nextTick(() => {
+      state.isShowRightTree = true
+    })
+  }
+)
+
+//管理端
 watch(
   () => state.operationCheckedValue,
   (val) => {
@@ -4783,9 +5234,13 @@ onMounted(async () => {
   //background: red;
 }
 
+.overflow-auto {
+  overflow: auto;
+}
+
 .right-card-content {
   width: 100%;
-  height: 280px;
+  height: 260px;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(234, 235, 239, 1);
@@ -4801,6 +5256,7 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
+  overflow: auto;
 }
 .operation-checkbox-style {
   margin: 5px 26px 0 0;
@@ -5164,6 +5620,12 @@ onMounted(async () => {
   text-align: left;
   font-family: PingFangSC-Regular;
 }
+.margin-top-8 {
+  margin-top: 8px;
+}
+.margin-bottom-8 {
+  margin-bottom: 8px;
+}
 </style>
 
 <style lang="scss">
@@ -5240,11 +5702,11 @@ onMounted(async () => {
 
 .backstage-tabs-tree {
   .ant-tree-treenode-selected {
-    background: skyblue !important;
+    background: rgb(235, 245, 255) !important;
   }
   /*ant-tree-node-content-wrapper ant-tree-node-content-wrapper-close ant-tree-node-selected*/
   .ant-tree-node-selected {
-    background: skyblue !important;
+    background: rgb(235, 245, 255) !important;
   }
 }
 //绑定域名/企业文化
