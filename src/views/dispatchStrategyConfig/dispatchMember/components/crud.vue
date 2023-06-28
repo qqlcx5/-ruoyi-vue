@@ -61,7 +61,7 @@
           <el-input v-model="row.nickname" placeholder="昵称" />
         </template>
       </el-table-column>
-      <el-table-column label="销售品牌/车系">
+      <el-table-column label="销售品牌/车系" width="220px">
         <template #default="{ row }">
           <el-cascader
             ref="brandCasRef"
