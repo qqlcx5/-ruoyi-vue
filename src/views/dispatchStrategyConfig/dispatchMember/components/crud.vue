@@ -7,13 +7,14 @@
     height="70%"
   >
     <el-form :model="ruleForm" :rules="rules" ref="formRef">
-      <el-form-item label="所属门店" prop="shopId">
+      <el-form-item label="所属门店" prop="shopIdList">
         <el-cascader
           ref="treeShopCascader"
           v-model="ruleForm.shopIdList"
           placeholder="请选择门店"
           :options="shopTreeList"
           collapse-tags
+          collapse-tags-tooltip
           filterable
           @visible-change="getDistributeShopIdList"
           :props="{
@@ -33,7 +34,7 @@
       >派发人员配置(请先选择门店)
       <!--      <XButton type="primary" @click="addMemberRule">添加行</XButton>-->
     </div>
-    <div>
+    <div class="mb-15">
       <el-cascader
         v-model="memberList"
         ref="memberCasRef"
@@ -44,7 +45,7 @@
         @change="addMemberRule"
       />
     </div>
-    <el-table :data="memberTableList">
+    <el-table :data="memberTableList" :header-cell-style="{ backgroundColor: '#F6F6F6' }">
       <el-table-column label="门店">
         <template #default="{ row }">
           <span>{{ row.shopName }}</span>
@@ -103,27 +104,17 @@
       </el-table-column>
       <el-table-column label="派单状态">
         <template #default="{ row }">
-          <el-switch
-            v-model="row.status"
-            active-color="#13ce66"
-            :active-value="1"
-            :inactive-value="0"
-          />
+          <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
         </template>
       </el-table-column>
       <el-table-column label="跟进是否回推厂家">
         <template #default="{ row }">
-          <el-switch
-            v-model="row.pushBackFactoryStatus"
-            active-color="#13ce66"
-            :active-value="1"
-            :inactive-value="0"
-          />
+          <el-switch v-model="row.pushBackFactoryStatus" :active-value="1" :inactive-value="0" />
         </template>
       </el-table-column>
       <el-table-column label="操作">
         <template #default="{ row, $index }">
-          <el-button @click="deleteRow(row, $index)">删除</el-button>
+          <el-button text type="primary" @click="deleteRow(row, $index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -429,4 +420,8 @@ const onConfirm = async () => {
 defineExpose({ openDialog })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.mb-15 {
+  margin: 15px 0;
+}
+</style>
