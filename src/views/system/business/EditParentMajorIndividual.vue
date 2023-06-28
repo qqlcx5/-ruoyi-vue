@@ -112,6 +112,7 @@ import {
   getCheckMajorIndividual,
   getMajorIndividualList,
   getSimpleTenantList,
+  getSimpleTenantListStore,
   getTopPhone,
   updateEditMajorIndividualStatus,
   updateParentMajorIndividual
@@ -219,11 +220,16 @@ const closeStatusModal = () => {
 }
 
 onMounted(async () => {
-  let res = await getSimpleTenantList()
+  // let res = await getSimpleTenantList()
+  let res = await getSimpleTenantListStore({
+    storeId: props.currentRecord.id
+  })
   console.log('res', res)
   console.log('props.currentRecord', props.currentRecord)
 
-  state.contactMobile = await getTopPhone({ id: props.currentRecord.belongTenantId })
+  state.contactMobile = await getTopPhone({
+    id: props.currentRecord.belongTenantId || props.currentRecord.tenantId
+  })
 
   //contactMobile
   //去除顶层机构以及厂家 只保留经销商

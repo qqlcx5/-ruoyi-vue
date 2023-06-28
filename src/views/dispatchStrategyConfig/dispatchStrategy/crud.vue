@@ -19,7 +19,7 @@
       </template>
       <template #filterUserId="form">
         <el-cascader
-          :options="options"
+          :options="userOptions.users"
           :props="filterUserIdProps"
           v-model="form.filterUserId"
           collapse-tags
@@ -68,11 +68,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { FormExpose } from '@/components/Form'
-import { rules, allSchemas, oa_source_res } from './dispatchStrategy.data'
+import { rules, allSchemas } from './dispatchStrategy.data'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
-import * as postApi from '@/api/system/post/info'
-import { getAllStoreList } from '@/api/system/organization/index'
-import { listToTree } from '@/utils/tree'
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getMemberList, getSuitableShopList } = useCommonList()
 
 const formRef = ref<FormExpose>() // 表单 Ref
 const { t } = useI18n() // 国际化
@@ -112,34 +111,23 @@ const clueChannelIdProps = {
   emitPath: false
 }
 const filterUserIdProps = {
-  label: 'clueName',
-  value: 'clueSourceId',
+  label: 'name',
+  value: 'id',
   emitPath: false
 }
 // 获取岗位精简信息列表
-const getListSimplePosts = async () => {
-  let data = await postApi.listSimplePostsApi()
-  if (data) {
-    console.log(data)
-    getfilterUserId()
-  }
-}
 // 根据岗位岗位获取清洗员
-const getfilterUserId = async () => {
-  let data = await dispatchApi.hehe()
-  if (data) {
-    console.log(data)
-  }
-}
-getListSimplePosts()
+let userOptions = ref<any>(getMemberList({ childRuleValue: 'clue_qxy_rule' }))
 
 // 获取门店
-let shopOptions = []
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopOptions = listToTree(data || [], { pid: 'parentId' })
-  console.log(shopOptions)
-}
+// 获取门店数据
+const shopOptions = ref(getSuitableShopList())
+// let shopOptions = []
+// const getShopList = async () => {
+//   const data = await getAllStoreList()
+//   shopOptions = listToTree(data || [], { pid: 'parentId' })
+//   console.log(shopOptions)
+// }
 const changeShopIdList = (val) => {
   console.log(val)
   // let ids = val.reduce((prev, cur) => {
@@ -151,7 +139,7 @@ const changeShopIdList = (val) => {
 
   getDistributeShopUserList(val)
 }
-getShopList()
+// getShopList()
 
 // 根据门店获取成员
 const getDistributeShopUserList = async (ids) => {
@@ -161,48 +149,54 @@ const getDistributeShopUserList = async (ids) => {
   let data = await dispatchApi.getDistributeShopUserList(params)
   if (data) {
     let userList = data.userList || []
-    tableList.value = userList
-    // for (let index = 0; index < 100; index++) {
-    //   tableList.value.push({
-    //     serialNumber: '厦门分公司-中埔哈弗红蓝标4S店',
-    //     clueSource: '池小妹',
-    //     shopName: '池小妹',
-    //     platformUsername: '哈弗,皮卡',
-    //     platformPassword: 'aaaa1111',
-    //     needFilter: '开启',
-    //     autoDistribute: '0',
-    //     platformRule: '0',
-    //     isShow: '1'
-    //   })
-    // }
+    tableList.value = userList.map((item) => {
+      let autoBrandNames = item.autoBrandNames
+      item.autoBrandNames = formatBrandSeries(autoBrandNames)
+      let autoSeriesNames = item.autoSeriesNames
+      item.autoSeriesNames = formatBrandSeries(autoSeriesNames)
+      return item
+    })
   }
-  console.log(data)
 }
-onMounted(() => {
-  console.log('======')
-})
-let options = ref<any[]>(oa_source_res.list)
+
+const formatBrandSeries = (names) => {
+  let autoBrandNames = ''
+  if (Object.prototype.toString.call(names) == '[object String]') {
+    try {
+      names = JSON.parse(names)
+      if (Object.prototype.toString.call(names) == '[object Array]') {
+        autoBrandNames = names.join(',')
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  return autoBrandNames
+}
+
+// onMounted(() => {
+//   console.log('======')
+// })
 
 const openDialog = (editType, data) => {
   console.log(editType, data)
 
   dialogVisible.value = true
   actionType.value = editType
+  dialogTitle.value = editType == 'create' ? '新增' : '编辑'
   getShopUserList()
-  setTimeout(() => {
-    // let params = {
-    //   clueChannelId: `${data.clueChannelId}`,
-    //   filterUserId: data.filterUserId,
-    //   distributeShopIdList: ''
-    // }
-    // console.log(params)
-
-    data.distributeShopIdList = data.distributeShopList.map((item) => item.distributeShopId)
-
-    if (formRef.value) {
-      formRef.value.setValues(data)
-    }
-  }, 200)
+  if (data && data.distributeShopList) {
+    setTimeout(() => {
+      data.distributeShopIdList = data.distributeShopList.map((item) => item.distributeShopId)
+      if (formRef.value) {
+        formRef.value.setValues(data)
+      }
+      if (data.distributeShopIdList.length > 0) {
+        getDistributeShopUserList(data.distributeShopIdList)
+      }
+    }, 200)
+  }
+  tableList.value = []
 }
 defineExpose({ openDialog })
 // 保存按钮
@@ -268,33 +262,40 @@ const clueDistributeUpdate = async (params) => {
 const tableColumns = [
   {
     label: '门店',
-    field: 'serialNumber',
+    field: 'distributeShopName',
     minWidth: '100px'
   },
   {
     label: '成员',
-    field: 'clueSource',
+    field: 'distributeUserName',
     minWidth: '80px'
   },
   {
     label: '成员平台昵称',
-    field: 'shopName',
+    field: 'nickname',
     minWidth: '120px'
   },
   {
-    label: '销量品牌',
-    field: 'platformUsername',
+    label: '销售品牌',
+    field: 'autoBrandNames',
     minWidth: '100px'
   },
   {
-    label: '销量品牌',
-    field: 'platformPassword',
+    label: '销售车系',
+    field: 'autoSeriesNames',
     minWidth: '100px'
   },
   {
     label: '派单状态',
-    field: 'needFilter',
-    minWidth: '80px'
+    field: 'status',
+    minWidth: '80px',
+    formatter: (_, __, val: string) => {
+      let obj = {
+        0: '禁用',
+        1: '启用'
+      }
+      return obj[val] || ''
+    }
   }
 ]
 // 岗位类型table

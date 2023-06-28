@@ -328,6 +328,38 @@ const remainingRouter: AppRouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: '/mortgage',
+    component: Layout,
+    name: 'Mortgage',
+    meta: { hidden: true },
+    children: [
+      {
+        path: 'financial-product/edit/:id',
+        name: 'FinancialProductEdit',
+        component: () => import('@/views/mortgage/financialProduct/edit.vue'),
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          title: '编辑金融产品',
+          activeMenu: 'mortgage/financialProduct/index'
+        }
+      },
+      {
+        path: 'financial-product/create',
+        name: 'FinancialProductCreate',
+        component: () => import('@/views/mortgage/financialProduct/edit.vue'),
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          title: '新增金融产品',
+          activeMenu: 'mortgage/financialProduct/index'
+        }
+      }
+    ]
+  },
   ...whiteRouter
 ]
 

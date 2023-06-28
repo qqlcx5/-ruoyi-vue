@@ -10,6 +10,9 @@
     }"
     @add="addRule"
   >
+    <template #applicableShopName="{ row }">
+      {{ parseStr(row.applicableShopName) }}
+    </template>
     <template #openRules="{ row }">
       <el-switch
         :disabled="!hasPermission('dispatch-strategy-config:distribute-rule:edit')"
@@ -28,26 +31,26 @@
 import { computed } from 'vue'
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
-import { getAllStoreList } from '@/api/system/organization'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { listToTree } from '@/utils/tree'
 import Crud from './components/crud.vue'
 import { formatDate } from '@/utils/formatTime'
 import { hasPermission } from '@/utils/utils'
+import { useCommonList } from '@/hooks/web/useCommonList'
 
-onMounted(() => {
-  getShopList()
-})
+// onMounted(() => {
+//   getShopList()
+// })
 const message = useMessage()
 const refresh = () => {
   tableRef.value.tableMethods.getList()
 }
-// 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+const { getSuitableShopList } = useCommonList()
+// 数组转字符串展示
+const parseStr = (row) => {
+  return row.join('，')
 }
+// 获取门店数据
+const shopTreeList = ref(getSuitableShopList())
 
 const tableRef = ref()
 
@@ -79,11 +82,13 @@ const columns: TableColumn[] = [
   },
   {
     label: '规则名称',
-    field: 'distributeRuleName'
+    field: 'distributeRuleName',
+    disabled: true
   },
   {
     label: '适用门店',
-    field: 'applicableShopName'
+    field: 'applicableShopName',
+    disabled: true
   },
   {
     label: '状态',

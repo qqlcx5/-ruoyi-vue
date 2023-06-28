@@ -23,6 +23,9 @@
       <el-switch
         :disabled="!hasPermission('clue-channel:edit')"
         v-model="row.needFilter"
+        inline-prompt
+        active-text="是"
+        inactive-text="否"
         :active-value="1"
         :inactive-value="0"
         @change="handleNeedFilterChange(row, 'needFilter')"
@@ -38,6 +41,9 @@
       <el-switch
         :disabled="!hasPermission('clue-channel:edit')"
         v-model="row.isShow"
+        inline-prompt
+        active-text="是"
+        inactive-text="否"
         :active-value="1"
         :inactive-value="0"
         @change="handleNeedFilterChange(row, 'isShow')"
@@ -47,14 +53,15 @@
   <AddChannelModal ref="addChannelModalRef" @refresh-list="refreshList" />
 </template>
 
-<script setup lang="ts" name="ClueChannel">
+<script setup lang="ts" name="clueChannel">
 import * as channelApi from '@/api/clue/channel'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { TableColumn } from '@/types/table'
-import { getAllStoreList } from '@/api/system/organization'
-import { listToTree } from '@/utils/tree'
 import AddChannelModal from './components/AddChannelModal.vue'
 import { hasPermission } from '@/utils/utils'
+
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -68,12 +75,12 @@ const FilterFun = (val) => {
 }
 
 // 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
-getShopList()
+const shopTreeList = ref(getSuitableShopList())
+
+// 获取门店数据
+// const shopTreeList = ref(getShopList())
+// console.log(getShopList())
+
 let sourceList = ref<any[]>([])
 // 获取线索来源列表
 const getSourceList = async () => {
@@ -126,15 +133,18 @@ const columns: TableColumn[] = [
   },
   {
     label: '编号',
-    field: 'serialNumber'
+    field: 'serialNumber',
+    disabled: true
   },
   {
     label: '线索平台所属门店',
-    field: 'shopName'
+    field: 'shopName',
+    disabled: true
   },
   {
     label: '线索平台',
-    field: 'clueSource'
+    field: 'clueSource',
+    disabled: true
   },
   {
     label: '平台账号',

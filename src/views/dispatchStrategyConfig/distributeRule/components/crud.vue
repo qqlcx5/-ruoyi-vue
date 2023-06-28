@@ -4,18 +4,20 @@
     v-model="dialogVisible"
     :title="editFlag ? '编辑' : '新增'"
     width="800"
+    height="80%"
   >
     <el-form :model="form" ref="formRef" :hide-required-asterisk="false">
-      <el-form-item label="适用名称">
+      <el-form-item label="规则名称" style="margin-left: 0">
         <el-input
           v-model="form.distributeRuleName"
+          placeholder="请输入规则名称"
           @change="changeRuleName"
           maxlength="20"
           show-word-limit
           type="text"
         />
       </el-form-item>
-      <el-form-item label="适用门店">
+      <el-form-item label="适用门店" style="margin-left: 0">
         <el-cascader
           ref="treeShopCascader"
           v-model="form.shopIdList"
@@ -31,6 +33,7 @@
           :show-all-levels="false"
           clearable
           collapse-tags
+          collapse-tags-tooltip
           filterable
         />
       </el-form-item>
@@ -50,7 +53,7 @@
       <div class="mb10">
         <div class="tit">派发规则设置</div>
         <div class="divider-row"></div>
-        <el-form-item label="是否允许规则外增加派发成员：">
+        <el-form-item v-show="form.distributeType === 2" label="是否允许规则外增加派发成员：">
           <el-switch
             active-color="#13ce66"
             v-model="form.augment"
@@ -59,7 +62,11 @@
           />
           <div class="Grey mb10 tips-right">(开启后，清洗员可以手动新增派发成员)</div>
         </el-form-item>
-        <el-form-item label="单条线索派发给" prop="distributeNum">
+        <el-form-item
+          v-show="form.distributeType === 2"
+          label="单条线索派发给"
+          prop="distributeNum"
+        >
           <div class="no-wrap">
             <el-input v-model="form.distributeNum" placeholder="人数" type="number" min="0" />
             人
@@ -81,26 +88,20 @@
         </el-form-item>
         <el-form-item v-if="form.receivePattern === 3">
           <el-button type="primary" size="small" @click="addTeam">添加团队</el-button>
-          <el-table :data="form.teams" ref="teamTableRef">
+          <el-table
+            :data="form.teams"
+            ref="teamTableRef"
+            :header-cell-style="{ backgroundColor: '#F6F6F6' }"
+          >
             <el-table-column label="团队" prop="teamName" />
             <el-table-column label="关联岗位" width="200">
               <template #default="{ row }">
-                <el-select
-                  v-model="row.positionSunTypeList"
-                  multiple
+                <el-cascader
                   filterable
-                  clearable
-                  collapse-tags
-                  style="width: 180px"
-                >
-                  <el-option
-                    v-for="item in postList"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                    :disabled="item.disabled"
-                  />
-                </el-select>
+                  v-model="row.positionSunTypeList"
+                  :options="postList"
+                  :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+                />
               </template>
             </el-table-column>
             <el-table-column label="允许独享人数" prop="permitEnjoyNum">
@@ -110,7 +111,7 @@
             </el-table-column>
             <el-table-column label="操作">
               <template #default="{ $index }">
-                <div @click="deleteShopRule($index)">删除</div>
+                <el-button text type="primary" @click="deleteShopRule($index)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -139,16 +140,17 @@
 <script setup lang="ts" name="rule_crud">
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { cloneDeep } from 'lodash-es'
-import { listSimplePostsApi } from '@/api/system/post/info'
 import { RuleObj } from '../helpers'
 import { FormInstance } from 'element-plus'
 import { useOption } from '@/store/modules/options'
-import { existDccRuleShop } from '@/api/clue/basicConfig'
-onMounted(() => {
-  // getPostList()
-})
+import { useCommonList } from '@/hooks/web/useCommonList'
+import { getPostDataList } from '@/api/common'
 const store = useOption()
-
+const { getSuitableShopList } = useCommonList()
+onMounted(() => {
+  // getSuitableShopListApi()
+  // getexistRuleShopApi()
+})
 const message = useMessage()
 const dialogVisible = ref(false)
 const shopTreeList = ref<object[]>([])
@@ -171,10 +173,9 @@ const form = ref(cloneDeep(initForm))
 const editFlag = ref<boolean>(false)
 const editId = ref(0)
 const selectedPositionId = ref<number[]>([])
-
 const openDialog = (id: number) => {
-  nextTick(() => {
-    let applicableShopId = []
+  let applicableShopId = []
+  nextTick(async () => {
     editId.value = id
     editFlag.value = !!id
     formRef.value?.resetFields()
@@ -182,7 +183,7 @@ const openDialog = (id: number) => {
     // shopTreeList.value = formshopTreeList
     selectedPositionId.value = []
     if (id) {
-      dispatchApi.getClueDistributeRuleDetail(id).then((res) => {
+      await dispatchApi.getClueDistributeRuleDetail(id).then((res) => {
         form.value = res
         if (!res.teams) {
           form.value.teams = []
@@ -197,8 +198,8 @@ const openDialog = (id: number) => {
         }
       })
     }
-    getPostList()
-    getShopList(applicableShopId)
+    getPostListApi()
+    getexistRuleShopApi(applicableShopId)
     dialogVisible.value = true
   })
 }
@@ -213,30 +214,26 @@ type positionObj = {
   disabled: boolean
 }
 const postList = ref<positionObj[]>([])
-const getPostList = async () => {
-  const data = await listSimplePostsApi()
+const getPostListApi = async () => {
+  const data = await getPostDataList()
   postList.value = data.map((pos: positionObj) => {
     pos['disabled'] = selectedPositionId.value.includes(pos.id)
     return pos
   })
 }
-// const anotherRowPosId = ref<number[]>([])
-// const changePosition = (isShow, row) => {
-// let hasId = selectedPositionId.value
-// selectedPositionId.value = [...row.positionSunTypeList, ...hasId]
-// if (row.positionSunTypeList.length > 0) {
-//   anotherRowPosId.value = row.positionSunTypeList
-// }
-// selectedPositionId.value = difference(row.positionSunTypeList, anotherRowPosId.value)
-// }
 
-const getShopList = async (applicableShopId) => {
-  const { shopList } = await store.getShopList()
-  const checkedList = await existDccRuleShop()
-  shopTreeList.value = store.dealShopList(shopList, unref(checkedList), applicableShopId)
+const shopList = ref(getSuitableShopList())
+
+const existShopList = ref<object[]>([])
+const getexistRuleShopApi = async (applicableShopId) => {
+  existShopList.value = await dispatchApi.existRuleShop()
+  shopTreeList.value = store.dealShopList(shopList.value, existShopList.value, applicableShopId)
 }
 
 const changeRuleName = (val) => {
+  if (!val) {
+    return message.error('请输入规则名称')
+  }
   if (!editFlag) return
   const isValid = dispatchApi.checkValidRuleName(editId.value, val)
   if (!isValid) {
@@ -273,6 +270,12 @@ const deleteShopRule = (index) => {
 }
 
 const onConfirm = async () => {
+  if (!form.value.distributeRuleName) {
+    return message.error('请填写规则名称')
+  }
+  if (form.value.shopIdList.length < 1) {
+    return message.error('请选择适用门店')
+  }
   let params = cloneDeep(form.value)
   params.applicableShopId = params.shopIdList.join(',')
 

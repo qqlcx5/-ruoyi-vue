@@ -20,16 +20,22 @@ const emits = defineEmits<{
 }>()
 
 const { getPostList } = useCommonList()
-const postList = ref(getPostList())
 
 const columns: FormSchema[] = reactive([
   {
     field: 'dataRangPostId',
     label: '岗位数据范围',
-    component: 'Select',
+    component: 'Cascader',
     componentProps: {
-      options: computed(() => postList.value.map((item) => ({ label: item.name, value: item.id }))),
-      multiple: true
+      options: getPostList(),
+      collapseTags: true,
+      collapseTagsTooltip: true,
+      props: {
+        label: 'name',
+        value: 'id',
+        emitPath: false,
+        multiple: true
+      }
     },
     colProps: {
       span: 24
@@ -39,6 +45,7 @@ const columns: FormSchema[] = reactive([
     field: 'dataRangUserId',
     label: '成员数据范围',
     component: 'Select',
+    value: '',
     componentProps: {
       options: [
         {
@@ -60,6 +67,7 @@ const columns: FormSchema[] = reactive([
       options: brandOptions,
       marginRight: '20px'
     },
+    value: 0,
     colProps: {
       span: 24
     }
@@ -72,6 +80,7 @@ const columns: FormSchema[] = reactive([
       options: areaOptions,
       marginRight: '20px'
     },
+    value: 0,
     colProps: {
       span: 24
     }
@@ -84,6 +93,7 @@ const columns: FormSchema[] = reactive([
       options: choiceOptions,
       marginRight: '20px'
     },
+    value: 0,
     colProps: {
       span: 24
     }

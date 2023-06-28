@@ -33,11 +33,14 @@
         @change="changePushBackFactoryStatus(row)"
       />
     </template>
+    <template #distributeUserName="{ row }">
+      <span>{{ row.distributeUserName + '-' + row.positionName }}</span>
+    </template>
     <template #autoBrandNames="{ row }">
       <span>{{ arrToStrFunc(row.autoBrandNames) }}</span>
     </template>
     <template #autoSeriesNames="{ row }">
-      <span>{{ arrToStrFunc(row.autoSeriesNames) }}</span>
+      <span class="another-line">{{ arrToStrFunc(row.autoSeriesNames) }}</span>
     </template>
     <template #tableAppend>
       <XButton @click="handleDel">删除</XButton>
@@ -48,7 +51,7 @@
       ><i class="el-icon-warning Danger"></i>确认要删除这<span class="Danger">{{
         selectedIds.length
       }}</span
-      >条派发策略吗？
+      >条派发成员吗？
     </p>
     <p>删除后，对应派发成员将无法接收到线索派发。</p>
     <template #footer>
@@ -63,18 +66,17 @@
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { getAllStoreList } from '@/api/system/organization'
-import { listToTree } from '@/utils/tree'
 import { computed, ref } from 'vue'
 import Crud from './components/crud.vue'
 import { getAllBrand } from '@/api/model/brand'
 import { formatDate } from '@/utils/formatTime'
 import { hasPermission } from '@/utils/utils'
+import { useCommonList } from '@/hooks/web/useCommonList'
 
 const message = useMessage()
+const { getSuitableShopList } = useCommonList()
 
 onMounted(() => {
-  getShopList()
   getBrandInfo()
 })
 
@@ -83,11 +85,9 @@ const refresh = () => {
 }
 const tableRef = ref()
 // 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
+// const getShopList = async () => {
+const shopTreeList = ref(getSuitableShopList())
+// }
 
 const brandList = ref<object[]>([])
 const getBrandInfo = async () => {
@@ -154,19 +154,22 @@ const getSpanArr = (data, array) => {
 const arrToStrFunc = (arr) => {
   return arr && JSON.parse(arr).join(',')
 }
-
+// const toStr = (arr)
 const columns: TableColumn[] = [
   {
     label: '分公司',
-    field: 'branchName'
+    field: 'branchName',
+    disabled: true
   },
   {
     label: '门店',
-    field: 'distributeShopName'
+    field: 'distributeShopName',
+    disabled: true
   },
   {
     label: '派发成员',
-    field: 'distributeUserName'
+    field: 'distributeUserName',
+    disabled: true
   },
   {
     label: '成员平台昵称',
@@ -231,7 +234,8 @@ const columns: TableColumn[] = [
   },
   {
     label: '销售车系',
-    field: 'autoSeriesNames'
+    field: 'autoSeriesNames',
+    showOverflowTooltip: true
   },
   {
     label: '创建人',
@@ -266,7 +270,8 @@ const actionButtons = [
     permission: hasPermission('dispatch-strategy-config:dispatch-member:delete'),
     click: (row) => {
       selectedIds.value = [row.id]
-      deleteFun()
+      delDialog.value = true
+      // deleteFun()
     }
   }
 ]

@@ -59,21 +59,16 @@
           <span class="ml-8px">天</span>
         </el-form-item>
         <el-form-item label="参与规则岗位" prop="limitPositionTypeList" style="margin-bottom: 12px">
-          <el-select
+          <el-cascader
             v-model="ruleForm.limitPositionTypeList"
-            multiple
+            :options="postList"
+            :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
             filterable
-            clearable
             collapse-tags
-            style="width: 240px"
-          >
-            <el-option
-              v-for="item in postList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
-          </el-select>
+            collapse-tags-tooltip
+            clearable
+            style="min-width: 240px"
+          />
         </el-form-item>
         <el-form-item>
           <div class="checked-post">{{ checkedPostNames }}</div>
@@ -96,11 +91,12 @@ import {
   firstFollowRateSave,
   firstFollowRateEdit
 } from '@/api/clue/basicConfig'
-import { listSimplePostsApi } from '@/api/system/post/info'
 import { cloneDeep } from 'lodash-es'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useOption } from '@/store/modules/options'
 const store = useOption()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getPostList } = useCommonList()
 const message = useMessage()
 
 interface IProps {
@@ -124,11 +120,7 @@ const getExistRuleShop = async () => {
   checkedList.value = data.map((d) => +d)
 }
 
-const postList = ref<object[]>([])
-const getPostList = async () => {
-  const data = await listSimplePostsApi()
-  postList.value = data
-}
+const postList = ref(getPostList())
 
 const editFlag = ref<boolean>(false)
 const shopTreeList = ref<object[]>([])
@@ -140,7 +132,7 @@ watch(
       const id = props.curInfo['id']
       editFlag.value = !!id
       id && (await getInfo(id))
-      Promise.all([getPostList(), getExistRuleShop()]).then(() => {
+      Promise.all([getExistRuleShop()]).then(() => {
         shopTreeList.value = store.dealShopList(
           props.shopList,
           unref(checkedList),

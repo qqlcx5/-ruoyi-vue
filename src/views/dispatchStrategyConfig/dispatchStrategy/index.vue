@@ -14,6 +14,28 @@
     }"
     @add="addMember"
   >
+    <template #status="{ row }">
+      <el-switch
+        v-model="row.status"
+        inline-prompt
+        active-text="是"
+        inactive-text="否"
+        :active-value="1"
+        :inactive-value="0"
+        @change="handleNeedFilterChange(row, 'status')"
+      />
+    </template>
+    <template #isExternalDistribute="{ row }">
+      <el-switch
+        v-model="row.isExternalDistribute"
+        inline-prompt
+        active-text="是"
+        inactive-text="否"
+        :active-value="1"
+        :inactive-value="0"
+        @change="handleNeedFilterChange(row, 'isExternalDistribute')"
+      />
+    </template>
     <template #tableAppend>
       <XButton type="danger" @click="handleDel">删除</XButton>
     </template>
@@ -21,29 +43,23 @@
   <crud ref="crudRef" @refresh-list="refreshList" />
 </template>
 
-<script setup lang="ts" name="dispatchMember">
+<script setup lang="ts" name="dispatchStrategy">
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { getAllStoreList } from '@/api/system/organization'
-import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
 import { formatDate } from '@/utils/formatTime'
 import crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
 
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
+
 const message = useMessage()
 const { t } = useI18n() // 国际化
 
-onMounted(() => {
-  getShopList()
-})
 const tableRef = ref()
 // 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
+const shopTreeList = ref(getSuitableShopList())
 
 const refreshList = () => {
   console.log(tableRef.value.tableMethods)
@@ -75,6 +91,8 @@ const getTable = (params) => {
         newArr.push(JSON.parse(JSON.stringify(item)))
       }
     })
+    console.log(newArr)
+
     data.list = newArr
 
     return data
@@ -91,7 +109,8 @@ const objectSpanMethod = ({ row, column }) => {
     'receivePattern',
     'createBy',
     'createTime',
-    'shopName'
+    'shopName',
+    'action'
   ].includes(property) //需要合并的字段
   // ----------皮卡丘------------
   let num = row.distributeShopList.length
@@ -124,24 +143,51 @@ const tableRowClassName = ({ row, column }): string => {
   }
   return ''
 }
+
+// 获取线索渠道
+let clueChannelTreeList = ref<any[]>([])
+const getShopUserList = async () => {
+  let data = await dispatchApi.getClueChannelTree()
+  if (data && data.length > 0) {
+    data = data.map((item) => {
+      item.label = item.companyShopName
+      item.value = ''
+      item.children = item.list.map((lItem) => {
+        lItem.label = lItem.sourceName
+        lItem.value = lItem.clueChannelId
+        return lItem
+      })
+      return item
+    })
+    clueChannelTreeList.value = data
+  }
+}
+getShopUserList()
 const columns: TableColumn[] = [
   {
     label: '线索平台来源',
-    field: 'clueChannelName',
-    isSearch: true
-  },
-  {
-    label: '所属区域/门店',
-    field: 'parentName'
-  },
-  {
-    label: '线索清洗员',
-    field: 'filterUserName'
+    field: 'clueChannelId',
+    isSearch: true,
+    isTable: false,
+    search: {
+      component: 'Cascader',
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: computed(() => clueChannelTreeList.value),
+        props: {
+          label: 'label',
+          value: 'value',
+          emitPath: false
+        }
+      }
+    }
   },
   {
     label: '派发门店',
-    field: 'distributeShopName',
+    field: 'shopId',
     isSearch: true,
+    isTable: false,
     search: {
       component: 'Cascader',
       componentProps: {
@@ -155,6 +201,32 @@ const columns: TableColumn[] = [
         }
       }
     }
+  },
+  {
+    label: '线索平台来源',
+    field: 'clueChannelName',
+    disabled: true
+  },
+  {
+    label: '所属区域/门店',
+    field: 'parentName',
+    disabled: true,
+    formatter: (val) => {
+      return `${val.parentName} - ${val.shopName}`
+    }
+  },
+  // {
+  //   label: '开通门店',
+  //   field: 'shopName'
+  // },
+  {
+    label: '线索清洗员',
+    field: 'filterUserName'
+  },
+  {
+    label: '派发门店',
+    field: 'distributeShopName',
+    disabled: true
   },
   {
     label: '实际派发成员数',
@@ -178,10 +250,6 @@ const columns: TableColumn[] = [
     formatter: (_, __, val: string) => {
       return formatDate(new Date(val))
     }
-  },
-  {
-    label: '开通门店',
-    field: 'shopName'
   }
 ]
 
@@ -260,6 +328,26 @@ const deleteFun = async () => {
   } else {
     message.error('报错了')
   }
+}
+
+const handleNeedFilterChange = async (row, type) => {
+  console.log(row)
+
+  if (!row.id) return
+  if (type == 'status') {
+    await dispatchApi.clueDistributeUpdateShopStatus({
+      id: row.id,
+      shopId: row.shopId,
+      status: row.status
+    })
+  } else {
+    await dispatchApi.clueDistributeUpdateExternalStatus({
+      id: row.id,
+      shopId: row.shopId,
+      status: row.isExternalDistribute
+    })
+  }
+  // refreshList()
 }
 const { allSchemas } = useCrudSchemas(columns)
 </script>

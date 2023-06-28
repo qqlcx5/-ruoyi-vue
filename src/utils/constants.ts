@@ -265,5 +265,6 @@ export const PageKeyObj = {
   menu: 'menu', //菜单管理
   tenant: 'tenant', //租户菜单
   business: 'business', //主体管理
+  businessStore: 'businessStore', //主体管理 门店
   member: 'member' //成员管理
 }

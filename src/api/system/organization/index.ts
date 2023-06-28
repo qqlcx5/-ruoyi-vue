@@ -30,6 +30,21 @@ export const getStoreList = (params) => {
   return request.get({ url: '/system/organization/store-list', params })
 }
 
+// 获取根据主体和门店获取行政区划精简信息列表 只包含省市区三级区划，主要用于【主体管理】的下拉选项
+export const getAreaList = (params) => {
+  return request.get({ url: '/system/tenant-area/list-simple-tenant', params })
+}
+
+// 获取指定主体门店行政区划精简信息列表  只包含开启显示的省市区三级区划，主要用于前端的下拉选项
+export const getCurrentStoreAreaList = (params) => {
+  return request.get({ url: '/system/tenant-area/list-simple-store', params })
+}
+
+// 获取当前主体行政区划精简信息列表  只包含开启显示的区划，主要用于前端的下拉选项
+export const getCurrentAreaList = () => {
+  return request.get({ url: '/system/tenant-area/list-all-simple' })
+}
+
 // 获取上级机构列表() 成员管理 左侧 部门
 export const getDeptList = (params) => {
   return request.get({ url: '/system/user/extra/list-org', params })

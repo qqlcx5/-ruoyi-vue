@@ -11,10 +11,10 @@ export interface ChannelVO {
   shopId: string
   platformUsername: string
   platformPassword: string
-  needFilter: string
-  autoDistribute: string
-  platformRule: string
-  isShow: string
+  needFilter: number
+  autoDistribute: number
+  platformRule: number
+  isShow: number
 }
 
 // 渠道管理列表

@@ -3,7 +3,7 @@ import { formatDate } from '@/utils/formatTime'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { getMemberRuleTree, getMemberRuleList } from '@/api/system/memberRule'
-import { ref, createVNode, reactive, computed } from 'vue'
+import { ref, createVNode, reactive } from 'vue'
 import { XTextButton } from '@/components/XButton'
 import { isEmpty } from 'lodash-es'
 
@@ -14,6 +14,14 @@ export type TreeNode = {
 }
 
 const { t } = useI18n()
+
+export const stringToArray = (str = '') => {
+  return str?.split(',').map((val) => Number(val))
+}
+
+export const arrayToString = (array: number[] = []) => {
+  return array?.join(',')
+}
 
 export const useColumnOptions = () => {
   const brandOptions = [
@@ -58,16 +66,11 @@ export const useColumnOptions = () => {
 
 export const useFormTable = () => {
   const { brandOptions, areaOptions, choiceOptions } = useColumnOptions()
-  const { getSuitableShopList, getShopList } = useCommonList()
-  const shopList = ref(getShopList())
+  const { getSuitableShopList } = useCommonList()
   const dialogTreeData = ref<Recordable[]>([])
   const showTreeDialog = ref(false)
   const dialogTreeTitle = ref('')
   const columns: TableColumn[] = reactive([
-    {
-      label: '编码',
-      field: 'ruleCode'
-    },
     {
       field: 'applicableShopIds',
       label: '门店名称',
@@ -76,13 +79,15 @@ export const useFormTable = () => {
       search: {
         component: 'Cascader',
         componentProps: {
-          options: getSuitableShopList().value,
+          options: getSuitableShopList(),
+          collapseTags: true,
+          collapseTagsTooltip: true,
+          filterable: true,
           props: {
             label: 'name',
             value: 'id',
-            multiple: true,
-            expandTrigger: 'hover',
-            emitPath: false
+            emitPath: false,
+            multiple: true
           }
         }
       }
@@ -93,19 +98,25 @@ export const useFormTable = () => {
       isSearch: true,
       isTable: false,
       search: {
-        component: 'Select',
+        component: 'Cascader',
+        collapseTags: true,
+        collapseTagsTooltip: true,
+        filterable: true,
         componentProps: {
-          options: computed(() =>
-            shopList.value.map((item) => ({ label: item.name, value: item.id }))
-          ),
-          multiple: true
+          options: getSuitableShopList(),
+          props: {
+            label: 'name',
+            value: 'id',
+            emitPath: false,
+            multiple: true
+          }
         }
       }
     },
     {
       field: 'applicableShopInfoList',
       label: '适用门店',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -115,14 +126,14 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '适用门店'
           },
-          title: `共${value?.length}家门店`
+          title: `共${row.applicableShopId.split(',')?.length}家门店`
         })
       }
     },
     {
       field: 'dataRangShopIdInfoList',
       label: '门店数据范围',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -132,14 +143,14 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '门店数据范围'
           },
-          title: `共${value?.length}家门店`
+          title: `共${row.dataRangShopId.split(',')?.length}家门店`
         })
       }
     },
     {
       label: '岗位数据范围',
       field: 'dataRangPostNameList',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -149,14 +160,14 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '岗位数据范围'
           },
-          title: `共${value?.length}家岗位`
+          title: `共${row.dataRangPostId.split(',')?.length}个岗位`
         })
       }
     },
     {
       label: '成员数据范围',
       field: 'dataRangUserInfoList',
-      formatter: (_, __, value) => {
+      formatter: (row, __, value) => {
         if (isEmpty(value)) {
           return '不限'
         }
@@ -166,7 +177,7 @@ export const useFormTable = () => {
             showTreeDialog.value = true
             dialogTreeTitle.value = '成员数据范围'
           },
-          title: `共${value?.length}人`
+          title: `共${row.dataRangUserId.split(',')?.length}人`
         })
       }
     },
@@ -202,6 +213,7 @@ export const useFormTable = () => {
     {
       label: t('common.createTime'),
       field: 'createTime',
+      width: 180,
       formatter: (_, __, val: string) => {
         return formatDate(new Date(val))
       }
@@ -211,12 +223,7 @@ export const useFormTable = () => {
 
   const showDialog = ref(false)
   const title = ref('')
-
-  /** 添加 */
-  const handleAdd = () => {
-    showDialog.value = true
-    title.value = '新增子规则'
-  }
+  const isEdit = ref(false)
 
   return {
     allSchemas,
@@ -224,15 +231,15 @@ export const useFormTable = () => {
     dialogTreeData,
     showTreeDialog,
     dialogTreeTitle,
+    isEdit,
     title,
-    tableApi: getMemberRuleList,
-    handleAdd
+    tableApi: getMemberRuleList
   }
 }
 
 export const useRuleTree = () => {
   const treeData = ref<Recordable[]>([])
-  const dictType = 'clue_choose_user_rule'
+  const dictType = 'clue_choose_user_rule,clue_choose_user_reception,clue_choose_user_visit'
   const selectNode = ref<Partial<TreeNode>>({})
 
   const getTree = async () => {

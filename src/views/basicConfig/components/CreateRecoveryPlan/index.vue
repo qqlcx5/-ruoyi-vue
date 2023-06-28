@@ -1,6 +1,7 @@
 <template>
   <div class="create-recovery-plan">
     <el-dialog
+      :lock-scroll="false"
       class="wg-custom-dialog"
       :model-value="props.modelValue"
       title="新增回收计划"
@@ -16,14 +17,14 @@
         v-loading="loading"
       >
         <el-form-item label="线索所属成员" prop="userId">
-          <el-select v-model="ruleForm.userId" filterable>
-            <el-option
-              v-for="item in userList"
-              :key="item.id"
-              :label="item.username"
-              :value="item.id"
-            />
-          </el-select>
+          <el-cascader
+            v-model="ruleForm.userId"
+            :options="userList"
+            :props="{ label: 'name', value: 'id', children: 'users', emitPath: false }"
+            filterable
+            clearable
+            style="min-width: 180px"
+          />
         </el-form-item>
         <el-form-item label="手动回收原因" prop="recycleReason">
           <el-select v-model="ruleForm.recycleReason" filterable>
@@ -73,6 +74,7 @@
               <el-date-picker
                 v-model="timeRange"
                 type="datetimerange"
+                align="right"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 range-separator="至"
                 start-placeholder="开始时间"
@@ -128,12 +130,11 @@
 
 <script setup lang="ts">
 import type { FormInstance, FormRules } from 'element-plus'
-import { getListSimpleUsersApi } from '@/api/system/user'
 import { DICT_TYPE, getTenantDictOptions } from '@/utils/dict'
 import { saveRecycleSchedule } from '@/api/clue/basicConfig'
-import { useOption } from '@/store/modules/options'
 import { getAllBrand } from '@/api/model/brand'
-const store = useOption()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList, getUserMemberList } = useCommonList()
 const message = useMessage()
 
 interface IProps {
@@ -152,7 +153,7 @@ watch(
   () => props.modelValue,
   async (val) => {
     if (val) {
-      Promise.all([getUsers(), getShopList(), getBrandInfo(), getDicts()])
+      Promise.all([getBrandInfo(), getDicts()])
     } else {
       timeRange.value = []
       formRef.value?.resetFields()
@@ -164,22 +165,14 @@ const reason = ref<object[]>([])
 const getDicts = async () => {
   reason.value = await getTenantDictOptions(DICT_TYPE.MANUAL_RECYCLING_REASON)
 }
-const userList = ref<object[]>([])
-const getUsers = async () => {
-  const data = await getListSimpleUsersApi()
-  userList.value = data
-}
+const userList = ref(getUserMemberList())
 const brandList = ref<object[]>([])
 const getBrandInfo = async () => {
   const data = await getAllBrand()
   brandList.value = data
 }
 
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const res = await store.getShopList()
-  shopTreeList.value = res.shopTreeList
-}
+const shopTreeList = ref(getSuitableShopList())
 
 const timeRange = ref<string[]>([])
 watch(
@@ -314,6 +307,7 @@ const handleConfirm = () => {
     }
   }
   .left-content {
+    height: 710px;
     .el-select,
     .el-cascader {
       width: 240px;

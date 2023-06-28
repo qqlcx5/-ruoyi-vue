@@ -38,7 +38,12 @@
         />
       </template>
     </WgTable>
-    <EditAssessRule v-model="visible" :shopList="shopList" :curInfo="curInfo" @success="getList" />
+    <EditAssessRule
+      v-model="visible"
+      :shopList="shopTreeList"
+      :curInfo="curInfo"
+      @success="getList"
+    />
   </div>
 </template>
 
@@ -48,8 +53,8 @@ import WgTable from '@/components/WTable/index.vue'
 import EditAssessRule from '@/views/basicConfig/components/EditAssessRule/index.vue'
 import { queryAssessRulePage, updateRuleStatus, deleteAssessRule } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
-import { useOption } from '@/store/modules/options'
-const store = useOption()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
 
 const message = useMessage()
 
@@ -58,11 +63,12 @@ const tableConfig = reactive({
   refresh: () => getList(),
   queryParams: { name: '', shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
-    { label: '考核规则名称', key: 'checkRuleName' },
+    { label: '考核规则名称', key: 'checkRuleName', disabled: true },
     {
       label: '适用门店',
       key: 'applicableShopName',
       minWidth: 350,
+      disabled: true,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
@@ -144,18 +150,10 @@ const handleRest = () => {
   handleSearch()
 }
 const handleSearch = () => {
-  const obj = shopList.find((d) => tableConfig.queryParams.shopId === d['id']) || {}
-  tableConfig.queryParams.shopName = obj['name'] || null
   tableConfig.queryParams.pageNo = 1
   getList(tableConfig.queryParams)
 }
-let shopList = []
-const shopTreeList = ref<object[]>([])
-onMounted(async () => {
-  const res = await store.getShopList()
-  shopList = res.shopList
-  shopTreeList.value = res.shopTreeList
-})
+const shopTreeList = ref(getSuitableShopList())
 const handleCreate = () => {
   curInfo.value = {}
   visible.value = true

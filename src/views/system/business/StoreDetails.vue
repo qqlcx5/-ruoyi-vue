@@ -382,10 +382,14 @@ const detailsInfo = async (record) => {
 
   const tempBrandList = dictRes.filter((item) => item.dictType === 'brand')
   console.log('tempBarnList', tempBrandList)
+  // tempBrandString = item.brand.join()
+  // item.brands.split(',')
   //品牌
   let tempBrandtring = ''
+  console.log('res?.brandIds', res?.brandIds)
+  const tempBrandIds = res?.brandIds.split(',')
   const tempBrandArr = tempBrandList.filter((topItem) => {
-    return res?.brandIds.some((item) => topItem.value === item)
+    return tempBrandIds.some((item) => topItem.value === item)
   })
 
   tempBrandArr.map((item) => {

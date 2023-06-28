@@ -1,9 +1,12 @@
 <template>
   <div class="flex h-full">
-    <ContentWrap class="mr-3" title="规则名称" style="width: 222px">
+    <ContentWrap class="mr-3 tree-left" title="规则名称" style="width: 222px">
       <el-tree
         :data="treeData"
-        :props="{ children: 'childs', label: 'ruleName' }"
+        :props="{
+          children: 'childs',
+          label: 'ruleName'
+        }"
         highlight-current
         default-expand-all
         @node-click="handleNodeClick"
@@ -24,17 +27,32 @@
           selection: true,
           columns: allSchemas.tableColumns,
           listApi: tableApi,
-          listParams
+          listParams,
+          showTools: false,
+          showAdd: hasPermission('system:member-rule:rule-list')
         }"
         @add="handleAdd"
       >
         <template #tableAppend>
-          <XButton title="批量删除" @click="handleListDel" />
-          <XButton title="批量编辑" @click="handleListEdit" />
-          <div class="ml-3">{{ tips }}</div>
+          <XButton
+            v-hasPermi="['system:member-rule:delete']"
+            title="批量删除"
+            @click="handleListDel"
+          />
+          <XButton
+            v-hasPermi="['system:member-rule:edit']"
+            title="批量编辑"
+            @click="handleListEdit"
+          />
+          <div :class="`${tipsStatus ? 'tip-status-true' : ''} tip-status ml-3`">{{ tips }}</div>
         </template>
         <template #isEnable="{ row }">
-          <el-switch v-model="row.isEnable" :active-value="1" :inactive-value="0" />
+          <el-switch
+            v-model="row.isEnable"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleChangStatus(row)"
+          />
         </template>
       </FormTable>
     </ContentWrap>
@@ -57,11 +75,18 @@
 
 <script lang="ts" setup>
 import { onMounted } from 'vue'
-import { useFormTable, useRuleTree, TreeNode } from './helpers'
+import { useFormTable, useRuleTree, TreeNode, arrayToString } from './helpers'
 import ActionDialog from './components/ActionDialog.vue'
 import TreeViewDialog from './components/TreeViewDialog.vue'
-import { delMemberRule, addMemberRule, getTipsData } from '@/api/system/memberRule'
+import {
+  delMemberRule,
+  addMemberRule,
+  getTipsData,
+  setMemberRule,
+  setSwitchStatus
+} from '@/api/system/memberRule'
 import { isEmpty } from 'lodash-es'
+import { hasPermission } from '@/utils/utils'
 
 const message = useMessage()
 const { t } = useI18n()
@@ -73,8 +98,8 @@ const {
   dialogTreeData,
   showTreeDialog,
   dialogTreeTitle,
-  tableApi,
-  handleAdd
+  isEdit,
+  tableApi
 } = useFormTable()
 
 const { treeData, getTree, selectNode } = useRuleTree()
@@ -82,6 +107,7 @@ const { treeData, getTree, selectNode } = useRuleTree()
 const tableRef = ref()
 const listParams = ref<Recordable>()
 const tips = ref('')
+const tipsStatus = ref(0)
 /** 选择规则名称节点 */
 const handleNodeClick = (node: TreeNode) => {
   selectNode.value = node
@@ -90,8 +116,21 @@ const handleNodeClick = (node: TreeNode) => {
   setTimeout(async () => {
     tableMethods.getList()
     const data = await getTipsData(node.ruleValue, node.ruleName)
-    tips.value = data
+    tips.value = data.text
+    tipsStatus.value = data.status
   }, 0)
+}
+
+/** 添加 */
+const handleAdd = () => {
+  if (isEmpty(selectNode.value)) {
+    message.warning('请选择规则名称')
+    return
+  }
+  isEdit.value = false
+  showDialog.value = true
+  dialogData.value = []
+  title.value = '新增子规则'
 }
 
 /** 批量删除 */
@@ -104,7 +143,7 @@ const handleListDel = async () => {
     message
       .wgOperateConfirm('是否确认删除成员规则？删除后无法恢复。', '提示')
       .then(async () => {
-        const res = await delMemberRule(selections)
+        const res = await delMemberRule({ ids: selections.join(',') })
         if (res) {
           message.success('删除成功')
           await tableMethods.getList()
@@ -123,26 +162,37 @@ const dialogData = ref<Recordable[]>([])
 const handleListEdit = async () => {
   const { tableMethods } = tableRef.value
   dialogData.value = await tableMethods.getSelections()
-  if (isEmpty(dialogData.value)) return
+  if (isEmpty(dialogData.value)) {
+    message.warning('请选择成员规则')
+    return
+  }
+  isEdit.value = true
   showDialog.value = true
   title.value = '编辑成员规则'
 }
 
 /** 确认保存 */
 const handleSave = async (data: Recordable) => {
-  await addMemberRule(
-    data.map((item) => ({
-      ...item,
-      applicableShopId: (item.applicableShopId || []).join(','),
-      dataRangShopId: (item.dataRangShopId || []).join(','),
-      dataRangPostId: (item.dataRangPostId || []).join(','),
-      dataRangUserId: (item.dataRangUserId || []).join(','),
-      belongBusinessCode: selectNode.value.ruleValue,
-      belongBusinessName: selectNode.value.ruleName
-    }))
-  )
+  const saveApi = isEdit.value ? setMemberRule : addMemberRule
+  const params = data.map((item) => ({
+    ...item,
+    applicableShopId: arrayToString(item.applicableShopId),
+    dataRangShopId: arrayToString(item.dataRangShopId),
+    dataRangPostId: arrayToString(item.dataRangPostId),
+    dataRangUserId: arrayToString(item.dataRangUserId),
+    belongBusinessCode: selectNode.value.ruleValue,
+    belongBusinessName: selectNode.value.ruleName
+  }))
+  await saveApi(params)
   showDialog.value = false
-  message.success(t('common.createSuccess'))
+  message.success(isEdit.value ? '编辑成功' : t('common.createSuccess'))
+  const { tableMethods } = tableRef.value
+  tableMethods.getList()
+}
+
+/** 改变状态 */
+const handleChangStatus = async (row: Recordable) => {
+  await setSwitchStatus(row.id, row.isEnable)
   const { tableMethods } = tableRef.value
   tableMethods.getList()
 }
@@ -164,6 +214,20 @@ onMounted(() => {
     & > div {
       height: 100%;
     }
+  }
+
+  .tip-status {
+    color: #faad14;
+  }
+
+  .tip-status-true {
+    color: $error-color;
+  }
+}
+
+.tree-left {
+  :deep(.is-current) {
+    color: var(--el-color-primary);
   }
 }
 </style>

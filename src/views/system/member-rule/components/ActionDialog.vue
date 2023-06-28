@@ -19,45 +19,53 @@
         </div>
       </div>
       <div>
-        <Table :columns="allSchemas.tableColumns" :data="tableData">
-          <template #applicableShopId="{ row }">
+        <Table :columns="allSchemas.tableColumns" :data="tableData" :max-height="400">
+          <template #applicableShopId="{ row, $index }">
             <el-cascader
               v-model="row.applicableShopId"
               clearable
-              :options="suitableShopList"
-              :props="{ label: 'name', value: 'id', multiple: true }"
-              @change="handleShopChange(row)"
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              :options="allSuitableShopList[$index]"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+              @change="handleSuitableShop"
             />
           </template>
-          <template #dataRangShopId="{ row }">
-            <el-select v-model="row.dataRangShopId" multiple clearable>
-              <el-option
-                v-for="item in shopList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
+          <template #dataRangShopId="{ row, $index }">
+            <el-cascader
+              v-model="row.dataRangShopId"
+              clearable
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              :options="shopList"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+              @change="handleShopChange(row, $index)"
+            />
           </template>
-          <template #dataRangPostId="{ row }">
-            <el-select v-model="row.dataRangPostId" multiple clearable>
-              <el-option
-                v-for="item in postList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
+          <template #dataRangPostId="{ row, $index }">
+            <el-cascader
+              v-model="row.dataRangPostId"
+              clearable
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              :options="postList"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+              @change="handleShopChange(row, $index)"
+            />
           </template>
-          <template #dataRangUserId="{ row }">
-            <el-select v-model="row.dataRangUserId" multiple clearable>
-              <el-option
-                v-for="item in memberList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
+          <template #dataRangUserId="{ row, $index }">
+            <el-cascader
+              v-model="row.dataRangUserId"
+              clearable
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              :options="allMemberList[$index]"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+            />
           </template>
           <template #brandCondition="{ row }">
             <ButtonRadio v-model="row.brandCondition" :options="brandOptions" margin-right="10px" />
@@ -83,14 +91,15 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, onMounted } from 'vue'
 import { TableColumn } from '@/types/table'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { cloneDeep, isEmpty } from 'lodash-es'
+import { cloneDeep, isEmpty, isArray } from 'lodash-es'
 import AddChildDialog from './AddChildDialog.vue'
-import { useColumnOptions } from '../helpers'
+import { useColumnOptions, stringToArray, arrayToString } from '../helpers'
 import { useCommonList } from '@/hooks/web/useCommonList'
-import { autoSetMemberRule } from '@/api/system/memberRule'
+import { autoSetMemberRule, getHasShopId } from '@/api/system/memberRule'
+import { getUserMemberDataList } from '@/api/common'
 
 type RuleItem = {
   applicableShopId: string
@@ -115,26 +124,35 @@ const emits = defineEmits<{
   (e: 'save', data: Recordable): void
 }>()
 
+const { getPostList, getSuitableShopList } = useCommonList()
+const suitableShop = getSuitableShopList()
+const shopList = ref<Recordable[]>([])
+const suitableShopList = ref<Recordable[]>([])
+const postList = ref(getPostList())
+const allMemberList: Recordable[][] = reactive([])
+const allSuitableShopList = ref<Recordable[][]>([])
+
 watch(
-  () => props.data,
+  suitableShop,
   (val) => {
-    if (!isEmpty(val)) {
-      val?.map((item) => tableData.push(item))
-    }
-  }
+    shopList.value = cloneDeep(val)
+    suitableShopList.value = cloneDeep(val)
+  },
+  { deep: true }
 )
 
-const { getShopList, getPostList, getMemberList, getSuitableShopList } = useCommonList()
-const shopList = ref(getShopList())
-const postList = ref(getPostList())
-const memberList = ref<Recordable[]>([])
-const suitableShopList = ref(getSuitableShopList())
+/** 改变门店数据范围 */
+const handleShopChange = async (row: Recordable, index: number) => {
+  const list = await getUserMemberDataList({
+    storeIds: isArray(row.dataRangShopId) ? arrayToString(row.dataRangShopId) : row.dataRangShopId,
+    postIds: isArray(row.dataRangPostId) ? arrayToString(row.dataRangPostId) : row.dataRangPostId
+  })
+  allMemberList[index] = list
+}
 
-const handleShopChange = (row: Recordable) => {
-  memberList.value = getMemberList({
-    belongShopid: row.applicableShopId,
-    childRuleValue: props.currentNode?.ruleValue
-  }).value
+/** 改变适用门店 */
+const handleSuitableShop = () => {
+  resetShopId()
 }
 
 const { brandOptions, areaOptions, choiceOptions } = useColumnOptions()
@@ -145,24 +163,24 @@ const tableData: Recordable[] = reactive([])
 
 const columns: TableColumn[] = [
   {
-    field: 'ruleCode',
-    label: '编码'
-  },
-  {
     field: 'applicableShopId',
-    label: '适用门店'
+    label: '适用门店',
+    width: 150
   },
   {
     field: 'dataRangShopId',
-    label: '门店数据范围'
+    label: '门店数据范围',
+    width: 150
   },
   {
     field: 'dataRangPostId',
-    label: '岗位数据范围'
+    label: '岗位数据范围',
+    width: 150
   },
   {
     field: 'dataRangUserId',
-    label: '成员数据范围'
+    label: '成员数据范围',
+    width: 150
   },
   {
     field: 'brandCondition',
@@ -189,9 +207,59 @@ const columns: TableColumn[] = [
     showOverflowTooltip: false
   }
 ]
-
 const { allSchemas } = useCrudSchemas(columns)
 
+watch(
+  () => props.data,
+  (val) => {
+    if (!isEmpty(val)) {
+      val?.map((item) =>
+        tableData.push({
+          ...item,
+          applicableShopId: stringToArray(item.applicableShopId),
+          dataRangPostId: stringToArray(item.dataRangPostId),
+          dataRangShopId: stringToArray(item.dataRangShopId),
+          dataRangUserId: stringToArray(item.dataRangUserId)
+        })
+      )
+    }
+  },
+  { immediate: true }
+)
+
+/** 重新设置适用门店数据(已选的不可重复) */
+const resetShopId = () => {
+  const selectedId = [
+    ...new Set([...hasShopId.value, ...tableData.map((item) => item.applicableShopId).flat()])
+  ]
+
+  /** 循环判断是否门店已被选，则添加disabled禁用 */
+  const setDisabled = (list: Recordable[], selectedIds: number[], type?: number) => {
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].hasOwnProperty('children') && list[i].children.length > 0) {
+        delete list[i].disabled
+        setDisabled(list[i].children, selectedIds, type)
+      } else {
+        if (selectedIds.includes(list[i].id)) {
+          list[i].disabled = true
+        } else {
+          delete list[i].disabled
+        }
+      }
+    }
+  }
+  setDisabled(suitableShopList.value, selectedId)
+
+  const allList = tableData.map(() => cloneDeep(suitableShopList.value))
+  allSuitableShopList.value = tableData.map((item, index) => {
+    const selected = selectedId.filter((id) => !item.applicableShopId.includes(id))
+    setDisabled(allList[index], selected, 1)
+
+    return allList[index]
+  })
+}
+
+/** 新增 */
 const handleAdd = () => {
   tableData.push({
     applicableShopId: [],
@@ -206,6 +274,7 @@ const handleAdd = () => {
     isEnable: 0,
     ruleCode: null
   })
+  resetShopId()
 }
 
 /** 删除 */
@@ -217,6 +286,7 @@ const handleDel = (id: string) => {
       const index = tableData.findIndex((item) => item.ruleCode === id)
       tableData.splice(index, 1)
       message.success('删除成功')
+      resetShopId()
     })
     .catch(() => {})
 }
@@ -227,6 +297,7 @@ const handleCopy = (row: RuleItem) => {
   data.applicableShopId = ''
   data.dataRangShopId = ''
   tableData.push(data)
+  resetShopId()
 }
 
 /** 确认 */
@@ -238,6 +309,13 @@ const handleConfirm = () => {
   emits('save', tableData)
 }
 
+// 已选的适用门店id
+const hasShopId = ref<number[]>([])
+onMounted(async () => {
+  const data = await getHasShopId(props.currentNode?.ruleValue)
+  hasShopId.value = data
+})
+
 /** 一键生成子规则确认回调 */
 const handleSave = async (params: Recordable) => {
   const data = await autoSetMemberRule({
@@ -248,12 +326,20 @@ const handleSave = async (params: Recordable) => {
   })
   message.success('新增成功')
   show.value = false
+  tableData.splice(0, tableData.length)
   data?.map((item) =>
     tableData.push({
       ...item,
-      dataRangPostId: item.dataRangPostId.split(',').map((item) => Number(item))
+      applicableShopId: stringToArray(item.applicableShopId),
+      dataRangPostId: stringToArray(item.dataRangPostId),
+      dataRangShopId: stringToArray(item.dataRangShopId),
+      dataRangUserId: stringToArray(item.dataRangUserId)
     })
   )
+  resetShopId()
+  tableData.forEach((item, index) => {
+    handleShopChange(item, index)
+  })
 }
 </script>
 

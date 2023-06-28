@@ -7,13 +7,15 @@
     height="70%"
   >
     <el-form :model="ruleForm" :rules="rules" ref="formRef">
-      <el-form-item label="所属门店" prop="shopId">
+      <el-form-item label="所属门店" prop="shopIdList">
         <el-cascader
           ref="treeShopCascader"
           v-model="ruleForm.shopIdList"
           placeholder="请选择门店"
           :options="shopTreeList"
           collapse-tags
+          collapse-tags-tooltip
+          filterable
           @visible-change="getDistributeShopIdList"
           :props="{
             label: 'name',
@@ -29,11 +31,21 @@
     </el-form>
     <el-divider />
     <div
-      >派发人员配置
-      <XButton type="primary" @click="addMemberRule">添加行</XButton>
-      (请先选择门店)
+      >派发人员配置(请先选择门店)
+      <!--      <XButton type="primary" @click="addMemberRule">添加行</XButton>-->
     </div>
-    <el-table :data="memberTableList">
+    <div class="mb-15">
+      <el-cascader
+        v-model="memberList"
+        ref="memberCasRef"
+        collapse-tags
+        filterables
+        :options="shopUserList"
+        :props="{ label: 'name', value: 'id', children: 'users', emitPath: false, multiple: true }"
+        @change="addMemberRule"
+      />
+    </div>
+    <el-table :data="memberTableList" :header-cell-style="{ backgroundColor: '#F6F6F6' }">
       <el-table-column label="门店">
         <template #default="{ row }">
           <span>{{ row.shopName }}</span>
@@ -41,13 +53,15 @@
       </el-table-column>
       <el-table-column label="成员">
         <template #default="{ row }">
-          <el-cascader
-            ref="cascaderRef"
-            v-model="row.distributeUserId"
-            :options="userList"
-            :props="{ label: 'username', value: 'id' }"
-            @change="changeUserById($event, row)"
-          />
+          <span>{{ row.distributeUserName + '-' + row.positionName }}</span>
+          <!--          <el-cascader-->
+          <!--            ref="cascaderRef"-->
+          <!--            filterable-->
+          <!--            v-model="row.distributeUserId"-->
+          <!--            :options="shopUserList"-->
+          <!--            :props="{ label: 'name', value: 'id', children: 'users' }"-->
+          <!--            @change="changeUserById($event, row)"-->
+          <!--          />-->
         </template>
       </el-table-column>
       <el-table-column label="成员平台昵称">
@@ -80,6 +94,7 @@
               v-model="row.seriesIds"
               :options="seriesOption"
               collapse-tags
+              filterable
               :props="{ multiple: true, label: 'seriesDetailsName', value: 'seriesDetailsId' }"
               @change="changeSeriesEvent($event, row)"
             />
@@ -89,27 +104,17 @@
       </el-table-column>
       <el-table-column label="派单状态">
         <template #default="{ row }">
-          <el-switch
-            v-model="row.status"
-            active-color="#13ce66"
-            :active-value="1"
-            :inactive-value="0"
-          />
+          <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
         </template>
       </el-table-column>
       <el-table-column label="跟进是否回推厂家">
         <template #default="{ row }">
-          <el-switch
-            v-model="row.pushBackFactoryStatus"
-            active-color="#13ce66"
-            :active-value="1"
-            :inactive-value="0"
-          />
+          <el-switch v-model="row.pushBackFactoryStatus" :active-value="1" :inactive-value="0" />
         </template>
       </el-table-column>
       <el-table-column label="操作">
-        <template #default="{ $index }">
-          <el-button @click="deleteRow($index)">删除</el-button>
+        <template #default="{ row, $index }">
+          <el-button text type="primary" @click="deleteRow(row, $index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -126,9 +131,14 @@ import type { FormRules, FormInstance } from 'element-plus'
 import { getListSimpleUsersApi } from '@/api/system/user'
 import { ref } from 'vue'
 import { getAllBrand, querySeriesDetailsBelowBrand } from '@/api/model/brand'
+// import { useCommonList } from '@/hooks/web/useCommonList'
+import { getMemberTreeDataList } from '@/api/common'
+import { difference } from 'lodash-es'
+// const { getMemberTreeList } = useCommonList()
 onMounted(() => {
   getBrandInfo()
 })
+const treeShopCascader = ref()
 const message = useMessage()
 const visible = ref(false)
 const btnLoading = ref(false)
@@ -137,8 +147,8 @@ const formRef = ref<FormInstance>()
 const ruleForm = ref({
   shopIdList: []
 })
-const rules: FormRules = reactive({
-  shopIdList: [{ required: true, message: '请选择门店', trigger: 'change' }]
+const rules: FormRules = reactive<FormRules>({
+  shopIdList: [{ required: true, message: '请选择门店', trigger: 'blur' }]
 })
 const hide = () => {
   visible.value = false
@@ -164,6 +174,7 @@ const openDialog = (id: string, formShopTreeList: any) => {
       })
     } else {
       ruleForm.value = { shopIdList: [] }
+      memberList.value = []
     }
     visible.value = true
   })
@@ -180,9 +191,11 @@ const parseBrandIds = (str) => {
 const seriesData = ref<any[]>([])
 const parseSeries = (str) => {
   seriesData.value = []
+  const arr = JSON.parse(str)
+  console.log(arr, 'arr')
   str &&
-    JSON.parse(str).map((item) => {
-      seriesData.value.push([item.brandId, ...item.seriesIds])
+    arr.map((item) => {
+      seriesData.value.push([item.brandId, ...(item?.seriesIds || [])])
     })
   return seriesData.value
 }
@@ -192,6 +205,19 @@ const getUsers = async () => {
   let str = ruleForm.value.shopIdList.join(',')
   const data = await getListSimpleUsersApi({ storeIds: str })
   userList.value = data
+}
+const shopUserList = ref<Recordable[]>([])
+// const shopUserList = ref(getMemberTreeList({
+//   belongShopid: ruleForm.value.shopIdList,
+//   childRuleValue: 'clue_pfcy_rule'
+// }).value)
+
+const getMemberTreeListApi = async () => {
+  const data = await getMemberTreeDataList({
+    belongShopid: ruleForm.value.shopIdList,
+    childRuleValue: 'clue_pfcy_rule'
+  })
+  shopUserList.value = data.trees
 }
 
 const brandList = ref<object[]>([])
@@ -210,6 +236,8 @@ type tableObj = {
   shopId: string
   shopName: string
   distributeUserId: string
+  distributeUserName: string
+  positionName: string
   nickname: string
   status: number
   pushBackFactoryStatus: number
@@ -220,8 +248,10 @@ const memberTableList = ref<tableObj[]>([
     shopId: '',
     shopName: '',
     distributeUserId: '',
+    distributeUserName: '',
+    positionName: '',
     nickname: '',
-    status: 0,
+    status: 1,
     pushBackFactoryStatus: 0,
     brandList: [
       // {
@@ -231,42 +261,72 @@ const memberTableList = ref<tableObj[]>([
     ]
   }
 ])
-const addMemberRule = () => {
+const memberCasRef = ref()
+const memberList = ref<number[]>([])
+const addMemberRule = (val) => {
   if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
   }
-  let addItem: tableObj = {
-    shopId: '',
-    shopName: '',
-    distributeUserId: '',
-    nickname: '',
-    status: 0,
-    pushBackFactoryStatus: 0,
-    brandList: [
-      // {
-      //   brandId: 0,
-      //   seriesIds: []
-      // }
-    ]
+  if (val.length > unref(memberTableList).length) {
+    const ids = memberTableList.value.map((d) => d.distributeUserId)
+    const diffIds = difference(val, ids) // 返回本次新增的
+
+    const curData = memberCasRef.value.getCheckedNodes(true)
+    curData.forEach((item) => {
+      if (diffIds.includes(item.data.id)) {
+        let newItem = {
+          shopId: '',
+          shopName: '',
+          distributeUserId: '',
+          distributeUserName: '',
+          positionName: '',
+          nickname: '',
+          status: 1,
+          pushBackFactoryStatus: 0,
+          brandList: []
+        }
+        newItem.distributeUserId = item.data.id
+        newItem.distributeUserName = item.data.name
+        newItem.positionName = item.data.positionName
+        newItem.shopId = item.data.belongStoreId
+        newItem.shopName = item.data.belongStoreName
+        memberTableList.value.push(newItem)
+      }
+    })
+    // const arr = diffIds.map((id) => {
+    //   return {
+    //     shopId: '',
+    //     shopName: '',
+    //     distributeUserId: id,
+    //     nickname: '',
+    //     status: 0,
+    //     pushBackFactoryStatus: 0,
+    //     brandList: []
+    //   }
+    // })
+    // memberTableList.value.push(...arr)
+  } else {
+    memberTableList.value = memberTableList.value.filter((d) => val.includes(d.distributeUserId))
   }
-  memberTableList.value.push(addItem)
 }
 const getDistributeShopIdList = (val) => {
   if (!val) {
     memberTableList.value = []
-    getUsers()
+    memberList.value = []
+    getMemberTreeListApi()
   }
 }
-const deleteRow = (index) => {
+const deleteRow = (row, index) => {
+  memberList.value = memberList.value.filter((item) => item !== row.distributeUserId)
   memberTableList.value.splice(index, 1)
 }
-const cascaderRef = ref()
-const changeUserById = (val, row) => {
-  let cascaderList = cascaderRef.value.getCheckedNodes()
-  let cascaderData = cascaderList[0].data
-  row.shopId = cascaderData.belongStoreId
-  row.shopName = cascaderData.belongStoreName
-}
+// const cascaderRef = ref()
+// const changeUserById = (val, row) => {
+//   let cascaderList = cascaderRef.value.getCheckedNodes()
+//   let cascaderData = cascaderList[0].data
+//   row.shopId = cascaderData.belongStoreId
+//   row.shopName = cascaderData.belongStoreName
+// }
 const changeBrandId = (val, row) => {
   if (!val) {
     seriesOption.value = []
@@ -309,7 +369,7 @@ const getSeries = async (val) => {
     let optionsObj: seriesParams = {
       seriesDetailsName: item.brand.brandName,
       seriesDetailsId: item.brand.brandId,
-      children: item.seriesList
+      children: item?.seriesList
     }
     seriesOption.value.push(optionsObj)
   })
@@ -329,9 +389,6 @@ const onConfirm = async () => {
     }
     if (!item.distributeUserId) {
       isValidDistributeUserId.value = false
-    } else {
-      item.distributeUserId = item.distributeUserId[0]
-      return item
     }
   })
   if (!isValidDistributeUserId.value) {
@@ -363,4 +420,8 @@ const onConfirm = async () => {
 defineExpose({ openDialog })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.mb-15 {
+  margin: 15px 0;
+}
+</style>

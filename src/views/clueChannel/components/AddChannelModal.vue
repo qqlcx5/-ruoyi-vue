@@ -48,44 +48,54 @@
           <el-input v-model="row.platformPassword" size="small" placeholder="请输入" />
         </template>
         <template #needFilter="{ row }">
-          <el-select v-model="row.needFilter" placeholder="请选择" size="small">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.needFilter"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+            @change="(e) => handleNeedFilterChange(e, row)"
+          />
         </template>
         <template #autoDistribute="{ row }">
-          <el-select v-model="row.autoDistribute" size="small" placeholder="请选择">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.autoDistribute"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+            :disabled="row.needFilter"
+          />
         </template>
         <template #platformRule="{ row }">
-          <el-select v-model="row.platformRule" placeholder="请选择" size="small">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.platformRule"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
         </template>
         <template #isShow="{ row }">
-          <el-select v-model="row.isShow" placeholder="请选择" size="small">
+          <el-switch
+            v-model="row.isShow"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
+          <!-- <el-select v-model="row.isShow" placeholder="请选择" size="small">
             <el-option
               v-for="item in selectOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
             />
-          </el-select>
+          </el-select> -->
         </template>
         <template #action="scope">
           <XTextButton :title="t('action.del')" @click="delPostTypeLine(scope.$index)" />
@@ -105,11 +115,12 @@
 </template>
 <script setup lang="ts">
 import { ChannelVO } from '@/api/clue/channel'
-// import * as channelApi from '@/api/clue/channel'
-import { getAllStoreList } from '@/api/system/organization/index'
-import { listToTree } from '@/utils/tree'
 import { ref } from 'vue'
 import * as channelApi from '@/api/clue/channel'
+
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
+
 defineProps({
   msg: String
 })
@@ -185,10 +196,10 @@ const handleAdd = () => {
     shopId: '',
     platformUsername: '',
     platformPassword: '',
-    needFilter: '',
-    autoDistribute: '',
-    platformRule: '',
-    isShow: ''
+    needFilter: 0,
+    autoDistribute: 0,
+    platformRule: 0,
+    isShow: 0
   }
   tableList.value.push(addItem)
 }
@@ -213,67 +224,51 @@ const cascaderRef = ref()
 const handleChange = () => {
   let sourceArr: any = cloneDeep(initSourceList.value)
   let list: any = cloneDeep(tableList.value)
+  console.log(list, sourceArr)
+  list.forEach((lItem) => {
+    sourceArr = disabledSourceList(lItem.clueSourceId, sourceArr)
+  })
+  sourceList.value = sourceArr
+}
+const disabledSourceList = (clueSourceId, sourceArr) => {
   try {
-    list.forEach((fItem) => {
-      let [id1, id2] = fItem.clueSourceId
-      sourceArr.map((item) => {
-        if (item.id == id1) {
-          let children = item.children
-          item.children = children.map((cItem) => {
-            if (cItem.id == id2) {
-              cItem.disabled = true
-              console.log('===========', id1, id2)
-            }
-            return cItem
-          })
-        }
-        return item
-      })
+    sourceArr.map((sItem) => {
+      if (sItem.id == clueSourceId) {
+        sItem.disabled = true
+      }
+      let children = sItem.children
+      if (children.length > 0) {
+        sItem.children = disabledSourceList(clueSourceId, children)
+      }
+      return sItem
     })
-    sourceList.value = sourceArr
-    console.log(sourceArr, sourceList)
+    return sourceArr
   } catch (error) {
     console.log(error)
   }
-
-  // try {
-  //   let cascaderList = cascaderRef.value.getCheckedNodes()
-  //   let cascaderData = cascaderList[0]
-  //   cascaderData.disabled = true
-  //   console.log(cascaderData)
-  // } catch (error) {
-  //   console.log(error)
-  // }
 }
 
 const clueSourceProps = {
   label: 'name',
-  value: 'id'
+  value: 'id',
+  emitPath: false
 }
 
-const selectOptions = [
-  {
-    value: 0,
-    label: '否'
-  },
-  {
-    value: 1,
-    label: '是'
-  }
-]
-
 const shopProps = {
-  checkStrictly: true,
+  // checkStrictly: true,
   label: 'name',
   value: 'id'
 }
-let shopOptions = []
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopOptions = listToTree(data || [], { pid: 'parentId' })
-  console.log(shopOptions)
-}
-getShopList()
+
+// 获取门店数据
+const shopOptions = ref(getSuitableShopList())
+// let shopOptions = []
+// const getShopList = async () => {
+//   const data = await getAllStoreList()
+//   shopOptions = listToTree(data || [], { pid: 'parentId' })
+//   console.log(shopOptions)
+// }
+// getShopList()
 
 import { cloneDeep } from 'lodash-es'
 // 保存按钮
@@ -305,6 +300,8 @@ const submitForm = async () => {
     }
     return item
   })
+  console.log(paramsList)
+
   if (isSerialNumberEmptyTool) {
     message.error('编号不能为空')
     return
@@ -348,6 +345,11 @@ const openModal = (row) => {
   })
   getSourceList()
   handleAdd()
+}
+const handleNeedFilterChange = (e, row) => {
+  if (e == 1) {
+    row.autoDistribute = 0
+  }
 }
 defineExpose({ openModal })
 </script>
