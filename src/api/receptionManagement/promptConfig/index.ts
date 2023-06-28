@@ -112,3 +112,8 @@ export const receptionHintTypePageApi = (data: any) => {
 export const receptionHintTypeBatchDeleteApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionHintType/batchDelete', data })
 }
+// model/code/queryModelByName
+// 根据模型名称查询模型
+export const queryModelByNameApi = (data: any) => {
+  return request.post({ url: '/model/code/queryModelByName', data })
+}
