@@ -1,8 +1,8 @@
 import request from '@/config/axios'
 
 /** 获取选择成员规则树 */
-export const getMemberRuleTree = (type: string) => {
-  return request.get({ url: `/system/user-rules/query-rule-tree/${type}` })
+export const getMemberRuleTree = () => {
+  return request.get({ url: `/system/user-rules/query-rule-tree` })
 }
 
 /** 获取选择成员规则列表 */
