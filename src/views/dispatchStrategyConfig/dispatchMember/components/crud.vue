@@ -53,7 +53,7 @@
       </el-table-column>
       <el-table-column label="成员">
         <template #default="{ row }">
-          <span>{{ row.distributeUserName + '-' + row.postName }}</span>
+          <span>{{ row.distributeUserName + '-' + row.positionName }}</span>
           <!--          <el-cascader-->
           <!--            ref="cascaderRef"-->
           <!--            filterable-->
@@ -237,7 +237,7 @@ type tableObj = {
   shopName: string
   distributeUserId: string
   distributeUserName: string
-  postName: string
+  positionName: string
   nickname: string
   status: number
   pushBackFactoryStatus: number
@@ -249,7 +249,7 @@ const memberTableList = ref<tableObj[]>([
     shopName: '',
     distributeUserId: '',
     distributeUserName: '',
-    postName: '',
+    positionName: '',
     nickname: '',
     status: 1,
     pushBackFactoryStatus: 0,
@@ -279,7 +279,7 @@ const addMemberRule = (val) => {
           shopName: '',
           distributeUserId: '',
           distributeUserName: '',
-          postName: '',
+          positionName: '',
           nickname: '',
           status: 1,
           pushBackFactoryStatus: 0,
@@ -287,7 +287,7 @@ const addMemberRule = (val) => {
         }
         newItem.distributeUserId = item.data.id
         newItem.distributeUserName = item.data.name
-        newItem.postName = item.data.postName
+        newItem.positionName = item.data.positionName
         newItem.shopId = item.data.belongStoreId
         newItem.shopName = item.data.belongStoreName
         memberTableList.value.push(newItem)
