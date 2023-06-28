@@ -20,14 +20,14 @@
       </div>
       <div>
         <Table :columns="allSchemas.tableColumns" :data="tableData" :max-height="400">
-          <template #applicableShopId="{ row }">
+          <template #applicableShopId="{ row, $index }">
             <el-cascader
               v-model="row.applicableShopId"
               clearable
               filterable
               collapse-tags
               collapse-tags-tooltip
-              :options="suitableShopList"
+              :options="allSuitableShopList[$index]"
               :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
               @change="handleSuitableShop"
             />
@@ -64,7 +64,7 @@
               collapse-tags
               collapse-tags-tooltip
               :options="allMemberList[$index]"
-              :props="{ label: 'nickname', value: 'id', multiple: true, emitPath: false }"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
             />
           </template>
           <template #brandCondition="{ row }">
@@ -130,6 +130,7 @@ const shopList = ref<Recordable[]>([])
 const suitableShopList = ref<Recordable[]>([])
 const postList = ref(getPostList())
 const allMemberList: Recordable[][] = reactive([])
+const allSuitableShopList = ref<Recordable[][]>([])
 
 watch(
   suitableShop,
@@ -233,13 +234,13 @@ const resetShopId = () => {
   ]
 
   /** 循环判断是否门店已被选，则添加disabled禁用 */
-  const setDisabled = (list: Recordable[]) => {
+  const setDisabled = (list: Recordable[], selectedIds: number[], type?: number) => {
     for (let i = 0; i < list.length; i++) {
       if (list[i].hasOwnProperty('children') && list[i].children.length > 0) {
         delete list[i].disabled
-        setDisabled(list[i].children)
+        setDisabled(list[i].children, selectedIds, type)
       } else {
-        if (selectedId.includes(list[i].id)) {
+        if (selectedIds.includes(list[i].id)) {
           list[i].disabled = true
         } else {
           delete list[i].disabled
@@ -247,12 +248,19 @@ const resetShopId = () => {
       }
     }
   }
-  setDisabled(suitableShopList.value)
+  setDisabled(suitableShopList.value, selectedId)
+
+  const allList = tableData.map(() => cloneDeep(suitableShopList.value))
+  allSuitableShopList.value = tableData.map((item, index) => {
+    const selected = selectedId.filter((id) => !item.applicableShopId.includes(id))
+    setDisabled(allList[index], selected, 1)
+
+    return allList[index]
+  })
 }
 
 /** 新增 */
 const handleAdd = () => {
-  resetShopId()
   tableData.push({
     applicableShopId: [],
     areaCondition: 0,
@@ -266,6 +274,7 @@ const handleAdd = () => {
     isEnable: 0,
     ruleCode: null
   })
+  resetShopId()
 }
 
 /** 删除 */
