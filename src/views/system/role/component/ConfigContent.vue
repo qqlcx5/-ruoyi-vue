@@ -152,7 +152,6 @@
 
 <script lang="ts" setup>
 import { handleTree, defaultProps } from '@/utils/tree'
-import { getRoleMenuDataScope } from '@/api/system/role'
 import { ElTree } from 'element-plus'
 import { TreeNodeData } from 'element-plus/es/components/tree/src/tree.type'
 import SelectOrgAndStaffModal from '../../organization/components/SelectOrgAndStaffModal.vue'
@@ -160,9 +159,7 @@ import SelectBusinessModal from '../../business/components/SelectBusinessModal/i
 import { cloneDeep } from 'lodash-es'
 import { getDictOptions } from '@/utils/dict'
 import { getTenantData } from '@/utils/auth'
-import { getAuthMenuList } from '@/api/system/tenantMenu'
 
-const { query } = useRoute()
 const message = useMessage()
 
 const props = defineProps({
@@ -300,8 +297,6 @@ const selectedBrands = computed({
 // 指定部门选择
 const openDepartModal = () => {
   const { dataScopeDeptIds, userIdsSelected } = currentNode.value
-
-  console.log(dataScopeDeptIds, userIdsSelected)
   selectOrgAndStaffModalRef.value.openModal(dataScopeDeptIds, userIdsSelected)
 }
 const onSelectOrgAndStaffConfirm = (dataScopeDepts, dataScopeUsers) => {
@@ -344,53 +339,40 @@ const onBrandScopeChange = (value) => {
 }
 
 // ================= 初始化 ====================
-const init = async () => {
-  let result = { menuDataScopeItemList: [] }
-  if (props.stage === 'front') {
-    // result = await getRoleMenuDataScope({ roleId: query.id })
-  } else if (props.stage === 'backstage') {
-    const menuRes = await getAuthMenuList()
-    btnPermissionsOptions.value = menuRes.filter((menu) => menu.type === 3)
-    result = await getRoleMenuDataScope({ roleId: query.id })
-    if (result) roleConfig.value = result.menuDataScopeItemList || []
-    defaultCheckedKeys.value = roleConfig.value
-      .filter((item) => item.type === 2)
-      .map((item) => item.menuId)
-    treeOptions.value = handleTree(
-      menuRes.filter((menu) => {
-        if (menu.type === 2) {
-          const roleData = roleConfig.value.find((item) => item.menuId === menu.id)
-          menu.operations = roleData?.operations || []
-          menu.dataScope = roleData?.dataScope || ''
-          menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
-          menu.dataScopeDepts = roleData?.dataScopeDepts || []
-          menu.userIdsSelected = roleData?.userIdsSelected || []
-          menu.dataScopeUsers = roleData?.dataScopeUsers || []
-          menu.users = roleData?.users || []
-          menu.dataScopeStoreIds = roleData?.dataScopeStoreIds || []
-          menu.dataScopeStores = roleData?.dataScopeStores || []
-          menu.dataScopeBrandIds = roleData?.dataScopeBrandIds || []
-          menu.dataScopeDealerIds = roleData?.dataScopeDealerIds || []
-          menu.dataScopeDealers = roleData?.dataScopeDealers || []
-          menu.databrandScope =
-            roleData?.dataScopeBrandIds && roleData?.dataScopeBrandIds.length > 0 ? 2 : 1
-        }
-        return menu.type !== 3
-      })
-    )
-    nextTick(() => {
-      checkedNodes.value = treeRef.value!.getCheckedNodes()
-      handleCheckedTreeExpand()
+const init = async (menu, config) => {
+  if (!menu) return
+  btnPermissionsOptions.value = menu.filter((menu) => menu.type === 3)
+  roleConfig.value = config || []
+  defaultCheckedKeys.value = roleConfig.value
+    .filter((item) => item.type === 2)
+    .map((item) => item.menuId)
+  treeOptions.value = handleTree(
+    menu.filter((menu) => {
+      if (menu.type === 2) {
+        const roleData = roleConfig.value.find((item) => item.menuId === menu.id)
+        menu.operations = roleData?.operations || []
+        menu.dataScope = roleData?.dataScope || ''
+        menu.dataScopeDeptIds = roleData?.dataScopeDeptIds || []
+        menu.dataScopeDepts = roleData?.dataScopeDepts || []
+        menu.userIdsSelected = roleData?.userIdsSelected || []
+        menu.dataScopeUsers = roleData?.dataScopeUsers || []
+        menu.users = roleData?.users || []
+        menu.dataScopeStoreIds = roleData?.dataScopeStoreIds || []
+        menu.dataScopeStores = roleData?.dataScopeStores || []
+        menu.dataScopeBrandIds = roleData?.dataScopeBrandIds || []
+        menu.dataScopeDealerIds = roleData?.dataScopeDealerIds || []
+        menu.dataScopeDealers = roleData?.dataScopeDealers || []
+        menu.databrandScope =
+          roleData?.dataScopeBrandIds && roleData?.dataScopeBrandIds.length > 0 ? 2 : 1
+      }
+      return menu.type !== 3
     })
-  }
+  )
+  nextTick(() => {
+    checkedNodes.value = treeRef.value!.getCheckedNodes()
+    handleCheckedTreeExpand()
+  })
 }
-watch(
-  () => props.stage,
-  () => {
-    init()
-  },
-  { immediate: true }
-)
 
 const getParams = () => {
   const menuDataScopeItemList = cloneDeep(treeRef.value!.getCheckedNodes(false, true))
@@ -426,7 +408,7 @@ const getParams = () => {
   })
 }
 
-defineExpose({ getParams }) // 提供 openModal 方法，用于打开弹窗
+defineExpose({ getParams, init }) // 提供 openModal 方法，用于打开弹窗
 </script>
 
 <style lang="scss" scoped>

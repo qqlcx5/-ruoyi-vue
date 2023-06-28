@@ -21,10 +21,20 @@
       </el-descriptions>
       <el-tabs v-model="tabsActive">
         <el-tab-pane label="配置权限" name="permission">
-          <ConfigDetail
+          <!--          <ConfigDetail-->
+          <!--            origin="detail"-->
+          <!--            :backstageTableData="roleInfo.permissions"-->
+          <!--            :frontTableData="[]"-->
+          <!--          />-->
+          <ConfigDetailItem
+            title="成员端"
+            :tableData="roleInfo.permissions.memberSide"
             origin="detail"
-            :backstageTableData="roleInfo.permissions"
-            :frontTableData="[]"
+          />
+          <ConfigDetailItem
+            title="管理端"
+            :tableData="roleInfo.permissions.managementEnd"
+            origin="detail"
           />
         </el-tab-pane>
         <el-tab-pane v-if="props.showStaff" label="配置人员" name="staff">
@@ -87,8 +97,9 @@
 </template>
 <script setup lang="ts">
 import { getDictLabel, DICT_TYPE } from '@/utils/dict'
-import ConfigDetail from './ConfigDetail.vue'
+// import ConfigDetail from './ConfigDetail.vue'
 import { getPersonsByRole } from '@/api/system/role'
+import ConfigDetailItem from './ConfigDetailItem.vue'
 
 const props = defineProps({
   showStaff: {
@@ -154,6 +165,7 @@ defineExpose({ openDrawer }) // 提供 openModal 方法，用于打开弹窗
   color: $error-color;
   border-color: $error-color;
 }
+
 .user {
   border-color: #dddfe5;
 }
