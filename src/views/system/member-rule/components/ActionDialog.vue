@@ -137,6 +137,13 @@ watch(
   (val) => {
     shopList.value = cloneDeep(val)
     suitableShopList.value = cloneDeep(val)
+
+    // 新增打开弹窗自动添加一行
+    if (isEmpty(props.data)) {
+      handleAdd()
+    } else {
+      resetShopId()
+    }
   },
   { deep: true }
 )
@@ -222,6 +229,10 @@ watch(
           dataRangUserId: stringToArray(item.dataRangUserId)
         })
       )
+      // 请求成员列表
+      tableData.forEach((item, index) => {
+        handleShopChange(item, index)
+      })
     }
   },
   { immediate: true }
