@@ -23,6 +23,7 @@
       <el-switch
         :disabled="!hasPermission('clue-channel:edit')"
         v-model="row.needFilter"
+        inline-prompt
         active-text="是"
         inactive-text="否"
         :active-value="1"
@@ -40,6 +41,7 @@
       <el-switch
         :disabled="!hasPermission('clue-channel:edit')"
         v-model="row.isShow"
+        inline-prompt
         active-text="是"
         inactive-text="否"
         :active-value="1"
