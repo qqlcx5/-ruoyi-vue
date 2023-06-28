@@ -3,7 +3,14 @@
     <!-- 提示类型配置 -->
     <XModal v-model="modelValue_" title="提示类型配置">
       <!-- 表单 -->
-      <XTable @register="registerTable">
+      <form-table
+        :table-options="{
+          columns: allSchemas.tableColumns,
+          listApi: promptConfig.receptionHintTypePageApi,
+          showAdd: true,
+          selection: true
+        }"
+      >
         <template #toolbar_buttons>
           <XButton type="primary" preIcon="ep:plus" title="新增" @click="handleAddTypeVisible" />
         </template>
@@ -13,7 +20,7 @@
           <!-- 操作: 删除 -->
           <XTextButton :title="t('action.del')" @click="handleDel(row)" />
         </template>
-      </XTable>
+      </form-table>
       <!-- 操作按钮 -->
       <template #footer>
         <!-- 按钮：保存 -->
@@ -47,14 +54,13 @@ import { addRules, addAllSchemas } from './promptTypeConfigModal.add.data'
 
 const { t } = useI18n() // 国际化
 let dialogLoading = ref(false) // 弹窗加载状态
-const [registerTable, { reload }] = useXTable({
-  allSchemas: allSchemas,
-  getListApi: promptConfig.receptionHintTypeAllListApi
-})
+// const [registerTable, { reload }] = useXTable({
+//   allSchemas: allSchemas,
+//   getListApi: promptConfig.receptionHintTypePageApi
+// })
 
 /* ---------------------------------- 提示类型配置表单 --------------------------------- */
 function handleEdit(row: any) {
-  // 编辑
   console.log(row)
 }
 function handleDel(row: any) {

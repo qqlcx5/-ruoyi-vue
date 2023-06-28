@@ -102,3 +102,8 @@ export const receptionHintTypeSaveOrUpdateApi = (data: any) => {
 export const receptionHintConfigApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionHintConfig/page', data })
 }
+// /admin-api/reception/mange/receptionHintType/page
+// 分页查询提示类型
+export const receptionHintTypePageApi = (data: any) => {
+  return request.post({ url: '/reception/mange/receptionHintType/page', data })
+}
