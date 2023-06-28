@@ -19,6 +19,9 @@
         v-model="row.status"
         :active-value="1"
         :inactive-value="0"
+        active-text="是"
+        inactive-text="否"
+        inline-prompt
         @click.stop
         @change="changeStatus(row)"
       />
@@ -29,6 +32,9 @@
         v-model="row.pushBackFactoryStatus"
         :active-value="1"
         :inactive-value="0"
+        active-text="是"
+        inactive-text="否"
+        inline-prompt
         @click.stop
         @change="changePushBackFactoryStatus(row)"
       />
@@ -157,7 +163,7 @@ const arrToStrFunc = (arr) => {
 // const toStr = (arr)
 const columns: TableColumn[] = [
   {
-    label: '分公司',
+    label: '区域',
     field: 'branchName',
     disabled: true
   },

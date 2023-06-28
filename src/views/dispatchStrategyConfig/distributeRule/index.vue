@@ -19,6 +19,9 @@
         v-model="row.openRules"
         :active-value="1"
         :inactive-value="0"
+        active-text="是"
+        inactive-text="否"
+        inline-prompt
         @click.stop
         @change="changeOpenRules(row)"
       />
