@@ -1,274 +1,223 @@
 <template>
   <!-- 搜索 -->
-  <ContentWrap>
-    <el-form
-      class="-mb-15px"
-      :model="queryParams"
-      ref="queryFormRef"
-      :inline="true"
-      label-width="68px"
-    >
-      <el-form-item label="题目名称" prop="name">
-        <el-input
-          v-model="queryParams.name"
-          placeholder="请输入题目名称"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <!--      <el-form-item label="适用分类" prop="status">-->
-      <!--        <el-select-->
-      <!--          v-model="queryParams.status"-->
-      <!--          placeholder="请选择适用分类"-->
-      <!--          clearable-->
-      <!--          class="!w-240px"-->
-      <!--        >-->
-      <!--          <el-option-->
-      <!--            v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
-      <!--            :key="dict.value"-->
-      <!--            :label="dict.label"-->
-      <!--            :value="dict.value"-->
-      <!--          />-->
-      <!--        </el-select>-->
-      <!--      </el-form-item>-->
+  <div class="flex flex-col h-full">
+    <ContentWrap>
+      <Search :schema="allSchemas.searchSchema" @reset="handleSearch" @search="handleSearch" />
+    </ContentWrap>
 
-      <!--      <el-form-item label="题目类型" prop="status">-->
-      <!--        <el-select-->
-      <!--          v-model="queryParams.status"-->
-      <!--          placeholder="请选择题目类型"-->
-      <!--          clearable-->
-      <!--          class="!w-240px"-->
-      <!--        >-->
-      <!--          <el-option-->
-      <!--            v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
-      <!--            :key="dict.value"-->
-      <!--            :label="dict.label"-->
-      <!--            :value="dict.value"-->
-      <!--          />-->
-      <!--        </el-select>-->
-      <!--      </el-form-item>-->
-
-      <!--      <el-form-item label="状态" prop="status">-->
-      <!--        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable class="!w-240px">-->
-      <!--          <el-option-->
-      <!--            v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
-      <!--            :key="dict.value"-->
-      <!--            :label="dict.label"-->
-      <!--            :value="dict.value"-->
-      <!--          />-->
-      <!--        </el-select>-->
-      <!--      </el-form-item>-->
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          type="daterange"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="handleQuery" type="primary">查询</el-button>
-        <el-button @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-  </ContentWrap>
-
-  <div class="card-wrap">
-    <ContentWrap class="mr-5" style="width: 260px">
-      <div class="tree-title-content">
-        <div class="title">题目分组</div>
-        <el-link type="primary" @click="dialogVisible = true">添加</el-link>
-      </div>
-      <div class="tree-select-content">
-        <a-input-search style="margin: 10px 0" v-model:value="searchValue" placeholder="搜索分组" />
-        <el-tree :data="dataSource" node-key="id" default-expand-all :expand-on-click-node="false">
-          <template #default="{ node }">
-            <span class="custom-tree-node">
-              <span>{{ node.label }}</span>
-              <el-dropdown>
-                <span class="el-dropdown-link">
-                  <Icon
-                    icon="svg-icon:ellipsis"
-                    class="btn-icon"
-                    style="transform: rotate(90deg)"
-                  />
+    <div class="card-wrap flex flex-1">
+      <ContentWrap class="mr-5 group-wrap" style="width: 260px">
+        <div class="tree-title-content">
+          <div class="title">题目分组</div>
+          <XTextButton title="添加" @click="handleAddGroup()" />
+        </div>
+        <div class="tree-select-content flex flex-col">
+          <el-input
+            v-model="searchValue"
+            style="margin: 10px 0"
+            placeholder="搜索分组"
+            :suffix-icon="searchIcon"
+          />
+          <div class="flex-1 overflow-auto">
+            <el-tree
+              :data="groupList"
+              :expand-on-click-node="false"
+              highlight-current
+              :props="{ label: 'appraiseTypeName' }"
+              @node-click="handleSelect"
+            >
+              <template #default="{ data }">
+                <span class="custom-tree-node">
+                  <span>{{ `${data.appraiseTypeName}(${data.topicNum})` }}</span>
+                  <el-dropdown>
+                    <span class="el-dropdown-link">
+                      <Icon
+                        icon="svg-icon:ellipsis"
+                        class="btn-icon"
+                        style="transform: rotate(90deg)"
+                      />
+                    </span>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item @click="handleAddGroup(data)">编辑</el-dropdown-item>
+                        <el-dropdown-item @click="handleGroupDelete(data)">删除</el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
                 </span>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item>编辑</el-dropdown-item>
-                    <el-dropdown-item>删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </span>
-          </template>
-        </el-tree>
-      </div>
-    </ContentWrap>
-    <ContentWrap style="flex: 1">
-      <div style="margin-bottom: 10px">
-        <el-button type="primary" @click="openForm('create')"
-          ><Icon icon="ep:plus" class="mr-5px" /> 新增</el-button
-        >
-        <el-button>删除</el-button>
-      </div>
-      <el-table v-loading="loading" :data="list">
-        <el-table-column label="题目ID" />
-        <!--        <el-table-column label="题目类型">-->
-        <!--          <template #default="scope">-->
-        <!--            <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
-        <!--        <el-table-column label="题目" />-->
-        <!--        <el-table-column label="所属分组" />-->
-        <!--        <el-table-column label="状态">-->
-        <!--          <template #default="scope">-->
-        <!--            <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
-        <el-table-column label="匹配字段" />
-        <el-table-column
-          label="最后一次修改时间"
-          align="center"
-          prop="createTime"
-          width="180"
-          :formatter="dateFormatter"
-        />
+              </template>
+            </el-tree>
+          </div>
+        </div>
+      </ContentWrap>
 
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-          <template #default="scope">
-            <el-button link type="primary" @click="openForm('update', scope.row.id)">
-              编辑
-            </el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row.id)"> 删除 </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <!-- 分页 -->
-      <Pagination
-        :total="total"
-        v-model:page="queryParams.pageNo"
-        v-model:limit="queryParams.pageSize"
-        @pagination="getList"
-      />
-    </ContentWrap>
+      <FormTable
+        class="flex-1"
+        ref="tableRef"
+        :form-options="{ isSearch: false }"
+        :table-options="{
+          columns: allSchemas.tableColumns,
+          selection: true,
+          listApi: getTenant,
+          listParams
+        }"
+        @add="handleAdd"
+      >
+        <template #tableAppend>
+          <XButton title="删除" @click="handleDelete" />
+        </template>
+        <template #status="{ row }">
+          <el-switch
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleChangeStatus(row)"
+          />
+        </template>
+      </FormTable>
+    </div>
   </div>
-
-  <Dialog v-model="dialogVisible" title="新增分组">
-    <el-form :model="form" label-width="100px">
-      <el-form-item label="分组名称">
-        <el-input
-          type="text"
-          v-model="form.name"
-          placeholder="请输入分组名称"
-          maxlength="8"
-          :show-word-limit="true"
-        />
-      </el-form-item>
-      <el-form-item label="状态">
-        <el-switch v-model="form.status" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogVisible = false"> 确定 </el-button>
-      </span>
-    </template>
-  </Dialog>
-
-  <TopicForm ref="formRef" @success="getList" />
 </template>
 
 <script lang="ts" setup>
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
-import { dateFormatter } from '@/utils/formatTime'
-import TopicForm from './TopicForm.vue'
-
-const loading = ref(false) // 列表的加载中
-const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
-const queryParams = reactive({
-  pageNo: 1,
-  pageSize: 10,
-  name: null,
-  status: null,
-  remark: null,
-  createTime: []
-})
-const queryFormRef = ref()
-
-const formRef = ref()
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
-}
-
-const handleDelete = () => {}
-
-/** 查询列表 */
-const getList = async () => {
-  loading.value = true
-  try {
-    // const data = await TenantPackageApi.getTenantPackagePage(queryParams.value)
-    const data = { list: [], total: 10 }
-    list.value = data.list
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
-}
-
-/** 搜索按钮操作 */
-const handleQuery = () => {
-  queryParams.pageNo = 1
-  getList()
-}
-
-/** 重置按钮操作 */
-const resetQuery = () => {
-  queryFormRef.value?.resetFields()
-  getList()
-}
+import AddTopicDialog from './components/AddTopicDialog.vue'
+import AddGroupDialog from './components/AddGroupDialog.vue'
+import { getTenant } from '@/api/system/tenant'
+import { Search as searchIcon } from '@element-plus/icons-vue'
+import { useCreateDialog } from '@/hooks/web/useCreateDialog'
+import { useTable, useGroup } from './helpers'
+import { addGroup, delTopic, delGroup, setTopicStatus } from '@/api/questionnaire/topic'
+import { onMounted } from 'vue'
+import { useMessage } from '@/hooks/web/useMessage'
+import { isEmpty } from 'lodash-es'
 
 const searchValue = ref('')
-const dialogVisible = ref(false) // 题目分组添加弹窗
 
-const form = reactive({
-  name: '',
-  status: false
+const { openDialog } = useCreateDialog()
+const { allSchemas, tableRef, listParams } = useTable()
+const { getGroupData, groupList } = useGroup()
+const message = useMessage()
+
+onMounted(async () => {
+  await getGroupData()
 })
 
-const dataSource = ref<Tree[]>([
-  {
-    id: 1,
-    label: 'Level one 1'
-  },
-  {
-    id: 2,
-    label: 'Level one 2'
-  },
-  {
-    id: 3,
-    label: 'Level one 3'
+/** 查询/重置 */
+const handleSearch = (model: Recordable) => {
+  const { tableMethods, elTableRef } = tableRef.value
+  listParams.value = model
+  tableMethods.getList()
+  elTableRef.value?.clearSelection()
+}
+
+/** 选中分组 */
+const handleSelect = (node) => {
+  const { tableMethods } = tableRef.value
+  listParams.value = { appraiseTopicId: node.appraiseTopicId }
+  setTimeout(() => {
+    tableMethods.getList()
+  }, 0)
+}
+
+/** 改变列表状态 */
+const handleChangeStatus = async (row) => {
+  await setTopicStatus({ id: row.appraiseTopicId, status: row.status })
+  message.success('修改状态成功')
+}
+
+/** 新增 */
+const handleAdd = () => {
+  openDialog(AddTopicDialog, {
+    title: '123'
+  })
+}
+
+/** 新增/编辑分组 */
+const handleAddGroup = (params?: Recordable) => {
+  const id = params?.appraiseTypeId
+  const { close } = openDialog(AddGroupDialog, {
+    title: `${id ? '编辑' : '新增'}分组`,
+    width: 498,
+    data: params,
+    onConfirm: async (data) => {
+      await addGroup({
+        ...data,
+        ...(id ? { appraiseTypeId: id } : {})
+      })
+      message.success('添加成功')
+      close()
+      getGroupData()
+    }
+  })
+}
+
+/** 题目分组删除 */
+const handleGroupDelete = async (data) => {
+  message
+    .wgOperateConfirm('是否确认删除题目？删除后无法恢复。', '提示')
+    .then(async () => {
+      await delGroup({ ids: [data.appraiseTypeId] })
+      message.success('删除成功')
+      getGroupData()
+    })
+    .catch(() => {})
+}
+
+/** 批量删除题目 */
+const handleDelete = async () => {
+  const { tableMethods } = tableRef.value
+  let selections = await tableMethods.getSelections()
+  selections = selections?.map((item) => item.appraiseTypeId)
+
+  if (isEmpty(selections)) {
+    message.warning('请选择题目')
+    return
   }
-])
+
+  message
+    .wgOperateConfirm('是否确认删除题目？删除后无法恢复。', '提示')
+    .then(async () => {
+      const res = await delTopic({ ids: selections })
+      if (res) {
+        message.success('删除成功')
+        await tableMethods.getList()
+      } else {
+        message.error('删除失败')
+      }
+    })
+    .catch(() => {})
+}
 </script>
 
 <style lang="scss" scoped>
 .card-wrap {
   display: flex;
+
+  .group-wrap {
+    :deep(.el-card__body) {
+      height: 100%;
+
+      & > div {
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+      }
+    }
+  }
+
   .tree-title-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
+
   .tree-select-content {
+    flex: 1;
+
     .custom-tree-node {
-      width: 100%;
       display: flex;
+      width: 100%;
       justify-content: space-between;
     }
   }
