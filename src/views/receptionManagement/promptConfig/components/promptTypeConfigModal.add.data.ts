@@ -4,8 +4,8 @@ import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
 
 // 表单校验
 export const addRules = reactive({
-  name: [{ required: true, message: '请输入类型名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请输入类型关键字', trigger: 'blur' }]
+  typeKey: [{ required: true, message: '请输入类型名称', trigger: 'blur' }],
+  typeName: [{ required: true, message: '请输入类型关键字', trigger: 'blur' }]
 })
 
 // crudSchemas
@@ -15,11 +15,13 @@ const crudSchemas = reactive<VxeCrudSchema>({
   columns: [
     {
       title: '提示类型关键字',
-      field: 'typeKey'
+      field: 'typeKey',
+      requried: true
     },
     {
       title: '提示类型名称',
-      field: 'typeName'
+      field: 'typeName',
+      requried: true
     }
   ]
 })

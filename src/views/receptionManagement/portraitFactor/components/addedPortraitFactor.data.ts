@@ -14,12 +14,14 @@ const crudSchemas = reactive<VxeCrudSchema>({
   actionWidth: '130',
   columns: [
     {
-      title: '提示类型关键字',
-      field: 'score'
+      title: '*画像因子得分区间',
+      field: 'score',
+      requried: true
     },
     {
-      title: '提示类型名称',
-      field: 'level'
+      title: '对应评级名称',
+      field: 'level',
+      requried: true
     }
   ]
 })

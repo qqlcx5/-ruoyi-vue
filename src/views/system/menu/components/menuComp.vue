@@ -706,7 +706,7 @@ const queryParams = reactive({
   name: undefined,
   status: undefined,
   type: null,
-  entrance: ''
+  entrance: 'managementEnd'
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -1808,10 +1808,9 @@ const props = defineProps({
 let tableLoading = ref(false)
 watch(
   () => props.mode, // 源
-  (newValue, oldValue) => {
+  (newValue) => {
     // 回调函数
     queryParams.entrance = newValue
-    console.log(newValue, oldValue)
     changeMode()
   },
   {

@@ -121,7 +121,6 @@ function handleDel() {
 
 // 操作：提示类型配置
 function handlePrompt() {
-  console.log('prompt111')
   promptTypeVisible.value = true
 }
 
@@ -140,6 +139,21 @@ function listApi(params) {
     ? promptConfig.receptionHintConfigApi(params)
     : promptConfig.receptionMustSayConfigApi(params)
 }
+
+// const deleteFun = async () => {
+//   let params = {
+//     ids: selectedIds.value
+//   }
+//   console.log(params)
+//   const res = await promptConfig.receptionHintTypeBatchDeleteApi(params)
+//   if (res) {
+//     message.success('删除成功')
+//     refreshList()
+//   } else {
+//     message.error('报错了')
+//   }
+// }
+
 // 切换tab
 async function handleTabChange() {
   await tableRef.value?.tableMethods.getList()

@@ -1,44 +1,29 @@
-import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
+// const { t } = useI18n() // 国际化
+import { TableColumn } from '@/types/table'
+import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
+import { formatDate } from '@/utils/formatTime'
 
-const { t } = useI18n() // 国际化
-
-// 表单校验
-export const rules = reactive({
-  name: [{ required: true, message: '请输入类型名称', trigger: 'blur' }],
-  type: [{ required: true, message: '请输入类型关键字', trigger: 'blur' }]
-})
-
-// crudSchemas
-const crudSchemas = reactive<VxeCrudSchema>({
-  action: true,
-  actionWidth: '130',
-  columns: [
-    {
-      title: '提示类型关键字',
-      field: 'reason'
-    },
-    {
-      title: '提示类型名称',
-      field: 'reason'
-    },
-    {
-      title: '提示类型描述',
-      field: 'reason'
-    },
-    {
-      title: t('common.startTimeText'),
-      field: 'startTime',
-      formatter: 'formatDay',
-      table: {
-        width: 180
-      },
-      detail: {
-        dateFormat: 'YYYY-MM-DD'
-      },
-      form: {
-        component: 'DatePicker'
-      }
+const columns: TableColumn[] = [
+  {
+    label: '提示类型关键字',
+    field: 'typeKey',
+    isSearch: true
+  },
+  {
+    label: '提示类型名称',
+    field: 'typeName',
+    isSearch: true
+  },
+  {
+    label: '创建人',
+    field: 'createBy'
+  },
+  {
+    label: '创建时间',
+    field: 'createTime',
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
     }
-  ]
-})
-export const { allSchemas } = useVxeCrudSchemas(crudSchemas)
+  }
+]
+export const { allSchemas } = useCrudSchemas(columns)

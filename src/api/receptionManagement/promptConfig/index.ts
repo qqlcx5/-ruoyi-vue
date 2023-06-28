@@ -102,3 +102,18 @@ export const receptionHintTypeSaveOrUpdateApi = (data: any) => {
 export const receptionHintConfigApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionHintConfig/page', data })
 }
+// /admin-api/reception/mange/receptionHintType/page
+// 分页查询提示类型
+export const receptionHintTypePageApi = (data: any) => {
+  return request.post({ url: '/reception/mange/receptionHintType/page', data })
+}
+// /admin-api/reception/mange/receptionHintType/batchDelete
+// 批量删除提示类型
+export const receptionHintTypeBatchDeleteApi = (data: any) => {
+  return request.post({ url: '/reception/mange/receptionHintType/batchDelete', data })
+}
+// model/code/queryModelByName
+// 根据模型名称查询模型
+export const queryModelByNameApi = (data: any) => {
+  return request.post({ url: '/model/code/queryModelByName', data })
+}

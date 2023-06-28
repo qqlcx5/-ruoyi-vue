@@ -1,14 +1,11 @@
 <template>
   <div class="system-menu">
     <!-- 成员端、管理端、客户端  memberSide、managementEnd、client -->
-    <el-tabs type="border-card" v-model="tabsName" @tab-click="handleTabsClick">
+    <el-tabs type="border-card" v-model="tabsName">
       <el-tab-pane label="成员端" name="memberSide"> </el-tab-pane>
       <el-tab-pane label="管理端" name="managementEnd"> </el-tab-pane>
-      <el-tab-pane label="客户端" name="client"> </el-tab-pane>
     </el-tabs>
     <MenuComp v-if="tabsName !== 'client'" :mode="tabsName" />
-    <!-- 暂无数据 -->
-    <Empty v-if="tabsName === 'client'" class="mt-30vh" description="暂无数据" />
   </div>
 </template>
 
@@ -17,9 +14,6 @@ import { ref } from 'vue'
 import MenuComp from './components/menuComp.vue'
 
 let tabsName = ref('managementEnd')
-const handleTabsClick = (tab: any) => {
-  console.log('🚀 ~ file: index.vue:17 ~ handleTabsClick ~ tab.name:', tab.paneName)
-}
 </script>
 
 <style lang="scss" scoped>

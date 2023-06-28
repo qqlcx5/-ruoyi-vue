@@ -5,11 +5,11 @@
       ref="tableRef"
       @add="handleAdd"
       :form-options="{
-        schema: allSchemas.searchSchema
+        isSearch: false
       }"
       :table-options="{
         columns: allSchemas.tableColumns,
-        listApi: promptConfig.portraitFactorLevelConfigAllListApi,
+        listApi: portraitFactor.portraitFactorLevelConfigAllListApi,
         showAdd: true,
         selection: true
       }"
@@ -31,7 +31,7 @@
 
 <script lang="ts" setup>
 import { TableColumn } from '@/types/table'
-import * as promptConfig from '@/api/receptionManagement/promptConfig'
+import * as portraitFactor from '@/api/receptionManagement/portraitFactor'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import addedPortraitFactor from './components/addedPortraitFactor.vue'
 const { t } = useI18n()

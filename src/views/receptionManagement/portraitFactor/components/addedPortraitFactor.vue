@@ -3,10 +3,11 @@
     <!--  画像因子新增 类型 -->
     <XModal v-model="modelValue_" title="新增">
       <!-- 表单 -->
-      <Form :schema="allSchemas.formSchema" :rules="addRules" ref="formRef">
+      <Form :schema="allSchemas.formSchema" :rules="addRules" ref="formRef" :isCol="false">
         <template #score="form">
           <div class="flex">
-            <el-input v-model="form.lowestScore" /> —— <el-input v-model="form.topScore" />
+            <el-input v-model="form.lowestScore" /> <span class="pl-4 pr-4">——</span>
+            <el-input v-model="form.topScore" />
           </div>
         </template>
       </Form>
@@ -22,38 +23,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-
-import * as promptConfig from '@/api/receptionManagement/promptConfig'
+import * as portraitFactor from '@/api/receptionManagement/portraitFactor'
 import { allSchemas, addRules } from './addedPortraitFactor.data.js'
 
 const { t } = useI18n() // 国际化
-let dialogLoading = ref(false) // 弹窗加载状态
-const [registerTable, { reload }] = useXTable({
-  allSchemas: allSchemas,
-  getListApi: promptConfig.receptionHintTypeAllListApi
-})
-
-/* ---------------------------------- 提示类型配置表单 --------------------------------- */
-function handleEdit(row: any) {
-  // 编辑
-  console.log(row)
-}
-function handleDel(row: any) {
-  // 删除
-  console.log(row)
-}
-
-/* --------------------------------- 新增类型 -------------------------------- */
-let addTypeVisible = ref(false) // 新增类型弹窗
-let formData = reactive({
-  name: '',
-  type: ''
-})
-function handleAddTypeVisible() {
-  console.log('新增类型')
-  addTypeVisible.value = true
-}
+// let dialogLoading = ref(false) // 弹窗加载状态
+// const [registerTable, { reload }] = useXTable({
+//   allSchemas: allSchemas,
+//   getListApi: promptConfig.portraitFactorLevelConfigSaveOrUpdateApi
+// })
 
 /* --------------------------------- // 新增类型 -------------------------------- */
 import { FormExpose } from '@/components/Form'
@@ -71,11 +49,13 @@ const submitForm = async () => {
     if (!valid) return
     try {
       actionLoading.value = true
-      const data = unref(formRef)?.formModel as promptConfig.ReceptionHintTypeSaveOrUpdateApiParams
-      await promptConfig.receptionHintTypeSaveOrUpdateApi(data)
+      const data = unref(formRef)
+        ?.formModel as portraitFactor.PortraitFactorLevelConfigSaveOrUpdateApiParams
+      await portraitFactor.portraitFactorLevelConfigSaveOrUpdateApi(data)
       message.success(t('common.createSuccess'))
     } finally {
       actionLoading.value = false
+      modelValue_.value = false
     }
   })
 }

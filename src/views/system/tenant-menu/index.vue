@@ -2,6 +2,11 @@
 <template>
   <div class="total-content">
     <!-- 搜索工作栏 -->
+    <!-- 成员端、管理端、客户端  memberSide、managementEnd、client -->
+    <el-tabs type="border-card" v-model="tabsName">
+      <el-tab-pane label="成员端" name="memberSide"> </el-tab-pane>
+      <el-tab-pane label="管理端" name="managementEnd"> </el-tab-pane>
+    </el-tabs>
     <ContentWrap style="min-height: 78px">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
         <a-form-item :label="`菜单名称`" name="name">
@@ -640,10 +645,13 @@ import { getMemberNumList, getMemberNumRoleList, updateMenuVisibleStatus } from 
 import { cloneDeep } from 'lodash-es'
 import { getOrganizationTypeList } from '@/api/system/organization'
 
+let tabsName = ref('managementEnd')
+
 const queryParams = reactive({
   name: undefined,
   status: undefined,
-  type: null
+  type: null,
+  entrance: 'managementEnd'
 })
 
 const queryFormRef = ref() // 搜索的表单
@@ -1095,7 +1103,7 @@ const saveForm = async () => {
 const menuTree = ref<Tree[]>([]) // 树形结构
 const getTree = async () => {
   menuTree.value = []
-  const res = await MenuApi.getSimpleMenusList()
+  const res = await MenuApi.getSimpleMenusList({ entrance: queryParams.entrance })
   let menu: Tree = { id: 0, name: '主类目', children: [] }
   menu.children = handleTree(res)
   menuTree.value.push(menu)
@@ -1648,7 +1656,7 @@ const closeEmployees = () => {
 //数据字典
 const getAllType = async () => {
   //获取数据字典
-  const dictRes = await getOrganizationTypeList()
+  const dictRes = await getOrganizationTypeList({ entrance: queryParams.entrance })
 
   //适用主体类型
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
@@ -1670,11 +1678,26 @@ watch(
     deep: true
   }
 )
-
-onMounted(async () => {
+watch(
+  () => tabsName.value, // 源
+  (newValue) => {
+    // 回调函数
+    queryParams.entrance = newValue
+    changeMode()
+  },
+  {
+    immediate: true // 立即触发
+    // deep: true // 深度监听
+  }
+)
+async function changeMode() {
   await getAllType()
   await getList()
-})
+}
+
+// onMounted(() => {
+//   changeMode()
+// })
 </script>
 
 <style lang="scss" scoped>
@@ -1983,6 +2006,44 @@ onMounted(async () => {
 
 :deep(.ant-table-tbody) {
   min-height: 520px;
+}
+/* ----------------------------------- menu ----------------------------------- */
+.total-content {
+  :deep(.el-card) {
+    border: none;
+    border-radius: 0;
+  }
+  :deep(.el-tabs__content) {
+    display: none;
+  }
+  :deep(.el-tabs--border-card > .el-tabs__header) {
+    border-bottom: none;
+    background-color: #f1f3f6;
+  }
+  :deep(.el-tabs__item) {
+    position: relative;
+    height: 50px;
+    line-height: 50px;
+    padding-left: 34px !important;
+    padding-right: 34px !important;
+    &.is-active {
+      background-color: #fff;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #409eff;
+      }
+    }
+  }
+
+  :deep(.el-tabs--border-card) {
+    border: none;
+  }
 }
 </style>
 
