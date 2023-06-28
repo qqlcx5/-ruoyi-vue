@@ -3,7 +3,6 @@ import { Table, TableExpose } from '@/components/Table'
 import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
 import { computed, nextTick, reactive, ref, unref, watch } from 'vue'
 import type { TableProps } from '@/components/Table/src/types'
-
 import { TableSetPropsType } from '@/types/table'
 
 const { t } = useI18n()
@@ -68,6 +67,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
     () => tableObject.currentPage,
     () => {
       methods.getList()
+      elTableRef.value?.setScrollTop(0)
     }
   )
 
@@ -90,9 +90,9 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
   // ElTable实例
   const elTableRef = ref<ComponentRef<typeof ElTable>>()
 
-  const register = (ref: typeof Table & TableExpose, elRef: ComponentRef<typeof ElTable>) => {
+  const register = (ref: typeof Table & TableExpose, elRef: Ref<ComponentRef<typeof ElTable>>) => {
     tableRef.value = ref
-    elTableRef.value = elRef
+    elTableRef.value = elRef.value
   }
 
   const getTable = async () => {
@@ -131,6 +131,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
   const methods = {
     getList: async () => {
       tableObject.loading = true
+
       const res = await config?.getListApi(unref(paramsObj)).finally(() => {
         tableObject.loading = false
       })
@@ -138,7 +139,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
       if (res) {
         tableObject.tableList = (res as unknown as ResponseType).list
 
-        if ((res as unknown as ResponseType).total) {
+        if (!isNaN(Number((res as unknown as ResponseType).total))) {
           tableObject.total = (res as unknown as ResponseType).total as unknown as number
         }
       }
@@ -224,6 +225,7 @@ export const useTable = <T = any>(config?: UseTableConfig<T>) => {
   return {
     register,
     elTableRef,
+    tableRef,
     tableObject,
     methods,
     // 返回 tableMethods 属性，和 tableObject 更统一

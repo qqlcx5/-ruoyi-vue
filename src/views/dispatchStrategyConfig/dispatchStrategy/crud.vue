@@ -1,240 +1,314 @@
 <template>
-  <XModal :title="id ? '修改' : '编辑'" v-model="visible" width="50%">
-    <div class="window-body">
-      <div style="margin-bottom: 16px">线索归属配置</div>
-      <div class="rule-wrapper">
-        <el-form size="mini" :model="form" ref="form">
-          <template>
-            <el-form-item label="线索渠道" prop="clueChannelId" required>
-              <el-cascader
-                ref="treeChannelCascader"
-                v-model="form.clueChannelId"
-                placeholder="请选择线索渠道"
-                :options="channelData"
-                :props="{
-                  label: 'clueChannelName',
-                  value: 'clueChannelId',
-                  expandTrigger: 'hover',
-                  emitPath: false
-                }"
-                :show-all-levels="false"
-                clearable
-              />
-            </el-form-item>
-            <el-form-item label="线索清洗员" prop="filterUserId">
-              <template v-if="form.clueChannelId">
-                <el-cascader
-                  ref="treeChannelCascader"
-                  v-model="form.filterUserId"
-                  placeholder="请选择清洗员"
-                  :options="filterUserData"
-                  :props="{
-                    label: 'filterUserName',
-                    value: 'filterUserId',
-                    expandTrigger: 'hover',
-                    emitPath: false
-                  }"
-                  :show-all-levels="false"
-                  clearable
-                />
-              </template>
-            </el-form-item>
-            <el-form-item label="派发门店配置" prop="distributeShopIdList">
-              <el-cascader
-                ref="treeShopCascader"
-                v-model="form.distributeShopIdList"
-                placeholder="请选择门店"
-                :options="shopData"
-                collapse-tags
-                @change="getDistributeShopIdList"
-                :props="{
-                  label: 'departName',
-                  value: 'departId',
-                  expandTrigger: 'hover',
-                  multiple: true,
-                  emitPath: false
-                }"
-                filterable
-                :show-all-levels="false"
-                clearable
-              />
-            </el-form-item>
-          </template>
-        </el-form>
-      </div>
-      <el-divider />
-      <staff-config
-        v-if="form.clueChannelId && form.distributeShopIdList.length > 0"
-        :db-list="staffConfigList"
-        ref="staffConfigRef"
-      />
-    </div>
+  <XModal v-model="dialogVisible" width="665px" :title="dialogTitle">
+    <!-- 对话框(添加 / 修改) -->
+    <Form
+      v-if="['create', 'update'].includes(actionType)"
+      :schema="allSchemas.formSchema"
+      :rules="rules"
+      ref="formRef"
+    >
+      <template #clueChannelId="form">
+        <el-cascader
+          :options="clueChannelTreeList"
+          :props="clueChannelIdProps"
+          v-model="form.clueChannelId"
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+        />
+      </template>
+      <template #filterUserId="form">
+        <el-cascader
+          :options="userOptions.users"
+          :props="filterUserIdProps"
+          v-model="form.filterUserId"
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+        />
+        <!-- <div v-else>请先选择线索渠道</div> -->
+      </template>
+      <template #distributeShopIdList="form">
+        <el-cascader
+          :options="shopOptions"
+          :props="props"
+          v-model="form.distributeShopIdList"
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+          @change="changeShopIdList"
+        />
+      </template>
+    </Form>
 
-    <!--    <div class="window-footer">-->
-    <!--      <el-button size="mini" @click="hide">取消</el-button>-->
-    <!--      <el-button type="primary" :loading="loading" size="mini" @click="confirm">确认</el-button>-->
-    <!--    </div>-->
+    <Table
+      :columns="tableColumns"
+      :data="tableList"
+      header-cell-class-name="table-header-style"
+      max-height="40vh"
+      headerAlign="left"
+      :showOverflowTooltip="false"
+      align="left"
+    />
 
     <!-- 操作按钮 -->
     <template #footer>
-      <!-- 按钮：保存 -->
-      <XButton type="primary" :title="t('action.save')" :loading="loading" @click="confirm" />
-      <!-- 按钮：关闭 -->
-      <XButton :loading="loading" :title="t('common.cancel')" @click="hide" />
+      <XButton
+        v-if="['create', 'update'].includes(actionType)"
+        type="primary"
+        :title="t('action.save')"
+        :loading="actionLoading"
+        @click="submitForm()"
+      />
+      <XButton :loading="actionLoading" :title="t('dialog.close')" @click="dialogVisible = false" />
     </template>
   </XModal>
 </template>
 
-<script setup lang="ts" name="Crud">
-import * as dispatchApi from '@/api/clue/dispatchStrategy/index'
-import StaffConfig from '@/views/dispatchStrategyConfig/components/staffConfig.vue'
-import { treeShopData } from '@/api/common'
-const { t } = useI18n()
+<script setup lang="ts">
+import { ref } from 'vue'
+import { FormExpose } from '@/components/Form'
+import { rules, allSchemas } from './dispatchStrategy.data'
+import * as dispatchApi from '@/api/clue/dispatchStrategy'
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getMemberList, getSuitableShopList } = useCommonList()
+
+const formRef = ref<FormExpose>() // 表单 Ref
+const { t } = useI18n() // 国际化
 const message = useMessage()
-const visible = ref(false)
-const loading = ref(false)
-const form = ref({
-  companyId: '',
-  shopId: '',
-  clueChannelId: '',
-  clueChannelName: '',
-  filterUserName: '',
-  filterUserId: '',
-  distributeShopIdList: []
-})
-const staffConfigList = ref([])
 
-onMounted(() => {
-  getShopData()
-})
+let dialogVisible = ref(false)
+let dialogTitle = ref('新增')
+const actionLoading = ref(false) // 遮罩层
+let actionType = ref('create') // 操作按钮的类型
+const emit = defineEmits(['refreshList'])
+const props = {
+  multiple: true,
+  label: 'name',
+  value: 'id',
+  emitPath: false
+}
 
-// 弹窗
-const id = ref('')
-const openDialog = (id) => {
-  if (id) {
-    id.value = id
-    dispatchApi.clueDistributeDetailV2(id).then((res) => {
-      if (res) {
-        form.value = res.data
-        staffConfigList.value = res.data.userList
-      } else {
-        message.error(res.message)
-      }
+// 获取线索渠道
+let clueChannelTreeList = ref<any[]>([])
+const getShopUserList = async () => {
+  let data = await dispatchApi.getClueChannelTree()
+  if (data && data.length > 0) {
+    data = data.map((item) => {
+      item.label = item.companyShopName
+      item.value = ''
+      item.children = item.list.map((lItem) => {
+        lItem.label = lItem.sourceName
+        lItem.value = lItem.clueChannelId
+        return lItem
+      })
+      return item
     })
-  }
-  visible.value = true
-}
-const hide = () => {
-  visible.value = false
-}
-const emit = defineEmits(['refresh'])
-const confirm = () => {
-  loading.value = true
-  if (!form.value.clueChannelId) {
-    return message.error('请选择线索渠道')
-  }
-  if (id.value) {
-    const params = {
-      clueChannelId: form.value.clueChannelId,
-      distributeShopIdList: form.value.distributeShopIdList,
-      filterUserId: form.value.filterUserId,
-      id: id.value
-    }
-    dispatchApi.clueDistributeUpdateV2(params).then((res) => {
-      if (res) {
-        emit('refresh')
-        message.success('修改成功')
-        loading.value = false
-        hide()
-      } else {
-        message.error(res.message)
-      }
-    })
-  } else {
-    // 创建
-    let addform = {
-      clueAffiliationList: [
-        {
-          clueChannelId: form.value.clueChannelId,
-          filterUserId: form.value.filterUserId
-        }
-      ],
-      id: id.value,
-      clueDistributeSaveV2: form.value.distributeShopIdList
-    }
-    dispatchApi.clueDistributeSaveV2(addform).then((res) => {
-      if (res.status === 200) {
-        message.success('创建成功')
-        emit('refresh')
-        loading.value = false
-        hide()
-      } else {
-        message.error(res.message)
-        loading.value = false
-      }
-    })
+    clueChannelTreeList.value = data
   }
 }
+const clueChannelIdProps = {
+  emitPath: false
+}
+const filterUserIdProps = {
+  label: 'name',
+  value: 'id',
+  emitPath: false
+}
+// 获取岗位精简信息列表
+// 根据岗位岗位获取清洗员
+let userOptions = ref<any>(getMemberList({ childRuleValue: 'clue_qxy_rule' }))
 
-// 线索渠道下拉框数据
-type channelObj = {
-  clueChannelName: string
-  clueChannelId: string
-  children: channelObj[]
-}
-const channelData = ref<channelObj[]>([])
-// 线索清洗员下拉框数据
-type filterUserObj = {
-  filterUserName: string
-  filterUserId: string
-  children: filterUserObj[]
-}
-const filterUserData = ref<filterUserObj[]>([])
+// 获取门店
+// 获取门店数据
+const shopOptions = ref(getSuitableShopList())
+// let shopOptions = []
+// const getShopList = async () => {
+//   const data = await getAllStoreList()
+//   shopOptions = listToTree(data || [], { pid: 'parentId' })
+//   console.log(shopOptions)
+// }
+const changeShopIdList = (val) => {
+  console.log(val)
+  // let ids = val.reduce((prev, cur) => {
+  //   console.log(prev, cur)
 
-// 门店下拉框数据
-type ShopDataObj = {
-  departName: string
-  departId: string
-  children: ShopDataObj[]
-}
-const shopData = ref<ShopDataObj[]>([])
-const formatTreeData = (data) => {
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].children && data[i].children.length < 1) {
-      data[i].children = undefined
-    } else if (data[i].children) {
-      formatTreeData(data[i].children)
-    }
-  }
-  return data
-}
-const getShopData = () => {
-  treeShopData().then((res) => {
-    if (res) {
-      shopData.value = formatTreeData(res.data)
-    } else {
-      message.error(res.message)
-    }
-  })
-}
+  //   return [...prev, ...cur]
+  // }, [])
+  // console.log(ids)
 
-// 获取不同门店下的派发成员
-const getDistributeShopIdList = () => {
-  staffConfigList.value = []
+  getDistributeShopUserList(val)
+}
+// getShopList()
+
+// 根据门店获取成员
+const getDistributeShopUserList = async (ids) => {
   let params = {
-    clueDistributeId: id.value,
-    shopIdList: form.value.distributeShopIdList
+    shopIdList: ids
   }
-  dispatchApi.getDistributeShopUserList(params).then((res) => {
-    if (res) {
-      staffConfigList.value = res.userList
-    } else {
-      message.error(res.message)
+  let data = await dispatchApi.getDistributeShopUserList(params)
+  if (data) {
+    let userList = data.userList || []
+    tableList.value = userList.map((item) => {
+      let autoBrandNames = item.autoBrandNames
+      item.autoBrandNames = formatBrandSeries(autoBrandNames)
+      let autoSeriesNames = item.autoSeriesNames
+      item.autoSeriesNames = formatBrandSeries(autoSeriesNames)
+      return item
+    })
+  }
+}
+
+const formatBrandSeries = (names) => {
+  let autoBrandNames = ''
+  if (Object.prototype.toString.call(names) == '[object String]') {
+    try {
+      names = JSON.parse(names)
+      if (Object.prototype.toString.call(names) == '[object Array]') {
+        autoBrandNames = names.join(',')
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  return autoBrandNames
+}
+
+// onMounted(() => {
+//   console.log('======')
+// })
+
+const openDialog = (editType, data) => {
+  console.log(editType, data)
+
+  dialogVisible.value = true
+  actionType.value = editType
+  dialogTitle.value = editType == 'create' ? '新增' : '编辑'
+  getShopUserList()
+  if (data && data.distributeShopList) {
+    setTimeout(() => {
+      data.distributeShopIdList = data.distributeShopList.map((item) => item.distributeShopId)
+      if (formRef.value) {
+        formRef.value.setValues(data)
+      }
+      if (data.distributeShopIdList.length > 0) {
+        getDistributeShopUserList(data.distributeShopIdList)
+      }
+    }, 200)
+  }
+  tableList.value = []
+}
+defineExpose({ openDialog })
+// 保存按钮
+const submitForm = async () => {
+  const elForm = unref(formRef)?.getElFormRef()
+  if (!elForm) return
+  elForm.validate(async (valid) => {
+    if (valid) {
+      actionLoading.value = true
+      // 提交请求
+      try {
+        const data: any = unref(formRef)?.formModel
+        console.log(data)
+
+        if (actionType.value == 'create') {
+          clueDistributeSave(data)
+        } else {
+          clueDistributeUpdate(data)
+        }
+
+        // dialogVisible.value = false
+      } finally {
+        actionLoading.value = false
+      }
     }
   })
 }
 
-defineExpose({ openDialog })
-</script>
+const clueDistributeSave = async (dataSource) => {
+  let clueChannelId = dataSource.clueChannelId || ''
+  let filterUserId = dataSource.filterUserId || ''
+  let clueAffiliation = {
+    clueChannelId: clueChannelId,
+    filterUserId: filterUserId
+  }
 
-<style lang="scss" scoped></style>
+  let distributeShopIdList = dataSource.distributeShopIdList || []
+  // let newDistributeShopIdList = distributeShopIdList.reduce((prev, cur) => {
+  //   return [...prev, ...cur]
+  // }, [])
+
+  let params = {
+    clueAffiliationList: [clueAffiliation],
+    distributeShopIdList: distributeShopIdList
+  }
+  let data = await dispatchApi.clueDistributeSaveV2(params)
+  if (data) {
+    message.success('操作成功')
+    emit('refreshList')
+    dialogVisible.value = false
+  }
+}
+const clueDistributeUpdate = async (params) => {
+  let data = await dispatchApi.clueDistributeUpdateV2(params)
+  if (data) {
+    message.success('操作成功')
+    emit('refreshList')
+    dialogVisible.value = false
+    console.log(data)
+  }
+}
+
+const tableColumns = [
+  {
+    label: '门店',
+    field: 'distributeShopName',
+    minWidth: '100px'
+  },
+  {
+    label: '成员',
+    field: 'distributeUserName',
+    minWidth: '80px'
+  },
+  {
+    label: '成员平台昵称',
+    field: 'nickname',
+    minWidth: '120px'
+  },
+  {
+    label: '销售品牌',
+    field: 'autoBrandNames',
+    minWidth: '100px'
+  },
+  {
+    label: '销售车系',
+    field: 'autoSeriesNames',
+    minWidth: '100px'
+  },
+  {
+    label: '派单状态',
+    field: 'status',
+    minWidth: '80px',
+    formatter: (_, __, val: string) => {
+      let obj = {
+        0: '禁用',
+        1: '启用'
+      }
+      return obj[val] || ''
+    }
+  }
+]
+// 岗位类型table
+const tableList = ref<any[]>([])
+</script>
+<style lang="scss" scoped>
+:deep(.el-cascader) {
+  width: 100%;
+}
+:deep(.table-header-style) {
+  height: 50px;
+  font-size: 14px;
+  color: $header-text-color;
+  background-color: $table-head-color !important;
+}
+</style>

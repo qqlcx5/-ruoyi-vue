@@ -114,7 +114,13 @@ const filterSearchSchema = (crudSchema: CrudSchema[], allSchemas: AllSchemas): F
       const searchSchemaItem = {
         // 默认为 input
         component: component,
-        componentProps: comonentProps,
+        componentProps: {
+          ...comonentProps,
+          style: {
+            ...(component === 'Input' ? { width: '200px' } : {}),
+            ...comonentProps?.style
+          }
+        },
         ...schemaItem.search,
         field: schemaItem.field,
         label: schemaItem.search?.label || schemaItem.label
@@ -215,9 +221,12 @@ const filterFormSchema = (crudSchema: CrudSchema[], allSchemas: AllSchemas): For
             options.push(dict)
           })
         } else {
-          getDictOptions(schemaItem.dictType).forEach((dict) => {
-            options.push(dict)
-          })
+          const res = getDictOptions(schemaItem.dictType)
+          if (res) {
+            getDictOptions(schemaItem.dictType).forEach((dict) => {
+              options.push(dict)
+            })
+          }
         }
         comonentProps = {
           options: options

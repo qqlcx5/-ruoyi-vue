@@ -23,14 +23,20 @@
       @page-change="pageChange"
     >
       <template #btns>
-        <el-button type="primary" @click="handleCreate">新增</el-button>
+        <XButton
+          type="primary"
+          v-hasPermi="['clue:basic-config:first-follow-rate:create']"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
       </template>
     </WgTable>
 
     <!-- 首次跟进率新增/编辑弹框 -->
     <EditFirstFollowRate
       v-model="visible"
-      :shopList="shopList"
+      :shopList="shopTreeList"
       :curInfo="curInfo"
       @success="getList"
     />
@@ -39,11 +45,8 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import EditFirstFollowRate from '../components/EditFirstFollowRate/index.vue'
-import { getAllStoreList } from '@/api/system/organization'
-import { cloneDeep } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
 import {
   firstFollowRatePage,
   firstFollowRateUpdateStatus,
@@ -51,49 +54,31 @@ import {
 } from '@/api/clue/basicConfig'
 import { dateFormat } from '@/utils/utils'
 
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
 const message = useMessage()
 
-let shopList = []
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopList = cloneDeep(data || [])
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
-}
-getShopList()
+const shopTreeList = ref(getSuitableShopList())
 
 const visible = ref<boolean>(false)
 const tableConfig = reactive({
   pageKey: 'firstFollowRate',
   refresh: () => getList(),
-  queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10, total: 0 },
+  queryParams: { shopId: '', shopName: '', pageNo: 1, pageSize: 10 },
   columns: [
+    { label: '规则名称', key: 'ruleName', disabled: true },
     {
-      sort: 1,
-      title: '规则名称',
-      key: 'ruleName',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    {
-      sort: 2,
-      title: '适用门店',
+      label: '适用门店',
       key: 'applicableShopName',
       minWidth: 240,
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
+      disabled: true,
       render: ({ row }) => (row.applicableShopName ? row.applicableShopName.join(',') : '')
     },
     {
-      sort: 3,
-      title: '启用状态',
+      label: '启用状态',
       key: 'status',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
+        row.status = row.status || 0
         return (
           <el-switch
             v-model={row.status}
@@ -104,60 +89,38 @@ const tableConfig = reactive({
         )
       }
     },
+    { label: '最低跟进率', key: 'minFollowRate', render: ({ row }) => row.minFollowRate + '%' },
+    { label: '计算周期', key: 'cycle', render: ({ row }) => row.cycle + '天' },
+    { label: '参与岗位', minWidth: 240, key: 'limitPositionTypesName' },
+    { label: '创建人', key: 'creator' },
     {
-      sort: 4,
-      title: '最低跟进率',
-      key: 'minFollowRate',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
-      render: ({ row }) => row.minFollowRate + '%'
-    },
-    {
-      sort: 5,
-      title: '计算周期',
-      key: 'cycle',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
-      render: ({ row }) => row.cycle + '天'
-    },
-    {
-      sort: 6,
-      title: '参与岗位',
-      minWidth: 240,
-      key: 'limitPositionTypesName',
-      resizable: true,
-      ellipsis: true,
-      disabled: false
-    },
-    { sort: 7, title: '创建人', key: 'creator', resizable: true, ellipsis: true, disabled: false },
-    {
-      sort: 8,
-      title: '创建时间',
+      label: '创建时间',
       key: 'createTime',
       minWidth: '190',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => dateFormat(row.createTime)
     },
     {
-      sort: 9,
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 120,
       fixed: 'right',
-      resizable: true,
-      ellipsis: true,
-      disabled: false,
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleEdit(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:first-follow-rate:edit']]}
+              link
+              onclick={() => handleEdit(row)}
+            >
               编辑
             </el-button>
-            <el-button type="primary" link onclick={() => handleDelete(row)}>
+            <el-button
+              type="primary"
+              v-hasPermi={[['clue:basic-config:first-follow-rate:delete']]}
+              link
+              onclick={() => handleDelete(row)}
+            >
               删除
             </el-button>
           </div>
@@ -178,8 +141,6 @@ const handleRest = () => {
   handleSearch()
 }
 const handleSearch = () => {
-  const obj = shopList.find((d) => tableConfig.queryParams.shopId === d['id']) || {}
-  tableConfig.queryParams.shopName = obj['name'] || null
   tableConfig.queryParams.pageNo = 1
   getList(tableConfig.queryParams)
 }

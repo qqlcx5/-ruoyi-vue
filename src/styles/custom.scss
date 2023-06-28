@@ -7,14 +7,25 @@ $btnWrapHeight: 86px;
 }
 
 .basic-config-content {
-  padding: 22px 30px;
+  min-height: 100%;
+  padding: 15px 15px $btnWrapHeight;
   background-color: var(--page-bg-color);
   .el-switch {
     height: 25px
   }
   .el-radio {
+    --el-radio-text-color: $title-color;
     height: 20px;
     margin-right: 20px;
+  }
+  .el-input-number :deep(.el-input__inner) {
+    text-align: left;
+  }
+  .part-wrap {
+    padding: 16px;
+    border: 1px solid $border-color;
+    border-radius: 5px;
+    margin-bottom: 16px;
   }
   .part-title {
     @include flex($alignItems: center);
@@ -33,6 +44,18 @@ $btnWrapHeight: 86px;
       color: $tip-color;
     }
   }
+  .bottom-btns {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    text-align: center;
+    line-height: $btnWrapHeight;
+    height: $btnWrapHeight;
+    background-color: var(--page-bg-color);
+    box-shadow: 0px -5px 8px 0px rgba(210, 210, 210, 0.2);
+  }
   .config-form-item {
     @include flex($alignItems: center);
     font-size: 14px;
@@ -43,7 +66,7 @@ $btnWrapHeight: 86px;
     line-height: 20px;
     font-size: 14px;
     color: $tip-color;
-    margin: 10px 0 30px;
+    margin: 10px 0 4px;
   }
   .number-input {
     width: 120px;
@@ -70,10 +93,13 @@ $btnWrapHeight: 86px;
     color: $title-color;
   }
 }
-.el-form .el-form-item {
+.el-form .el-form-item .el-form-item__label {
   color: $title-color;
 }
-.custom-dialog {
+.el-form .el-form-item :deep(.el-form-item__label) {
+  color: $title-color;
+}
+.wg-custom-dialog {
   .el-dialog__header {
     padding-bottom: 20px;
     margin-right: 0;

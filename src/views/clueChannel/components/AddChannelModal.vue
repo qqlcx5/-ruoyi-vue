@@ -1,13 +1,19 @@
 <template>
   <div>
     <XModal v-model="dialogVisible" width="70%" :title="dialogTitle">
-      <XButton class="add-row-btn" type="primary" title="添加行" @click="handleAdd()" />
+      <XButton
+        class="add-row-btn"
+        type="primary"
+        title="添加行"
+        @click="handleAdd()"
+        v-if="dialogTitle == '新增'"
+      />
       <Table
         :columns="tableColumns"
         :data="tableList"
         header-cell-class-name="table-header-style required-row"
-        height="100%"
-        class="flex flex-col flex-1 overflow-hidden"
+        height="40vh"
+        class="add-channel-table"
         headerAlign="left"
         align="left"
         @update:page-size="() => {}"
@@ -15,19 +21,23 @@
         <template #serialNumber="{ row }">
           <el-input v-model="row.serialNumber" size="small" placeholder="请输入" />
         </template>
-        <template #clueSource="{ row }">
+        <template #clueSourceId="{ row }">
           <el-cascader
-            v-model="row.clueSource"
+            ref="cascaderRef"
+            v-model="row.clueSourceId"
             size="small"
-            :options="options"
+            :options="sourceList"
+            :props="clueSourceProps"
             :show-all-levels="false"
+            @change="handleChange"
           />
         </template>
-        <template #shopName="{ row }">
+        <template #shopId="{ row }">
           <el-cascader
-            v-model="row.shopName"
+            v-model="row.shopId"
             size="small"
-            :options="options"
+            :options="shopOptions"
+            :props="shopProps"
             :show-all-levels="false"
           />
         </template>
@@ -38,44 +48,54 @@
           <el-input v-model="row.platformPassword" size="small" placeholder="请输入" />
         </template>
         <template #needFilter="{ row }">
-          <el-select v-model="row.needFilter" placeholder="请选择" size="small">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.needFilter"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+            @change="(e) => handleNeedFilterChange(e, row)"
+          />
         </template>
         <template #autoDistribute="{ row }">
-          <el-select v-model="row.autoDistribute" size="small" placeholder="请选择">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.autoDistribute"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+            :disabled="row.needFilter"
+          />
         </template>
         <template #platformRule="{ row }">
-          <el-select v-model="row.platformRule" placeholder="请选择" size="small">
-            <el-option
-              v-for="item in selectOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-switch
+            v-model="row.platformRule"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
         </template>
         <template #isShow="{ row }">
-          <el-select v-model="row.isShow" placeholder="请选择" size="small">
+          <el-switch
+            v-model="row.isShow"
+            inline-prompt
+            active-text="是"
+            inactive-text="否"
+            :active-value="1"
+            :inactive-value="0"
+          />
+          <!-- <el-select v-model="row.isShow" placeholder="请选择" size="small">
             <el-option
               v-for="item in selectOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
             />
-          </el-select>
+          </el-select> -->
         </template>
         <template #action="scope">
           <XTextButton :title="t('action.del')" @click="delPostTypeLine(scope.$index)" />
@@ -95,8 +115,12 @@
 </template>
 <script setup lang="ts">
 import { ChannelVO } from '@/api/clue/channel'
-// import * as channelApi from '@/api/clue/channel'
 import { ref } from 'vue'
+import * as channelApi from '@/api/clue/channel'
+
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getSuitableShopList } = useCommonList()
+
 defineProps({
   msg: String
 })
@@ -106,8 +130,16 @@ const message = useMessage() // 消息弹窗
 const dialogVisible = ref(false) // 是否显示弹出层
 const dialogTitle = ref('新增') // 弹出层标题
 const actionLoading = ref(false) // 遮罩层
-
-const tableColumns = [
+const emit = defineEmits(['refreshList'])
+interface tableColumnsType {
+  label: string
+  field: string
+  minWidth?: string
+  fixed?: string
+  width?: string
+  showOverflowTooltip?: boolean
+}
+const initTableColumns: tableColumnsType[] = [
   {
     label: '编号',
     field: 'serialNumber',
@@ -115,12 +147,12 @@ const tableColumns = [
   },
   {
     label: '线索平台',
-    field: 'clueSource',
+    field: 'clueSourceId',
     minWidth: '100px'
   },
   {
     label: '线索平台开通门店',
-    field: 'shopName',
+    field: 'shopId',
     minWidth: '100px'
   },
   {
@@ -152,41 +184,22 @@ const tableColumns = [
     label: '手动创建线索是否可选',
     field: 'isShow',
     minWidth: '100px'
-  },
-  {
-    label: '操作',
-    field: 'action',
-    fixed: 'right',
-    width: '70px',
-    showOverflowTooltip: false
   }
 ]
 // 岗位类型table
-const tableList = ref<ChannelVO[]>([
-  {
-    serialNumber: '1',
-    clueSource: '汽车之家',
-    shopName: '微博',
-    platformUsername: '123456789',
-    platformPassword: 'aaaa1111',
-    needFilter: '1',
-    autoDistribute: '0',
-    platformRule: '0',
-    isShow: '1'
-  }
-])
+const tableList = ref<ChannelVO[]>([])
 
 const handleAdd = () => {
   let addItem = {
     serialNumber: '',
-    clueSource: '',
-    shopName: '',
+    clueSourceId: '',
+    shopId: '',
     platformUsername: '',
     platformPassword: '',
-    needFilter: '',
-    autoDistribute: '',
-    platformRule: '',
-    isShow: ''
+    needFilter: 0,
+    autoDistribute: 0,
+    platformRule: 0,
+    isShow: 0
   }
   tableList.value.push(addItem)
 }
@@ -194,56 +207,149 @@ const delPostTypeLine = (index: number): void => {
   if (tableList.value.length === 1) return message.warning(`至少要有一行信息！`)
   tableList.value.splice(index, 1)
 }
-const options = [
-  {
-    label: '垂直媒体',
-    value: '垂直媒体',
-    children: [
-      {
-        value: '懂车帝',
-        label: '懂车帝'
-      },
-      {
-        value: '汽车之家',
-        label: '汽车之家'
-      }
-    ]
-  },
-  {
-    label: '自媒体',
-    value: '自媒体',
-    children: [
-      {
-        label: '抖音',
-        value: '抖音'
-      },
-      {
-        label: '微信',
-        value: '微信'
-      },
-      {
-        label: '微博',
-        value: '微博'
-      }
-    ]
+
+let sourceList = ref<any[]>([])
+let initSourceList = ref<any[]>([])
+// 获取线索来源列表
+const getSourceList = async () => {
+  let data = await channelApi.getClueSourceManageList()
+  if (data) {
+    sourceList.value = data
+    initSourceList.value = data
+    console.log(data)
   }
-]
-const selectOptions = [
-  {
-    value: '0',
-    label: '否'
-  },
-  {
-    value: '1',
-    label: '是'
+}
+
+const cascaderRef = ref()
+const handleChange = () => {
+  let sourceArr: any = cloneDeep(initSourceList.value)
+  let list: any = cloneDeep(tableList.value)
+  console.log(list, sourceArr)
+  list.forEach((lItem) => {
+    sourceArr = disabledSourceList(lItem.clueSourceId, sourceArr)
+  })
+  sourceList.value = sourceArr
+}
+const disabledSourceList = (clueSourceId, sourceArr) => {
+  try {
+    sourceArr.map((sItem) => {
+      if (sItem.id == clueSourceId) {
+        sItem.disabled = true
+      }
+      let children = sItem.children
+      if (children.length > 0) {
+        sItem.children = disabledSourceList(clueSourceId, children)
+      }
+      return sItem
+    })
+    return sourceArr
+  } catch (error) {
+    console.log(error)
   }
-]
+}
+
+const clueSourceProps = {
+  label: 'name',
+  value: 'id',
+  emitPath: false
+}
+
+const shopProps = {
+  // checkStrictly: true,
+  label: 'name',
+  value: 'id'
+}
+
+// 获取门店数据
+const shopOptions = ref(getSuitableShopList())
+// let shopOptions = []
+// const getShopList = async () => {
+//   const data = await getAllStoreList()
+//   shopOptions = listToTree(data || [], { pid: 'parentId' })
+//   console.log(shopOptions)
+// }
+// getShopList()
+
+import { cloneDeep } from 'lodash-es'
 // 保存按钮
 const submitForm = async () => {
-  console.log('======', tableList.value)
+  let list = cloneDeep(tableList.value)
+  let isSerialNumberEmptyTool = false
+  let isClueSourceIdEmptyTool = false
+  let isClueShopIdEmptyTool = false
+  let paramsList = list.map((item: any) => {
+    if (
+      item.clueSourceId &&
+      Object.prototype.toString.call(item.clueSourceId) == '[object Array]'
+    ) {
+      let len = item.clueSourceId.length - 1 || 0
+      item.clueSourceId = item.clueSourceId[len]
+    }
+    if (item.shopId && Object.prototype.toString.call(item.shopId) == '[object Array]') {
+      let len = item.shopId.length - 1 || 0
+      item.shopId = item.shopId[len]
+    }
+    if (!item.serialNumber) {
+      isSerialNumberEmptyTool = true
+    }
+    if (!item.clueSourceId) {
+      isClueSourceIdEmptyTool = true
+    }
+    if (!item.shopId) {
+      isClueShopIdEmptyTool = true
+    }
+    return item
+  })
+  console.log(paramsList)
+
+  if (isSerialNumberEmptyTool) {
+    message.error('编号不能为空')
+    return
+  }
+  if (isClueSourceIdEmptyTool) {
+    message.error('线索平台不能为空')
+    return
+  }
+  if (isClueShopIdEmptyTool) {
+    message.error('线索平台开通门店不能为空')
+    return
+  }
+  let data = null
+  if (dialogTitle.value == '编辑') {
+    data = await channelApi.updateClueChannel(paramsList[0])
+  } else {
+    data = await channelApi.addClueChannel(paramsList)
+  }
+  if (data) {
+    dialogVisible.value = false
+  }
+  emit('refreshList')
 }
-const openModal = () => {
+let tableColumns: tableColumnsType[] = []
+const openModal = (row) => {
   dialogVisible.value = true
+  tableList.value = []
+  dialogTitle.value = '新增'
+  tableColumns = cloneDeep(initTableColumns)
+  if (row) {
+    dialogTitle.value = '编辑'
+    tableList.value = [row]
+    return
+  }
+  tableColumns.push({
+    label: '操作',
+    field: 'action',
+    fixed: 'right',
+    width: '70px',
+    showOverflowTooltip: false
+  })
+  getSourceList()
+  handleAdd()
+}
+const handleNeedFilterChange = (e, row) => {
+  if (e == 1) {
+    row.autoDistribute = 0
+  }
 }
 defineExpose({ openModal })
 </script>
@@ -256,6 +362,9 @@ defineExpose({ openModal })
 }
 .add-row-btn {
   margin-top: 10px;
+  margin-bottom: 20px;
+}
+.add-channel-table {
   margin-bottom: 20px;
 }
 :deep(.is-link) {
@@ -273,6 +382,16 @@ defineExpose({ openModal })
     }
   }
   &:nth-child(2) {
+    .cell {
+      position: relative;
+      &::before {
+        content: '*';
+        display: inline-block;
+        color: red;
+      }
+    }
+  }
+  &:nth-child(3) {
     .cell {
       position: relative;
       &::before {

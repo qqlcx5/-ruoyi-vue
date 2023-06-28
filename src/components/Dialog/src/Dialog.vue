@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" name="Dialog" setup>
 import { propTypes } from '@/utils/propTypes'
 import { isNumber } from '@/utils/is'
 
@@ -8,9 +8,17 @@ const props = defineProps({
   modelValue: propTypes.bool.def(false),
   title: propTypes.string.def('Dialog'),
   fullscreen: propTypes.bool.def(true),
+  width: propTypes.oneOfType([String, Number]).def('40%'),
+  scroll: propTypes.bool.def(false), // 是否开启滚动条。如果是的话，按照 maxHeight 设置最大高度
   maxHeight: propTypes.oneOfType([String, Number]).def('300px'),
-  width: propTypes.oneOfType([String, Number]).def('40%')
+  confirmConfig: propTypes.object.def({ name: '确定', show: true }),
+  cancelConfig: propTypes.object.def({ name: '取消', show: true })
 })
+
+const emits = defineEmits<{
+  (e: 'confirm'): void
+  (e: 'cancel'): void
+}>()
 
 const getBindValue = computed(() => {
   const delArr: string[] = ['fullscreen', 'title', 'maxHeight']
@@ -35,6 +43,7 @@ const dialogHeight = ref(isNumber(props.maxHeight) ? `${props.maxHeight}px` : pr
 watch(
   () => isFullscreen.value,
   async (val: boolean) => {
+    // 计算最大高度
     await nextTick()
     if (val) {
       const windowHeight = document.documentElement.offsetHeight
@@ -53,39 +62,67 @@ const dialogStyle = computed(() => {
     height: unref(dialogHeight)
   }
 })
+
+const dialogRef = ref()
+const handleConfirm = () => emits('confirm')
+const handleCancel = () => {
+  // @ts-ignore
+  emits('update:modelValue', false)
+  emits('cancel')
+}
 </script>
 
 <template>
   <ElDialog
-    v-bind="getBindValue"
-    :fullscreen="isFullscreen"
-    destroy-on-close
-    lock-scroll
-    draggable
-    :width="width"
+    ref="dialogRef"
     :close-on-click-modal="true"
+    :fullscreen="isFullscreen"
+    :width="width"
+    destroy-on-close
+    draggable
+    lock-scroll
+    v-bind="getBindValue"
   >
     <template #header>
       <div class="flex justify-between">
         <slot name="title">
-          {{ title }}
+          <div class="title">
+            {{ title }}
+          </div>
         </slot>
         <Icon
           v-if="fullscreen"
-          class="mr-22px cursor-pointer is-hover mt-2px z-10"
           :icon="isFullscreen ? 'zmdi:fullscreen-exit' : 'zmdi:fullscreen'"
+          class="mr-22px cursor-pointer is-hover mt-2px z-10"
           color="var(--el-color-info)"
           @click="toggleFull"
         />
       </div>
     </template>
 
-    <ElScrollbar :style="dialogStyle">
+    <!-- 情况一：如果 scroll 为 true，说明开启滚动条 -->
+    <ElScrollbar v-if="scroll" :style="dialogStyle">
       <slot></slot>
     </ElScrollbar>
+    <!-- 情况二：如果 scroll 为 false，说明关闭滚动条滚动条 -->
+    <slot v-else></slot>
 
-    <template v-if="slots.footer" #footer>
-      <slot name="footer"></slot>
+    <template #footer>
+      <slot name="footer">
+        <el-button
+          v-if="confirmConfig.show"
+          :disabled="confirmConfig.disabled"
+          type="primary"
+          @click="handleConfirm"
+          >{{ confirmConfig.name }}</el-button
+        >
+        <el-button
+          v-if="cancelConfig.show"
+          :disabled="cancelConfig.disabled"
+          @click="handleCancel"
+          >{{ cancelConfig.name }}</el-button
+        >
+      </slot>
     </template>
   </ElDialog>
 </template>
@@ -114,5 +151,9 @@ const dialogStyle = computed(() => {
   .#{$elNamespace}-dialog__footer {
     border-top: 1px solid var(--el-border-color);
   }
+}
+
+.title {
+  font-size: 16px;
 }
 </style>

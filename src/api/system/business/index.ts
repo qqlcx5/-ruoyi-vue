@@ -20,6 +20,11 @@ export const getMajorIndividualList = (params: MajorIndividual) => {
   return request.get({ url: '/system/tenant/list', params })
 }
 
+// 查询主体管理 下的 门店信息 list
+export const getStoreList = (params) => {
+  return request.get({ url: '/system/tenant/store-list', params })
+}
+
 // 查询门店顶层的手机号
 export const getTopPhone = (params) => {
   return request.get({ url: '/system/tenant/get-top-phone', params })
@@ -35,9 +40,24 @@ export const getSimpleTenantList = () => {
   return request.get({ url: '/system/tenant/list-all-simple' })
 }
 
+// 获取上级主体列表 通过门店id获取当前一级主体下所有经销商
+export const getSimpleTenantListStore = (params) => {
+  return request.get({ url: '/system/tenant/list-all-simple/by-store-id',params })
+}
+
 // 新增主体
 export const addMajorIndividual = (data) => {
   return request.post({ url: '/system/tenant/create', data })
+}
+
+// 绑定域名
+export const putBindDomain = (data) => {
+  return request.put({ url: '/system/tenant/bind-domain', data })
+}
+
+// 企业文化
+export const putCulture = (data) => {
+  return request.put({ url: '/system/tenant/update-culture', data })
 }
 
 // 查询主体详情

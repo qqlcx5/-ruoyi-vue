@@ -2,8 +2,8 @@ import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
 
 // 表单校验
 export const rules = reactive({
-  name: [required],
-  code: [required],
+  sourceName: [required],
+  sourceCode: [required],
   status: [required]
 })
 // CrudSchema
@@ -13,7 +13,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
   columns: [
     {
       title: '线索来源名称',
-      field: 'code',
+      field: 'sourceName',
       form: {
         colProps: {
           span: 24
@@ -23,17 +23,7 @@ const crudSchemas = reactive<VxeCrudSchema>({
     },
     {
       title: '线索来源编码',
-      field: 'name',
-      form: {
-        colProps: {
-          span: 24
-        }
-      },
-      disabled: true
-    },
-    {
-      title: 'OA线索来源',
-      field: 'status',
+      field: 'sourceCode',
       form: {
         colProps: {
           span: 24
@@ -41,6 +31,16 @@ const crudSchemas = reactive<VxeCrudSchema>({
       },
       disabled: true
     }
+    // {
+    //   title: 'OA线索来源',
+    //   field: 'status',
+    //   form: {
+    //     colProps: {
+    //       span: 24
+    //     }
+    //   },
+    //   disabled: true
+    // }
   ]
 })
 export const { allSchemas } = useVxeCrudSchemas(crudSchemas)

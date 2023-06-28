@@ -9,9 +9,13 @@
     <el-form-item :label="t('profile.password.confirmPassword')" prop="confirmPassword">
       <InputPassword v-model="password.confirmPassword" maxLength="16" strength />
     </el-form-item>
-    <div class="pwd-tip"
-      >注：密码长度不能少于8位，需包含大写字母、小写字母、数字、特殊符号至少3种及以上元素</div
-    >
+    <div class="pwd-tip">
+      <span>注：</span>
+      <span>
+        密码长度不能少于8位，需包含大写字母、小写字母、数字、特殊符号至少3种及以上元素<br />
+        其中特殊符号包含有：~、！、@、#、￥、%、^、&、*、（、）、+、/ 等
+      </span>
+    </div>
     <el-form-item>
       <XButton type="primary" @click="submit(formRef)" :title="t('common.save')" />
       <XButton type="danger" :title="t('common.reset')" @click="reset(formRef)" />
@@ -95,6 +99,7 @@ const reset = (formEl: FormInstance | undefined) => {
 </script>
 <style lang="scss" scoped>
 .pwd-tip {
+  display: flex;
   margin-bottom: 56px;
   margin-left: 80px;
   color: $error-color;

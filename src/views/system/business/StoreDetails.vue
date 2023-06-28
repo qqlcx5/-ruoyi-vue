@@ -20,7 +20,11 @@
       </div>
       <div class="info-content">
         <div
-          :class="['text-style', { 'super-admin-style': childItem?.isSuperAdmin }]"
+          :class="[
+            'text-style',
+            { 'super-admin-style': childItem?.isSuperAdmin },
+            { 'width-full': childItem?.isFull }
+          ]"
           v-for="(childItem, childIndex) in item.infoArr"
           :key="`childItem${childIndex}`"
           ><span>{{ childItem.textSpan }}</span>
@@ -382,10 +386,14 @@ const detailsInfo = async (record) => {
 
   const tempBrandList = dictRes.filter((item) => item.dictType === 'brand')
   console.log('tempBarnList', tempBrandList)
+  // tempBrandString = item.brand.join()
+  // item.brands.split(',')
   //品牌
   let tempBrandtring = ''
+  console.log('res?.brandIds', res?.brandIds)
+  const tempBrandIds = res?.brandIds.split(',')
   const tempBrandArr = tempBrandList.filter((topItem) => {
-    return res?.brandIds.some((item) => topItem.value === item)
+    return tempBrandIds.some((item) => topItem.value === item)
   })
 
   tempBrandArr.map((item) => {
@@ -430,7 +438,7 @@ const detailsInfo = async (record) => {
   //维保品牌
   let tempMaintenanceString = ''
   const tempMaintenanceArr = state.maintenanceBrandOptions.filter((topItem) => {
-    return relVO?.saleBrand.some((item) => topItem.value === item)
+    return relVO?.maintenanceBrand.some((item) => topItem.value === item)
   })
 
   tempMaintenanceArr.map((item) => {
@@ -441,6 +449,12 @@ const detailsInfo = async (record) => {
       tempMaintenanceString = tempMaintenanceString + '、' + item.label
     }
   })
+
+  //地址 数据统计区域
+  let companyAddressData = ''
+  if (res?.province) {
+    companyAddressData = res?.province + res?.city + res?.county
+  }
 
   //地址
   let companyAddress = ''
@@ -505,6 +519,11 @@ const detailsInfo = async (record) => {
           text: tempBrandtring
         },
         {
+          textSpan: '数据统计区域：',
+          text: companyAddressData,
+          isFull: true
+        },
+        {
           textSpan: '门店地址：',
           text: companyAddress,
           isFull: true
@@ -556,7 +575,7 @@ const detailsInfo = async (record) => {
         },
         {
           textSpan: '是否提供救援：',
-          text: relVO?.isSale === 0 ? '是' : '否'
+          text: relVO?.isRescue === 0 ? '是' : '否'
         },
         {
           textSpan: '救援品牌：',

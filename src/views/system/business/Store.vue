@@ -146,6 +146,24 @@
 
             <!--  级联选择器  - -   -->
             <a-form-item
+              :label="`数据统计区域`"
+              name="companyAddressData"
+              :rules="[{ required: true, message: '数据统计区域不能为空!' }]"
+            >
+              <div class="flex-content adress-content">
+                <a-cascader
+                  v-model:value="state.formState.companyAddressData"
+                  :options="state.proMunAreaListData"
+                  @change="cascadeChangeData"
+                  :fieldNames="{ label: 'name', value: 'code', children: 'children' }"
+                  placeholder="请选择省市区"
+                  class="adress-cascader"
+                />
+              </div>
+            </a-form-item>
+
+            <!--  级联选择器  - -   -->
+            <a-form-item
               :label="`地址`"
               name="detailedAddress"
               :rules="[{ required: true, message: '地址不能为空!' }]"
@@ -156,6 +174,7 @@
                     v-model:value="state.formState.companyAddress"
                     :options="state.proMunAreaList"
                     @change="cascadeChange"
+                    :fieldNames="{ label: 'name', value: 'code', children: 'children' }"
                     placeholder="请选择省市区"
                     class="adress-cascader"
                   />
@@ -615,7 +634,13 @@
 
             <a-form-item label="通知函" name="noticeLetter">
               <div style="height: 131px">
-                <UploadFile v-model:modelValue="state.noticeLetterSuccess" class="upload-file" />
+                <UploadFile
+                  v-model:modelValue="state.noticeLetterSuccess"
+                  fileSize="16"
+                  :fileUnit="FileUnit.MB"
+                  limit="3"
+                  class="upload-file"
+                />
                 <!--                <a-upload-->
                 <!--                  v-model:file-list="state.noticeLetterUrl"-->
                 <!--                  :action="updateUrl + '?updateSupport=' + updateSupport"-->
@@ -698,6 +723,9 @@
               <div style="height: 131px">
                 <UploadFile
                   v-model:modelValue="state.notificationLetterSuccess"
+                  fileSize="16"
+                  :fileUnit="FileUnit.MB"
+                  limit="3"
                   class="upload-file"
                 />
                 <!--                <a-upload-->
@@ -769,6 +797,7 @@
 import { reactive } from 'vue'
 import {
   addOrganizationStore,
+  getCurrentStoreAreaList,
   getOrganizationStoreDetails,
   getOrganizationTypeList,
   getSimpleOrganizationList,
@@ -806,6 +835,7 @@ interface Props {
   needOrganizationType?: boolean
   useStoreList?: any
   fromPage?: string
+  storeRecord?: any
 }
 
 //needXXX 全部单独传进来 而不在组件内 通过门店 or 子门店判断 - - 免得到时候 产品又叠需求跟修改 到时候不好改
@@ -823,7 +853,8 @@ const props = withDefaults(defineProps<Props>(), {
     needUseStore: false,
     belongTenantId: '0'
   }, //新增子门店 上级机构需要取 当前父级主体下所有的门店
-  fromPage: 'business' //默认为主体管理 由于 主体管理与机构管理的门店要走 不同接口(...出入参一样) 因此加个mark
+  fromPage: 'business', //默认为主体管理 由于 主体管理与机构管理的门店要走 不同接口(...出入参一样) 因此加个mark
+  storeRecord: {} //门店数据统计区域 地址
 })
 
 const emit = defineEmits<{
@@ -988,7 +1019,9 @@ const state: any = reactive({
     logoUrl: '', //系统logo
     environmentUrl: '', //环境图片
     companyAddress: [], //公司地址
+    companyAddressData: [], //公司地址 数据统计区域
     cascadeInfo: [], //选中的省市区全部信息
+    cascadeInfoDataData: [], //选中的省市区全部信息
     detailedAddress: '', //公司地址 详细地址
     contactInformationArr: [
       {
@@ -1019,6 +1052,7 @@ const state: any = reactive({
     acceptanceTime: null //验收通过时间
   }, //新增表单
   proMunAreaList: [], //省市区数据
+  proMunAreaListData: [], //省市区数据 数据统计区域
   optionalMenuTree: [], //上级机构 treeList
   organizationTypeOptions: [], //机构类型列表
   childStoreOptions: [], //子门店类型列表
@@ -1080,7 +1114,7 @@ const getPhoneList = async (value) => {
 
 //新增机构
 const addMajorIndividualFN = async () => {
-  console.log('state.noticeLetterSuccess', state.noticeLetterSuccess)
+  console.log('state.formState》》》》》》', state.formState)
   if (
     state.activeKey !== 'basicInformation' &&
     (!state.formState.name ||
@@ -1138,7 +1172,7 @@ const addMajorIndividualFN = async () => {
     code: state.formState.code, //机构编码
     abbreviate: state.formState.abbreviate, //机构简称
     specialtyCode: state.formState.specialtyCode, //专营店编码
-    brandIds: state.formState.brand, //品牌
+    brandIds: state.formState.brand.join(), //品牌
     address: state.formState.detailedAddress, //公司地址 详细地址
     contactId: state.formState.contactName, //负责人
     contactMobile: state.formState.contactMobile, //负责人电话
@@ -1192,18 +1226,28 @@ const addMajorIndividualFN = async () => {
     params['status'] = 1
   }
 
+  if (state.formState?.cascadeInfoData[0]) {
+    params['dataProvinceCode'] = state.formState.cascadeInfoData[0].code
+  }
+  if (state.formState?.cascadeInfoData[1]) {
+    params['dataCityCode'] = state.formState.cascadeInfoData[1].code
+  }
+  if (state.formState?.cascadeInfoData[2]) {
+    params['dataCountyCode'] = state.formState.cascadeInfoData[2].code
+  }
+
   //省市区
   if (state.formState?.cascadeInfo[0]) {
-    params['province'] = state.formState.cascadeInfo[0].label
-    params['provinceCode'] = state.formState.cascadeInfo[0].value
+    params['province'] = state.formState.cascadeInfo[0].name
+    params['provinceCode'] = state.formState.cascadeInfo[0].code
   }
   if (state.formState?.cascadeInfo[1]) {
-    params['city'] = state.formState.cascadeInfo[1].label
-    params['cityCode'] = state.formState.cascadeInfo[1].value
+    params['city'] = state.formState.cascadeInfo[1].name
+    params['cityCode'] = state.formState.cascadeInfo[1].code
   }
   if (state.formState?.cascadeInfo[2]) {
-    params['county'] = state.formState.cascadeInfo[2].label
-    params['countyCode'] = state.formState.cascadeInfo[2].value
+    params['county'] = state.formState.cascadeInfo[2].name
+    params['countyCode'] = state.formState.cascadeInfo[2].code
   }
 
   if (state.formState.establishDate) {
@@ -1567,6 +1611,11 @@ const cascadeChange = (value, selectedOptions) => {
   state.formState.cascadeInfo = selectedOptions
 }
 
+//级联选择器选中的内容 改变
+const cascadeChangeData = (value, selectedOptions) => {
+  state.formState.cascadeInfoData = selectedOptions
+}
+
 //设置属性 动态添加联系方式
 const addContactInformation = () => {
   state.formState.contactInformationArr.push({
@@ -1612,6 +1661,7 @@ const getOrganizationTypeListFN = async () => {
     'belongTenantId',
     'children'
   )
+  console.log('state.majorIndividualOption', state.majorIndividualOption)
   const res = await getOrganizationTypeList()
   //机构类型
   state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
@@ -1661,13 +1711,13 @@ const getOrganizationTypeListFN = async () => {
 
   state.barnOptions = tempBarnOptions
 }
-//获取机构类型
-getOrganizationTypeListFN()
 
 const getOrganizationDetailsFN = async () => {
   if (props.useStoreList.needUseStore) {
     //子门店 上级机构为 父级主体 底下所有门店
-    const storeListRes = await getStoreList({ tenantId: props.useStoreList.belongTenantId })
+    const storeListRes = await getStoreList({
+      tenantId: props.useStoreList.belongTenantId || props.useStoreList.tenantId
+    })
     console.log('storeList', storeListRes)
     state.optionalMenuTree = handleTree(storeListRes, 'id', 'parentId', 'children')
   } else {
@@ -1745,7 +1795,7 @@ const getOrganizationDetailsFN = async () => {
     code: res.code, //机构编码
     abbreviate: res.abbreviate, //机构简称
     specialtyCode: res?.specialtyCode, //专营店编码
-    brand: res?.brandIds ? res?.brandIds : [], //品牌
+    brand: res?.brandIds ? res?.brandIds.split(',') : [], //品牌
     detailedAddress: res?.address, //地址 详细地址
     // contactName: res.contactName, //负责人
     contactName: res.contactId, //负责人
@@ -1784,25 +1834,56 @@ const getOrganizationDetailsFN = async () => {
   //省市区
   state.formState.companyAddress = []
   state.formState.cascadeInfo = []
+  state.formState.companyAddressData = []
+  state.formState.cascadeInfoData = []
   if (res?.provinceCode) {
+    const tempItem = state.proMunAreaList.find((item) => item.code === res?.provinceCode)
+    console.log('tempItem', tempItem)
     state.formState.companyAddress.push(res?.provinceCode)
     state.formState.cascadeInfo.push({
-      label: res?.province,
-      value: res?.provinceCode
+      name: tempItem?.name,
+      code: res?.provinceCode
     })
   }
   if (res?.cityCode) {
+    const tempItem = state.proMunAreaList.find((item) => item.code === res?.cityCode)
     state.formState.companyAddress.push(res?.cityCode)
     state.formState.cascadeInfo.push({
-      label: res?.city,
-      value: res?.cityCode
+      name: tempItem?.name,
+      code: res?.cityCode
     })
   }
   if (res?.countyCode) {
+    const tempItem = state.proMunAreaList.find((item) => item.code === res?.countyCode)
     state.formState.companyAddress.push(res?.countyCode)
     state.formState.cascadeInfo.push({
-      label: res?.county,
-      value: res?.countyCode
+      name: tempItem?.name,
+      code: res?.countyCode
+    })
+  }
+
+  if (res?.dataProvinceCode) {
+    const tempItem = state.proMunAreaList.find((item) => item.code === res?.dataProvinceCode)
+    state.formState.companyAddressData.push(res?.dataProvinceCode)
+    state.formState.cascadeInfoData.push({
+      name: tempItem?.name,
+      code: res?.dataProvinceCode
+    })
+  }
+  if (res?.dataCityCode) {
+    const tempItem = state.proMunAreaList.find((item) => item.code === res?.dataCityCod)
+    state.formState.companyAddressData.push(res?.dataCityCode)
+    state.formState.cascadeInfoData.push({
+      name: tempItem?.name,
+      code: res?.dataCityCode
+    })
+  }
+  if (res?.dataCountyCode) {
+    const tempItem = state.proMunAreaList.find((item) => item.code === res?.dataCountyCode)
+    state.formState.companyAddressData.push(res?.dataCountyCode)
+    state.formState.cascadeInfoData.push({
+      name: tempItem?.name,
+      code: res?.countyCode
     })
   }
 
@@ -1902,15 +1983,35 @@ const getOrganizationDetailsFN = async () => {
   }
 }
 
-getOrganizationDetailsFN()
+// //处理省市区数据
+// // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
+// let needReplaceKey = [
+//   ['label', 'fullname'],
+//   ['value', 'code']
+// ]
+// state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
 
-//处理省市区数据
-// 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
-let needReplaceKey = [
-  ['label', 'fullname'],
-  ['value', 'code']
-]
-state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
+onMounted(async () => {
+  //获取机构类型
+  await getOrganizationTypeListFN()
+  await getOrganizationDetailsFN()
+  console.log('state.formState.belongTenantId>>>>>>>>>>>>>>>>', state.formState.belongTenantId)
+  console.log('props.storeRecord', props.storeRecord)
+  const areaRes = await getCurrentStoreAreaList({
+    tenantId:
+      props.storeRecord.organizationType === organizationType.store
+        ? props.storeRecord.tenantId
+        : props.storeRecord.id
+  })
+
+  state.proMunAreaList = state.proMunAreaListData = handleTree(
+    areaRes as any[],
+    'code',
+    'parentCode',
+    'children'
+  )
+  console.log('areaRes', areaRes)
+})
 </script>
 
 <style lang="scss" scoped>

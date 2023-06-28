@@ -1,7 +1,7 @@
 <template>
   <div class="edit-first-follow-rate-dialog" v-loading.fullscreen.lock="loading">
     <el-dialog
-      class="custom-dialog"
+      class="wg-custom-dialog"
       :model-value="props.modelValue"
       :title="editFlag ? '编辑' : '新增'"
       width="665px"
@@ -37,13 +37,13 @@
         </el-form-item>
         <el-form-item label="最低跟进率" prop="minFollowRate">
           <el-input-number
-            v-model="ruleForm.minFollowRate"
+            v-model.number="ruleForm.minFollowRate"
             :controls="false"
             step-strictly
             :min="0"
             :max="100"
             :step="1"
-            style="width: 180px"
+            style="width: 240px"
           />
           <span class="ml-8px">%</span>
         </el-form-item>
@@ -54,26 +54,21 @@
             step-strictly
             :min="0"
             :step="1"
-            style="width: 180px"
+            style="width: 240px"
           />
           <span class="ml-8px">天</span>
         </el-form-item>
         <el-form-item label="参与规则岗位" prop="limitPositionTypeList" style="margin-bottom: 12px">
-          <el-select
+          <el-cascader
             v-model="ruleForm.limitPositionTypeList"
-            multiple
+            :options="postList"
+            :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
             filterable
-            clearable
             collapse-tags
-            style="width: 180px"
-          >
-            <el-option
-              v-for="item in postList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
-            />
-          </el-select>
+            collapse-tags-tooltip
+            clearable
+            style="min-width: 240px"
+          />
         </el-form-item>
         <el-form-item>
           <div class="checked-post">{{ checkedPostNames }}</div>
@@ -96,11 +91,12 @@ import {
   firstFollowRateSave,
   firstFollowRateEdit
 } from '@/api/clue/basicConfig'
-import { listSimplePostsApi } from '@/api/system/post/info'
-import { cloneDeep, difference } from 'lodash-es'
-import { listToTree } from '@/utils/tree'
+import { cloneDeep } from 'lodash-es'
 import type { FormInstance, FormRules } from 'element-plus'
-
+import { useOption } from '@/store/modules/options'
+const store = useOption()
+import { useCommonList } from '@/hooks/web/useCommonList'
+const { getPostList } = useCommonList()
 const message = useMessage()
 
 interface IProps {
@@ -124,11 +120,7 @@ const getExistRuleShop = async () => {
   checkedList.value = data.map((d) => +d)
 }
 
-const postList = ref<object[]>([])
-const getPostList = async () => {
-  const data = await listSimplePostsApi()
-  postList.value = data
-}
+const postList = ref(getPostList())
 
 const editFlag = ref<boolean>(false)
 const shopTreeList = ref<object[]>([])
@@ -139,15 +131,13 @@ watch(
       console.log(ruleForm)
       const id = props.curInfo['id']
       editFlag.value = !!id
-      getPostList()
-      Promise.all([getExistRuleShop(), id && getInfo(id)]).then(() => {
-        const list = cloneDeep(props.shopList)
-        const ids: string[] = ruleForm.applicableShopId
-        checkedList.value = difference(checkedList.value, ids).map((d) => +d)
-        list.forEach((item: object) => {
-          item['disabled'] = checkedList.value.includes(item['id'])
-        })
-        shopTreeList.value = listToTree(list, { pid: 'parentId' })
+      id && (await getInfo(id))
+      Promise.all([getExistRuleShop()]).then(() => {
+        shopTreeList.value = store.dealShopList(
+          props.shopList,
+          unref(checkedList),
+          ruleForm.applicableShopId
+        )
       })
     } else {
       ruleForm = reactive(_form)
@@ -189,9 +179,8 @@ const getInfo = async (id) => {
     const data = await firstFollowRateDetail({ id })
     data.applicableShopId = data?.applicableShopId?.split(',') || []
     data.applicableShopId = data.applicableShopId.map((d) => +d)
-    data.limitPositionTypeList = data.limitPositionTypes.split(',').map((d) => +d)
     ruleForm = reactive(data)
-    console.log(ruleForm, 'ruleFormruleForm')
+    ruleForm.limitPositionTypeList = data.limitPositionTypes.split(',').map((d) => +d)
   } finally {
     loading.value = false
   }
@@ -223,7 +212,7 @@ const handleConfirm = () => {
 
 <style lang="scss">
 .edit-first-follow-rate-dialog {
-  @import '../../style/index';
+  @import '@/styles/custom.scss';
   .checked-post {
     line-height: 20px;
     font-size: 14px;

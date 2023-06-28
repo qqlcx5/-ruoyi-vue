@@ -1216,7 +1216,7 @@ const tableVisibleChange = async (value, record) => {
 
   try {
     // await TenantMenuApi.updateMenuStatus(params)
-    await updateMenuVisibleStatus(params)
+    await TenantMenuApi.updateMenuVisibleStatus(params)
     message.success('修改显示状态成功')
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)

@@ -5,38 +5,52 @@
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: dispatchApi.getClueDistributeRule,
-      delApi: dispatchApi.delClueDistributeRule,
-      showAdd: true,
+      showAdd: hasPermission('dispatch-strategy-config:distribute-rule:add'),
       actionButtons
     }"
     @add="addRule"
   >
+    <template #applicableShopName="{ row }">
+      {{ parseStr(row.applicableShopName) }}
+    </template>
     <template #openRules="{ row }">
-      <el-switch v-model="row.openRules" :active-value="1" :inactive-value="0" />
+      <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:distribute-rule:edit')"
+        v-model="row.openRules"
+        :active-value="1"
+        :inactive-value="0"
+        @click.stop
+        @change="changeOpenRules(row)"
+      />
     </template>
   </form-table>
-  <Crud ref="crudRef" />
+  <Crud ref="crudRef" @refresh="refresh" />
 </template>
 
 <script setup lang="ts" name="dispatchRule">
 import { computed } from 'vue'
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
-import { getAllStoreList } from '@/api/system/organization'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { listToTree } from '@/utils/tree'
 import Crud from './components/crud.vue'
+import { formatDate } from '@/utils/formatTime'
+import { hasPermission } from '@/utils/utils'
+import { useCommonList } from '@/hooks/web/useCommonList'
 
-onMounted(() => {
-  getShopList()
-})
-
-// 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+// onMounted(() => {
+//   getShopList()
+// })
+const message = useMessage()
+const refresh = () => {
+  tableRef.value.tableMethods.getList()
 }
+const { getSuitableShopList } = useCommonList()
+// 数组转字符串展示
+const parseStr = (row) => {
+  return row.join('，')
+}
+// 获取门店数据
+const shopTreeList = ref(getSuitableShopList())
 
 const tableRef = ref()
 
@@ -68,11 +82,13 @@ const columns: TableColumn[] = [
   },
   {
     label: '规则名称',
-    field: 'distributeRuleName'
+    field: 'distributeRuleName',
+    disabled: true
   },
   {
     label: '适用门店',
-    field: 'applicableShopName'
+    field: 'applicableShopName',
+    disabled: true
   },
   {
     label: '状态',
@@ -84,32 +100,48 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
+    field: 'createTime',
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   }
 ]
-
-// const columns = ref<TableColumn[]>()
 
 const actionButtons = [
   {
     name: '编辑',
-    permission: true,
-    click: () => {
-      console.log('新增')
+    permission: hasPermission('dispatch-strategy-config:distribute-rule:edit'),
+    click: (row) => {
+      crudRef.value.openDialog(row.id)
     }
   },
   {
     name: '删除',
-    permission: true,
-    click: () => {
-      console.log('删除')
+    permission: hasPermission('dispatch-strategy-config:distribute-rule:delete'),
+    click: (row) => {
+      delClueDistributeRule(row.id)
     }
   }
 ]
-
+const delClueDistributeRule = async (id: string) => {
+  await dispatchApi.delClueDistributeRule(id)
+  message.success('删除成功')
+  refresh()
+}
 const crudRef = ref()
 const addRule = async () => {
-  crudRef.value.openDialog(shopTreeList)
+  crudRef.value.openDialog('')
+}
+const changeOpenRules = (row) => {
+  if (!row.id) return
+  dispatchApi.changeClueDistributeRule(row.id, row.openRules)
 }
 const { allSchemas } = useCrudSchemas(columns)
 </script>

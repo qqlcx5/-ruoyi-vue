@@ -1,50 +1,107 @@
 <template>
   <form-table
-    ref="table"
+    ref="tableRef"
     :form-options="{ schema: allSchemas.searchSchema }"
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: getTable,
-      showAdd: true,
+      showAdd: hasPermission('dispatch-strategy-config:dispatch-member:add'),
       actionButtons,
-      spanMethod: objectSpanMethod
+      selection: true,
+      spanMethod: objectSpanMethod,
+      border: true
     }"
+    @add="addMember"
   >
-    <template #tableAppend>
-      <XButton type="danger" :title="t('action.delete')" @click="addMember" />
+    <template #status="{ row }">
+      <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
+        v-model="row.status"
+        :active-value="1"
+        :inactive-value="0"
+        @click.stop
+        @change="changeStatus(row)"
+      />
     </template>
-    <template #action>
-      <!--      编辑-->
-      <XTextButton :title="t('action.edit')" />
-      <!--      删除-->
-      <XTextButton :title="t('action.del')" />
+    <template #pushBackFactoryStatus="{ row }">
+      <el-switch
+        :disabled="!hasPermission('dispatch-strategy-config:dispatch-member:edit')"
+        v-model="row.pushBackFactoryStatus"
+        :active-value="1"
+        :inactive-value="0"
+        @click.stop
+        @change="changePushBackFactoryStatus(row)"
+      />
+    </template>
+    <template #distributeUserName="{ row }">
+      <span>{{ row.distributeUserName + '-' + row.positionName }}</span>
+    </template>
+    <template #autoBrandNames="{ row }">
+      <span>{{ arrToStrFunc(row.autoBrandNames) }}</span>
+    </template>
+    <template #autoSeriesNames="{ row }">
+      <span class="another-line">{{ arrToStrFunc(row.autoSeriesNames) }}</span>
+    </template>
+    <template #tableAppend>
+      <XButton @click="handleDel">删除</XButton>
     </template>
   </form-table>
+  <el-dialog title="提示" v-model="delDialog" width="30%">
+    <p class="mb10"
+      ><i class="el-icon-warning Danger"></i>确认要删除这<span class="Danger">{{
+        selectedIds.length
+      }}</span
+      >条派发成员吗？
+    </p>
+    <p>删除后，对应派发成员将无法接收到线索派发。</p>
+    <template #footer>
+      <el-button @click="delDialog = false">取 消</el-button>
+      <el-button type="primary" @click="confirmDel">确 定</el-button>
+    </template>
+  </el-dialog>
+  <Crud ref="crudRef" @refresh="refresh" />
 </template>
 
 <script setup lang="ts" name="dispatchMember">
 import { TableColumn } from '@/types/table'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { getAllStoreList } from '@/api/system/organization'
-import { listToTree } from '@/utils/tree'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import Crud from './components/crud.vue'
+import { getAllBrand } from '@/api/model/brand'
+import { formatDate } from '@/utils/formatTime'
+import { hasPermission } from '@/utils/utils'
+import { useCommonList } from '@/hooks/web/useCommonList'
 
-const message = useMessage() // 消息弹窗
-
-const { t } = useI18n()
+const message = useMessage()
+const { getSuitableShopList } = useCommonList()
 
 onMounted(() => {
-  getShopList()
+  getBrandInfo()
 })
 
-// 获取门店数据
-const shopTreeList = ref<object[]>([])
-const getShopList = async () => {
-  const data = await getAllStoreList()
-  shopTreeList.value = listToTree(data || [], { pid: 'parentId' })
+const refresh = () => {
+  tableRef.value.tableMethods.getList()
 }
-const mergerItems = [
+const tableRef = ref()
+// 获取门店数据
+// const getShopList = async () => {
+const shopTreeList = ref(getSuitableShopList())
+// }
+
+const brandList = ref<object[]>([])
+const getBrandInfo = async () => {
+  const allBrand = await getAllBrand()
+  brandList.value = allBrand
+}
+const getTable = (params) => {
+  return dispatchApi.clueDistributeUser(params).then((data) => {
+    getSpanArr(data.list, mergeItems)
+    return data
+  })
+}
+// 需要合并的列号和列名
+let mergeItems = [
   {
     columnIndex: 1,
     spanArr: [],
@@ -58,21 +115,12 @@ const mergerItems = [
     prop: 'distributeShopName'
   }
 ]
-const getTable = (params) => {
-  return dispatchApi.clueDistributeUser(params).then((res) => {
-    const { status, data } = res
-    if (status === 200) {
-      getSpanArr(data.list, mergerItems)
-    } else {
-      message.error(res.message)
-    }
-    return
-  })
-}
+
+// 合并行
 const objectSpanMethod = ({ rowIndex, columnIndex }) => {
   if (columnIndex === 1 || columnIndex === 2) {
     // 判断第几列需要合并
-    let item = mergerItems.find((item) => item.columnIndex === columnIndex)
+    let item = mergeItems.find((item) => item.columnIndex === columnIndex)
     const _row = item?.spanArr[rowIndex] || 0
     const _col = _row > 0 ? 1 : 0
     return {
@@ -102,18 +150,26 @@ const getSpanArr = (data, array) => {
     }
   }
 }
+
+const arrToStrFunc = (arr) => {
+  return arr && JSON.parse(arr).join(',')
+}
+// const toStr = (arr)
 const columns: TableColumn[] = [
   {
     label: '分公司',
-    field: 'branchName'
+    field: 'branchName',
+    disabled: true
   },
   {
     label: '门店',
-    field: 'distributeShopName'
+    field: 'distributeShopName',
+    disabled: true
   },
   {
     label: '派发成员',
-    field: 'distributeUserName'
+    field: 'distributeUserName',
+    disabled: true
   },
   {
     label: '成员平台昵称',
@@ -127,10 +183,7 @@ const columns: TableColumn[] = [
     label: '跟进是否回推厂家',
     field: 'pushBackFactoryStatus'
   },
-  {
-    label: '是否开启请假功能',
-    field: 'isEnableLeaveFunc'
-  },
+
   {
     label: '成员姓名',
     field: 'username',
@@ -140,16 +193,6 @@ const columns: TableColumn[] = [
   {
     label: '门店',
     field: 'shopId',
-    isSearch: true,
-    isTable: false,
-    search: {
-      component: 'Cascader',
-      componentProps: {}
-    }
-  },
-  {
-    label: '销售品牌',
-    field: 'brandId',
     isSearch: true,
     isTable: false,
     search: {
@@ -168,11 +211,31 @@ const columns: TableColumn[] = [
   },
   {
     label: '销售品牌',
+    field: 'brandId',
+    isSearch: true,
+    isTable: false,
+    search: {
+      component: 'Cascader',
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: computed(() => brandList.value),
+        props: {
+          label: 'brandName',
+          value: 'brandId',
+          emitPath: false
+        }
+      }
+    }
+  },
+  {
+    label: '销售品牌',
     field: 'autoBrandNames'
   },
   {
     label: '销售车系',
-    field: 'autoSeriesNames'
+    field: 'autoSeriesNames',
+    showOverflowTooltip: true
   },
   {
     label: '创建人',
@@ -180,32 +243,78 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建时间',
-    field: 'createTime'
-  },
-  {
-    label: '操作',
-    field: 'action'
+    field: 'createTime',
+    search: {
+      component: 'DatePicker',
+      componentProps: {
+        type: 'datetimerange',
+        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+      }
+    },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
   }
 ]
-
-const addMember = () => {}
 
 const actionButtons = [
   {
     name: '编辑',
-    permission: true,
-    click: () => {
-      console.log('新增')
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:edit'),
+    click: (row) => {
+      editMember(row.distributeShopId)
     }
   },
   {
     name: '删除',
-    permission: true,
-    click: () => {
-      console.log('删除')
+    permission: hasPermission('dispatch-strategy-config:dispatch-member:delete'),
+    click: (row) => {
+      selectedIds.value = [row.id]
+      delDialog.value = true
+      // deleteFun()
     }
   }
 ]
+
+const selectedIds = ref<number[]>([])
+
+const crudRef = ref()
+const addMember = () => {
+  crudRef.value.openDialog('', shopTreeList.value)
+}
+const editMember = (id) => {
+  crudRef.value.openDialog(id, shopTreeList.value)
+}
+
+const delDialog = ref(false)
+const handleDel = async () => {
+  const res = await tableRef.value.tableMethods.getSelections()
+  if (res) {
+    selectedIds.value = res.map((item) => item.id)
+  }
+  if (selectedIds.value.length < 1) {
+    return message.warning('未选择数据')
+  }
+  delDialog.value = true
+}
+const confirmDel = () => {
+  deleteFun()
+}
+const deleteFun = async () => {
+  await dispatchApi.batchDelClueDistributeUser({ ids: selectedIds.value })
+  message.success('删除成功')
+  delDialog.value = false
+  tableRef.value.tableMethods.getList()
+}
+
+const changeStatus = (row) => {
+  if (!row.id) return
+  dispatchApi.updateClueDistributeUserStatus(row.id)
+}
+const changePushBackFactoryStatus = (row) => {
+  if (!row.id) return
+  dispatchApi.updatePushBackFactoryStatus(row.id)
+}
 
 const { allSchemas } = useCrudSchemas(columns)
 </script>

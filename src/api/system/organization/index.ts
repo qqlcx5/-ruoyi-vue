@@ -16,8 +16,8 @@ export const getOrganizationList = (params: MajorIndividual) => {
 }
 
 // 获取机构类型列表(获取字典列表ALL 如何自己通过type过滤...)
-export const getOrganizationTypeList = () => {
-  return request.get({ url: '/system/tenant-dict-data/list-all-simple' })
+export const getOrganizationTypeList = (params) => {
+  return request.get({ url: '/system/tenant-dict-data/list-all-simple', params })
 }
 
 // 获取上级机构列表
@@ -28,6 +28,21 @@ export const getSimpleOrganizationList = (params) => {
 // 获取上级机构列表 子门店 获取上级门店
 export const getStoreList = (params) => {
   return request.get({ url: '/system/organization/store-list', params })
+}
+
+// 获取根据主体和门店获取行政区划精简信息列表 只包含省市区三级区划，主要用于【主体管理】的下拉选项
+export const getAreaList = (params) => {
+  return request.get({ url: '/system/tenant-area/list-simple-tenant', params })
+}
+
+// 获取指定主体门店行政区划精简信息列表  只包含开启显示的省市区三级区划，主要用于前端的下拉选项
+export const getCurrentStoreAreaList = (params) => {
+  return request.get({ url: '/system/tenant-area/list-simple-store', params })
+}
+
+// 获取当前主体行政区划精简信息列表  只包含开启显示的区划，主要用于前端的下拉选项
+export const getCurrentAreaList = () => {
+  return request.get({ url: '/system/tenant-area/list-all-simple' })
 }
 
 // 获取上级机构列表() 成员管理 左侧 部门
@@ -102,4 +117,9 @@ export const deleteOrganization = (id: number) => {
 // 获取当前主体的门店信息列表
 export const getAllStoreList = async () => {
   return await request.get({ url: '/system/organization/all-store-list' })
+}
+
+// 获取当前主题的门店信息列表   新
+export const getAreaStoreList = async () => {
+  return await request.get({ url: '/system/organization/area-store-list' })
 }

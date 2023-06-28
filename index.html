@@ -22,15 +22,16 @@
       }
       .app-loading {
           position: absolute;
-          top: 50%;
-          left: 50%;
-          height: 10px;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           display: flex;
-          -webkit-transform: translate3d(-50%, -50%, 0);
-          transform: translate3d(-50%, -50%, 0);
           justify-content: center;
           align-items: center;
-          flex-direction: column
+          flex-direction: column;
+          background: url("/app-loading-bg.png") no-repeat center;
+          background-size: contain;
       }
       .app-loading-logo {
           position: absolute;

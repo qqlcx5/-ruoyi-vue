@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    class="custom-dialog"
+    class="wg-custom-dialog"
     :model-value="props.modelValue"
     :title="editFlag ? '编辑' : '新增'"
     width="500px"
@@ -17,7 +17,7 @@
         <el-radio-group v-model="ruleForm.ruleType">
           <el-radio :label="0">不限</el-radio>
           <el-radio :label="1">门店</el-radio>
-          <el-radio :label="2">分店</el-radio>
+          <el-radio :label="2">区域</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="线索重复判断维度">
@@ -40,7 +40,14 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button type="primary" @click="handleConfirm(ruleFormRef)">确定</el-button>
+        <el-button
+          v-if="!flag"
+          type="primary"
+          :disabled="btnLoading"
+          :loading="btnLoading"
+          @click="handleConfirm(ruleFormRef)"
+          >确定</el-button
+        >
         <el-button @click="handleClose">取消</el-button>
       </span>
     </template>
@@ -75,6 +82,7 @@ watch(
   () => props.modelValue,
   (val) => {
     if (val) {
+      flag.value = false
       editFlag.value = !!props.curInfo.id
       if (unref(editFlag)) {
         ruleForm = reactive(cloneDeep(props.curInfo))
@@ -109,19 +117,27 @@ const handleClose = () => {
   ruleFormRef.value?.resetFields()
   emit('update:modelValue', false)
 }
+const btnLoading = ref<boolean>(false)
+const flag = ref<boolean>(false)
 const handleConfirm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      const params = {
-        id: ruleForm.id || null,
-        ruleType: ruleForm.ruleType,
-        repetitionPeriod: ruleForm.repetitionPeriod || ''
+      try {
+        btnLoading.value = true
+        const params = {
+          id: ruleForm.id || null,
+          ruleType: ruleForm.ruleType,
+          repetitionPeriod: ruleForm.repetitionPeriod || ''
+        }
+        unref(editFlag) ? await updateRepetitionPeriod(params) : await addRepetitionPeriod(params)
+        flag.value = true
+        emit('success')
+        message.success('提交成功')
+        handleClose()
+      } finally {
+        btnLoading.value = false
       }
-      unref(editFlag) ? await updateRepetitionPeriod(params) : await addRepetitionPeriod(params)
-      emit('success')
-      message.success('提交成功')
-      handleClose()
     } else {
       console.log('error submit!', fields)
     }
@@ -130,5 +146,5 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 </script>
 
 <style lang="scss">
-@import '../../style/index';
+@import '@/styles/custom.scss';
 </style>

@@ -23,6 +23,10 @@ const props = defineProps({
     type: Object as PropType<IEditorConfig>,
     default: () => undefined
   },
+  toolbarConfig: {
+    type: Object,
+    default: () => undefined
+  },
   readonly: propTypes.bool.def(false),
   modelValue: propTypes.string.def('')
 })
@@ -182,6 +186,7 @@ defineExpose({
     <!-- 工具栏 -->
     <Toolbar
       :editor="editorRef"
+      :defaultConfig="toolbarConfig"
       :editorId="editorId"
       class="border-bottom-1 border-solid border-[var(--tags-view-border-color)]"
     />

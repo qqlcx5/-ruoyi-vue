@@ -40,34 +40,35 @@ watch(
 </script>
 
 <template>
+  <TagsView
+    v-if="layout === 'cutMenu'"
+    :class="[
+      '!w-[calc(100%)] border-bottom-1 border-top-1 border-solid border-[var(--tags-view-border-color)] dark:border-[var(--el-border-color)]'
+    ]"
+    :style="{ transition: 'width var(--transition-time-02), left var(--transition-time-02)' }"
+  />
   <section
     :class="[
-      'p-[var(--app-content-padding)] w-[100%] bg-[var(--app-contnet-bg-color)] dark:bg-[var(--el-bg-color)] wg-section',
+      ' p-[var(--app-content-padding)] w-[100%] bg-[var(--app-contnet-bg-color)] dark:bg-[var(--el-bg-color)] wg-section',
       {
-        '!min-h-[calc(100%-var(--app-footer-height))]':
+        '!h-[calc(100%-var(--app-footer-height))]':
           fixedHeader && (layout === 'classic' || layout === 'topLeft') && footer,
 
-        '!min-h-[calc(100%-var(--tags-view-height)-var(--top-tool-height)-var(--app-footer-height))]':
+        '!h-[calc(100%-var(--tags-view-height)-var(--top-tool-height)-var(--app-footer-height))]':
           ((!fixedHeader && layout === 'classic') || layout === 'top') && footer,
 
-        '!min-h-[calc(100%-var(--tags-view-height)-var(--app-footer-height))]':
+        '!h-[calc(100%-var(--tags-view-height)-var(--app-footer-height))]':
           !fixedHeader && layout === 'topLeft' && footer,
 
-        '!min-h-[calc(100%-var(--top-tool-height))]': fixedHeader && layout === 'cutMenu' && footer,
+        '!h-[calc(100%-var(--top-tool-height))]': fixedHeader && layout === 'cutMenu' && footer,
 
-        '!min-h-[calc(100%-var(--top-tool-height)-var(--tags-view-height))]':
-          !fixedHeader && layout === 'cutMenu' && footer,
-        '!h-[100%]': !footer
+        '!h-[calc(100%-var(--top-tool-height)-var(--tags-view-height))]':
+          (!fixedHeader && layout === 'cutMenu' && footer) || (layout === 'top' && !footer),
+        '!h-[calc(100%-var(--tags-view-height))]': layout === 'cutMenu' && !footer,
+        '!h-[100%]': layout !== 'top' && !footer
       }
     ]"
   >
-    <TagsView
-      v-if="layout === 'cutMenu'"
-      :class="[
-        '!w-[calc(100%+30px)] -mx-15px -mt-10px mb-10px border-bottom-1 border-top-1 border-solid border-[var(--tags-view-border-color)] dark:border-[var(--el-border-color)]'
-      ]"
-      :style="{ transition: 'width var(--transition-time-02), left var(--transition-time-02)' }"
-    />
     <router-view>
       <template #default="{ Component, route }">
         <keep-alive :include="getCaches">
@@ -82,10 +83,10 @@ watch(
 
 <style lang="scss" scoped>
 .wg-section {
-  > :deep(.#{$elNamespace}-card) {
-    border: none;
-    margin-bottom: 12px !important;
-  }
   overflow: auto;
+  > :deep(.#{$elNamespace}-card) {
+    margin-bottom: 12px !important;
+    border: none;
+  }
 }
 </style>

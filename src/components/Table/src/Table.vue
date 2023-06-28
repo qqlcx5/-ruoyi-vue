@@ -6,7 +6,13 @@ import { setIndex } from './helper'
 import { getSlot } from '@/utils/tsxHelper'
 import type { TableProps } from './types'
 import { set } from 'lodash-es'
-import { Pagination, TableColumn, TableSetPropsType, TableSlotDefault } from '@/types/table'
+import {
+  Pagination,
+  TableColumn,
+  TableSetPropsType,
+  TableSlotDefault,
+  TableSlotHeader
+} from '@/types/table'
 
 export default defineComponent({
   name: 'Table',
@@ -204,7 +210,7 @@ export default defineComponent({
                     v?.formatter?.(data.row, data.column, data.row[v.field], data.$index) ||
                     data.row[v.field],
               // @ts-ignore
-              header: getSlot(slots, `${v.field}-header`)
+              header: (data: TableSlotHeader) => getSlot(slots, `${v.field}-header`, data)
             }}
           </ElTableColumn>
         )
@@ -236,7 +242,7 @@ export default defineComponent({
                 align={v.align || align}
                 headerAlign={v.headerAlign || headerAlign}
                 label={v.label}
-                width="65px"
+                width={v.width || '65px'}
               ></ElTableColumn>
             )
           } else {
@@ -259,7 +265,8 @@ export default defineComponent({
                         v?.formatter?.(data.row, data.column, data.row[v.field], data.$index) ||
                         data.row[v.field],
                   // @ts-ignore
-                  header: () => getSlot(slots, `${v.field}-header`) || v.label
+                  header: (data: TableSlotHeader) =>
+                    getSlot(slots, `${v.field}-header`, data) || v.label
                 }}
               </ElTableColumn>
             )
@@ -280,6 +287,7 @@ export default defineComponent({
           >
             {{
               default: () => rnderTableColumn(),
+              empty: () => getSlot(slots, 'empty'),
               // @ts-ignore
               append: () => getSlot(slots, 'append')
             }}

@@ -19,6 +19,7 @@ import {
   ElAutocomplete,
   ElDivider
 } from 'element-plus'
+import { ButtonRadio } from '@/components/ButtonRadio'
 import { InputPassword } from '@/components/InputPassword'
 import { Editor } from '@/components/Editor'
 import { UploadImg, UploadImgs, UploadFile } from '@/components/UploadFile'
@@ -49,7 +50,8 @@ const componentMap: Recordable<Component, ComponentName> = {
   Editor: Editor,
   UploadImg: UploadImg,
   UploadImgs: UploadImgs,
-  UploadFile: UploadFile
+  UploadFile: UploadFile,
+  ButtonRadio: ButtonRadio
 }
 
 export { componentMap }

@@ -1,29 +1,38 @@
 <template>
-  <div class="dcc-edit-container">
+  <div class="basic-config-content dcc-edit-container" v-loading="loading">
     <div class="page-title">DCC考核设置</div>
     <el-form
       ref="ruleFormRef"
+      :rules="rules"
       :model="ruleForm"
       label-width="120px"
       class="demo-ruleForm"
       status-icon
+      v-if="!loading"
     >
-      <el-form-item label="DCC规则名称" label-width="100" prop="name">
+      <el-form-item label="DCC规则名称" label-width="120" prop="dccRuleName">
         <el-input
-          v-model.trim="ruleForm.name"
+          v-model.trim="ruleForm.dccRuleName"
           maxlength="20"
           show-word-limit
           placeholder="请输入DCC规则名称"
           style="width: 340px"
         />
       </el-form-item>
-      <el-form-item label="适用门店" label-width="100" prop="shop">
-        <el-select v-model="ruleForm.shop" clearable>
-          <el-option label="132" value="333" />
-        </el-select>
+      <el-form-item label="适用门店" label-width="120" prop="applicableShopId">
+        <el-cascader
+          v-model="ruleForm.applicableShopId"
+          :options="shopTreeList"
+          :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+          filterable
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+          style="min-width: 240px"
+        />
       </el-form-item>
       <el-table :data="ruleForm.examineSetList" class="custom-table mb-30px">
-        <el-table-column label="意向等级" />
+        <el-table-column label="意向等级" align="center" prop="intentionLevelName" />
         <el-table-column label="可选择性" min-width="220px">
           <template #default="{ row }">
             <span>派单时间后</span>
@@ -111,12 +120,12 @@
         </el-table-column>
         <el-table-column label="状态">
           <template #default="{ row }">
-            <el-switch v-model="row.status" />
+            <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
           </template>
         </el-table-column>
       </el-table>
       <el-form-item label="" label-width="0">
-        <span class="mr-8px">线索有效率</span
+        <span class="mr-8px">线索无效率</span
         ><el-switch
           v-model="ruleForm.monthEffectiveRateStatus"
           :active-value="1"
@@ -146,34 +155,61 @@
         <span class="mr-8px">DCC规则说明</span
         ><el-switch v-model="ruleForm.dccExplainStatus" :active-value="1" :inactive-value="0" />
       </el-form-item>
-      <Editor v-model="ruleForm.dccExplain" class="mb-20px" :height="220" style="width: 600px" />
+      <Editor
+        v-model="ruleForm.dccExplain"
+        :toolbarConfig="{ excludeKeys: ['group-image', 'group-video', 'emotion'] }"
+        class="mb-20px"
+        :height="220"
+        style="width: 600px"
+      />
     </el-form>
-  </div>
-  <div class="bottom-btns">
-    <el-button type="primary" size="large" @click="handleSave">保存设置</el-button>
+    <div class="bottom-btns">
+      <el-button
+        type="primary"
+        size="large"
+        :disabled="id && !ruleForm.id"
+        :loading="btnLoading"
+        @click="handleSave"
+        >保存设置</el-button
+      >
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { FormRules } from 'element-plus'
-
-const ruleForm = reactive({
-  examineSetList: [
-    {
-      selectivityTime: null, // 可选择性
-      followUpCycleList: [{ beginHour: null, endHour: null, everyHourFollow: null }],
-      failStatus: 0, // 是否可战败
-      failStartTime: null, // 可战败起始时间
-      status: 0 // 状态
-    }
-  ],
-  monthEffectiveRateStatus: 0, // 线索有效率
+import type { FormInstance, FormRules } from 'element-plus'
+import { DICT_TYPE, getTenantDictOptions } from '@/utils/dict'
+import {
+  existDccRuleShop,
+  detailDcc,
+  validDccRuleName,
+  saveDccConfig
+} from '@/api/clue/basicConfig'
+import { cloneDeep } from 'lodash-es'
+import { useTagsViewStoreWithOut } from '@/store/modules/tagsView'
+import { useOption } from '@/store/modules/options'
+import { getShopDataList } from '@/api/common'
+const store = useOption()
+const route = useRoute()
+const router = useRouter()
+const message = useMessage()
+const tagsView = useTagsViewStoreWithOut()
+const ruleFormRef = ref<FormInstance>()
+let ruleForm = reactive<any>({
+  dccRuleName: '',
+  applicableShopId: [],
+  examineSetList: [],
+  openRules: 1, // 状态是否开启
+  monthEffectiveRateStatus: 0, // 线索无效率
   effectiveRateType: 1, // 按天、按自然月
   effectiveRate: null, // 每个成员的线索无效率不超过
   dccExplainStatus: 0, // DCC规则说明
   dccExplain: '' // editor
 })
-const rules = reactive<FormRules>({})
+const rules: FormRules = reactive<FormRules>({
+  dccRuleName: [{ required: true, message: '请输入DCC规则名称', trigger: 'blur' }],
+  applicableShopId: [{ required: true, message: '请选择适用门店', trigger: 'change' }]
+})
 const handleAddRow = (index) => {
   const cycle = {
     beginHour: null,
@@ -184,21 +220,76 @@ const handleAddRow = (index) => {
   ruleForm.examineSetList[index].followUpCycleList.push(cycle)
   console.log(cycle)
 }
+
+const id = route.params.id
+const loading = ref<boolean>(false)
+onMounted(async () => {
+  try {
+    loading.value = true
+    if (id) {
+      const data: object = await detailDcc({ id })
+      data['applicableShopId'] = data['applicableShopId'].split(',').map((d) => +d)
+      ruleForm = reactive(data)
+    } else {
+      const data = await getTenantDictOptions(DICT_TYPE.INTENTION_LEVEL)
+      if (data) {
+        ruleForm.examineSetList = data.map((item) => {
+          return {
+            intentionLevel: item.value,
+            intentionLevelName: item.label,
+            selectivityTime: null, // 可选择性
+            followUpCycleList: [{ beginHour: null, endHour: null, everyHourFollow: null }],
+            failStatus: 0, // 是否可战败
+            failStartTime: null, // 可战败起始时间
+            status: 0 // 状态
+          }
+        })
+      }
+    }
+    getShopList()
+  } finally {
+    loading.value = false
+  }
+})
+const shopTreeList = ref<object[]>([])
+const getShopList = async () => {
+  const shopList = await getShopDataList()
+  const checkedList = await existDccRuleShop()
+  shopTreeList.value = store.dealShopList(shopList, unref(checkedList), ruleForm.applicableShopId)
+}
 const handleDelRow = (list, index) => {
   // console.log(item)
   list.splice(index, 1)
 }
-const handleSave = () => {
-  console.log(ruleForm)
+
+const btnLoading = ref<boolean>(false)
+const handleSave = async () => {
+  ruleFormRef.value?.validate(async (vali) => {
+    if (vali) {
+      try {
+        loading.value = true
+        const params: any = cloneDeep(ruleForm)
+        params.applicableShopId = params.applicableShopId.join(',')
+        if (id) {
+          await validDccRuleName({ id, ruleName: params.dccRuleName })
+        }
+        await saveDccConfig(params)
+        message.success('提交成功')
+        router.push('/clue/basic-config/dcc')
+        tagsView.delVisitedView(route)
+      } finally {
+        loading.value = false
+      }
+    } else {
+      console.log(vali)
+    }
+  })
 }
 </script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
 .dcc-edit-container {
-  min-height: 100%;
-  padding: 22px 30px $btnWrapHeight;
-  background-color: var(--page-bg-color);
   .page-title {
     line-height: 25px;
     font-size: 14px;
@@ -223,17 +314,5 @@ const handleSave = () => {
   .cycle-item + .cycle-item {
     margin-top: 8px;
   }
-}
-.bottom-btns {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  text-align: center;
-  line-height: $btnWrapHeight;
-  height: $btnWrapHeight;
-  background-color: var(--page-bg-color);
-  box-shadow: 0px -5px 8px 0px rgba(210, 210, 210, 0.2);
 }
 </style>

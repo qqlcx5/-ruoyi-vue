@@ -43,7 +43,7 @@
 <script setup lang="ts"></script>
 
 <style scoped lang="scss">
-@import '../style/index';
+@import '@/styles/custom.scss';
 .re-check-container {
   min-height: 100%;
 }

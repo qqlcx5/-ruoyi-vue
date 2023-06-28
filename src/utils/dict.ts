@@ -23,6 +23,9 @@ export interface DictDataType {
 export const getDictOptions = (dictType: string) => {
   return dictStore.getDictByType(dictType)
 }
+export const getTenantDictOptions = (dictType: string | string[]): any => {
+  return dictStore.getTenantDictByType(dictType)
+}
 
 export const getIntDictOptions = (dictType: string) => {
   const dictOption: DictDataType[] = []
@@ -132,7 +135,15 @@ export enum DICT_TYPE {
   PAY_REFUND_ORDER_STATUS = 'pay_refund_order_status', // 退款订单状态
   PAY_REFUND_ORDER_TYPE = 'pay_refund_order_type', // 退款订单类别
 
+  // ========== 按揭管理 ==========
+  FINANCE_PRODUCT_CATEGORY = 'FINANCE_PRODUCT_CATEGORY', // 金融产品类别
   // ========== 自定义 ==========
   PERSON_TYPE = 'person_type', // 成员类型
-  POST_TYPE = 'post_type' // 岗位类型
+  POST_TYPE = 'post_type', // 岗位类型
+  LOGIN_LOG_TYPE = 'login_log_type', // 登录方式
+  LOGIN_RESULT_INFO = 'login_result_info', // 登录结果详情
+  ENTRANCE = 'entrance', // 登录端口
+  // ========== 租户字典 ==========
+  MANUAL_RECYCLING_REASON = 'MANUAL_RECYCLING_REASON', // 回收原因
+  INTENTION_LEVEL = 'INTENTION_LEVEL' // 意向等级
 }

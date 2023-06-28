@@ -419,7 +419,7 @@
         <!-- 分页 -->
         <Pagination
           :total="state.total"
-          v-model:page="queryParams.pageNo"
+          v-model:page="queryParams.current"
           v-model:limit="queryParams.pageSize"
           style="padding: 0 15px"
           @pagination="onPageChange"
@@ -690,10 +690,10 @@
                   </div>
                 </template>
 
-                <template v-if="column.key === 'existWXWork'">
+                <template v-if="column.key === 'existWxWork'">
                   <div>
                     <a-switch
-                      v-model:checked="record.existWXWork"
+                      v-model:checked="record.existWxWork"
                       checked-children="开启"
                       un-checked-children="关闭"
                     />
@@ -788,8 +788,10 @@
                 <div>
                   <a-tree-select
                     v-model:value="record.department"
-                    style="width: 100%"
-                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                    dropdownClassName="department-tree-select-content"
+                    :dropdownMatchSelectWidth="false"
+                    show-search
+                    :dropdown-style="{ maxHeight: '400px', width: '500px', overflow: 'auto' }"
                     placeholder="请选择公司/门店/部门"
                     :tree-data="state.organizationIDOptions"
                     :field-names="{
@@ -797,6 +799,7 @@
                       label: 'title',
                       value: 'key'
                     }"
+                    treeNodeFilterProp="title"
                   />
                 </div>
               </template>
@@ -2091,7 +2094,7 @@ const closeModal = () => {
       phoneNum: '',
       useType: '1',
       isService: true,
-      existWXWork: true
+      existWxWork: true
     }
   ]
 
@@ -2152,7 +2155,7 @@ const edit = async (record, isCloseDetails = false) => {
       phoneNum: item.phone,
       useType: item.usageType,
       isService: item.recordEnable,
-      existWXWork: item.existWXWork
+      existWxWork: item.existWxWork
     })
   })
 
@@ -2179,7 +2182,7 @@ const edit = async (record, isCloseDetails = false) => {
       phoneNum: '',
       useType: '',
       isService: true,
-      existWXWork: true
+      existWxWork: true
     })
   }
 
@@ -2267,10 +2270,8 @@ const edit = async (record, isCloseDetails = false) => {
 // }
 
 //页码改变
-const onPageChange = ({ pageSize, pageNo }) => {
-  queryParams.current = pageNo
-  queryParams.pageSize = pageSize
-  getList()
+const onPageChange = () => {
+  getList(undefined)
 }
 
 //处理省市区数据
@@ -2300,7 +2301,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWXWork: item?.existWXWork, //是否开通企微
+        existWxWork: item?.existWxWork, //是否开通企微
         userId: formState.id,
         id: item.id
       })
@@ -2310,7 +2311,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWXWork: item?.existWXWork //是否开通企微
+        existWxWork: item?.existWxWork //是否开通企微
       })
     }
 
@@ -2790,7 +2791,7 @@ const detailsInfo = async (record) => {
       phoneNum: item?.phone,
       useType: item?.usageType === '1' ? '私人' : '公司',
       isService: item?.recordEnable ? '是' : '否',
-      existWXWork: item?.existWXWork ? '已开通' : '未开通' //是否开通企微
+      existWxWork: item?.existWxWork ? '已开通' : '未开通' //是否开通企微
     })
   })
 
@@ -3015,8 +3016,8 @@ const detailsInfo = async (record) => {
     {
       title: '是否开通企微',
       width: 100,
-      dataIndex: 'existWXWork',
-      key: 'existWXWork',
+      dataIndex: 'existWxWork',
+      key: 'existWxWork',
       resizable: true,
       ellipsis: true,
       disabled: true,
@@ -3689,7 +3690,7 @@ const addEditColumns = [
     sort: 3
   },
   {
-    title: '是否开通云服务',
+    title: '是否开通云录音',
     width: 120,
     dataIndex: 'isService',
     key: 'isService',
@@ -3701,8 +3702,8 @@ const addEditColumns = [
   {
     title: '是否开通企微',
     width: 100,
-    dataIndex: 'existWXWork',
-    key: 'existWXWork',
+    dataIndex: 'existWxWork',
+    key: 'existWxWork',
     resizable: true,
     ellipsis: true,
     disabled: true,
@@ -3726,7 +3727,7 @@ const addDataSource = reactive({
       phoneNum: '',
       useType: '1',
       isService: true,
-      existWXWork: true
+      existWxWork: true
     }
   ]
 })
@@ -3745,7 +3746,7 @@ const addColumns = (index) => {
     phoneNum: '',
     useType: '1',
     isService: true,
-    existWXWork: true
+    existWxWork: true
   }
 
   addDataSource.addEditTableData.splice(index + 1, 0, tempObj)
@@ -4881,6 +4882,10 @@ onMounted(async () => {
   .ant-modal-footer {
     border: 0;
   }
+}
+
+.department-tree-select-content {
+  width: max-content !important;
 }
 
 //新增 编辑 modal

@@ -1,203 +1,225 @@
 <template>
-  <div class="edit-assess-rule-dialog" v-loading.fullscreen.lock="loading">
+  <div class="edit-assess-rule-dialog">
     <el-dialog
-      class="custom-dialog"
+      class="wg-custom-dialog"
       :model-value="props.modelValue"
       :title="props.curInfo['id'] ? '编辑' : '新增'"
       width="665px"
       :before-close="handleClose"
     >
-      <el-form id="edit-form" ref="formRef" :rules="rules" :model="ruleForm" :disabled="loading">
-        <el-form-item label="规则名称" label-width="80px" prop="checkRuleName">
-          <el-input
-            v-model.trim="ruleForm.checkRuleName"
-            placeholder="请输入规则名称"
-            maxlength="20"
-            show-word-limit
-            style="width: 340px"
-          />
-        </el-form-item>
-        <el-form-item label="适用门店" label-width="80px" prop="applicableShopId">
-          <el-cascader
-            v-model="ruleForm.applicableShopId"
-            :options="shopTreeList"
-            :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
-            filterable
-            collapse-tags
-            collapse-tags-tooltip
-            clearable
-            style="min-width: 240px"
-          />
-        </el-form-item>
-        <el-divider />
-        <div class="form-title">考核规则设置</div>
-        <div class="form-sub-title">考核时间设置</div>
-        <div class="form-tip-text"
-          >（在设置的时段内，才会计算线索的逾期时间，时间段以外不进行逾期时间计算）</div
+      <div v-loading="loading" style="height: 100%; padding: 25px 0; overflow: auto" @scroll="aaa">
+        <el-form
+          id="edit-form"
+          ref="formRef"
+          :rules="rules"
+          :model="ruleForm"
+          v-if="!loading && props.modelValue"
         >
-        <div class="mt-15px mb-15px">
-          <el-button v-if="!editTimeFlag" type="primary" @click="timeEdit(true)">编辑</el-button>
-          <template v-else>
-            <el-button type="primary" @click="timeEdit(false)">保存</el-button>
-            <el-button type="primary" @click="handleAddTime">增加时间段</el-button>
-          </template>
-        </div>
-        <el-form ref="timeFormRef" class="mb-20px" :model="timeList" :disabled="!editTimeFlag">
-          <div
-            v-for="(item, index) in timeList"
-            :key="item.timestamp"
-            class="config-form-item mt-15px"
-            style="display: flex; align-items: center"
-          >
-            <span class="mr-8px">时间段</span>
-            <el-form-item
-              :prop="`${index}.arr`"
-              :rules="[{ required: true, message: '请选择时间段', trigger: 'change' }]"
-              style="margin-bottom: 0"
-            >
-              <el-time-picker
-                v-model="item.arr"
-                is-range
-                format="HH:mm"
-                range-separator="至"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                class="mr-8px"
-                style="flex: unset; width: 240px"
-              />
-            </el-form-item>
-            <Icon
-              v-if="editTimeFlag"
-              icon="ep:remove"
-              class="toggle-icon"
-              @click="handleDelTime(index)"
-              color="#FF4141"
-              style="cursor: pointer"
+          <el-form-item label="规则名称" label-width="80px" prop="checkRuleName">
+            <el-input
+              v-model.trim="ruleForm.checkRuleName"
+              placeholder="请输入规则名称"
+              maxlength="20"
+              show-word-limit
+              style="width: 340px"
             />
+          </el-form-item>
+          <el-form-item label="适用门店" label-width="80px" prop="applicableShopId">
+            <el-cascader
+              ref="shopRef"
+              :teleported="false"
+              v-model="ruleForm.applicableShopId"
+              :options="shopTreeList"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              clearable
+              style="min-width: 240px"
+            />
+          </el-form-item>
+          <el-divider />
+          <div class="form-title">考核规则设置</div>
+          <div class="form-sub-title">考核时间设置</div>
+          <div class="form-tip-text"
+            >（在设置的时段内，才会计算线索的逾期时间，时间段以外不进行逾期时间计算）</div
+          >
+          <div class="mt-15px mb-15px">
+            <el-button v-if="!editTimeFlag" type="primary" @click="timeEdit(true)">编辑</el-button>
+            <template v-else>
+              <el-button type="primary" @click="timeEdit(false)">保存</el-button>
+              <el-button type="primary" @click="handleAddTime">增加时间段</el-button>
+            </template>
           </div>
+          <el-form ref="timeFormRef" class="mb-20px" :model="timeList" :disabled="!editTimeFlag">
+            <div
+              v-for="(item, index) in timeList"
+              :key="item.timestamp"
+              class="config-form-item mt-15px"
+              style="display: flex; align-items: center"
+            >
+              <span class="mr-8px">时间段</span>
+              <el-form-item
+                :prop="`${index}.arr`"
+                :rules="[{ required: true, message: '请选择时间段', trigger: 'change' }]"
+                style="margin-bottom: 0"
+              >
+                <el-time-picker
+                  v-model="item.arr"
+                  is-range
+                  format="HH:mm"
+                  range-separator="至"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  class="mr-8px"
+                  style="flex: unset; width: 240px"
+                />
+              </el-form-item>
+              <Icon
+                v-if="editTimeFlag"
+                icon="ep:remove"
+                class="toggle-icon"
+                @click="handleDelTime(index)"
+                color="#FF4141"
+                style="cursor: pointer"
+              />
+            </div>
+          </el-form>
+          <el-form-item label="接单逾期设置" prop="receiveOpenRules">
+            <el-switch v-model="ruleForm.receiveOpenRules" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+          <el-form-item
+            label="线索接单判定“一般逾期”为派单后"
+            :key="ruleForm.receiveOpenRules"
+            :prop="ruleForm.receiveOpenRules === 1 ? 'generalOverdue' : ''"
+          >
+            <el-input-number
+              v-model="ruleForm.generalOverdue"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+            /><span>分钟接单</span>
+          </el-form-item>
+          <el-form-item
+            label="线索接单判定“严重逾期”为派单后"
+            :key="ruleForm.receiveOpenRules"
+            :prop="ruleForm.receiveOpenRules === 1 ? 'seriousOverdue' : ''"
+          >
+            <el-input-number
+              v-model="ruleForm.seriousOverdue"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+            /><span>分钟接单</span>
+          </el-form-item>
+          <el-form-item label="首次跟进逾期设置" prop="firstFollowOpenRules">
+            <el-switch
+              v-model="ruleForm.firstFollowOpenRules"
+              :active-value="1"
+              :inactive-value="0"
+            />
+          </el-form-item>
+          <el-form-item
+            label="线索首次跟进判定“一般逾期”为接单后"
+            :key="ruleForm.firstFollowOpenRules"
+            :prop="ruleForm.firstFollowOpenRules === 1 ? 'firstFollowGeneralOverdue' : ''"
+          >
+            <el-input-number
+              v-model="ruleForm.firstFollowGeneralOverdue"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+            /><span>分钟跟进</span>
+          </el-form-item>
+          <el-form-item
+            label="线索首次跟进判定“严重逾期”为接单后"
+            :key="ruleForm.firstFollowOpenRules"
+            :prop="ruleForm.firstFollowOpenRules === 1 ? 'firstFollowSeriousOverdue' : ''"
+          >
+            <el-input-number
+              v-model="ruleForm.firstFollowSeriousOverdue"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+            /><span>分钟跟进</span>
+          </el-form-item>
+          <el-form-item label="常规跟进逾期设置" prop="followOpenRules">
+            <el-switch v-model="ruleForm.followOpenRules" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+          <el-form-item
+            label="线索常规跟进逾期界限时间配置：计划跟进时间当日"
+            :key="ruleForm.followOpenRules"
+            :prop="ruleForm.followOpenRules === 1 ? 'overdueLimitDate' : ''"
+          >
+            <el-time-select
+              v-model="ruleForm.overdueLimitDate"
+              start="00:00"
+              step="00:05"
+              end="23:59"
+              style="width: 120px"
+            />
+          </el-form-item>
+          <el-form-item
+            label="线索常规跟进判定“一般逾期”为计划跟进时间当日22:00+"
+            :key="ruleForm.followOpenRules"
+            :prop="ruleForm.followOpenRules === 1 ? 'followGeneralOverdue' : ''"
+          >
+            <el-input-number
+              v-model="ruleForm.followGeneralOverdue"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+            /><span>分钟后跟进</span>
+          </el-form-item>
+          <el-form-item
+            label="线索常规跟进判定“严重逾期”为计划跟进时间当日22:00+"
+            :key="ruleForm.followOpenRules"
+            :prop="ruleForm.followOpenRules === 1 ? 'followSeriousOverdue' : ''"
+          >
+            <el-input-number
+              v-model="ruleForm.followSeriousOverdue"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+            /><span>分钟后跟进</span>
+          </el-form-item>
+          <el-form-item label="回收设置" prop="recycle">
+            <el-switch v-model="ruleForm.recycle" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+          <el-form-item
+            label=""
+            :key="ruleForm.recycle"
+            :prop="ruleForm.recycle === 1 ? 'recyclePostpone' : ''"
+          >
+            <el-input-number
+              v-model="ruleForm.recyclePostpone"
+              :controls="false"
+              :min="0"
+              step-strictly
+              :step="1"
+              style="margin-left: 0px"
+            />
+            <span>分钟未进行跟进，则对线索进行回收重新派发</span>
+          </el-form-item>
+          <div class="form-sub-title mb-10px"><span>其他设置</span></div>
+          <el-form-item
+            label="已派发的线索，是否允许再次增加派发成员"
+            style="margin-bottom: 0px"
+            prop="augment"
+          >
+            <el-switch v-model="ruleForm.augment" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+          <el-form-item label="成员已接单的有效线索，是否允许共享给其他成员进行跟进" prop="share">
+            <el-switch v-model="ruleForm.share" :active-value="1" :inactive-value="0" />
+          </el-form-item>
         </el-form>
-        <el-form-item label="接单逾期设置" prop="receiveOpenRules">
-          <el-switch v-model="ruleForm.receiveOpenRules" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-        <el-form-item required label="线索接单判定“一般逾期”为派单后" prop="generalOverdue">
-          <el-input-number
-            v-model="ruleForm.generalOverdue"
-            :controls="false"
-            :min="0"
-            step-strictly
-            :step="1"
-          /><span>分钟接单</span>
-        </el-form-item>
-        <el-form-item required label="线索接单判定“严重逾期”为派单后" prop="seriousOverdue">
-          <el-input-number
-            v-model="ruleForm.seriousOverdue"
-            :controls="false"
-            :min="0"
-            step-strictly
-            :step="1"
-          /><span>分钟接单</span>
-        </el-form-item>
-        <el-form-item label="首次跟进逾期设置" prop="firstFollowOpenRules">
-          <el-switch
-            v-model="ruleForm.firstFollowOpenRules"
-            :active-value="1"
-            :inactive-value="0"
-          />
-        </el-form-item>
-        <el-form-item
-          required
-          label="线索首次跟进判定“一般逾期”为派单后"
-          prop="firstFollowGeneralOverdue"
-        >
-          <el-input-number
-            v-model="ruleForm.firstFollowGeneralOverdue"
-            :controls="false"
-            :min="0"
-            step-strictly
-            :step="1"
-          /><span>分钟跟进</span>
-        </el-form-item>
-        <el-form-item
-          required
-          label="线索首次跟进判定“严重逾期”为派单后"
-          prop="firstFollowSeriousOverdue"
-        >
-          <el-input-number
-            v-model="ruleForm.firstFollowSeriousOverdue"
-            :controls="false"
-            :min="0"
-            step-strictly
-            :step="1"
-          /><span>分钟跟进</span>
-        </el-form-item>
-        <el-form-item label="常规跟进逾期设置" prop="followOpenRules">
-          <el-switch v-model="ruleForm.followOpenRules" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-        <el-form-item
-          required
-          label="线索常规跟进逾期界限时间配置：计划跟进时间当日"
-          prop="overdueLimitDate"
-        >
-          <el-time-select
-            v-model="ruleForm.overdueLimitDate"
-            start="00:00"
-            step="00:01"
-            end="23:59"
-            style="width: 120px"
-          />
-        </el-form-item>
-        <el-form-item
-          required
-          label="线索常规跟进判定“一般逾期”为计划跟进时间当日22:00+"
-          prop="followGeneralOverdue"
-        >
-          <el-input-number
-            v-model="ruleForm.followGeneralOverdue"
-            :controls="false"
-            :min="0"
-            step-strictly
-            :step="1"
-          /><span>分钟后跟进</span>
-        </el-form-item>
-        <el-form-item
-          required
-          label="线索常规跟进判定“严重逾期”为计划跟进时间当日22:00+"
-          prop="followSeriousOverdue"
-        >
-          <el-input-number
-            v-model="ruleForm.followSeriousOverdue"
-            :controls="false"
-            :min="0"
-            step-strictly
-            :step="1"
-          /><span>分钟后跟进</span>
-        </el-form-item>
-        <el-form-item label="回收设置" prop="recycle">
-          <el-switch v-model="ruleForm.recycle" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-        <el-form-item label="" prop="recyclePostpone">
-          <el-input-number
-            v-model="ruleForm.recyclePostpone"
-            :controls="false"
-            :min="0"
-            step-strictly
-            :step="1"
-            style="margin-left: 0px"
-          />
-          <span>分钟未进行跟进，则对线索进行回收重新派发</span>
-        </el-form-item>
-        <div class="form-sub-title mb-10px"><span>其他设置</span></div>
-        <el-form-item
-          label="已派发的线索，是否允许再次增加派发成员"
-          style="margin-bottom: 0px"
-          prop="augment"
-        >
-          <el-switch v-model="ruleForm.augment" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-        <el-form-item label="成员已接单的有效线索，是否允许共享给其他成员进行跟进" prop="share">
-          <el-switch v-model="ruleForm.share" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-      </el-form>
+      </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" :loading="btnLoading" @click="handleConfirm(formRef)"
@@ -214,8 +236,7 @@
 import { judgeTimeList } from '@/utils/utils'
 import type { FormInstance, FormRules } from 'element-plus'
 import dayjs from 'dayjs'
-import { listToTree } from '@/utils/tree'
-import { cloneDeep, difference } from 'lodash-es'
+import { cloneDeep } from 'lodash-es'
 import {
   existRuleShop,
   createAssessRule,
@@ -223,6 +244,8 @@ import {
   editAssessRule,
   checkRuleName
 } from '@/api/clue/basicConfig'
+import { useOption } from '@/store/modules/options'
+const store = useOption()
 const message = useMessage()
 interface IProps {
   modelValue: boolean
@@ -253,19 +276,21 @@ watch(
     if (val) {
       const id = props.curInfo['id']
       Promise.all([getExistRuleShop(), id && getInfo(id)]).then(() => {
-        const list = cloneDeep(props.shopList)
-        const ids: string[] = ruleForm.applicableShopId
-        checkedList.value = difference(checkedList.value, ids).map((d) => +d)
-        list.forEach((item: object) => {
-          item['disabled'] = checkedList.value.includes(item['id'])
-        })
-        shopTreeList.value = listToTree(list, { pid: 'parentId' })
+        shopTreeList.value = store.dealShopList(
+          props.shopList,
+          unref(checkedList),
+          ruleForm.applicableShopId
+        )
       })
     } else {
       formRef.value?.resetFields()
     }
   }
 )
+const shopRef = ref()
+const aaa = () => {
+  console.log(shopRef.value)
+}
 const loading = ref<boolean>(false)
 const getInfo = async (id) => {
   try {
@@ -392,7 +417,8 @@ const handleClose = () => {
 }
 const btnLoading = ref<boolean>(false)
 const handleConfirm = async (formEl: FormInstance | undefined) => {
-  Promise.all([editTimeFlag && timeEdit(false), formEl && formEl.validate()]).then(async () => {
+  Promise.all([editTimeFlag && timeEdit(false), formEl && formEl.validate()]).then(async (res) => {
+    if (res.some((d) => !d)) return
     try {
       btnLoading.value = true
       const params = cloneDeep(ruleForm)
@@ -415,15 +441,14 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 
 <style lang="scss">
 .edit-assess-rule-dialog {
-  @import '../../style/index';
+  @import '@/styles/custom.scss';
   .el-form {
     padding: 0 20px;
   }
   .el-dialog__body {
     height: 550px;
     overflow: auto;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding: 0 !important;
     .el-divider {
       width: calc(100% + 40px);
       margin-left: -20px;

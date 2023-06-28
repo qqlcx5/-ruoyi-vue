@@ -9,8 +9,19 @@
       :loading="loading"
     >
       <template #btns>
-        <el-button type="primary" @click="handleCreate">新增</el-button>
-        <el-button :disabled="!checkedList.length" @click="handleDelete">删除</el-button>
+        <XButton
+          type="primary"
+          v-hasPermi="['clue:basic-config:repetition-period:create']"
+          iconFont="icon-xinzeng"
+          title="新增"
+          @click="handleCreate"
+        />
+        <el-button
+          v-hasPermi="['clue:basic-config:repetition-period:delete']"
+          :disabled="!checkedList.length"
+          @click="handleDelete"
+          >删除</el-button
+        >
       </template>
       <template #tip>
         <div class="mb-12px" style="line-height: 20px; font-size: 14px; color: #ff4141"
@@ -24,7 +35,7 @@
 
 <script setup lang="tsx">
 import useQueryPage from '@/hooks/web/useQueryPage'
-import WgTable from '../components/WgTable/index.vue'
+import WgTable from '@/components/WTable/index.vue'
 import EditRepetitionPeriod from '../components/EditRepetitionPeriod/index.vue'
 import {
   pageRepetitionPeriod,
@@ -35,7 +46,7 @@ import { dateFormat } from '@/utils/utils'
 
 const message = useMessage()
 
-const typeObj = { 0: '不限', 1: '门店', 2: '分店' }
+const typeObj = { 0: '不限', 1: '门店', 2: '区域' }
 const tableConfig = reactive({
   pageKey: 'repetitionPeriod',
   type: 'selection',
@@ -43,15 +54,17 @@ const tableConfig = reactive({
   queryParams: { pageNo: 1, pageSize: 10 },
   columns: [
     {
-      title: '线索重复判断维度',
+      label: '线索重复判断维度',
       key: 'ruleType',
       minWidth: 150,
+      disabled: true,
       render: ({ row }) => typeObj[row.ruleType]
     },
     {
-      title: '周期',
+      label: '周期',
       key: 'repetitionPeriod',
       minWidth: 180,
+      disabled: true,
       render: ({ row }) => {
         return row.repetitionPeriod > 0 ? (
           <span>线索{row.repetitionPeriod}天内不可重复</span>
@@ -61,9 +74,10 @@ const tableConfig = reactive({
       }
     },
     {
-      title: '状态',
+      label: '状态',
       key: 'isEnable',
       render: ({ row }) => {
+        row.isEnable = row.isEnable || 0
         return (
           <el-switch
             v-model={row.isEnable}
@@ -74,29 +88,34 @@ const tableConfig = reactive({
         )
       }
     },
-    { title: '创建人', key: 'creator' },
+    { label: '创建人', key: 'creator' },
     {
-      title: '创建时间',
+      label: '创建时间',
       minWidth: '190',
       key: 'createTime',
       render: ({ row }) => dateFormat(row.createTime)
     },
-    { title: '最近操作人', key: 'updater' },
+    { label: '最近操作人', key: 'updater' },
     {
-      title: '最近操作时间',
+      label: '最近操作时间',
       minWidth: '190',
       key: 'updateTime',
       render: ({ row }) => dateFormat(row.updateTime)
     },
     {
-      title: '操作',
+      label: '操作',
       key: 'operate',
       width: 75,
       fixed: 'right',
       render: ({ row }) => {
         return (
           <div>
-            <el-button type="primary" link onclick={() => handleEdit(row)}>
+            <el-button
+              v-hasPermi={[['clue:basic-config:repetition-period:edit']]}
+              type="primary"
+              link
+              onclick={() => handleEdit(row)}
+            >
               编辑
             </el-button>
           </div>
@@ -104,10 +123,6 @@ const tableConfig = reactive({
       }
     }
   ]
-})
-tableConfig.columns.forEach((item, index) => {
-  item['sort'] += index
-  Object.assign(item, { resizable: true, ellipsis: true, disabled: false })
 })
 const statusChange = async (val, row) => {
   try {

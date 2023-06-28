@@ -296,6 +296,70 @@ const remainingRouter: AppRouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: '/clue',
+    component: Layout,
+    name: 'Clue',
+    meta: { hidden: true },
+    children: [
+      {
+        path: 'basic-config/edit-dcc/:id',
+        name: 'EditDcc',
+        component: () => import('@/views/basicConfig/dcc/edit.vue'),
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          title: '编辑DCC规则',
+          activeMenu: 'basicConfig/dcc/index'
+        }
+      },
+      {
+        path: 'basic-config/create-dcc',
+        name: 'CreateDcc',
+        component: () => import('@/views/basicConfig/dcc/edit.vue'),
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          title: '新增DCC规则',
+          activeMenu: 'basicConfig/dcc/index'
+        }
+      }
+    ]
+  },
+  {
+    path: '/mortgage',
+    component: Layout,
+    name: 'Mortgage',
+    meta: { hidden: true },
+    children: [
+      {
+        path: 'financial-product/edit/:id',
+        name: 'FinancialProductEdit',
+        component: () => import('@/views/mortgage/financialProduct/edit.vue'),
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          title: '编辑金融产品',
+          activeMenu: 'mortgage/financialProduct/index'
+        }
+      },
+      {
+        path: 'financial-product/create',
+        name: 'FinancialProductCreate',
+        component: () => import('@/views/mortgage/financialProduct/edit.vue'),
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          title: '新增金融产品',
+          activeMenu: 'mortgage/financialProduct/index'
+        }
+      }
+    ]
+  },
   ...whiteRouter
 ]
 
