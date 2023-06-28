@@ -2206,6 +2206,7 @@ function changeMode() {
   }
   .employees-name-content {
     display: flex;
+    flex-wrap: wrap;
   }
   .employees-info-card {
     padding: 15px;

@@ -1997,6 +1997,8 @@ onMounted(async () => {
   await getOrganizationDetailsFN()
   console.log('state.formState.belongTenantId>>>>>>>>>>>>>>>>', state.formState.belongTenantId)
   console.log('props.storeRecord', props.storeRecord)
+  console.log(' props.storeRecord.organizationType === organizationType.store',  props.storeRecord.organizationType === organizationType.store)
+  console.log('props.storeRecord.organizationType!!!!!!!!!!!!!!!!!!!!', props.storeRecord.organizationType)
   const areaRes = await getCurrentStoreAreaList({
     tenantId:
       props.storeRecord.organizationType === organizationType.store

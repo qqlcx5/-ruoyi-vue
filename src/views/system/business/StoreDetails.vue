@@ -453,7 +453,7 @@ const detailsInfo = async (record) => {
   //地址 数据统计区域
   let companyAddressData = ''
   if (res?.province) {
-    companyAddressData = res?.province + res?.city + res?.county
+    companyAddressData = res?.dataProvinceName + res?.dataCityName + res?.dataCountyName
   }
 
   //地址

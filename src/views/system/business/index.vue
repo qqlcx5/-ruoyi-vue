@@ -597,7 +597,7 @@
                 <a-button
                   type="primary"
                   @click="openModal({ type: 'dealer', unNeedBelongTenantId: true })"
-                  v-hasPermi="['system:tenant:create']"
+                  v-hasPermi="['system:tenant:create-store']"
                 >
                   <template #icon
                     ><Icon icon="svg-icon:add" class="btn-icon" :size="10"
@@ -1714,13 +1714,12 @@
     v-model:visible="state.isShowDomainCulture"
     destroyOnClose
     :title="state.domainCultureTitle"
-    :footer="null"
     @cancel="closeDomainCultureModal"
     wrapClassName="domain-Culture"
     :width="`530px`"
     :bodyStyle="{
       width: `100%`,
-      height: `276px`,
+      height: `206px`,
       margin: '0',
       padding: '0',
       overflow: 'auto'
@@ -1797,12 +1796,7 @@
     </div>
 
     <!--  footer  -->
-    <div
-      :class="[
-        'footer-content',
-        { 'footer-content-culture': state.modalDomainCultureType === 'culture' }
-      ]"
-    >
+    <template #footer>
       <a-button
         type="primary"
         html-type="submit"
@@ -1811,7 +1805,7 @@
         >确认</a-button
       >
       <a-button @click="closeDomainCultureModal">取消</a-button>
-    </div>
+    </template>
   </a-modal>
 
   <!--  门店修改上级主体  -->
@@ -3045,6 +3039,7 @@ const closeStore = (isRefresh = false) => {
   } //新增子门店 上级机构需要取 当前父级主体下所有的门店
   state.modalType = 'add'
   state.record = {}
+  state.storeRecord = {}
   if (isRefresh) {
     getListStoreFN()
   }
@@ -3073,6 +3068,7 @@ const editStoreDetails = (record) => {
 //打开 绑定域名/企业文化
 const openDomainCulture = (record, type) => {
   state.modalDomainCultureType = type
+  state.domainCultureTitle = type === 'domain' ? '绑定域名' : '企业文化'
   state.record = record
   if (record.domain) {
     //存在域名 回显
@@ -3192,6 +3188,7 @@ const edit = async (
     //门店
     state.currentTabs = currentTabs
     state.record = record
+    state.storeRecord = record
     state.isShowStore = true
 
     return
@@ -3590,7 +3587,7 @@ const PermissionOk = async () => {
     message.warning(`${hasSelectBtnItem.currentMenu} 菜单未选择操作权限`)
     return
   }
-  
+
   if (!hasSelectBtnItemFrontDesk.isIncludes) {
     message.warning(`${hasSelectBtnItemFrontDesk.currentMenu} 菜单未选择操作权限`)
     return
@@ -4183,10 +4180,6 @@ const detailsInfo = async (record) => {
         {
           textSpan: '负责人电话：',
           text: res.contactMobile
-        },
-        {
-          textSpan: '绑定域名：',
-          text: res.domain
         },
         {
           textSpan: '状态：',
@@ -5638,6 +5631,8 @@ onMounted(async () => {
 }
 //修改 详细 modal位置
 .details-modal {
+  overflow: hidden !important;
+
   .ant-modal {
     max-width: 100%;
     position: absolute;
