@@ -1,452 +1,836 @@
 <!--  主体管理  -->
 <template>
-  <div class="total-content">
-    <!-- 搜索工作栏 -->
-    <a-card class="search-card">
-      <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
-        <div class="total-search-content">
-          <div class="search-content">
-            <a-form-item :label="`主体名称`" name="keyword" class="search-item">
-              <div class="item-condition">
-                <a-input
-                  v-model:value="queryParams.keyword"
-                  placeholder="请输入主体名称或者编码"
-                  class="width-100"
-                />
-              </div>
-            </a-form-item>
-            <a-form-item :label="`专营店编码`" name="specialtyCode" class="search-item">
-              <div class="item-condition">
-                <a-input
-                  v-model:value="queryParams.specialtyCode"
-                  placeholder="请输入专营店编码"
-                  class="width-100"
-                />
-              </div>
-            </a-form-item>
-            <a-form-item :label="`系统名称`" name="systemName" class="search-item">
-              <div class="item-condition">
-                <a-input
-                  v-model:value="queryParams.systemName"
-                  placeholder="请输入系统名称"
-                  class="width-100"
-                />
-              </div>
-            </a-form-item>
-            <a-form-item :label="`有效期`" name="startEndTime" class="search-item">
-              <a-range-picker
-                v-model:value="queryParams.startEndTime"
-                format="YYYY/MM/DD"
-                :placeholder="['开始时间', '结束时间']"
-              />
-            </a-form-item>
-            <a-form-item :label="`状态`" name="status" class="search-item">
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.status"
-                  placeholder="请选择状态"
-                  class="width-100"
-                  :options="state.statusOptions"
-                />
-              </div>
-            </a-form-item>
-            <a-form-item :label="`主体类型`" name="type" class="search-item">
-              <div class="item-condition">
-                <a-select
-                  v-model:value="queryParams.type"
-                  placeholder="请选择主体类型"
-                  class="width-100"
-                  :options="state.majorIndividualTypeOptions"
-                />
-              </div>
-            </a-form-item>
-          </div>
-
-          <div class="search-btn-content">
-            <a-button
-              type="primary"
-              html-type="submit"
-              @click="getList()"
-              v-hasPermi="['system:tenant:query']"
-              >查询</a-button
-            >
-            <a-button @click="resetQuery">重置</a-button>
+  <div class="store-major-content">
+    <!--  主体信息  -->
+    <div class="total-content">
+      <a-card class="type-card-style" :bodyStyle="{ height: '100%' }">
+        <div class="type-content">
+          <div class="type-text flex-center"> 主体信息 </div>
+          <div class="expand-narrow flex-center">
+            <Icon icon="svg-icon:expand-narrow" :size="15" />
+            <span class="expand-narrow-text"> 展开 </span>
           </div>
         </div>
-      </a-form>
-    </a-card>
+      </a-card>
+      <!-- 搜索工作栏 -->
+      <a-card class="search-card">
+        <a-form
+          :model="queryParams"
+          ref="queryFormRef"
+          layout="inline"
+          autocomplete="off"
+          :colon="false"
+          labelAlign="right"
+        >
+          <div class="total-search-content">
+            <div class="search-content">
+              <a-form-item
+                :label="`主体名称`"
+                name="keyword"
+                class="search-item"
+                labelAlign="right"
+              >
+                <div class="item-condition">
+                  <a-input
+                    v-model:value="queryParams.keyword"
+                    placeholder="请输入主体名称或者编码"
+                    class="width-100"
+                  />
+                </div>
+              </a-form-item>
+              <a-form-item :label="`主体类型`" name="type" class="search-item" labelAlign="right">
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.type"
+                    placeholder="请选择主体类型"
+                    class="width-100"
+                    :options="state.majorIndividualTypeOptions"
+                  />
+                </div>
+              </a-form-item>
+              <a-form-item :label="`状态`" name="status" class="search-item" labelAlign="right">
+                <div class="item-condition">
+                  <a-select
+                    v-model:value="queryParams.status"
+                    placeholder="请选择状态"
+                    class="width-100"
+                    :options="state.statusOptions"
+                  />
+                </div>
+              </a-form-item>
+              <a-form-item
+                :label="`有效期`"
+                name="startEndTime"
+                class="search-item"
+                labelAlign="right"
+              >
+                <div class="item-condition-date">
+                  <a-range-picker
+                    v-model:value="queryParams.startEndTime"
+                    format="YYYY/MM/DD"
+                    :placeholder="['开始时间', '结束时间']"
+                  />
+                </div>
+              </a-form-item>
+            </div>
 
-    <!--  表格  -->
-    <a-card
-      :bordered="false"
-      style="min-width: 1700px; width: 100%; height: 100%; padding-bottom: 30px; overflow: hidden"
-      id="card-content"
-    >
-      <!--  <ContentWrap>-->
-      <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
-      <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
-      <!--    >-->
+            <div class="search-btn-content">
+              <a-button
+                type="primary"
+                html-type="submit"
+                @click="getList()"
+                v-hasPermi="['system:tenant:query']"
+                >查询</a-button
+              >
+              <a-button @click="resetQuery(PageKeyObj.business)">重置</a-button>
+            </div>
+          </div>
+        </a-form>
+      </a-card>
 
-      <div class="card-content">
-        <!--  左侧按钮  -->
-        <div class="button-content">
-          <a-button type="primary" @click="openModal()" v-hasPermi="['system:tenant:create']">
-            <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
-            新增
-          </a-button>
-          <a-button @click="toggleExpandAll">
-            <template #icon>
-              <Icon
-                icon="svg-icon:expansion"
-                class="btn-icon"
-                :size="10"
-                v-if="state.isExpandAll"
-              />
-              <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
-            </template>
-            {{ state.isExpandAll ? '收起全部' : '展开全部' }}
-          </a-button>
-        </div>
-        <!--  右侧操作  -->
-        <div class="operation-content">
-          <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
-          <Icon
-            icon="svg-icon:full-screen"
-            :size="50"
-            class="cursor-pointer"
-            @click="fullScreen()"
-          />
-          <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
-          <Icon icon="svg-icon:refresh" :size="50" class="cursor-pointer" @click="getList(true)" />
-          <Icon
-            icon="svg-icon:custom-column"
-            :size="50"
-            class="cursor-pointer"
-            @click="state.isShowCustomColumnModal = true"
-          />
-        </div>
-      </div>
-
-      <!--  分页 - - 之前有 后面去掉了  -->
-      <!--    :pagination="{-->
-      <!--    pageSizeOptions: ['20', '30', '60', '100'],-->
-      <!--    showSizeChanger: true,-->
-      <!--    showQuickJumper: true,-->
-      <!--    pageSize: queryParams.pageSize,-->
-      <!--    current: queryParams.current,-->
-      <!--    total: state.total,-->
-      <!--    showTotal: (total) => `总共 ${total} 条`-->
-      <!--    }"-->
-
-      <a-table
-        v-if="state.refreshTable"
-        :columns="state.columns"
-        :data-source="state.tableDataPseudoPaginationList"
-        :scroll="{ x: '100%', y: 520 }"
-        :pagination="false"
-        @change="onChange"
-        :row-key="(record) => record.id"
-        :loading="state.loading"
-        :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
-        :defaultExpandAllRows="state.isExpandAll"
-        @resizeColumn="handleResizeColumn"
-        :expandIconColumnIndex="state.treeIconIndex"
+      <!--  表格  -->
+      <a-card
+        :bordered="false"
+        style="width: 100%; height: 100%; padding-bottom: 30px; overflow: hidden"
+        id="card-content"
       >
-        <!--  自定义展开折叠图标  -->
-        <template #expandIcon="props">
-          <span v-if="props.record.children && props.record.children.length > 0">
-            <div
-              v-if="props.expanded"
-              style="display: inline-block; margin-right: 10px"
-              @click="
-                (e) => {
-                  props.onExpand(props.record, e)
-                }
-              "
-            >
-              <Icon icon="ep:caret-bottom" :size="12" />
-            </div>
-            <div
-              v-else
-              style="display: inline-block; margin-right: 10px"
-              @click="
-                (e) => {
-                  props.onExpand(props.record, e)
-                }
-              "
-            >
-              <Icon icon="ep:caret-right" :size="12" />
-            </div>
-          </span>
-          <span v-else style="margin-right: 22px"></span>
-        </template>
-        <!--  单元格插槽  -->
-        <template #bodyCell="{ column, record }">
-          <!--  可用名额   -->
-          <template v-if="column?.key === 'name'">
-            <div class="name-content"
-              >{{ record.name }}
+        <!--  <ContentWrap>-->
+        <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
+        <!--      <Icon icon="ep:plus" class="mr-5px" color="#fff" /> 新增新增</a-button-->
+        <!--    >-->
+
+        <div class="card-content">
+          <!--  左侧按钮  -->
+          <div class="button-content">
+            <a-button type="primary" @click="openModal()" v-hasPermi="['system:tenant:create']">
+              <template #icon><Icon icon="svg-icon:add" class="btn-icon" :size="10" /></template>
+              新增主体
+            </a-button>
+            <a-button @click="toggleExpandAll">
+              <template #icon>
+                <Icon
+                  icon="svg-icon:expansion"
+                  class="btn-icon"
+                  :size="10"
+                  v-if="state.isExpandAll"
+                />
+                <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
+              </template>
+              {{ state.isExpandAll ? '收起全部' : '展开全部' }}
+            </a-button>
+          </div>
+          <!--  右侧操作  -->
+          <div class="operation-content">
+            <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
+            <Icon
+              icon="svg-icon:full-screen"
+              :size="50"
+              class="cursor-pointer"
+              @click="fullScreen()"
+            />
+            <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
+            <Icon
+              icon="svg-icon:refresh"
+              :size="50"
+              class="cursor-pointer"
+              @click="getList(true)"
+            />
+            <Icon
+              icon="svg-icon:custom-column"
+              :size="50"
+              class="cursor-pointer"
+              @click="state.isShowCustomColumnModal = true"
+            />
+          </div>
+        </div>
+
+        <!--  分页 - - 之前有 后面去掉了  -->
+        <!--    :pagination="{-->
+        <!--    pageSizeOptions: ['20', '30', '60', '100'],-->
+        <!--    showSizeChanger: true,-->
+        <!--    showQuickJumper: true,-->
+        <!--    pageSize: queryParams.pageSize,-->
+        <!--    current: queryParams.current,-->
+        <!--    total: state.total,-->
+        <!--    showTotal: (total) => `总共 ${total} 条`-->
+        <!--    }"-->
+
+        <a-table
+          v-if="state.refreshTable"
+          :columns="state.columns"
+          :data-source="state.tableDataPseudoPaginationList"
+          :scroll="{ x: '100%', y: 440 }"
+          :pagination="false"
+          @change="onChange"
+          :row-key="(record) => record.id"
+          :loading="state.loading"
+          :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
+          :defaultExpandAllRows="state.isExpandAll"
+          @resizeColumn="handleResizeColumn"
+          :expandIconColumnIndex="state.treeIconIndex"
+        >
+          <!--  自定义展开折叠图标  -->
+          <template #expandIcon="props">
+            <span v-if="props.record.children && props.record.children.length > 0">
               <div
-                :class="['store-tag', { 'child-store-tag': record?.childStore }]"
-                v-if="record.store"
-                >{{ record.store }}</div
-              ></div
-            >
+                v-if="props.expanded"
+                style="display: inline-block; margin-right: 10px"
+                @click="
+                  (e) => {
+                    props.onExpand(props.record, e)
+                  }
+                "
+              >
+                <Icon icon="ep:caret-bottom" :size="12" />
+              </div>
+              <div
+                v-else
+                style="display: inline-block; margin-right: 10px"
+                @click="
+                  (e) => {
+                    props.onExpand(props.record, e)
+                  }
+                "
+              >
+                <Icon icon="ep:caret-right" :size="12" />
+              </div>
+            </span>
+            <span v-else style="margin-right: 22px"></span>
           </template>
-          <!--  可用名额   -->
-          <!--  排除门店  -->
-          <template
-            v-if="
-              column?.key === 'usableAmount' &&
-              record.type !== organizationType.store &&
-              record.type !== storeSubType.popStore &&
-              record.type !== storeSubType.cityHall
-            "
-          >
-            <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
-          </template>
-          <!--  有效期   -->
-          <!--  排除门店  -->
-          <template
-            v-if="
-              column?.key === 'validityPeriod' &&
-              record.type !== organizationType.store &&
-              record.type !== storeSubType.popStore &&
-              record.type !== storeSubType.cityHall
-            "
-          >
-            <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
-          </template>
-          <!--  状态   -->
-          <template v-if="column?.key === 'statusSwitch'">
-            <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
-            <!--  门店  -->
-            <a-switch
-              v-if="record.type === organizationType.store"
-              :disabled="record.level === 1 || !state.storeHasPermission"
-              v-model:checked="record.statusSwitch"
-              @change="(value) => setTableStatusChangeInfo(value, record)"
-            />
-            <!--  子门店  -->
-            <a-switch
-              v-if="record.type === storeSubType.popStore || record.type === storeSubType.cityHall"
-              :disabled="
-                record.level === 1 ||
-                !state.childStoreHasPermission ||
-                !record.parentStoreStatusSwitch
-              "
-              v-model:checked="record.statusSwitch"
-              @change="(value) => setTableStatusChangeInfo(value, record)"
-            />
-            <!-- 主体  -->
-            <a-switch
+          <!--  单元格插槽  -->
+          <template #bodyCell="{ column, record }">
+            <!--  主体名称   -->
+            <template v-if="column?.key === 'name'">
+              <div class="name-content"
+                >{{ record.name }}
+                <div
+                  :class="['store-tag', { 'child-store-tag': record?.childStore }]"
+                  v-if="record.store"
+                  >{{ record.store }}</div
+                ></div
+              >
+            </template>
+            <!--  可用名额   -->
+            <!--  排除门店  -->
+            <template
               v-if="
+                column?.key === 'usableAmount' &&
                 record.type !== organizationType.store &&
                 record.type !== storeSubType.popStore &&
                 record.type !== storeSubType.cityHall
               "
-              :disabled="record.level === 1 || !state.majorIndividualHasPermission"
-              v-model:checked="record.statusSwitch"
-              @change="(value) => setTableStatusChangeInfo(value, record)"
-            />
+            >
+              <div>{{ record.accountUsedCount }}/{{ record.accountCount }}</div>
+            </template>
+            <!--  有效期   -->
+            <!--  排除门店  -->
+            <template
+              v-if="
+                column?.key === 'validityPeriod' &&
+                record.type !== organizationType.store &&
+                record.type !== storeSubType.popStore &&
+                record.type !== storeSubType.cityHall
+              "
+            >
+              <div>{{ record.effectiveStartDate }}~{{ record.expireTime }}</div>
+            </template>
+            <!--  状态   -->
+            <template v-if="column?.key === 'statusSwitch'">
+              <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
+              <!--  门店  -->
+              <a-switch
+                v-if="record.type === organizationType.store"
+                :disabled="record.level === 1 || !state.storeHasPermission"
+                v-model:checked="record.statusSwitch"
+                @change="(value) => setTableStatusChangeInfo(value, record)"
+              />
+              <!--  子门店  -->
+              <a-switch
+                v-if="
+                  record.type === storeSubType.popStore || record.type === storeSubType.cityHall
+                "
+                :disabled="
+                  record.level === 1 ||
+                  !state.childStoreHasPermission ||
+                  !record.parentStoreStatusSwitch
+                "
+                v-model:checked="record.statusSwitch"
+                @change="(value) => setTableStatusChangeInfo(value, record)"
+              />
+              <!-- 主体  -->
+              <a-switch
+                v-if="
+                  record.type !== organizationType.store &&
+                  record.type !== storeSubType.popStore &&
+                  record.type !== storeSubType.cityHall
+                "
+                :disabled="record.level === 1 || !state.majorIndividualHasPermission"
+                v-model:checked="record.statusSwitch"
+                @change="(value) => setTableStatusChangeInfo(value, record)"
+              />
+            </template>
+
+            <!--  操作   -->
+            <template v-if="column?.key === 'operation'">
+              <!--  门店  -->
+              <div class="operation-content" v-if="record.type === organizationType.store">
+                <XTextButton
+                  title="修改"
+                  v-hasPermi="['system:tenant:update-store']"
+                  @click="edit(record, false, record.type === organizationType.store)"
+                />
+                <XTextButton
+                  title="修改上级主体"
+                  v-hasPermi="['system:tenant:change-parent-tenant']"
+                  @click="openEditParentMajorIndividual(record)"
+                />
+
+                <XTextButton
+                  title="新增子门店"
+                  v-hasPermi="['system:tenant:create-child-store']"
+                  @click="openModal(record, true)"
+                />
+
+                <a-popover placement="bottom" class="margin-left-14">
+                  <template #content>
+                    <div>
+                      <XTextButton
+                        title="设置属性"
+                        v-hasPermi="['system:tenant:set-attribute']"
+                        @click="
+                          edit(
+                            record,
+                            false,
+                            record.type === organizationType.store,
+                            'underlyingAttribute'
+                          )
+                        "
+                      />
+                    </div>
+                    <div>
+                      <XTextButton
+                        title="详情"
+                        v-hasPermi="['system:tenant:store-detail']"
+                        @click="detailsInfo(record)"
+                      />
+                    </div>
+                  </template>
+                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+                </a-popover>
+              </div>
+              <!--  子门店  -->
+              <div
+                class="operation-content"
+                v-if="
+                  record.type === storeSubType.popStore || record.type === storeSubType.cityHall
+                "
+              >
+                <XTextButton
+                  title="修改"
+                  v-hasPermi="['system:tenant:update-child-store']"
+                  @click="
+                    edit(
+                      record,
+                      false,
+                      record.type === storeSubType.popStore || record.type === storeSubType.cityHall
+                    )
+                  "
+                />
+                <XTextButton
+                  title="设置属性"
+                  v-hasPermi="['system:tenant:child-store-set-attribute']"
+                  @click="
+                    edit(
+                      record,
+                      false,
+                      record.type === storeSubType.popStore ||
+                        record.type === storeSubType.cityHall,
+                      'underlyingAttribute'
+                    )
+                  "
+                />
+                <XTextButton
+                  title="详情"
+                  v-hasPermi="['system:tenant:child-store-detail']"
+                  @click="detailsInfo(record)"
+                />
+              </div>
+              <!--  主体  -->
+              <div
+                class="operation-content"
+                v-if="
+                  record.type !== organizationType.store &&
+                  record.type !== storeSubType.popStore &&
+                  record.type !== storeSubType.cityHall
+                "
+              >
+                <XTextButton
+                  title="修改"
+                  v-hasPermi="['system:tenant:update']"
+                  @click="edit(record, false, record.type === organizationType.store)"
+                />
+
+                <XTextButton
+                  title="新增门店"
+                  v-if="record.type === majorIndividualType.dealer"
+                  v-hasPermi="['system:tenant:create-store']"
+                  @click="openModal(record)"
+                />
+
+                <XTextButton
+                  title="新增子项"
+                  v-if="record.type === majorIndividualType.manufacturer"
+                  v-hasPermi="['system:tenant:create-child']"
+                  @click="openModal(record)"
+                />
+
+                <XTextButton
+                  title="配置菜单"
+                  v-hasPermi="['system:tenant:auth']"
+                  @click="assignPermission(record)"
+                />
+
+                <a-popover placement="bottom" class="margin-left-14">
+                  <template #content>
+                    <div>
+                      <XTextButton
+                        title="详情"
+                        v-hasPermi="['system:tenant:detail']"
+                        @click="detailsInfo(record)"
+                      />
+                    </div>
+                    <div>
+                      <XTextButton
+                        title="绑定域名"
+                        v-hasPermi="['system:tenant:bind-domain']"
+                        @click="openDomainCulture(record, 'domain')"
+                      />
+                    </div>
+                    <div>
+                      <XTextButton
+                        title="企业文化"
+                        v-hasPermi="['system:tenant:update-culture']"
+                        @click="openDomainCulture(record, 'culture')"
+                      />
+                    </div>
+                  </template>
+                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+                </a-popover>
+              </div>
+            </template>
+
+            <!--  操作   -->
+            <template v-if="false && column?.key === 'operation'">
+              <div class="operation-content">
+                <div
+                  v-hasPermi="['system:tenant:update']"
+                  class="text-color margin-right-5"
+                  @click="edit(record, false, record.type === organizationType.store)"
+                  >修改</div
+                >
+                <div
+                  v-if="record.type !== organizationType.store"
+                  class="text-color margin-right-5"
+                  @click="openModal(record)"
+                  >{{ record.type === 'dealer' ? '新增门店' : '新增子项' }}</div
+                >
+                <div
+                  v-else
+                  v-hasPermi="['system:tenant:parentUpdate']"
+                  class="text-color margin-right-5"
+                  @click="openEditParentMajorIndividual(record)"
+                  >修改上级主体</div
+                >
+
+                <div
+                  v-if="record.type !== organizationType.store"
+                  class="text-color margin-right-5"
+                  @click="assignPermission(record)"
+                  >配置菜单</div
+                >
+                <div
+                  v-else
+                  class="text-color margin-right-5"
+                  @click="
+                    edit(
+                      record,
+                      false,
+                      record.type === organizationType.store,
+                      'underlyingAttribute'
+                    )
+                  "
+                  >设置属性</div
+                >
+                <a-popover placement="bottom">
+                  <template #content>
+                    <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
+                    <!--                  <div-->
+                    <!--                    class="text-color margin-right-5"-->
+                    <!--                    v-if="record.type === organizationType.store"-->
+                    <!--                    @click="openModal(record)"-->
+                    <!--                    >新增子门店</div-->
+                    <!--                  >-->
+                  </template>
+                  <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+                </a-popover>
+              </div>
+            </template>
           </template>
+        </a-table>
 
-          <!--  操作   -->
-          <template v-if="column?.key === 'operation'">
-            <!--  门店  -->
-            <div class="operation-content" v-if="record.type === organizationType.store">
-              <XTextButton
-                title="修改"
-                v-hasPermi="['system:tenant:update-store']"
-                @click="edit(record, false, record.type === organizationType.store)"
-              />
-              <XTextButton
-                title="修改上级主体"
-                v-hasPermi="['system:tenant:change-parent-tenant']"
-                @click="openEditParentMajorIndividual(record)"
-              />
+        <!-- 分页 -->
+        <Pagination
+          :total="state.tableDataList.length"
+          v-model:page="state.pageNo"
+          v-model:limit="state.pageSize"
+          style="padding: 0 15px"
+          @pagination="onPageChange(PageKeyObj.business)"
+        />
+        <!--  </ContentWrap>-->
+      </a-card>
+    </div>
+    <!--  门店信息  -->
+    <div class="total-content store-content">
+      <a-card class="type-card-style" :bodyStyle="{ height: '100%' }">
+        <div class="type-content">
+          <div class="type-text flex-center"> 门店信息 </div>
+        </div>
+      </a-card>
+      <div class="test">
+        <div class="test111"
+          ><storeProSelectTree
+            :tree-data="state.areaListOptions"
+            @sendCurrentSelect="sendCurrentSelect"
+            :selectedKeys="state.selectedKeys"
+            :testArr="state.testArr"
+          ></storeProSelectTree
+        ></div>
+        <div>
+          <!-- 搜索工作栏 -->
+          <a-card class="search-card width-715">
+            <a-form
+              :model="queryParamsStore"
+              ref="queryFormStoreRef"
+              layout="inline"
+              autocomplete="off"
+              :colon="false"
+              labelAlign="right"
+            >
+              <div class="total-search-content store-total-search-content">
+                <div class="search-content">
+                  <a-form-item
+                    :label="`门店名称`"
+                    name="keyword"
+                    class="search-item"
+                    labelAlign="right"
+                  >
+                    <div class="item-condition">
+                      <a-input
+                        v-model:value="queryParamsStore.keyword"
+                        placeholder="请输入门店名称或者编码"
+                        class="width-100"
+                      />
+                    </div>
+                  </a-form-item>
+                  <a-form-item :label="`专营店编码`" name="specialtyCode" class="search-item">
+                    <div class="item-condition">
+                      <a-input
+                        v-model:value="queryParamsStore.specialtyCode"
+                        placeholder="请输入专营店编码"
+                        class="width-100"
+                      />
+                    </div>
+                  </a-form-item>
+                  <a-form-item :label="`机构类型`" name="organizationType" class="search-item">
+                    <div class="item-condition">
+                      <a-select
+                        v-model:value="queryParamsStore.organizationType"
+                        placeholder="请选择机构类型"
+                        class="width-100"
+                        :options="[...state.organizationTypeOptions, ...state.childStoreOptions]"
+                      />
+                    </div>
+                  </a-form-item>
+                  <a-form-item :label="`品牌`" name="brand" class="search-item" v-if="false">
+                    <div class="item-condition">
+                      <a-select
+                        v-model:value="queryParamsStore.brand"
+                        placeholder="请选择品牌"
+                        class="width-100"
+                        :options="state.brandOptions"
+                      />
+                    </div>
+                  </a-form-item>
+                  <a-form-item :label="`状态`" name="status" class="search-item" labelAlign="right">
+                    <div class="item-condition">
+                      <a-select
+                        v-model:value="queryParamsStore.status"
+                        placeholder="请选择状态"
+                        class="width-100"
+                        :options="state.statusOptions"
+                      />
+                    </div>
+                  </a-form-item>
+                </div>
 
-              <XTextButton
-                title="新增子门店"
-                v-hasPermi="['system:tenant:create-child-store']"
-                @click="openModal(record, true)"
-              />
+                <div class="search-btn-content">
+                  <a-button
+                    type="primary"
+                    html-type="submit"
+                    @click="getListStoreFN()"
+                    v-hasPermi="['system:tenant:query']"
+                    >查询</a-button
+                  >
+                  <a-button @click="resetQuery(PageKeyObj.businessStore)">重置</a-button>
+                </div>
+              </div>
+            </a-form>
+          </a-card>
 
-              <a-popover placement="bottom" class="margin-left-14">
-                <template #content>
-                  <div>
+          <!--  表格  -->
+          <a-card
+            :bordered="false"
+            style="width: 735px; height: 649px; padding-bottom: 30px; overflow: hidden"
+            id="card-content"
+          >
+            <div class="card-content">
+              <!--  左侧按钮  -->
+              <div class="button-content">
+                <!--  type: 'dealer' 经销商 unNeedBelongTenantId: true 不需要默认回填上级主体  这块后面最好是改一下 一直在改 又一直催 先这样 按原来的逻辑走  凑入参进去 -->
+                <a-button
+                  type="primary"
+                  @click="openModal({ type: 'dealer', unNeedBelongTenantId: true })"
+                  v-hasPermi="['system:tenant:create']"
+                >
+                  <template #icon
+                    ><Icon icon="svg-icon:add" class="btn-icon" :size="10"
+                  /></template>
+                  新增门店
+                </a-button>
+                <a-button @click="toggleExpandAll">
+                  <template #icon>
+                    <Icon
+                      icon="svg-icon:expansion"
+                      class="btn-icon"
+                      :size="10"
+                      v-if="state.isExpandAll"
+                    />
+                    <Icon icon="svg-icon:expandFold" class="btn-icon" :size="10" v-else />
+                  </template>
+                  {{ state.isExpandAll ? '收起全部' : '展开全部' }}
+                </a-button>
+              </div>
+              <!--  右侧操作  -->
+              <div class="operation-content">
+                <!--        <Icon icon="svg-icon:search" :size="50" class="cursor-pointer" />-->
+                <Icon
+                  icon="svg-icon:full-screen"
+                  :size="50"
+                  class="cursor-pointer"
+                  @click="fullScreen()"
+                />
+                <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
+                <Icon
+                  icon="svg-icon:refresh"
+                  :size="50"
+                  class="cursor-pointer"
+                  @click="getListStoreFN(true)"
+                />
+                <Icon
+                  icon="svg-icon:custom-column"
+                  :size="50"
+                  class="cursor-pointer"
+                  @click="state.isShowStoreCustomColumnModal = true"
+                />
+              </div>
+            </div>
+
+            <a-table
+              v-if="state.refreshTableStore"
+              :columns="state.columnsStore"
+              :data-source="state.tableDataPseudoPaginationListStore"
+              :scroll="{ x: '100%', y: 440 }"
+              :pagination="false"
+              @change="onChange"
+              :row-key="(record) => record.id"
+              :loading="state.loadingStore"
+              :expandable="{ defaultExpandAllRows: false, expandRowByClick: false }"
+              :defaultExpandAllRows="state.isExpandAll"
+              @resizeColumn="handleResizeColumn"
+              :expandIconColumnIndex="state.treeIconIndexStore"
+            >
+              <!--  自定义展开折叠图标  -->
+              <template #expandIcon="props">
+                <span v-if="props.record.children && props.record.children.length > 0">
+                  <div
+                    v-if="props.expanded"
+                    style="display: inline-block; margin-right: 10px"
+                    @click="
+                      (e) => {
+                        props.onExpand(props.record, e)
+                      }
+                    "
+                  >
+                    <Icon icon="ep:caret-bottom" :size="12" />
+                  </div>
+                  <div
+                    v-else
+                    style="display: inline-block; margin-right: 10px"
+                    @click="
+                      (e) => {
+                        props.onExpand(props.record, e)
+                      }
+                    "
+                  >
+                    <Icon icon="ep:caret-right" :size="12" />
+                  </div>
+                </span>
+                <span v-else style="margin-right: 22px"></span>
+              </template>
+              <!--  单元格插槽  -->
+              <template #bodyCell="{ column, record }">
+                <!--  门店名称   -->
+                <template v-if="column?.key === 'name'">
+                  <div class="name-content"
+                    >{{ record.name }}
+                    <div
+                      :class="['store-tag', { 'child-store-tag': record?.childStore }]"
+                      v-if="record.store"
+                      >{{ record.store }}</div
+                    ></div
+                  >
+                </template>
+                <!--  状态   -->
+                <template v-if="column?.key === 'statusSwitch'">
+                  <!-- TODO： 0开启 1关闭 ...换成开关的话 -  -需要对数据进行处理  - - 即对tree里的status进行替换 为布尔值 ... -->
+                  <!--  门店  -->
+                  <a-switch
+                    v-if="record.organizationCategory === organizationCategory.store"
+                    :disabled="record.level === 1 || !state.storeHasPermission"
+                    v-model:checked="record.statusSwitch"
+                    @change="(value) => setTableStatusChangeInfo(value, record)"
+                  />
+                  <!--  子门店  -->
+                  <a-switch
+                    v-if="record.organizationCategory === organizationCategory.childStore"
+                    :disabled="
+                      record.level === 1 ||
+                      !state.childStoreHasPermission ||
+                      !record.parentStoreStatusSwitch
+                    "
+                    v-model:checked="record.statusSwitch"
+                    @change="(value) => setTableStatusChangeInfo(value, record)"
+                  />
+                </template>
+
+                <!--  操作   -->
+                <template v-if="column?.key === 'operation'">
+                  <!--  门店  -->
+                  <div
+                    class="operation-content"
+                    v-if="record.organizationCategory === organizationCategory.store"
+                  >
                     <XTextButton
-                      title="设置属性"
-                      v-hasPermi="['system:tenant:set-attribute']"
+                      title="修改"
+                      v-hasPermi="['system:tenant:update-store']"
                       @click="
                         edit(
                           record,
                           false,
-                          record.type === organizationType.store,
+                          record.organizationCategory === organizationCategory.store
+                        )
+                      "
+                    />
+                    <XTextButton
+                      title="修改上级主体"
+                      v-hasPermi="['system:tenant:change-parent-tenant']"
+                      @click="openEditParentMajorIndividual(record)"
+                    />
+
+                    <XTextButton
+                      title="新增子门店"
+                      v-hasPermi="['system:tenant:create-child-store']"
+                      @click="openModal(record, true)"
+                    />
+
+                    <a-popover placement="bottom" class="margin-left-14">
+                      <template #content>
+                        <div>
+                          <XTextButton
+                            title="设置属性"
+                            v-hasPermi="['system:tenant:set-attribute']"
+                            @click="
+                              edit(
+                                record,
+                                false,
+                                record.organizationCategory === organizationCategory.store,
+                                'underlyingAttribute'
+                              )
+                            "
+                          />
+                        </div>
+                        <div>
+                          <XTextButton
+                            title="详情"
+                            v-hasPermi="['system:tenant:store-detail']"
+                            @click="detailsInfo(record)"
+                          />
+                        </div>
+                      </template>
+                      <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
+                    </a-popover>
+                  </div>
+                  <!--  子门店  -->
+                  <div
+                    class="operation-content"
+                    v-if="record.organizationCategory === organizationCategory.childStore"
+                  >
+                    <XTextButton
+                      title="修改"
+                      v-hasPermi="['system:tenant:update-child-store']"
+                      @click="
+                        edit(
+                          record,
+                          false,
+                          record.organizationCategory === organizationCategory.childStore
+                        )
+                      "
+                    />
+                    <XTextButton
+                      title="设置属性"
+                      v-hasPermi="['system:tenant:child-store-set-attribute']"
+                      @click="
+                        edit(
+                          record,
+                          false,
+                          record.organizationCategory === organizationCategory.childStore,
                           'underlyingAttribute'
                         )
                       "
                     />
-                  </div>
-                  <div>
                     <XTextButton
                       title="详情"
-                      v-hasPermi="['system:tenant:store-detail']"
+                      v-hasPermi="['system:tenant:child-store-detail']"
                       @click="detailsInfo(record)"
                     />
                   </div>
                 </template>
-                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-              </a-popover>
-            </div>
-            <!--  子门店  -->
-            <div
-              class="operation-content"
-              v-if="record.type === storeSubType.popStore || record.type === storeSubType.cityHall"
-            >
-              <XTextButton
-                title="修改"
-                v-hasPermi="['system:tenant:update-child-store']"
-                @click="
-                  edit(
-                    record,
-                    false,
-                    record.type === storeSubType.popStore || record.type === storeSubType.cityHall
-                  )
-                "
-              />
-              <XTextButton
-                title="设置属性"
-                v-hasPermi="['system:tenant:child-store-set-attribute']"
-                @click="
-                  edit(
-                    record,
-                    false,
-                    record.type === storeSubType.popStore || record.type === storeSubType.cityHall,
-                    'underlyingAttribute'
-                  )
-                "
-              />
-              <XTextButton
-                title="详情"
-                v-hasPermi="['system:tenant:child-store-detail']"
-                @click="detailsInfo(record)"
-              />
-            </div>
-            <!--  主体  -->
-            <div
-              class="operation-content"
-              v-if="
-                record.type !== organizationType.store &&
-                record.type !== storeSubType.popStore &&
-                record.type !== storeSubType.cityHall
-              "
-            >
-              <XTextButton
-                title="修改"
-                v-hasPermi="['system:tenant:update']"
-                @click="edit(record, false, record.type === organizationType.store)"
-              />
+              </template>
+            </a-table>
 
-              <XTextButton
-                title="新增门店"
-                v-if="record.type === majorIndividualType.dealer"
-                v-hasPermi="['system:tenant:create-store']"
-                @click="openModal(record)"
-              />
-
-              <XTextButton
-                title="新增子项"
-                v-if="record.type === majorIndividualType.manufacturer"
-                v-hasPermi="['system:tenant:create-child']"
-                @click="openModal(record)"
-              />
-
-              <XTextButton
-                title="配置菜单"
-                v-hasPermi="['system:tenant:auth']"
-                @click="assignPermission(record)"
-              />
-
-              <a-popover placement="bottom" class="margin-left-14">
-                <template #content>
-                  <div>
-                    <XTextButton
-                      title="详情"
-                      v-hasPermi="['system:tenant:detail']"
-                      @click="detailsInfo(record)"
-                    />
-                  </div>
-                </template>
-                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-              </a-popover>
-            </div>
-          </template>
-
-          <!--  操作   -->
-          <template v-if="false && column?.key === 'operation'">
-            <div class="operation-content">
-              <div
-                v-hasPermi="['system:tenant:update']"
-                class="text-color margin-right-5"
-                @click="edit(record, false, record.type === organizationType.store)"
-                >修改</div
-              >
-              <div
-                v-if="record.type !== organizationType.store"
-                class="text-color margin-right-5"
-                @click="openModal(record)"
-                >{{ record.type === 'dealer' ? '新增门店' : '新增子项' }}</div
-              >
-              <div
-                v-else
-                v-hasPermi="['system:tenant:parentUpdate']"
-                class="text-color margin-right-5"
-                @click="openEditParentMajorIndividual(record)"
-                >修改上级主体</div
-              >
-
-              <div
-                v-if="record.type !== organizationType.store"
-                class="text-color margin-right-5"
-                @click="assignPermission(record)"
-                >配置菜单</div
-              >
-              <div
-                v-else
-                class="text-color margin-right-5"
-                @click="
-                  edit(record, false, record.type === organizationType.store, 'underlyingAttribute')
-                "
-                >设置属性</div
-              >
-              <a-popover placement="bottom">
-                <template #content>
-                  <div class="text-color margin-right-5" @click="detailsInfo(record)">详情</div>
-                  <!--                  <div-->
-                  <!--                    class="text-color margin-right-5"-->
-                  <!--                    v-if="record.type === organizationType.store"-->
-                  <!--                    @click="openModal(record)"-->
-                  <!--                    >新增子门店</div-->
-                  <!--                  >-->
-                </template>
-                <Icon icon="svg-icon:ellipsis" class="btn-icon" :size="18" />
-              </a-popover>
-            </div>
-          </template>
-        </template>
-      </a-table>
-
-      <!-- 分页 -->
-      <Pagination
-        :total="state.tableDataList.length"
-        v-model:page="state.pageNo"
-        v-model:limit="state.pageSize"
-        style="padding: 0 15px"
-        @pagination="onPageChange"
-      />
-      <!--  </ContentWrap>-->
-    </a-card>
+            <!-- 分页 -->
+            <Pagination
+              :total="state.tableDataListStore.length"
+              v-model:page="state.pageNoStore"
+              v-model:limit="state.pageSizeStore"
+              style="padding: 0 15px"
+              @pagination="onPageChange(PageKeyObj.businessStore)"
+            />
+            <!--  </ContentWrap>-->
+          </a-card>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 新增 编辑 Modal -->
@@ -538,6 +922,71 @@
         </a-form-item>
 
         <a-form-item
+          :label="`负责人`"
+          name="contactName"
+          :rules="[{ required: true, message: `负责人不能为空` }]"
+        >
+          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />
+        </a-form-item>
+
+        <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
+          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />
+          <div class="phone-text"> 主要用于重要功能的安全验证，请确保填写正确 </div>
+        </a-form-item>
+
+        <!--  级联选择器  - -   -->
+        <a-form-item
+          :label="`公司地址`"
+          name="detailedAddress"
+          :rules="[{ required: true, message: `公司地址不能为空` }]"
+        >
+          <div class="flex-content adress-content">
+            <a-form-item-rest>
+              <a-cascader
+                v-model:value="state.formState.companyAddress"
+                :options="state.proMunAreaList"
+                @change="cascadeChange"
+                placeholder="请选择省市区"
+              />
+            </a-form-item-rest>
+            <a-input
+              v-model:value="state.formState.detailedAddress"
+              placeholder="请输入详细的公司地址，具体门牌号"
+              class="adress-input"
+            />
+          </div>
+        </a-form-item>
+
+        <!--        <a-form-item-->
+        <!--          :label="`绑定域名`"-->
+        <!--          name="bindingDomainName"-->
+        <!--          :rules="state.bindingDomainNameValidatorRules"-->
+        <!--        >-->
+        <!--          <a-input v-model:value="state.formState.bindingDomainName" placeholder="请输入绑定的域名">-->
+        <!--            <template #addonBefore>-->
+        <!--              <a-select v-model:value="state.formState.bindingDomainNameBefore" style="width: 90px">-->
+        <!--                <a-select-option value="http://">http://</a-select-option>-->
+        <!--                <a-select-option value="https://">https://</a-select-option>-->
+        <!--              </a-select>-->
+        <!--            </template>-->
+        <!--          </a-input>-->
+        <!--        </a-form-item>-->
+
+        <!--        <a-form-item-->
+        <!--          v-if="state.modalType === 'add'"-->
+        <!--          label="状态"-->
+        <!--          name="status"-->
+        <!--          :rules="[{ required: true, message: '菜单状态!' }]"-->
+        <!--        >-->
+        <!--          <a-switch-->
+        <!--            v-model:checked="state.formState.status"-->
+        <!--            checked-children="开启"-->
+        <!--            un-checked-children="关闭"-->
+        <!--          />-->
+        <!--        </a-form-item>-->
+
+        <div class="title-content"><div class="blue-line"></div> 系统信息 </div>
+        <a-form-item
           :label="`系统名称`"
           name="systemName"
           :rules="[
@@ -563,12 +1012,7 @@
 
         <a-form-item label="系统logo" name="logoUrl">
           <div style="height: 131px">
-            <UploadImg
-              v-model:modelValue="state.logoUrlSuccess"
-              fileSize="300"
-              :fileUnit="FileUnit.KB"
-              :resolution="[400, 400]"
-            />
+            <UploadImg v-model:modelValue="state.logoUrlSuccess" :resolution="[400, 400]" />
             <!--            <a-upload-->
             <!--              v-model:file-list="state.logoListUrl"-->
             <!--              :action="updateUrl + '?updateSupport=' + updateSupport"-->
@@ -595,21 +1039,33 @@
             <!--                <div style="margin-top: 8px">上传logo</div>-->
             <!--              </div>-->
             <!--            </a-upload>-->
-            <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px，不超过300k </div>
+            <!--            <div class="upload-text"> 支持jpg/png格式，尺寸400px * 400px </div>-->
+
+            <div class="upload-text">
+              支持jpg/png格式，尺寸400px * 400px
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <img :src="logo" alt="" />
+                </template>
+                <span class="logo-example"> 示例 </span>
+              </a-popover>
+            </div>
           </div>
         </a-form-item>
 
-        <a-form-item
-          :label="`负责人`"
-          name="contactName"
-          :rules="[{ required: true, message: `负责人不能为空` }]"
-        >
-          <a-input v-model:value="state.formState.contactName" placeholder="请输入负责人姓名" />
-        </a-form-item>
-
-        <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
-          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />
-          <div class="phone-text"> 主要用于重要功能的安全验证，请确保填写正确 </div>
+        <a-form-item label="登录页logo" name="loginLogoUrl">
+          <div style="height: 131px">
+            <UploadImg v-model:modelValue="state.loginLogoUrlSuccess" :resolution="[192, 50]" />
+            <div class="upload-text">
+              支持jpg/png格式，尺寸192x * 50px
+              <a-popover placement="bottom" class="margin-left-14">
+                <template #content>
+                  <img :src="loginLogo" alt="" />
+                </template>
+                <span class="logo-example"> 示例 </span>
+              </a-popover>
+            </div>
+          </div>
         </a-form-item>
 
         <a-form-item
@@ -646,34 +1102,6 @@
             placeholder="请输入整数"
           />
         </a-form-item>
-
-        <a-form-item
-          :label="`绑定域名`"
-          name="bindingDomainName"
-          :rules="state.bindingDomainNameValidatorRules"
-        >
-          <a-input v-model:value="state.formState.bindingDomainName" placeholder="请输入绑定的域名">
-            <template #addonBefore>
-              <a-select v-model:value="state.formState.bindingDomainNameBefore" style="width: 90px">
-                <a-select-option value="http://">http://</a-select-option>
-                <a-select-option value="https://">https://</a-select-option>
-              </a-select>
-            </template>
-          </a-input>
-        </a-form-item>
-
-        <!--        <a-form-item-->
-        <!--          v-if="state.modalType === 'add'"-->
-        <!--          label="状态"-->
-        <!--          name="status"-->
-        <!--          :rules="[{ required: true, message: '菜单状态!' }]"-->
-        <!--        >-->
-        <!--          <a-switch-->
-        <!--            v-model:checked="state.formState.status"-->
-        <!--            checked-children="开启"-->
-        <!--            un-checked-children="关闭"-->
-        <!--          />-->
-        <!--        </a-form-item>-->
 
         <div class="title-content"><div class="blue-line"></div> 详细信息 </div>
         <a-form-item
@@ -755,25 +1183,6 @@
           </div>
         </a-form-item>
 
-        <!--  级联选择器  - -   -->
-        <a-form-item :label="`公司地址`" name="detailedAddress">
-          <div class="flex-content adress-content">
-            <a-form-item-rest>
-              <a-cascader
-                v-model:value="state.formState.companyAddress"
-                :options="state.proMunAreaList"
-                @change="cascadeChange"
-                placeholder="请选择省市区"
-              />
-            </a-form-item-rest>
-            <a-input
-              v-model:value="state.formState.detailedAddress"
-              placeholder="请输入详细的公司地址，具体门牌号"
-              class="adress-input"
-            />
-          </div>
-        </a-form-item>
-
         <a-form-item label="营业执照" name="businessLicenseUrl">
           <div style="height: 131px">
             <UploadImg
@@ -840,6 +1249,7 @@
     :needStoreSubtyping="state.needStoreSubtyping"
     :useStoreList="state.useStoreList"
     :storeType="state.storeType"
+    :storeRecord="state.storeRecord"
   />
 
   <!-- 配置权限 Modal -->
@@ -878,6 +1288,7 @@
                   :defaultExpandAll="state.defaultExpandAll"
                   blockNode
                   checkable
+                  class="backstage-tabs-tree"
                   :height="533"
                   :tree-data="state.menuTreeList"
                   :fieldNames="state.fieldNames"
@@ -911,6 +1322,7 @@
                     :value="item.id"
                     :key="`operationCheckbox${index}`"
                     class="operation-checkbox-style"
+                    @change="operationCheckedChange"
                   >
                     {{ item.name }}
                   </a-checkbox>
@@ -931,7 +1343,13 @@
                 defaultExpandAll
                 :tree-data="state.selectTree"
                 :fieldNames="state.fieldNames"
-              />
+              >
+                <template #title="{ name, id }">
+                  <div class="tree-node" :class="`right-tree-item-${id}`">
+                    <span>{{ name }}</span>
+                  </div>
+                </template>
+              </a-tree>
               <div v-if="state.selectTree?.length === 0" class="select-tip"
                 >请选择左侧要配置的菜单</div
               >
@@ -1210,6 +1628,111 @@
     </div>
   </a-modal>
 
+  <!--  绑定域名/企业文化 Modal  -->
+  <a-modal
+    v-model:visible="state.isShowDomainCulture"
+    destroyOnClose
+    :title="state.domainCultureTitle"
+    :footer="null"
+    @cancel="closeDomainCultureModal"
+    wrapClassName="domain-Culture"
+    :width="`530px`"
+    :bodyStyle="{
+      width: `100%`,
+      height: `276px`,
+      margin: '0',
+      padding: '0',
+      overflow: 'auto'
+    }"
+  >
+    <div class="form-content">
+      <a-form
+        :model="domainCultureForm"
+        ref="domainCultureFormRef"
+        v-bind="layout"
+        :label-col="{ style: { width: '130px' } }"
+        autocomplete="off"
+      >
+        <div v-if="state.modalDomainCultureType === 'domain'">
+          <a-form-item
+            :label="`绑定域名`"
+            name="bindingDomainName"
+            :rules="state.bindingDomainNameValidatorRules"
+          >
+            <a-input
+              v-model:value="domainCultureForm.bindingDomainName"
+              placeholder="请输入绑定的域名"
+            >
+              <template #addonBefore>
+                <a-select
+                  v-model:value="domainCultureForm.bindingDomainNameBefore"
+                  style="width: 90px"
+                >
+                  <a-select-option value="http://">http://</a-select-option>
+                  <a-select-option value="https://">https://</a-select-option>
+                </a-select>
+              </template>
+            </a-input>
+          </a-form-item>
+
+          <a-form-item :label="`备案编号`" name="filingNumber">
+            <a-textarea
+              v-model:value="domainCultureForm.filingNumber"
+              show-count
+              :maxlength="50"
+              :rows="1"
+              :disabled="!domainCultureForm.bindingDomainName"
+              placeholder="请输入备案编号"
+            />
+          </a-form-item>
+
+          <a-form-item :label="`公网安备号`" name="securityNumber">
+            <a-textarea
+              v-model:value="domainCultureForm.securityNumber"
+              show-count
+              :maxlength="50"
+              :rows="1"
+              :disabled="!domainCultureForm.bindingDomainName"
+              placeholder="请输入公网安备号"
+            />
+          </a-form-item>
+        </div>
+
+        <a-form-item
+          :label="`经营理念`"
+          name="corporateCulture"
+          v-if="state.modalDomainCultureType === 'culture'"
+        >
+          <a-textarea
+            v-model:value="domainCultureForm.corporateCulture"
+            show-count
+            :maxlength="100"
+            :rows="5"
+            placeholder="请输入经营理念"
+          />
+          <div class="corporateCulture-text"> 注：该提示语将展示在登录页中 </div>
+        </a-form-item>
+      </a-form>
+    </div>
+
+    <!--  footer  -->
+    <div
+      :class="[
+        'footer-content',
+        { 'footer-content-culture': state.modalDomainCultureType === 'culture' }
+      ]"
+    >
+      <a-button
+        type="primary"
+        html-type="submit"
+        @click="domainCultureOk"
+        :loading="state.modalBtnLoading"
+        >确认</a-button
+      >
+      <a-button @click="closeDomainCultureModal">取消</a-button>
+    </div>
+  </a-modal>
+
   <!--  门店修改上级主体  -->
   <EditParentMajorIndividual
     v-if="state.isShowParentMajorIndividual"
@@ -1225,6 +1748,16 @@
     :defaultKeys="state.defaultKeys"
     :changedColumnsObj="state.changedColumnsObj"
     :pageKey="PageKeyObj.business"
+  />
+
+  <!--  定制列 门店  不合并了 单独写 -->
+  <CustomColumn
+    v-if="state.isShowStoreCustomColumnModal"
+    @change-column="changeColumn"
+    :allColumns="allStoreColumns"
+    :defaultKeys="state.defaultStoreKeys"
+    :changedColumnsObj="state.changedStoreColumnsObj"
+    :pageKey="PageKeyObj.businessStore"
   />
 
   <!--  上传图片预览  -->
@@ -1261,8 +1794,11 @@ import {
   getMajorIndividualDetails,
   getMajorIndividualList,
   getSimpleTenantList,
+  getStoreList,
   getTenantPackage,
   getTopPhone,
+  putBindDomain,
+  putCulture,
   putResetPassWord,
   updateEditMajorIndividual,
   updateEditMajorIndividualStatus,
@@ -1292,11 +1828,14 @@ import Store from '@/views/system/business/Store.vue'
 import StoreDetails from '@/views/system/business/StoreDetails.vue'
 import EditParentMajorIndividual from '@/views/system/business/EditParentMajorIndividual.vue'
 import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
+import storeProSelectTree from '@/views/system/business/components/storeProSelectTree.vue'
 import { FileUnit } from '@/components/UploadFile/src/helper'
 import isBetween from 'dayjs/plugin/isBetween'
-import { getOrganizationTypeList } from '@/api/system/organization'
+import { getAreaList, getOrganizationTypeList } from '@/api/system/organization'
 import { majorIndividualType } from '@/utils/constants'
 import Pagination from '@/components/Pagination/index.vue'
+import loginLogo from '@/assets/imgs/system/loginLogo.png'
+import logo from '@/assets/imgs/system/logo.png'
 
 const { wsCache } = useCache()
 
@@ -1315,7 +1854,26 @@ const queryParams: any = reactive({
   type: null
 })
 
-const queryFormRef = ref() // 搜索的表单
+const queryParamsStore: any = reactive({
+  current: 1, //当前页码
+  pageSize: 10, //显示条数
+  keyword: undefined,
+  specialtyCode: undefined,
+  organizationType: undefined,
+  brand: null,
+  status: undefined
+})
+
+const queryFormRef = ref() // 搜索的表单 主体
+const queryFormStoreRef = ref() // 搜索的表单 门店
+const domainCultureFormRef = ref() // 绑定域名/企业文化
+const domainCultureForm = reactive({
+  bindingDomainNameBefore: 'https://', //绑定域名前缀
+  bindingDomainName: null, //绑定域名
+  filingNumber: null, //备案编号
+  securityNumber: null, //公网安备号
+  corporateCulture: null //经营理念
+})
 
 //手机号码正则校验 -  简单校验没有全按国内的号码段来  -
 const isValidPhoneNumber = (phoneNumber) => {
@@ -1438,6 +1996,9 @@ const imageUrl = ref<string>('')
 const state: any = reactive({
   pageNo: 1,
   pageSize: 10,
+  pageNoStore: 1,
+  pageSizeStore: 10,
+  areaListOptions: [],
   majorIndividualHasPermission: false, //table 状态switch 是否禁用 权限关禁用  主体状态权限
   storeHasPermission: false, //table 状态switch 是否禁用 权限关禁用 门店状态权限
   childStoreHasPermission: false, //table 状态switch 是否禁用 权限关禁用 子门店状态权限
@@ -1465,18 +2026,28 @@ const state: any = reactive({
     { value: 0, label: '正常' },
     { value: 1, label: '停用' }
   ], //状态 0 正常 1停用
-  loading: false, //表格加载中
+  loading: false, //表格加载中 主体
+  loadingStore: false, //表格加载中 门店
   rawData: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启
   tableDataList: [], //表格数据
   tableDataArr: [], //表格数据 Arr
   tableDataPseudoPaginationList: [], //表格数据 伪分页
   treeIconIndex: 0,
+
+  rawDataStore: [], //表格数据 原始数据 未组树 主要用来过滤 判断父级状态是否开启 门店
+  tableDataListStore: [], //表格数据  门店
+  tableDataArrStore: [], //表格数据 Arr 门店
+  tableDataPseudoPaginationListStore: [], //表格数据 伪分页 门店
+  treeIconIndexStore: 0, //门店
+
   isExpandAll: false, //展开折叠
   refreshTable: true, //v-if table
+  refreshTableStore: true, //v-if table 门店
   isFullScreen: false, //全屏
   isShow: false, //新增编辑modal
   isShowStore: false, //新增编辑 门店
   isShowStoreDetails: false, //详情 门店
+  isShowDomainCulture: false, //绑定域名/企业文化
   currentTabs: 'basicInformation', //门店 设置属性&&修改 current Tab
   isShowPermission: false, //功能配置modal
   isShowMessage: false, //短信modal
@@ -1496,9 +2067,13 @@ const state: any = reactive({
     { validator: contactMobileValidator }
   ],
   legalMobileRules: [{ validator: legalMobileValidator }],
+  modalDomainCultureType: 'domain', // 绑定域名/企业文化
   modalType: 'add', //add新增edit编辑
   proMunAreaList: [], //省市区数据
   majorIndividualTypeOptions: [], //适用主体类型Options
+  brandOptions: [], //品牌
+  organizationTypeOptions: [], //机构类型列表
+  childStoreOptions: [], //机构类型 子门店类型
   majorIndividualTypeOptionsClone: [], //适用主体类型Options Clone
   formState: {
     majorIndividualType: '', //主体类型
@@ -1508,6 +2083,7 @@ const state: any = reactive({
     abbreviate: '', //主体简称
     systemName: '', //系统名称
     logoUrl: '', //系统logo
+    loginLogoUrl: '', //登录页logo
     contactName: '', //负责人
     contactMobile: '', //负责人电话
     effectiveStartEndTime: [], //有效期
@@ -1554,6 +2130,7 @@ const state: any = reactive({
   isShowDetails: false, //详细modal
   detailsInfo: [], //详情内容
   isShowResetPassWord: false, //重置密码提示modal
+  domainCultureTitle: '绑定域名', //绑定域名/企业文化 modal title
   resetPasswordTitle: '', //重置密码 modal title
   resetPasswordSuccessInfo: {}, //重置密码成功后
   closable: false, //重置密码 modal 右上角×
@@ -1563,33 +2140,34 @@ const state: any = reactive({
     height: 270
   }, //重置密码 modal样式
   isShowCustomColumnModal: false, //是否打开定制列modal
+  isShowStoreCustomColumnModal: false, //是否打开定制列modal 门店
   columns: [], //表格 columns
+  columnsStore: [], //表格 columns 门店
   optionalMenuList: [], //上级主体 List
   optionalMenuTree: [], //上级主体 treeList
   optionalMenuTreeChange: [], //上级主体 跟主体类型联动
   logoListUrl: [], //系统logo 上传 回显 - -
   logoUrlSuccess: '', //系统logo 新增编辑入参
+  loginLogoUrlSuccess: '', //登录页logo 新增编辑入参
   legalPersonListUrl: [], //法人身份证 上传回显
   legalPersonUrlSuccess: '', //法人身份证 新增编辑入参
   businessLicenseListUrl: [], //营业执照 上传回显
   businessLicenseSuccess: '', //营业执照 新增编辑入参
   addEditLoading: false, //新增编辑 modal button 异步loading
+  modalBtnLoading: false, //modal  button 异步loading 其实一个就行了 算了 写都写了
   tableStatusChangeInfo: {}, //存当前表格item项以及switch值
   tableStatusModalInfo: {}, //存当前表格item项 modal
-  defaultKeys: [
+  defaultKeys: ['name', 'code', 'majorIndividualType', 'usableAmount', 'statusSwitch', 'operation'], //定制列默认的keys
+  changedColumnsObj: {}, //定制列组件接收到的当前列信息
+  changedStoreColumnsObj: {}, //定制列组件接收到的当前列信息 门店
+  defaultStoreKeys: [
     'name',
-    'code',
-    'majorIndividualType',
-    'systemName',
-    'usableAmount',
-    'validityPeriod',
-    'bindingDomainName',
-    'contactName',
-    'contactMobile',
+    'specialtyCode',
+    'staffCount',
+    'organizationType',
     'statusSwitch',
     'operation'
-  ], //定制列默认的keys
-  changedColumnsObj: {} //定制列组件接收到的当前列信息
+  ] //定制列默认的keys
 })
 
 // //存放功能配置 选中的所有keys(包括父节点id)
@@ -1711,7 +2289,7 @@ const allColumns = [
     key: 'systemName',
     resizable: true,
     ellipsis: true,
-    disabled: true,
+    // disabled: true,
     sort: 3
   },
   {
@@ -1818,7 +2396,107 @@ const allColumns = [
   }
 ]
 
-/** 查询列表
+//ALL columns 用于定制列过滤 排序 门店
+const allStoreColumns = [
+  {
+    title: '门店名称',
+    width: 200,
+    dataIndex: 'name',
+    key: 'name',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 1
+  },
+  {
+    title: '专营店编码',
+    width: 100,
+    dataIndex: 'specialtyCode',
+    key: 'specialtyCode',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 2
+  },
+  {
+    title: '在职成员',
+    width: 100,
+    dataIndex: 'staffCount',
+    key: 'staffCount',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 2
+  },
+  {
+    title: '机构类型',
+    width: 100,
+    dataIndex: 'organizationTypeText',
+    key: 'organizationTypeText',
+    resizable: true,
+    ellipsis: true,
+    disabled: true,
+    sort: 3
+  },
+  {
+    title: '状态',
+    width: 100,
+    dataIndex: 'statusSwitch',
+    key: 'statusSwitch',
+    resizable: true,
+    ellipsis: true,
+    sort: 9
+  },
+
+  {
+    title: '创建人',
+    dataIndex: 'creator',
+    width: 100,
+    key: 'creator',
+    resizable: true,
+    ellipsis: true,
+    sort: 10
+  },
+  {
+    title: '创建时间',
+    width: 100,
+    dataIndex: 'createTime',
+    key: 'createTime',
+    resizable: true,
+    ellipsis: true,
+    sort: 11
+  },
+  {
+    title: '最近操作人',
+    width: 100,
+    dataIndex: 'updater',
+    key: 'updater',
+    resizable: true,
+    ellipsis: true,
+    sort: 12
+  },
+  {
+    title: '最近操作时间',
+    width: 100,
+    dataIndex: 'updateTime',
+    key: 'updateTime',
+    resizable: true,
+    ellipsis: true,
+    sort: 12
+  },
+
+  {
+    title: '操作',
+    width: 260,
+    dataIndex: 'operation',
+    key: 'operation',
+    fixed: 'right',
+    ellipsis: true,
+    sort: 13
+  }
+]
+
+/** 查询主体列表
  * @param isRefresh 右侧刷新图标进
  * */
 const getList = async (isRefresh = false) => {
@@ -1905,11 +2583,16 @@ const getList = async (isRefresh = false) => {
     // console.log('tempList', tempList)
 
     // belongTenantId
-    state.tableDataList = handleTree(state.tableDataList as any[], 'id', 'parentNode', 'children')
+    state.tableDataList = handleTree(
+      state.tableDataList as any[],
+      'id',
+      'belongTenantId',
+      'children'
+    )
     state.total = res.total
     console.log('state.tableDataList ', state.tableDataList)
     //伪分页
-    onPageChange({ pageNo: 1, pageSize: 10 })
+    onPageChange(PageKeyObj.business)
 
     if (isRefresh) {
       message.success('刷新成功')
@@ -1923,15 +2606,101 @@ const getList = async (isRefresh = false) => {
   })
 }
 
-/** 搜索按钮操作 */
-const handleQuery = () => {
-  getList()
+/** 查询门店列表  其实可以合在getList 算了 拆开吧
+ * @param isRefresh 右侧刷新图标进
+ * */
+const getListStoreFN = async (isRefresh = false) => {
+  state.loadingStore = true
+  const params = {
+    keyword: queryParamsStore.keyword,
+    specialtyCode: queryParamsStore.specialtyCode,
+    systemName: queryParamsStore.organizationType,
+    type: queryParamsStore.brand,
+    status: queryParamsStore.status
+  }
+
+  // switch (state?.currentSelectArea?.level) {
+  //   case ' '
+  // }
+
+  try {
+    const res = await getStoreList(params)
+    state.rawDataStore = res
+    state.tableDataArrStore = res
+
+    res.map((item) => {
+      item.statusSwitch = item.status === 0
+
+      // item.store = item.type === organizationType.store ? '门店' : ''
+      switch (item.organizationCategory) {
+        case organizationCategory.store:
+          item.store = item.organizationTypeText = organizationType.storeText
+          item.name = `【${item.specialtyCode}】${item.name}`
+          break
+        default:
+          item.store = ''
+      }
+
+      //子门店类型
+      switch (item.storeSubtyping) {
+        case storeSubType.popStore:
+          item.store = item.organizationTypeText = storeSubType.popStoreText
+          item.name = `【${item.specialtyCode}】${item.name}`
+          break
+        case storeSubType.cityHall:
+          item.store = item.organizationTypeText = storeSubType.cityHallText
+          item.name = `【${item.specialtyCode}】${item.name}`
+          break
+      }
+
+      if (item.organizationCategory === organizationCategory.childStore) {
+        //  子门店 需要 知道父门店的 状态 关闭则禁用 子门店 状态switch
+        const parentStoreItem = res.find((childItem) => childItem.id === item.parentId)
+        if (parentStoreItem) {
+          item.parentStoreStatusSwitch = parentStoreItem.status === 0
+        }
+      }
+    })
+
+    state.tableDataListStore = res
+
+    state.tableDataListStore = handleTree(
+      state.tableDataListStore as any[],
+      'id',
+      'parentId',
+      'children'
+    )
+    state.total = res.total
+    console.log('state.tableDataListStore ', state.tableDataListStore)
+    //伪分页
+    onPageChange(PageKeyObj.businessStore)
+
+    if (isRefresh) {
+      message.success('刷新成功')
+    }
+  } finally {
+    state.loadingStore = false
+  }
+
+  await nextTick(() => {
+    state.isShowTree = true
+  })
 }
 
 /** 重置按钮操作 */
-const resetQuery = () => {
-  queryFormRef.value.resetFields()
-  handleQuery()
+const resetQuery = (type = PageKeyObj.business) => {
+  switch (type) {
+    case PageKeyObj.business:
+      //主体
+      queryFormRef.value.resetFields()
+      getList()
+      break
+    case PageKeyObj.businessStore:
+      //门店
+      queryFormStoreRef.value.resetFields()
+      getListStoreFN()
+      break
+  }
 }
 
 //一键 展开 折叠 全部
@@ -1952,11 +2721,18 @@ const openEditParentMajorIndividual = (record) => {
 
 //打开Modal
 const openModal = async (record: any = {}, isChildStore = false) => {
+  console.log('record', record)
   //新增门店
   if (record.type === 'dealer' && state.modalType === 'add') {
     if (!(Object.keys(record).length === 0)) {
-      //非空对象判断 新增子项时回显
-      state.belongTenantId = record.id
+      if (record?.unNeedBelongTenantId) {
+        //非空对象判断 新增子项时回显
+        state.belongTenantId = null
+      } else {
+        //非空对象判断 新增子项时回显
+        state.belongTenantId = record.id || record.tenantId
+      }
+      state.storeRecord = record
       state.needBelongTenantId = true
       state.needParentId = false
       state.isShowStore = true
@@ -1967,6 +2743,7 @@ const openModal = async (record: any = {}, isChildStore = false) => {
   //新增子门店
   if (isChildStore && state.modalType === 'add') {
     console.log('record=======>', record)
+    state.storeRecord = record
     state.parentId = record.id
     state.belongTenantId = record.belongTenantId
     state.needBelongTenantId = false
@@ -1977,7 +2754,7 @@ const openModal = async (record: any = {}, isChildStore = false) => {
     state.storeType = storeSubType.popStore
     state.useStoreList = {
       needUseStore: true,
-      belongTenantId: record.belongTenantId
+      belongTenantId: record.belongTenantId || record.tenantId
     }
     state.isShowStore = true
     console.log('新增子门店')
@@ -2057,6 +2834,7 @@ const closeModal = () => {
   state.record = {}
   state.logoListUrl = [] //系统logo 上传 回显 - -
   state.logoUrlSuccess = '' //系统logo 新增编辑入参
+  state.loginLogoUrlSuccess = '' //登录页logo
   state.legalPersonListUrl = [] //法人身份证 上传回显
   state.legalPersonUrlSuccess = '' //法人身份证 新增编辑入参
   state.businessLicenseListUrl = [] //营业执照 上传回显
@@ -2084,7 +2862,7 @@ const closeStore = (isRefresh = false) => {
   state.modalType = 'add'
   state.record = {}
   if (isRefresh) {
-    getList()
+    getListStoreFN()
   }
 }
 
@@ -2105,13 +2883,79 @@ const closeStoreParentMajorIndividual = () => {
 const editStoreDetails = (record) => {
   closeStoreDetails()
   console.log('record!!!!!!!!!!!!!!!!!!!', record)
-  edit(
-    record,
-    false,
-    record.type === organizationType.store ||
-      record.type === storeSubType.popStore ||
-      record.type === storeSubType.cityHall
-  )
+  edit(record, false, record.organizationType === organizationType.store)
+}
+
+//打开 绑定域名/企业文化
+const openDomainCulture = (record, type) => {
+  state.modalDomainCultureType = type
+  state.record = record
+  if (record.domain) {
+    //存在域名 回显
+    if (record.domain.startsWith('http://')) {
+      domainCultureForm!.bindingDomainNameBefore = 'http://'
+      domainCultureForm!.bindingDomainName = record.domain.substring(7)
+    } else if (record.domain.startsWith('https://')) {
+      domainCultureForm!.bindingDomainNameBefore = 'https://'
+      domainCultureForm!.bindingDomainName = record.domain.substring(8)
+    }
+    domainCultureForm.filingNumber = record.filingNumber
+    domainCultureForm.securityNumber = record.securityNumber
+  }
+
+  if (record.corporateCulture) {
+    domainCultureForm.corporateCulture = record.corporateCulture
+  }
+  state.isShowDomainCulture = true
+}
+
+//关闭 绑定域名/企业文化
+const closeDomainCultureModal = () => {
+  state.record = {}
+  domainCultureForm.bindingDomainNameBefore = 'https://' //绑定域名前缀
+  domainCultureForm.bindingDomainName = null //绑定域名
+  domainCultureForm.filingNumber = null //备案编号
+  domainCultureForm.securityNumber = null //公网安备号
+  domainCultureForm.corporateCulture = null //经营理念
+
+  state.isShowDomainCulture = false
+
+  getList()
+}
+
+//绑定域名/企业文化 ok
+const domainCultureOk = async () => {
+  // 校验表单
+  if (!domainCultureFormRef) return
+  await domainCultureFormRef.value.validate()
+  state.modalBtnLoading = true
+  try {
+    switch (state.modalDomainCultureType) {
+      case 'domain':
+        const params = {
+          domain: `${domainCultureForm!.bindingDomainNameBefore}${
+            domainCultureForm!.bindingDomainName
+          }`, //绑定域名,
+          filingNumber: domainCultureForm.filingNumber,
+          id: state.record.id,
+          securityNumber: domainCultureForm.securityNumber
+        }
+        await putBindDomain(params)
+        message.success('绑定域名成功')
+        break
+      case 'culture':
+        await putCulture({
+          corporateCulture: domainCultureForm.corporateCulture,
+          id: state.record.id
+        })
+        message.success('编辑企业文化成功')
+        break
+    }
+
+    closeDomainCultureModal()
+  } finally {
+    state.modalBtnLoading = false
+  }
 }
 
 /** 添加/修改操作 */
@@ -2209,13 +3053,13 @@ const edit = async (
   console.log('state.optionalMenuTree', state.optionalMenuTree)
   console.log('state.formState.belongTenantId', state.formState!.belongTenantId)
 
-  if (res.domain.startsWith('http://')) {
-    state.formState!.bindingDomainNameBefore = 'http://'
-    state.formState!.bindingDomainName = res.domain.substring(7)
-  } else if (res.domain.startsWith('https://')) {
-    state.formState!.bindingDomainNameBefore = 'https://'
-    state.formState!.bindingDomainName = res.domain.substring(8)
-  }
+  // if (res.domain.startsWith('http://')) {
+  //   state.formState!.bindingDomainNameBefore = 'http://'
+  //   state.formState!.bindingDomainName = res.domain.substring(7)
+  // } else if (res.domain.startsWith('https://')) {
+  //   state.formState!.bindingDomainNameBefore = 'https://'
+  //   state.formState!.bindingDomainName = res.domain.substring(8)
+  // }
 
   if (res.logoUrl) {
     state.logoListUrl = [
@@ -2224,6 +3068,10 @@ const edit = async (
       }
     ]
     state.logoUrlSuccess = res.logoUrl
+  }
+
+  if (res.loginLogoUrl) {
+    state.loginLogoUrlSuccess = res.loginLogoUrl
   }
 
   if (res.legalIdentityUrl) {
@@ -2314,6 +3162,7 @@ const addMajorIndividualFN = async () => {
     abbreviate: state.formState!.abbreviate, //主体简称
     systemName: state.formState!.systemName, //系统名称
     logoUrl: state.logoUrlSuccess, //系统logo
+    loginLogoUrl: state.loginLogoUrlSuccess, //登录页logo
     contactName: state.formState!.contactName, //负责人
     contactMobile: state.formState!.contactMobile, //负责人电话
     // effectiveStartDate: state.formState!.effectiveStartEndTime[0]?.format('YYYY-MM-DD'), //有效期 开始时间
@@ -2322,7 +3171,7 @@ const addMajorIndividualFN = async () => {
     // effectiveStartDate: state.formState.effectiveStartEndTime[0]?.format('YYYY/MM/DD'), //有效期 开始时间
     // expireTime: state.formState.effectiveStartEndTime[1]?.format('YYYY/MM/DD'), //有效期 结束时间
     accountCount: state.formState!.accountCount, //可用名额
-    domain: `${state.formState!.bindingDomainNameBefore}${state.formState!.bindingDomainName}`, //绑定域名
+    // domain: `${state.formState!.bindingDomainNameBefore}${state.formState!.bindingDomainName}`, //绑定域名
     creditCode: state.formState!.creditCode, //统一社会信用代码
     // organizationCode: state.formState.organizationCode, //组织机构代码
     legalRepresentative: state.formState!.legalRepresentative, //法定代表人
@@ -2594,6 +3443,8 @@ const closeStatusModal = () => {
   if (state.isShowMessage === false) {
     //关闭 表格状态开启关闭 确认 modal时
     getList()
+    //直接调 没空加判断 TODO 后续最好是补一下
+    getListStoreFN()
   }
 }
 
@@ -2610,26 +3461,27 @@ const setTableStatusChangeInfo = async (value, record) => {
     state.tableStatusChangeInfo['statusTopText'] = `开启后`
     state.tableStatusChangeInfo['statusText'] = `开启`
     state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
-    state.tableStatusChangeInfo['type'] = record?.type === organizationType.store ? '机构' : '主体'
+    state.tableStatusChangeInfo['type'] =
+      (record?.type || record?.organizationType) === organizationType.store ? '机构' : '主体'
   } else {
     state.tableStatusChangeInfo['statusBtnText'] = '确认关闭'
     state.tableStatusChangeInfo['statusTopText'] = `关闭后`
     state.tableStatusChangeInfo['statusText'] = `关闭`
     state.tableStatusChangeInfo['tempTreeNum'] = toTreeCount(record?.children)
-    state.tableStatusChangeInfo['type'] = record?.type === organizationType.store ? '机构' : '主体'
+    state.tableStatusChangeInfo['type'] =
+      (record?.type || record?.organizationType) === organizationType.store ? '机构' : '主体'
   }
 
   console.log('record', record)
   console.log('state.tableStatusChangeInfo', state.tableStatusChangeInfo)
   if (
-    record.type === organizationType.store ||
-    record.type === storeSubType.popStore ||
-    record.type === storeSubType.cityHall
+    record.organizationCategory === organizationCategory.store ||
+    record.organizationCategory === organizationCategory.childStore
   ) {
     // 门店  子门店
     state.tableStatusChangeInfo['tempTreeNum'] = await getChildStoreNum({
       id: record.id,
-      tenantId: record.belongTenantId
+      tenantId: record.belongTenantId || record.tenantId
     })
     console.log('state.tableStatusChangeInfo.tempTreeNum', state.tableStatusChangeInfo.tempTreeNum)
   }
@@ -2653,7 +3505,8 @@ const setTableStatusChangeInfo = async (value, record) => {
 //表格状态开关
 const tableStatusChange = async (value, record) => {
   console.log('record', record)
-  const tempText = record.type === organizationType.store ? '门店' : '主体公司'
+  const tempText =
+    (record.type || record.organizationType) === organizationType.store ? '门店' : '主体公司'
   if (value) {
     state.messageBtnText = '确认开启'
     state.messageText = `为了保护您的${tempText}业务数据安全，请通过安全验证：`
@@ -2665,10 +3518,12 @@ const tableStatusChange = async (value, record) => {
   if (
     record.type === organizationType.store ||
     record.type === storeSubType.popStore ||
-    record.type === storeSubType.cityHall
+    record.type === storeSubType.cityHall ||
+    record.organizationType === organizationType.store
   ) {
+    console.log('9999999999999999')
     //门店 获取 顶层主体手机号  子门店
-    state.messageContactMobile = await getTopPhone({ id: record.belongTenantId })
+    state.messageContactMobile = await getTopPhone({ id: record.belongTenantId || record.tenantId })
   } else {
     state.messageContactMobile = record.contactMobile
   }
@@ -2713,6 +3568,8 @@ const statusCancel = () => {
   state.messageCode = '' //短信验证码
   //直接这里补一次请求吧 - -
   getList()
+  //直接调 没空加判断 TODO 后续最好是补一下
+  getListStoreFN()
 }
 //短信 modal 确认
 const statusOk = async () => {
@@ -2724,7 +3581,8 @@ const statusOk = async () => {
     if (
       state.record?.type === organizationType.store ||
       state.record?.type === storeSubType.popStore ||
-      state.record?.type === storeSubType.cityHall
+      state.record?.type === storeSubType.cityHall ||
+      state.record?.organizationType === organizationType.store
     ) {
       //门店 TODO 短信
       // await updateOrganizationStatus({
@@ -2732,7 +3590,7 @@ const statusOk = async () => {
       //   status: state.record.statusSwitch === true ? 0 : 1
       // })
       const params = {
-        tenantId: state.record!.belongTenantId, //上级主体
+        tenantId: state.record!.belongTenantId || state.record!.tenantId, //上级主体
         id: state.record!.id,
         status: state.record!.statusSwitch === true ? 0 : 1
       }
@@ -2827,6 +3685,7 @@ const selectAllOperation = ({ target }) => {
 
 //配置菜单 操作权限 btn change
 const operationCheckedValueChange = (checkedValue) => {
+  console.log('checkedValue', checkedValue)
   if (checkedValue.length === 0) {
     return
   }
@@ -2845,6 +3704,19 @@ const operationCheckedValueChange = (checkedValue) => {
     //将所需的菜单id存入 直接去重
     checkedKeysDirIds.value = [...new Set(checkedKeysDirIds.value.concat(tempIds))]
   }
+}
+
+const operationCheckedChange = (e) => {
+  console.log('e', e)
+  console.log('e.target.value', e.target.value)
+  const dom = document.querySelector(`.right-tree-item-${e.target.value}`)
+  dom && dom.scrollIntoView({ behavior: 'smooth' })
+  console.log('dom !!!!!!!!!', dom)
+  setTimeout(() => {
+    const dom = document.querySelector(`.right-tree-item-${e.target.value}`)
+    dom && dom.scrollIntoView({ behavior: 'smooth' })
+    console.log('dom !!!!!!!!!', dom)
+  }, 0)
 }
 
 //配置菜单 前台 展开折叠
@@ -2880,13 +3752,13 @@ const expandAllFN = ({ target }) => {
 
 //详情(打开)
 const detailsInfo = async (record) => {
-  if (record?.type === organizationType.store) {
+  if (record?.organizationCategory === organizationCategory.store) {
     //门店
     state.record = record
     state.isShowStoreDetails = true
     return
   }
-  if (record.type === storeSubType.popStore || record.type === storeSubType.cityHall) {
+  if (record?.organizationCategory === organizationCategory.childStore) {
     //子门店
     state.record = record
     state.isShowStoreDetails = true
@@ -3267,13 +4139,29 @@ const setPreviewImage = (imgUrl = '') => {
 }
 
 //页码改变  伪分页
-const onPageChange = () => {
-  // 计算要显示的数据的起始索引和结束索引
-  const startIndex = (state.pageNo - 1) * state.pageSize
-  const endIndex = startIndex + state.pageSize
+const onPageChange = (type = PageKeyObj.business) => {
+  console.log('type===>', type)
+  switch (type) {
+    case PageKeyObj.business:
+      // 计算要显示的数据的起始索引和结束索引
+      const startIndex = (state.pageNo - 1) * state.pageSize
+      const endIndex = startIndex + state.pageSize
 
-  // 根据起始索引和结束索引提取要显示的数据
-  state.tableDataPseudoPaginationList = state.tableDataList.slice(startIndex, endIndex)
+      // 根据起始索引和结束索引提取要显示的数据
+      state.tableDataPseudoPaginationList = state.tableDataList.slice(startIndex, endIndex)
+      break
+    case PageKeyObj.businessStore:
+      // 计算要显示的数据的起始索引和结束索引
+      const startIndexStore = (state.pageNoStore - 1) * state.pageSizeStore
+      const endIndexStore = startIndexStore + state.pageSizeStore
+
+      // 根据起始索引和结束索引提取要显示的数据
+      state.tableDataPseudoPaginationListStore = state.tableDataListStore.slice(
+        startIndexStore,
+        endIndexStore
+      )
+      break
+  }
 }
 
 //数据字典
@@ -3285,6 +4173,14 @@ const getAllType = async () => {
   state.majorIndividualTypeOptions = dictRes.filter((item) => item.dictType === 'tenant_type')
   //适用主体类型
   state.majorIndividualTypeOptionsClone = dictRes.filter((item) => item.dictType === 'tenant_type')
+  //品牌
+  state.brandOptions = dictRes.filter((item) => item.dictType === 'brand')
+  //机构类型
+  state.organizationTypeOptions = dictRes.filter(
+    (item) => item.dictType === 'organization_type' && item.value === organizationType.store
+  )
+  //子门店类型
+  state.childStoreOptions = dictRes.filter((item) => item.dictType === 'store_subtyping')
 }
 
 // 新增、修改 主体类型
@@ -3326,16 +4222,33 @@ const majorIndividualTypeChange = async () => {
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
-const changeColumn = (columnsObj, isCloseModal = false) => {
-  if (isCloseModal) {
-    state.isShowCustomColumnModal = false
-    return
+const changeColumn = (columnsObj, pageKey, isCloseModal = false) => {
+  switch (pageKey) {
+    case PageKeyObj.business:
+      if (isCloseModal) {
+        state.isShowCustomColumnModal = false
+        return
+      }
+      //主体
+      state.columns = cloneDeep(columnsObj.currentColumns)
+      state.changedColumnsObj = cloneDeep(columnsObj)
+      state.refreshTable = false
+      state.refreshTable = true
+      state.isShowCustomColumnModal = false
+      break
+    case PageKeyObj.businessStore:
+      if (isCloseModal) {
+        state.isShowStoreCustomColumnModal = false
+        return
+      }
+      //门店
+      state.columnsStore = cloneDeep(columnsObj.currentColumns)
+      state.changedStoreColumnsObj = cloneDeep(columnsObj)
+      state.refreshTableStore = false
+      state.refreshTableStore = true
+      state.isShowStoreCustomColumnModal = false
+      break
   }
-  state.columns = cloneDeep(columnsObj.currentColumns)
-  state.changedColumnsObj = cloneDeep(columnsObj)
-  state.refreshTable = false
-  state.refreshTable = true
-  state.isShowCustomColumnModal = false
 }
 
 //初始化 获取默认的 columns
@@ -3343,6 +4256,16 @@ allColumns.map((item, index) => {
   item.sort = index + 1
 })
 state.columns = getColumns(state, PageKeyObj.business, allColumns, state.defaultKeys)
+//初始化 获取默认的 columns
+allStoreColumns.map((item, index) => {
+  item.sort = index + 1
+})
+state.columnsStore = getColumns(
+  state,
+  PageKeyObj.businessStore,
+  allStoreColumns,
+  state.defaultStoreKeys
+)
 
 //主体状态权限
 state.majorIndividualHasPermission = hasPermission('system:tenant:update-status')
@@ -3350,6 +4273,34 @@ state.majorIndividualHasPermission = hasPermission('system:tenant:update-status'
 state.storeHasPermission = hasPermission('system:tenant:update-store-status')
 //子门店状态权限
 state.childStoreHasPermission = hasPermission('system:tenant:update-child-store-status')
+
+//当前选中的主体改变
+const currentSelectChange = async () => {
+  const res = await getAreaList({
+    // tenantId
+  })
+  await res.some((item) => {
+    item.title = item.name
+    item.key = item.code
+  })
+  state.areaList = res
+  state.areaListOptions = handleTree(res as any[], 'code', 'parentCode', 'children')
+  console.log('res????????????', res)
+  console.log('state.treeData', state.treeData)
+  console.log('state.areaList', state.areaList)
+}
+
+const sendCurrentSelect = async (currentKey) => {
+  if (currentKey.length > 0) {
+    state.currentSelectArea = state.areaList.find((item) => item.key === currentKey[0])
+    console.log('state.currentSelectArea', state.currentSelectArea)
+  } else {
+    state.currentSelectArea = null
+  }
+  // await getListStoreFN()
+}
+
+currentSelectChange()
 
 // //监听  左侧选中数据  更新 右侧展示数据
 // watch(
@@ -3458,9 +4409,22 @@ watch(
   }
 )
 
+watch(
+  () => state.columnsStore,
+  (columns) => {
+    const needItem = columns!.find((item) => item.key === 'name')
+    state.treeStoreIconIndex = needItem.sort - 1
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
+
 onMounted(async () => {
   await getAllType()
   await getList()
+  await getListStoreFN()
   //仅超管 有新增 btn
   const { roles = [] } = wsCache.get(CACHE_KEY.USER)
   state.isSuperAdmin = roles.includes('super_admin')
@@ -3468,6 +4432,44 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+.store-major-content {
+  display: flex;
+  justify-content: space-between;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.type-card-style {
+  height: 65px;
+}
+.type-content {
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.type-text {
+  height: 100%;
+  padding: 23px 0 17px 15px;
+  color: rgba(51, 51, 51, 1);
+  font-size: 18px;
+  font-weight: bold;
+  text-align: left;
+  font-family: PingFangSC-Medium;
+}
+.expand-narrow {
+  height: 100%;
+  padding: 23px 15px 17px 15px;
+  cursor: pointer;
+}
+.expand-narrow-text {
+  margin-left: 6px;
+  color: rgba(0, 129, 255, 1);
+  font-size: 14px;
+  text-align: left;
+  font-family: PingFangSC-Regular;
+}
 .test {
   width: 100%;
   height: 200px;
@@ -3505,6 +4507,8 @@ onMounted(async () => {
   display: flex;
   //flex: 1;
   margin-top: 10px;
+  width: 232px;
+  justify-content: space-between;
 }
 
 .item-label {
@@ -3517,11 +4521,27 @@ onMounted(async () => {
 }
 
 .item-condition {
-  width: 180px;
+  width: 160px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .item-condition-date {
   width: 240px;
+}
+
+//主体 搜索 label
+.total-search-content {
+  :deep(.ant-form-item-no-colon) {
+    width: 66px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+.store-total-search-content {
+  :deep(.ant-form-item-no-colon) {
+    width: 82px;
+  }
 }
 
 .flex-style {
@@ -3547,18 +4567,35 @@ onMounted(async () => {
 
 //========================== search end ==================================
 .search-card {
-  min-width: 1700px;
+  //min-width: 1700px;
   //min-height: 72px;
-  padding: 0px 20px 10px 20px;
-  margin-bottom: 20px;
+  padding: 0px 14px 10px 20px;
+  //margin-bottom: 20px;
   display: flex;
   align-items: center;
 }
+.width-715 {
+  width: 715px;
+}
 .total-content {
-  width: 100%;
+  //width: 100%;
+  width: 743px;
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+.store-content {
+  width: 944px;
+}
+.right-store-content {
+  display: flex;
+}
+.test {
+  display: flex;
+  height: 100%;
+}
+.test111 {
+  width: 209px !important;
 }
 .content {
   width: 100px;
@@ -3605,6 +4642,8 @@ onMounted(async () => {
 //名称
 .name-content {
   display: flex;
+  //主体名称可能是被全局哪里影响到了 之前都没有 现在少了1.5px 没空看 直接写死
+  height: 23.5px;
 }
 // 可用名额 操作 颜色
 .text-color {
@@ -4016,6 +5055,8 @@ onMounted(async () => {
 }
 .name-content {
   display: flex;
+  //主体名称可能是被全局哪里影响到了 之前都没有 现在少了1.5px 没空看 直接写死
+  height: 23.5px;
 }
 .store-tag {
   margin-left: 10px;
@@ -4043,9 +5084,30 @@ onMounted(async () => {
   align-items: center;
   background: rgba(246, 246, 246, 1);
 }
+.corporateCulture-text {
+  margin-top: 8px;
+  color: rgba(153, 153, 153, 1);
+  font-size: 14px;
+  font-family: PingFangSC-Regular;
+}
+.logo-example {
+  width: 24px;
+  height: 17px;
+  color: rgba(25, 137, 250, 1);
+  font-size: 12px;
+  text-align: left;
+  font-family: PingFangSC-Regular;
+}
 </style>
 
 <style lang="scss">
+//所有modal title
+.ant-modal-title {
+  color: rgba(51, 51, 51, 1);
+  font-size: 18px !important;
+  font-weight: bold !important;
+  font-family: PingFangSC-Medium;
+}
 //修改 详细 modal位置
 .details-modal {
   .ant-modal {
@@ -4107,6 +5169,35 @@ onMounted(async () => {
   }
   .ant-modal-header {
     border-width: 0;
+  }
+}
+
+.backstage-tabs-tree {
+  .ant-tree-treenode-selected {
+    background: skyblue !important;
+  }
+  /*ant-tree-node-content-wrapper ant-tree-node-content-wrapper-close ant-tree-node-selected*/
+  .ant-tree-node-selected {
+    background: skyblue !important;
+  }
+}
+//绑定域名/企业文化
+.domain-Culture {
+  .form-content {
+    padding-top: 30px;
+  }
+  .footer-content {
+    width: 100%;
+    height: 62px;
+    margin-top: 38px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid rgba(234, 235, 239, 1);
+  }
+
+  .footer-content-culture {
+    margin-top: 30px;
   }
 }
 </style>
