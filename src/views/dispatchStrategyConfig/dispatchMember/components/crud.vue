@@ -152,6 +152,7 @@ const openDialog = (id: string, formShopTreeList: any) => {
           item.shopName = item.distributeShopName
           item.shopId = item.distributeShopId
           item.brandArr = parseGetSeries(item.autoBrandIds)
+          item.brandList = parseBrandList(item.autoBrandIds)
           memberList.value.push(item.distributeUserId)
           return item
         })
@@ -173,7 +174,9 @@ const getBrandAndSeriesTreeList = async () => {
   const data = await querySeriesDetailsTree()
   brandAndSeriesOption.value = data
 }
-
+const parseBrandList = (str) => {
+  return str && JSON.parse(str)
+}
 const parseGetSeries = (str) => {
   const seriesIds = ref<number[]>([])
   str &&
@@ -321,6 +324,7 @@ const onConfirm = async () => {
   }
   let isValidBrandList = ref(true)
   let isValidDistributeUserId = ref(true)
+  console.log(memberTableList.value, 'submit')
   memberTableList.value.forEach((item) => {
     if (!item.hasOwnProperty('brandList') || item?.brandList.length < 1) {
       isValidBrandList.value = false
