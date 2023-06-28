@@ -46,7 +46,8 @@ export const getInfoApi = () => {
 
 // 路由
 export const getAsyncRoutesApi = () => {
-  return request.get({ url: '/system/auth/list-menus' })
+  //entrance=managementEnd 写死只要管理端的 后续如果需求变更 再改成调用处传入
+  return request.get({ url: '/system/auth/list-menus?entrance=managementEnd' })
 }
 
 //获取登录验证码
