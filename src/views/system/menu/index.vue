@@ -6,9 +6,9 @@
       <el-tab-pane label="管理端" name="managementEnd"> </el-tab-pane>
       <el-tab-pane label="客户端" name="client"> </el-tab-pane>
     </el-tabs>
-    <MenuComp v-if="tabsName === 'managementEnd'" :mode="tabsName" />
+    <MenuComp v-if="tabsName !== 'client'" :mode="tabsName" />
     <!-- 暂无数据 -->
-    <Empty v-if="tabsName !== 'managementEnd'" class="mt-30vh" description="暂无数据" />
+    <Empty v-if="tabsName === 'client'" class="mt-30vh" description="暂无数据" />
   </div>
 </template>
 
