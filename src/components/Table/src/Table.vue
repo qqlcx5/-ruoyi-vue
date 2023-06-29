@@ -210,7 +210,8 @@ export default defineComponent({
                     v?.formatter?.(data.row, data.column, data.row[v.field], data.$index) ||
                     data.row[v.field],
               // @ts-ignore
-              header: (data: TableSlotHeader) => getSlot(slots, `${v.field}-header`, data)
+              header: (data: TableSlotHeader) =>
+                getSlot(slots, `${v.field}-header`, data) || v.label
             }}
           </ElTableColumn>
         )
