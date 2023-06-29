@@ -7,7 +7,7 @@
         <div>
           <XButton type="primary" title="新增行" @click="handleAdd" />
           <XButton type="primary" title="一键新增单电子规则" @click="show = true" />
-          <el-tooltip placement="bottom" class="icon-tip">
+          <el-tooltip placement="top" class="icon-tip">
             <template #content>
               <span>
                 说明：一键新增单店子规则后，每家门店会生成一条子规则，门店数据范围对应适用门店。
@@ -82,6 +82,36 @@
           <template #action="{ row }">
             <XTextButton title="复制" @click="handleCopy(row)" />
             <XTextButton title="删除" @click="handleDel(row.ruleCode)" />
+          </template>
+          <template #brandCondition-header="{ column }">
+            <div class="flex items-center justify-center">
+              {{ column.label }}
+              <el-tooltip placement="top" class="icon-tip">
+                <template #content>
+                  <span>
+                    不限：不限制或不添加品牌条件
+                    <br />
+                    同品牌：选择成员时，需过滤与实际业务数据为同品牌的人员
+                  </span>
+                </template>
+                <Icon class="ml-3px" icon="ep:question-filled" color="rgb(176, 176, 176)" />
+              </el-tooltip>
+            </div>
+          </template>
+          <template #areaCondition-header="{ column }">
+            <div class="flex items-center justify-center">
+              {{ column.label }}
+              <el-tooltip placement="top" class="icon-tip">
+                <template #content>
+                  <span>
+                    不限：不限制或不添加区域条件
+                    <br />
+                    同区域：选择成员时，需过滤与实际业务数据为同区域的人员
+                  </span>
+                </template>
+                <Icon class="ml-3px" icon="ep:question-filled" color="rgb(176, 176, 176)" />
+              </el-tooltip>
+            </div>
           </template>
         </Table>
       </div>
