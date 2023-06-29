@@ -16,7 +16,7 @@
           collapse-tags
           collapse-tags-tooltip
           filterable
-          @visible-change="getDistributeShopIdList"
+          @change="getDistributeShopIdList"
           :props="{
             label: 'name',
             value: 'id',
@@ -138,31 +138,32 @@ const hide = () => {
   visible.value = false
 }
 const editFlag = ref<boolean>(false)
-const openDialog = (id: string, formShopTreeList: any) => {
-  nextTick(async () => {
-    memberTableList.value = []
-    shopTreeList.value = formShopTreeList
-    editFlag.value = !!id
-    if (id) {
-      await getMemberTreeListApi()
-      dispatchApi.getClueDistributeUserDetail(id).then((res) => {
-        const shopIdArr = ref<number[]>([res.shopId])
-        ruleForm.value.shopIdList = shopIdArr.value
-        memberTableList.value = res.userList.map((item) => {
-          item.shopName = item.distributeShopName
-          item.shopId = item.distributeShopId
-          item.brandArr = parseGetSeries(item.autoBrandIds)
-          item.brandList = parseBrandList(item.autoBrandIds)
-          memberList.value.push(item.distributeUserId)
-          return item
-        })
+const openDialog = async (id: string, formShopTreeList: any) => {
+  memberTableList.value = []
+  memberList.value = []
+  editMemberArr.value = []
+  shopTreeList.value = formShopTreeList
+  editFlag.value = !!id
+  if (id) {
+    await dispatchApi.getClueDistributeUserDetail(id).then((res) => {
+      const shopIdArr = ref<number[]>([res.shopId])
+      ruleForm.value.shopIdList = shopIdArr.value // 赋值所属门店
+      memberTableList.value = res.userList.map((item) => {
+        item.shopName = item.distributeShopName
+        item.shopId = item.distributeShopId
+        item.brandArr = parseGetSeries(item.autoBrandIds)
+        item.brandList = parseBrandList(item.autoBrandIds)
+        editMemberArr.value.push(item.distributeUserId)
+        return item
       })
-    } else {
-      ruleForm.value = { shopIdList: [] }
-      memberList.value = []
-    }
-    visible.value = true
-  })
+    })
+    await getMemberTreeListApi()
+    memberList.value = editMemberArr.value // 赋值所属门店已派发人员
+  } else {
+    ruleForm.value = { shopIdList: [] }
+    memberList.value = []
+  }
+  visible.value = true
 }
 // watch(
 //   () => ruleForm.value,
@@ -244,6 +245,7 @@ const memberTableList = ref<tableObj[]>([
 ])
 const memberCasRef = ref()
 const memberList = ref<number[]>([])
+const editMemberArr = ref<number[]>([])
 const addMemberRule = (val) => {
   if (ruleForm.value.shopIdList.length < 1) {
     return message.error('请先选择所属门店')
@@ -279,12 +281,10 @@ const addMemberRule = (val) => {
     memberTableList.value = memberTableList.value.filter((d) => val.includes(d.distributeUserId))
   }
 }
-const getDistributeShopIdList = (val) => {
-  if (!val) {
-    memberTableList.value = []
-    memberList.value = []
-    getMemberTreeListApi()
-  }
+const getDistributeShopIdList = () => {
+  memberTableList.value = []
+  memberList.value = []
+  getMemberTreeListApi()
 }
 const deleteRow = (row, index) => {
   memberList.value = memberList.value.filter((item) => item !== row.distributeUserId)
