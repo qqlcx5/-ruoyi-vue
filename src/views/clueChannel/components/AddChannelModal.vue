@@ -326,13 +326,25 @@ const submitForm = async () => {
   emit('refreshList')
 }
 let tableColumns: tableColumnsType[] = []
-const openModal = (row) => {
+const openModal = (sourceList0, row) => {
+  if (sourceList0.length > 0) {
+    sourceList.value = sourceList0
+    initSourceList.value = sourceList0
+  } else {
+    getSourceList()
+  }
+
   dialogVisible.value = true
   tableList.value = []
   dialogTitle.value = '新增'
   tableColumns = cloneDeep(initTableColumns)
   if (row) {
     dialogTitle.value = '编辑'
+    try {
+      row.clueSourceId = Number(row.clueSourceId)
+    } catch (error) {
+      console.log(error)
+    }
     tableList.value = [row]
     return
   }
@@ -343,7 +355,6 @@ const openModal = (row) => {
     width: '70px',
     showOverflowTooltip: false
   })
-  getSourceList()
   handleAdd()
 }
 const handleNeedFilterChange = (e, row) => {
