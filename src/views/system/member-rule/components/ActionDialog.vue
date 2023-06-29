@@ -1,7 +1,7 @@
 <template>
   <Dialog v-bind="$attrs" width="1300px" @confirm="handleConfirm">
     <div>
-      <div class="mb-5.5 font-bold rule-name">规则名称：线索增派转派规则</div>
+      <div class="mb-5.5 font-bold rule-name">规则名称：{{ currentNode?.ruleName }}</div>
       <div class="flex items-center mb-5.5">
         <span>规则数据：</span>
         <div>
