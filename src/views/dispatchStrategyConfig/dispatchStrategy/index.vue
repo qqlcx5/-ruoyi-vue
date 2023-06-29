@@ -337,13 +337,13 @@ const handleNeedFilterChange = async (row, type) => {
   if (type == 'status') {
     await dispatchApi.clueDistributeUpdateShopStatus({
       id: row.id,
-      shopId: row.shopId,
+      shopId: row.distributeShopId,
       status: row.status
     })
   } else {
     await dispatchApi.clueDistributeUpdateExternalStatus({
       id: row.id,
-      shopId: row.shopId,
+      shopId: row.distributeShopId,
       status: row.isExternalDistribute
     })
   }
