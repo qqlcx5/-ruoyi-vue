@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { FormExpose } from '@/components/Form'
-import { rules, allSchemas } from './dispatchStrategy.data'
+import { rules, allSchemas } from '../dispatchStrategy.data'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { getMemberTreeDataList } from '@/api/common'
