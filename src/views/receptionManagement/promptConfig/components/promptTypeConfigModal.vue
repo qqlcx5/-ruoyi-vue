@@ -20,9 +20,9 @@
       <!-- 操作按钮 -->
       <template #footer>
         <!-- 按钮：保存 -->
-        <XButton type="primary" title="确认" :loading="dialogLoading" />
+        <!-- <XButton type="primary" title="确认" :loading="dialogLoading" /> -->
         <!-- 按钮：关闭 -->
-        <XButton title="取消" @click="modelValue_ = false" />
+        <XButton title="关闭" @click="modelValue_ = false" />
       </template>
     </XModal>
 
@@ -47,7 +47,7 @@ import { allSchemas } from './promptTypeConfigModal.data'
 import { addRules, addAllSchemas } from './promptTypeConfigModal.add.data'
 
 const { t } = useI18n() // 国际化
-let dialogLoading = ref(false) // 弹窗加载状态
+// let dialogLoading = ref(false) // 弹窗加载状态
 const selectedIds = ref<number[]>([])
 const tableRef = ref()
 const actionButtons = [

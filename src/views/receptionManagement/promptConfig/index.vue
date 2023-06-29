@@ -44,6 +44,7 @@
     </form-table>
     <!-- 新增-通用提示 新增-必讲项提示 -->
     <newGeneralReminderModal
+      ref="newGeneralRef"
       v-model="newGeneralVisible"
       :mode="tabsName"
       @refresh="handleTabChange"
@@ -114,14 +115,12 @@ const { allSchemas } = useCrudSchemas(columns)
 let newGeneralVisible = ref(false) // 新增通用提示
 let promptTypeVisible = ref(false) // 提示类型配置
 let previewVisible = ref(false) // 预览
+const selectedIds = ref<number[]>([])
 let tableRef = ref()
 // 操作：新增
 async function handleAdd() {
-  const list = await tableRef.value?.tableMethods?.getSelections()
-  console.log('add', list)
   newGeneralVisible.value = true
 }
-const selectedIds = ref<number[]>([])
 
 // 操作：删除
 async function handleDel() {
@@ -152,7 +151,7 @@ const confirmDel = (row) => {
       },
       selectedIds.value.length
     ),
-    ' 条提示配置？'
+    ' 条记录？'
   ])
   message
     .wgConfirm('', contentStr, buttonConfig)
@@ -165,8 +164,13 @@ const deleteFun = async () => {
   let params = {
     ids: selectedIds.value
   }
-  console.log(params)
-  const res = await promptConfig.receptionHintConfigBatchDeleteApi(params)
+  let res = null
+  if (tabsName.value === 'currency') {
+    res = await promptConfig.receptionHintConfigBatchDeleteApi(params)
+  } else {
+    res = await promptConfig.receptionMustSayConfigBatchDeleteApi(params)
+  }
+
   if (res) {
     message.success('删除成功')
     tableRef.value.tableMethods.getList()
@@ -181,8 +185,20 @@ function handlePrompt() {
 }
 
 // 操作：修改
-function handleEdit(row) {
-  console.log('edit', row)
+const newGeneralRef = ref() // 表单 Ref
+
+async function handleEdit(row) {
+  // newGeneralVisible.value = true
+  let res = null
+  if (tabsName.value === 'currency') {
+    res = await promptConfig.receptionHintConfigDetailApi(row.id)
+  } else {
+    res = await promptConfig.receptionMustSayConfigDetailApi(row.id)
+  }
+  newGeneralRef.value?.openModal(true, res)
+  // nextTick(() => {
+  //   unref(newGeneralRef)?.setValues(row)
+  // })
 }
 
 // 操作：预览
@@ -193,23 +209,8 @@ function handlePreview(row) {
 function listApi(params) {
   return tabsName.value === 'currency'
     ? promptConfig.receptionHintConfigApi(params)
-    : promptConfig.receptionMustSayConfigApi(params)
+    : promptConfig.receptionMustSayConfigPageApi(params)
 }
-
-// const deleteFun = async () => {
-//   let params = {
-//     ids: selectedIds.value
-//   }
-//   console.log(params)
-//   const res = await promptConfig.receptionHintTypeBatchDeleteApi(params)
-//   if (res) {
-//     message.success('删除成功')
-//     refreshList()
-//   } else {
-//     message.error('报错了')
-//   }
-// }
-
 // 切换tab
 async function handleTabChange() {
   await tableRef.value?.tableMethods.getList()
