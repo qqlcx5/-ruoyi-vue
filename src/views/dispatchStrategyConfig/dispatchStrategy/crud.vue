@@ -1,5 +1,5 @@
 <template>
-  <XModal v-model="dialogVisible" width="665px" :title="dialogTitle">
+  <XModal v-model="dialogVisible" width="65vw" :title="dialogTitle">
     <!-- 对话框(添加 / 修改) -->
     <Form
       v-if="['create', 'update'].includes(actionType)"
@@ -47,7 +47,8 @@
       header-cell-class-name="table-header-style"
       max-height="40vh"
       headerAlign="left"
-      :showOverflowTooltip="false"
+      :showOverflowTooltip="true"
+      :tooltip-options="{ hideAfter: 100000000, popperClass: 'dispatchStrategy-tooltip' }"
       align="left"
     />
 
@@ -310,5 +311,10 @@ const tableList = ref<any[]>([])
   font-size: 14px;
   color: $header-text-color;
   background-color: $table-head-color !important;
+}
+</style>
+<style lang="scss">
+.dispatchStrategy-tooltip {
+  max-width: 40vw;
 }
 </style>
