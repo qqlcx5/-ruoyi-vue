@@ -34,12 +34,12 @@
       <template #status="{ row }">
         <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
       </template>
-      <template #content="{ row }">
+      <!-- <template #content="{ row }">
         <span v-html="row.content"></span>
-      </template>
+      </template> -->
 
-      <template #prompt="{ row }">
-        <el-button type="primary" link @click="handlePreview(row)">预览</el-button>
+      <template #content="{ row }">
+        <el-button type="primary" link @click="handleEdit(row, 'preview')">预览</el-button>
       </template>
     </form-table>
     <!-- 新增-通用提示 新增-必讲项提示 -->
@@ -52,7 +52,7 @@
     <!-- 提示类型配置 -->
     <promptTypeConfigModal v-model="promptTypeVisible" :mode="tabsName" />
     <!-- 预览 -->
-    <previewModal v-model="previewVisible" />
+    <previewModal v-model="previewVisible" :mode="tabsName" :info="infoRow" />
   </div>
 </template>
 
@@ -186,26 +186,18 @@ function handlePrompt() {
 
 // 操作：修改
 const newGeneralRef = ref() // 表单 Ref
-
-async function handleEdit(row) {
-  // newGeneralVisible.value = true
+let infoRow = ref() // 详情
+async function handleEdit(row, type = 'edit') {
   let res = null
   if (tabsName.value === 'currency') {
     res = await promptConfig.receptionHintConfigDetailApi(row.id)
   } else {
     res = await promptConfig.receptionMustSayConfigDetailApi(row.id)
   }
-  newGeneralRef.value?.openModal(true, res)
-  // nextTick(() => {
-  //   unref(newGeneralRef)?.setValues(row)
-  // })
+  infoRow.value = res
+  type === 'edit' ? newGeneralRef.value?.openModal(true, res) : (previewVisible.value = true)
 }
 
-// 操作：预览
-function handlePreview(row) {
-  console.log('preview', row)
-  previewVisible.value = true
-}
 function listApi(params) {
   return tabsName.value === 'currency'
     ? promptConfig.receptionHintConfigApi(params)

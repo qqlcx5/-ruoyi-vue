@@ -25,7 +25,7 @@
         <XTextButton :title="t('action.modify')" @click="handleModify(row)" />
       </template>
     </form-table>
-    <addedPortraitFactor v-model="addTypeVisible" />
+    <addedPortraitFactor v-model="addTypeVisible" @refresh="handleRresh" />
   </div>
 </template>
 
@@ -34,8 +34,11 @@ import { TableColumn } from '@/types/table'
 import * as portraitFactor from '@/api/receptionManagement/portraitFactor'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import addedPortraitFactor from './components/addedPortraitFactor.vue'
+const message = useMessage()
 const { t } = useI18n()
 let tableRef = ref()
+const selectedIds = ref<number[]>([])
+
 const columns: TableColumn[] = [
   {
     label: '画像因子得分区间',
@@ -62,14 +65,62 @@ const columns: TableColumn[] = [
 let addTypeVisible = ref(false) // 新增类型弹窗
 // 操作：新增
 async function handleAdd() {
-  const list = await tableRef.value?.tableMethods?.getSelections()
   addTypeVisible.value = true
-  console.log('🚀 ~ file: index.vue:68 ~ handleAdd ~ list:', list)
+}
+// 操作：刷新
+function handleRresh() {
+  tableRef.value.tableMethods.getList()
 }
 
 // 操作：删除
-function handleDel() {
-  console.log('del')
+async function handleDel() {
+  const list = await tableRef.value?.tableMethods?.getSelections()
+  if (list) {
+    selectedIds.value = list.map((item) => item.id)
+  }
+  if (selectedIds.value.length < 1) {
+    return message.warning('未选择数据')
+  }
+  confirmDel(null)
+}
+const confirmDel = (row) => {
+  row && selectedIds.value.push(row.id)
+  if (selectedIds.value.length < 1) {
+    return message.warning('未选择数据')
+  }
+  const buttonConfig = {
+    confirmButtonText: t('common.confirmDel'),
+    cancelButtonText: t('common.cancel')
+  }
+  const contentStr: any = h('span', [
+    '确定要删除 ',
+    h(
+      'span',
+      {
+        style: { color: 'red' }
+      },
+      selectedIds.value.length
+    ),
+    ' 条记录？'
+  ])
+  message
+    .wgConfirm('', contentStr, buttonConfig)
+    .then(() => {
+      deleteFun()
+    })
+    .catch(() => {})
+}
+const deleteFun = async () => {
+  let params = {
+    ids: selectedIds.value
+  }
+  let res = await portraitFactor.portraitFactorLevelConfigBatchDeleteApi(params)
+  if (res) {
+    message.success('删除成功')
+    tableRef.value.tableMethods.getList()
+  } else {
+    message.error('报错了')
+  }
 }
 
 function handleModify(row) {

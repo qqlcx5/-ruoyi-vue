@@ -49,8 +49,7 @@ const submitForm = async () => {
     if (!valid) return
     try {
       actionLoading.value = true
-      const data = unref(formRef)
-        ?.formModel as portraitFactor.PortraitFactorLevelConfigSaveOrUpdateApiParams
+      const data = unref(formRef)?.formModel
       await portraitFactor.portraitFactorLevelConfigSaveOrUpdateApi(data)
       message.success(t('common.createSuccess'))
     } finally {
