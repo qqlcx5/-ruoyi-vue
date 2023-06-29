@@ -8,7 +8,7 @@
           type="primary"
           preIcon="ep:zoom-in"
           :title="t('action.add')"
-          v-hasPermi="['system:sensitive-word:create']"
+          v-hasPermi="['system:tenant-sensitive-word:create']"
           @click="handleCreate()"
         />
         <!-- 操作：导出 -->
@@ -35,21 +35,21 @@
         <XTextButton
           preIcon="ep:edit"
           :title="t('action.edit')"
-          v-hasPermi="['system:sensitive-word:update']"
+          v-hasPermi="['system:tenant-sensitive-word:update']"
           @click="handleUpdate(row.id)"
         />
         <!-- 操作：详情 -->
         <XTextButton
           preIcon="ep:view"
           :title="t('action.detail')"
-          v-hasPermi="['system:sensitive-word:update']"
+          v-hasPermi="['system:tenant-sensitive-word:query']"
           @click="handleDetail(row.id)"
         />
         <!-- 操作：删除 -->
         <XTextButton
           preIcon="ep:delete"
           :title="t('action.del')"
-          v-hasPermi="['system:sensitive-word:delete']"
+          v-hasPermi="['system:tenant-sensitive-word:delete']"
           @click="deleteData(row.id)"
         />
       </template>
