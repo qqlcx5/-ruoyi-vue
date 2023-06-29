@@ -1,7 +1,7 @@
 <template>
   <div class="new-general-reminder-modal">
     <!-- 新增-通用提示 -->
-    <XModal v-model="modelValue_" title="新增-通用提示">
+    <XModal v-model="modelValue_" width="60%" height="90%" title="新增-通用提示">
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="状态" prop="status" required>
           <el-switch v-model="formData.status" :inactive-value="0" :active-value="1" />
@@ -77,13 +77,13 @@ const props = defineProps({
   }
 })
 
-const emits = defineEmits<{ (e: 'update:modelValue', val: boolean): void }>()
+const emits = defineEmits(['update:modelValue', 'refresh'])
 const modelValue_ = computed({
   get: () => props.modelValue,
   set: (val) => emits('update:modelValue', val)
 })
 /* -------------------------------- // 获取提示类型 ------------------------------- */
-let promptTypeList = ref([])
+const promptTypeList = ref<any[]>([])
 async function getPromptType() {
   const data = await promptConfig.receptionHintTypeAllListApi({})
   promptTypeList.value = data
@@ -107,7 +107,7 @@ let formData = ref({
 })
 
 // 提交按钮
-import type { FormInstance, FormRules } from 'element-plus'
+import type { FormInstance } from 'element-plus'
 const formRef = ref<FormInstance>()
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
@@ -127,6 +127,7 @@ const submitForm = async () => {
     } finally {
       dialogLoading.value = false
       modelValue_.value = false
+      emits('refresh', true)
     }
   })
 }

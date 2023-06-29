@@ -107,17 +107,17 @@ const editMember = (row) => {
     unref(formRef)?.setValues(row)
   })
 }
-
-const handleDel = async () => {
-  const res = await tableRef.value.tableMethods.getSelections()
-  if (res) {
-    selectedIds.value = res.map((item) => item.id)
-  }
-  if (selectedIds.value.length < 1) {
-    return message.warning('未选择数据')
-  }
-  handleDel()
-}
+//
+// const handleDel = async () => {
+//   const res = await tableRef.value.tableMethods.getSelections()
+//   if (res) {
+//     selectedIds.value = res.map((item) => item.id)
+//   }
+//   if (selectedIds.value.length < 1) {
+//     return message.warning('未选择数据')
+//   }
+//   handleDel()
+// }
 const confirmDel = () => {
   if (selectedIds.value.length < 1) {
     return message.warning('未选择数据')

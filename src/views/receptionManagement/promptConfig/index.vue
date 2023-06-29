@@ -28,10 +28,14 @@
       <!-- 操作：修改 -->
       <template #action="{ row }">
         <XTextButton :title="t('action.edit')" @click="handleEdit(row)" />
+        <XTextButton :title="t('action.del')" @click="confirmDel(row)" />
       </template>
 
       <template #status="{ row }">
         <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
+      </template>
+      <template #content="{ row }">
+        <span v-html="row.content"></span>
       </template>
 
       <template #prompt="{ row }">
@@ -39,7 +43,11 @@
       </template>
     </form-table>
     <!-- 新增-通用提示 新增-必讲项提示 -->
-    <newGeneralReminderModal v-model="newGeneralVisible" :mode="tabsName" />
+    <newGeneralReminderModal
+      v-model="newGeneralVisible"
+      :mode="tabsName"
+      @refresh="handleTabChange"
+    />
     <!-- 提示类型配置 -->
     <promptTypeConfigModal v-model="promptTypeVisible" :mode="tabsName" />
     <!-- 预览 -->
@@ -54,7 +62,7 @@ import newGeneralReminderModal from './components/newGeneralReminderModal.vue'
 import promptTypeConfigModal from './components/promptTypeConfigModal.vue'
 import previewModal from './components/previewModal.vue'
 import * as promptConfig from '@/api/receptionManagement/promptConfig'
-
+const message = useMessage()
 const { t } = useI18n()
 let tabsName = ref('currency')
 const columns: TableColumn[] = [
@@ -113,10 +121,58 @@ async function handleAdd() {
   console.log('add', list)
   newGeneralVisible.value = true
 }
+const selectedIds = ref<number[]>([])
 
 // 操作：删除
-function handleDel() {
-  console.log('del')
+async function handleDel() {
+  const list = await tableRef.value?.tableMethods?.getSelections()
+  if (list) {
+    selectedIds.value = list.map((item) => item.id)
+  }
+  if (selectedIds.value.length < 1) {
+    return message.warning('未选择数据')
+  }
+  confirmDel(null)
+}
+const confirmDel = (row) => {
+  row && selectedIds.value.push(row.id)
+  if (selectedIds.value.length < 1) {
+    return message.warning('未选择数据')
+  }
+  const buttonConfig = {
+    confirmButtonText: t('common.confirmDel'),
+    cancelButtonText: t('common.cancel')
+  }
+  const contentStr: any = h('span', [
+    '确定要删除 ',
+    h(
+      'span',
+      {
+        style: { color: 'red' }
+      },
+      selectedIds.value.length
+    ),
+    ' 条提示配置？'
+  ])
+  message
+    .wgConfirm('', contentStr, buttonConfig)
+    .then(() => {
+      deleteFun()
+    })
+    .catch(() => {})
+}
+const deleteFun = async () => {
+  let params = {
+    ids: selectedIds.value
+  }
+  console.log(params)
+  const res = await promptConfig.receptionHintConfigBatchDeleteApi(params)
+  if (res) {
+    message.success('删除成功')
+    tableRef.value.tableMethods.getList()
+  } else {
+    message.error('报错了')
+  }
 }
 
 // 操作：提示类型配置
