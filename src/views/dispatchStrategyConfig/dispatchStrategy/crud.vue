@@ -19,7 +19,7 @@
       </template>
       <template #filterUserId="form">
         <el-cascader
-          :options="userOptions.users"
+          :options="userOptions"
           :props="filterUserIdProps"
           v-model="form.filterUserId"
           collapse-tags
@@ -72,7 +72,8 @@ import { FormExpose } from '@/components/Form'
 import { rules, allSchemas } from './dispatchStrategy.data'
 import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCommonList } from '@/hooks/web/useCommonList'
-const { getMemberList, getSuitableShopList } = useCommonList()
+import { getMemberTreeDataList } from '@/api/common'
+const { getSuitableShopList } = useCommonList()
 
 const formRef = ref<FormExpose>() // 表单 Ref
 const { t } = useI18n() // 国际化
@@ -114,11 +115,20 @@ const clueChannelIdProps = {
 const filterUserIdProps = {
   label: 'name',
   value: 'id',
-  emitPath: false
+  emitPath: false,
+  children: 'users'
 }
 // 获取岗位精简信息列表
 // 根据岗位岗位获取清洗员
-let userOptions = ref<any>(getMemberList({ childRuleValue: 'clue_qxy_rule' }))
+let userOptions = ref<any[]>([])
+console.log('==============', userOptions)
+const getMemberTreeListApi = async () => {
+  const data = await getMemberTreeDataList({
+    childRuleValue: 'clue_qxy_rule'
+  })
+  userOptions.value = data.trees
+}
+getMemberTreeListApi()
 
 // 获取门店
 // 获取门店数据
@@ -217,8 +227,6 @@ const submitForm = async () => {
         } else {
           clueDistributeUpdate(data)
         }
-
-        // dialogVisible.value = false
       } finally {
         actionLoading.value = false
       }
