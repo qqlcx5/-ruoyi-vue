@@ -8,7 +8,7 @@
     :table-options="{
       columns: allSchemas.tableColumns,
       listApi: getTableList,
-      showAdd: hasPermission('system:sensitive-word:create'),
+      showAdd: hasPermission('system:tenant-sensitive-word:create'),
       actionButtons
     }"
     @add="
@@ -191,10 +191,6 @@ const getTags = async () => {
   const dictRes = await getOrganizationTypeList(null)
   //字典标签数组对象
   const sensitiveWordsTagsList = dictRes.filter((item) => item.dictType === 'sensitive_words_tags')
-  console.log(
-    '🚀 ~ file: index.vue:195 ~ getTags ~ sensitiveWordsTagsList:',
-    sensitiveWordsTagsList
-  )
   //获取字典标签中文list
   tagsOptions.value = sensitiveWordsTagsList.map((item) => item.label)
   // tagsOptions.value = res
@@ -281,7 +277,7 @@ const exportList = (fileName) => {
 const actionButtons = [
   {
     name: '编辑',
-    permission: hasPermission('system:sensitive-word:update'),
+    permission: hasPermission('system:tenant-sensitive-word:update'),
     click: async ({ id }) => {
       state.modalType = 'update'
       state.isShowAddEdit = true
@@ -293,16 +289,15 @@ const actionButtons = [
   //TODO 详情说先不做 后面再统一
   {
     name: '详情',
-    permission: false && hasPermission('system:sensitive-word:update'),
+    permission: false && hasPermission('system:tenant-sensitive-word:query'),
     click: () => {
       console.log('详情')
     }
   },
   {
     name: '删除',
-    permission: hasPermission('system:sensitive-word:delete'),
+    permission: hasPermission('system:tenant-sensitive-word:delete'),
     click: async ({ id }) => {
-      console.log('删除')
       await message.confirm('是否删除所选中数据？', '系统提示')
       await SensitiveWordApi.deleteSensitiveWordApi(id)
       message.success('删除成功')
