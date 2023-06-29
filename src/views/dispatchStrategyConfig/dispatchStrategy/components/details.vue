@@ -42,7 +42,7 @@ import * as dispatchApi from '@/api/clue/dispatchStrategy'
 const formRef = ref<FormExpose>() // 表单 Ref
 
 let dialogVisible = ref(false)
-let dialogTitle = ref('新增')
+let dialogTitle = ref('查看')
 
 // 根据门店获取成员
 const getDistributeShopUserList = async (ids) => {
