@@ -40,49 +40,47 @@ export const receptionHintConfigQueryListApi = (data: any) => {
 export const receptionHintConfigPageApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionHintConfig/page', data })
 }
-// /admin-api/reception/mange/receptionHintConfig/detail/{id}
-// 查询通用提示配置详情
-export const receptionHintConfigDetailApi = (data: any) => {
-  return request.get({ url: '/reception/mange/receptionHintConfig/detail/{id}', data })
-}
 // /admin-api/reception/mange/receptionHintConfig/batchDelete
 // 批量删除通用提示配置
 export const receptionHintConfigBatchDeleteApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionHintConfig/batchDelete', data })
 }
-
-/* ------------------------------ // 查询所有因子等级配置 ----------------------------- */
-// /admin-api/reception/mange/portraitFactorLevelConfig/allList
-// 查询所有因子等级配置
-export const portraitFactorLevelConfigAllListApi = (data: any) => {
-  return request.post({ url: '/reception/mange/portraitFactorLevelConfig/allList', data })
-}
-// /admin-api/reception/mange/portraitFactorLevelConfig/batchDelete
-// 批量删除因子等级配置
-export const portraitFactorLevelConfigBatchDeleteApi = (data: any) => {
-  return request.post({ url: '/reception/mange/portraitFactorLevelConfig/batchDelete', data })
-}
-// /admin-api/reception/mange/portraitFactorLevelConfig/saveOrUpdate
-// 新增或修改因子等级配置
-export const portraitFactorLevelConfigSaveOrUpdateApi = (data: any) => {
-  return request.post({ url: '/reception/mange/portraitFactorLevelConfig/saveOrUpdate', data })
+// /admin-api/reception/mange/receptionHintConfig/detail/{id}
+// 查询通用提示配置详情
+export const receptionHintConfigDetailApi = (data: any) => {
+  return request.post({ url: `/reception/mange/receptionHintConfig/detail/${data}` })
 }
 
 /* -------------------------------- 必讲提示列表 -------------------------------- */
 // /reception/mange/receptionMustSayConfig/list
 // 查询必讲提示列表
-export const receptionMustSayConfigApi = (data: any) => {
+export const receptionMustSayConfigListApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionMustSayConfig/list', data })
 }
 // /admin-api/reception/mange/receptionMustSayConfig/saveOrUpdate
 // 新增或修改必讲提示
-export const saveOrUpdateApi = (data: any) => {
+export const receptionMustSayConfigSaveOrUpdateApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionMustSayConfig/saveOrUpdate', data })
 }
 // /admin-api/reception/mange/receptionMustSayConfig/updateStatus
 // 修改必讲提示状态
-export const updateStatusApi = (data: any) => {
+export const receptionMustSayConfigUpdateStatusApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionMustSayConfig/updateStatus', data })
+}
+// /admin-api/reception/mange/receptionMustSayConfig/batchDelete
+// 批量删除必讲提示
+export const receptionMustSayConfigBatchDeleteApi = (data: any) => {
+  return request.post({ url: '/reception/mange/receptionMustSayConfig/batchDelete', data })
+}
+// /admin-api/reception/mange/receptionMustSayConfig/page
+// 分页查询必讲提示
+export const receptionMustSayConfigPageApi = (data: any) => {
+  return request.post({ url: '/reception/mange/receptionMustSayConfig/page', data })
+}
+// /admin-api/reception/mange/receptionMustSayConfig/detail/{id}
+// 查询必讲提示详情
+export const receptionMustSayConfigDetailApi = (data: any) => {
+  return request.post({ url: `/reception/mange/receptionMustSayConfig/detail/${data}` })
 }
 
 /* -------------------------------- 查询所有提示类型 -------------------------------- */
@@ -116,4 +114,9 @@ export const receptionHintTypeBatchDeleteApi = (data: any) => {
 // 根据模型名称查询模型
 export const queryModelByNameApi = (data: any) => {
   return request.post({ url: '/model/code/queryModelByName', data })
+}
+// http://192.168.6.158:48080/admin-api/system/organization/all-store-list
+// 获取所有门店列表
+export const allStoreListApi = () => {
+  return request.get({ url: '/system/organization/all-store-list' })
 }

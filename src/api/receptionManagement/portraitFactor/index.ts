@@ -1,7 +1,7 @@
 import request from '@/config/axios'
 
 // /admin-api/reception/mange/portraitFactorLevelConfig/allList
-// 查询所有因子等级配置
+/* ------------------------------ // 查询所有因子等级配置 ----------------------------- */
 export const portraitFactorLevelConfigAllListApi = (data: any) => {
   return request.post({ url: '/reception/mange/portraitFactorLevelConfig/allList', data })
 }
