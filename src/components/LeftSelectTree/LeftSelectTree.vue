@@ -184,7 +184,12 @@ watch(
       })
     } else {
       //当前选中的节点
-      const currentItem = val.find((item) => item.code === state.currentNodeKey)
+      let currentItem = val.find((item) => item.code === state.currentNodeKey)
+      if (!currentItem) {
+        //删除时
+        //默认选中第一个节点
+        currentItem = state.treeData[0]
+      }
       state.currentNodeKey = currentItem.code
 
       emit('sendCurrentSelect', {

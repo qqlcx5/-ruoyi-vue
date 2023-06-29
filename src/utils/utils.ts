@@ -197,13 +197,20 @@ export function filterTree(
  * @param pageKey                    String          页面pageKey
  * @param allColumns                 Array[Object]   table columns
  * @param defaultKeys                Array[String]   定制列默认的keys
+ * @param changedColumnsObjKey       string          changedColumnsObj 自定义key
  * */
-export const getColumns = (state, pageKey, allColumns, defaultKeys) => {
+export const getColumns = (
+  state: any,
+  pageKey,
+  allColumns,
+  defaultKeys,
+  changedColumnsObjKey = 'changedColumnsObj'
+) => {
   //pageKey 为当前存储的页面
   const columnsObj = wsCache.get(CACHE_KEY.TABLE_COLUMNS_OBJ) || {}
   //有缓存 取缓存
   if (columnsObj[pageKey]) {
-    state.changedColumnsObj = columnsObj[pageKey]
+    state[changedColumnsObjKey] = columnsObj[pageKey]
     return columnsObj[pageKey].currentColumns
   }
   const currentColumns = allColumns.filter((columnsItem) => {
