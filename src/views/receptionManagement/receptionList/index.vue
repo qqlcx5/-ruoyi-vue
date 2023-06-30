@@ -11,7 +11,8 @@
         columns: allSchemas.tableColumns,
         listApi: receptionList.receptionManagePageApi,
         showAdd: false,
-        selection: true
+        selection: true,
+        actionButtons
       }"
     >
       <template #form-receptionAudioDuration="{ model }">
@@ -142,11 +143,33 @@ const columns: TableColumn[] = [
     field: 'portraitFactorStatus',
     isSearch: true,
     width: 200
+  }
+]
+const actionButtons = [
+  {
+    name: '详情',
+    permission: true,
+    click: (row) => {}
   },
   {
-    label: '操作',
-    field: 'action',
-    OverflowTooltip: false
+    name: '播放录音',
+    permission: true,
+    click: (row) => {}
+  },
+  {
+    name: '查看日志',
+    permission: true,
+    click: (row) => {}
+  },
+  {
+    name: '修改记录',
+    permission: true,
+    click: (row) => {}
+  },
+  {
+    name: '删除',
+    permission: true,
+    click: (row) => {}
   }
 ]
 let addTypeVisible = ref(false) // 新增类型弹窗
