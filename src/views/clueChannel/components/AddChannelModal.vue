@@ -19,7 +19,13 @@
         @update:page-size="() => {}"
       >
         <template #serialNumber="{ row }">
-          <el-input v-model="row.serialNumber" size="small" placeholder="请输入" />
+          <el-input
+            v-model="row.serialNumber"
+            :class="{ error: row.serialNumberError }"
+            size="small"
+            placeholder="请输入"
+            @input="handleSserialNumber(row)"
+          />
         </template>
         <template #clueSourceId="{ row }">
           <el-cascader
@@ -29,7 +35,8 @@
             :options="sourceList"
             :props="clueSourceProps"
             :show-all-levels="false"
-            @change="handleChange"
+            :class="{ error: row.clueSourceIdError }"
+            @change="handleChange(row)"
           />
         </template>
         <template #shopId="{ row }">
@@ -120,6 +127,8 @@ import * as channelApi from '@/api/clue/channel'
 
 import { useCommonList } from '@/hooks/web/useCommonList'
 const { getSuitableShopList } = useCommonList()
+
+import { ElNotification } from 'element-plus'
 
 defineProps({
   msg: String
@@ -221,9 +230,10 @@ const getSourceList = async () => {
 }
 
 const cascaderRef = ref()
-const handleChange = () => {
+const handleChange = (row) => {
+  row.clueSourceIdError = false
   let sourceArr: any = cloneDeep(initSourceList.value)
-  let list: any = cloneDeep(tableList.value)
+  let list: any = tableList.value
   console.log(list, sourceArr)
   list.forEach((lItem) => {
     sourceArr = disabledSourceList(lItem.clueSourceId, sourceArr)
@@ -271,6 +281,31 @@ const shopOptions = ref(getSuitableShopList())
 // getShopList()
 
 import { cloneDeep } from 'lodash-es'
+
+const showError = (errList, type) => {
+  errList.forEach((error) => {
+    console.log(error)
+    tableList.value = tableList.value.map((tItem: any) => {
+      if (type == 'serialNumber') {
+        if (error == tItem.serialNumber) {
+          tItem.serialNumberError = true
+        }
+      } else {
+        if (error == tItem.clueSourceId) {
+          tItem.clueSourceIdError = true
+        }
+      }
+      return tItem
+    })
+  })
+  console.log('=========', errList)
+}
+const handleSserialNumber = (row) => {
+  console.log(row)
+
+  row.serialNumberError = false
+}
+
 // 保存按钮
 const submitForm = async () => {
   let list = cloneDeep(tableList.value)
@@ -314,16 +349,29 @@ const submitForm = async () => {
     message.error('线索平台开通门店不能为空')
     return
   }
-  let data = null
+  let data: any = null
   if (dialogTitle.value == '编辑') {
     data = await channelApi.updateClueChannel(paramsList[0])
   } else {
     data = await channelApi.addClueChannel(paramsList)
   }
-  if (data) {
+  console.log(data)
+
+  if (data.code == 0) {
     dialogVisible.value = false
+    message.success('操作成功')
+    emit('refreshList')
+  } else {
+    let errData = data.data || []
+    if (data.code == '2001000008') {
+      // 编号已存在
+      showError(errData, 'serialNumber')
+    } else if (data.code == '2001000009') {
+      //  门店选择的线索平台已存在
+      showError(errData, 'clueSourceId')
+    }
+    ElNotification.error({ title: data.msg })
   }
-  emit('refreshList')
 }
 let tableColumns: tableColumnsType[] = []
 const openModal = (sourceList0, row) => {
@@ -370,6 +418,13 @@ defineExpose({ openModal })
   font-size: 14px;
   color: $header-text-color;
   background-color: $table-head-color !important;
+}
+:deep(.el-table__cell) {
+  .error {
+    .el-input__wrapper {
+      box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+    }
+  }
 }
 .add-row-btn {
   margin-top: 10px;
