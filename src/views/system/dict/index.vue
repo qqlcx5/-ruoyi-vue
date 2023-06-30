@@ -231,6 +231,16 @@
             />
           </template>
         </template>
+        <template v-if="actionType === 'dataCreate'" #status="row">
+          <el-switch
+            v-hasPermi="['system:dict:update']"
+            v-model="row.status"
+            :active-value="0"
+            :inactive-value="1"
+            :disabled="!hasPermission(['system:dict:update'])"
+          />
+          <el-checkbox class="ml-16px" v-model="row.canEdit" label="状态可修改" />
+        </template>
       </Form>
       <Form
         v-if="['dataLevel3Create', 'dataLevel3Update'].includes(actionType)"
@@ -242,8 +252,8 @@
           <template v-if="['dataLevel3Update'].includes(actionType)">
             <div>{{ row.value }}</div>
           </template>
-          <template v-else
-            ><el-input
+          <template v-else>
+            <el-input
               v-model="row.value"
               placeholder="请输入子项键值"
               @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
