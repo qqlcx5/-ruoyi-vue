@@ -377,8 +377,8 @@ defineExpose({
 :deep(.table-header-style) {
   height: 50px;
   font-size: 14px;
-  color: $header-text-color;
-  background-color: $table-head-color !important;
+  color: var(--form-table-header-font-color);
+  background-color: var(--form-table-header-bg-color) !important;
 }
 
 .fullscreen-open {
