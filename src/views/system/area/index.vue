@@ -157,6 +157,7 @@ import { handleTree } from '@/utils/tree'
 import type { FormRules } from 'element-plus'
 import warningImg from '@/assets/imgs/system/warning.png'
 import imExModal from '@/views/system/area/imExModal.vue'
+import { toTreeCount } from '@/utils/utils'
 const message = useMessage() // 消息弹窗
 
 const form = reactive({
@@ -345,10 +346,13 @@ const openDeleteModal = () => {
 }
 //删除 modal ok
 const modalDelete = async () => {
+  console.log('state.currentNode', state.currentNode)
+  const num = toTreeCount(state.currentNode?.children)
+  console.log('num', num)
   await deleteArea(state.currentNode.id)
   message.success('删除成功')
   state.isShow = false
-  getList()
+  await getList()
 }
 
 //显示全部区划

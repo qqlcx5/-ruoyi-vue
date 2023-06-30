@@ -12,8 +12,9 @@
         @node-click="handleNodeClick"
       >
         <template #default="{ data }">
-          <span>{{ data.ruleName }}</span>
-          <span>{{ `(${data.totalRuleNum})` }}</span>
+          <div class="overflow-ellipsis overflow-hidden whitespace-nowrap">
+            {{ `${data.ruleName}(${data.totalRuleNum})` }}
+          </div>
         </template>
       </el-tree>
     </ContentWrap>

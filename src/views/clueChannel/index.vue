@@ -207,7 +207,7 @@ const { allSchemas } = useCrudSchemas(columns)
 const addChannelModalRef = ref()
 const { push } = useRouter() // 路由
 const handleAdd = () => {
-  addChannelModalRef.value.openModal()
+  addChannelModalRef.value.openModal(sourceList.value)
 }
 const tableRef = ref()
 const handleDelete = async (row, type?: any) => {
@@ -246,7 +246,7 @@ const handleSource = () => {
   })
 }
 const handleUpdate = async (row: any) => {
-  addChannelModalRef.value.openModal(row)
+  addChannelModalRef.value.openModal(sourceList.value, row)
 }
 
 // 更改是否需要清洗

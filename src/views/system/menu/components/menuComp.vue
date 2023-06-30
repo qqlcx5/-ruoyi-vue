@@ -1179,8 +1179,8 @@ const saveForm = async () => {
     state.modalBtnLoading = false
     // 清空，从而触发刷新
     wsCache.delete(CACHE_KEY.ROLE_ROUTERS)
-    // 刷新浏览器
-    location.reload()
+    // // 刷新浏览器
+    // location.reload()
   }
 }
 /** 获取下拉框[上级菜单]的数据  */
@@ -1517,7 +1517,7 @@ const detailsInfo = async (record) => {
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
-const changeColumn = (columnsObj, isCloseModal = false) => {
+const changeColumn = ({ columnsObj, isCloseModal = false }) => {
   if (isCloseModal) {
     state.isShowCustomColumnModal = false
     return

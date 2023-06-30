@@ -14,6 +14,9 @@
     }"
     @add="addMember"
   >
+    <template #distributeUserNum="{ row }">
+      <div class="look" @click="handleDetails(row)">{{ row.distributeUserNum }}</div>
+    </template>
     <template #status="{ row }">
       <el-switch
         v-model="row.status"
@@ -41,6 +44,7 @@
     </template>
   </form-table>
   <crud ref="crudRef" @refresh-list="refreshList" />
+  <lookDetails ref="lookDetailsRef" @refresh-list="refreshList" />
 </template>
 
 <script setup lang="ts" name="dispatchStrategy">
@@ -49,8 +53,8 @@ import * as dispatchApi from '@/api/clue/dispatchStrategy'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { ref } from 'vue'
 import { formatDate } from '@/utils/formatTime'
-import crud from '@/views/dispatchStrategyConfig/dispatchStrategy/crud.vue'
-
+import crud from '@/views/dispatchStrategyConfig/dispatchStrategy/components/crud.vue'
+import lookDetails from '@/views/dispatchStrategyConfig/dispatchStrategy/components/details.vue'
 import { useCommonList } from '@/hooks/web/useCommonList'
 const { getSuitableShopList } = useCommonList()
 
@@ -349,11 +353,19 @@ const handleNeedFilterChange = async (row, type) => {
   }
   // refreshList()
 }
+const lookDetailsRef = ref()
+const handleDetails = async (row) => {
+  lookDetailsRef.value.openDialog(row)
+}
 const { allSchemas } = useCrudSchemas(columns)
 </script>
 
 <style lang="scss" scoped>
 :deep(.hide-border-right) {
   border-right: 0;
+}
+.look {
+  color: #0081ff;
+  cursor: pointer;
 }
 </style>

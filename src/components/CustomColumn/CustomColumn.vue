@@ -157,7 +157,10 @@ const columnsSave = () => {
   message.success('定制列修改成功')
   // emit('changeColumn', state.columns)
   console.log('props.pageKey', props.pageKey)
-  emit('changeColumn', tempObj, props.pageKey)
+  emit('changeColumn', {
+    columnsObj: tempObj,
+    pageKey: props.pageKey
+  })
 }
 //定制列还原
 const setDefaultColumns = () => {
@@ -182,7 +185,10 @@ const setDefaultColumns = () => {
   tempObjCache[props.pageKey] = tempObj
   wsCache.set(CACHE_KEY.TABLE_COLUMNS_OBJ, tempObjCache)
   message.success('定制列还原成功')
-  emit('changeColumn', tempObj, props.pageKey)
+  emit('changeColumn', {
+    columnsObj: tempObj,
+    pageKey: props.pageKey
+  })
 
   // emit('changeColumn', state.columns)
 }
@@ -197,7 +203,11 @@ const getColumns = () => {
 }
 
 const closeModal = () => {
-  emit('changeColumn', [], props.pageKey, true)
+  emit('changeColumn', {
+    columnsObj: [],
+    isCloseModal: true,
+    pageKey: props.pageKey
+  })
 }
 //初始化 获取默认的 columns
 state.columns = getColumns()
@@ -226,6 +236,8 @@ watch(
   () => state.checkedList,
   (val) => {
     // state.indeterminate = !!val.length && val.length < state.columnsCheckList.length
+    console.log('state.checkedList', state.checkedList)
+    console.log('columnsCheckList', state.columnsCheckList)
     state.checkAll = val.length === state.columnsCheckList.length
   },
   {

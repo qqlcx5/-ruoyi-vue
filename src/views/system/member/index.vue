@@ -3456,7 +3456,7 @@ const setPreviewImage = (imgUrl = '') => {
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
-const changeColumn = (columnsObj, isCloseModal = false) => {
+const changeColumn = ({ columnsObj, isCloseModal = false }) => {
   if (isCloseModal) {
     state.isShowCustomColumnModal = false
     return
@@ -3473,7 +3473,7 @@ allColumns.map((item, index) => {
   item.sort = index + 1
 })
 state.columns = getColumns(state, PageKeyObj.member, allColumns, state.defaultKeys)
-
+console.log('state.defaultKeys', state.defaultKeys)
 /**一维数组对象模糊搜索
  * dataList 为一维数组数据结构
  * value 为input框的输入值

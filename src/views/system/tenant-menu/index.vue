@@ -1423,7 +1423,7 @@ const detailsInfo = async (record) => {
 }
 
 //接收 定制列modal事件  - -关闭modal也一起吧 - -
-const changeColumn = (columnsObj, isCloseModal = false) => {
+const changeColumn = ({ columnsObj, isCloseModal = false }) => {
   if (isCloseModal) {
     state.isShowCustomColumnModal = false
     return
