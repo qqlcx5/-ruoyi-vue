@@ -1565,27 +1565,28 @@ const openDetails = async (record) => {
       } //在职成员modal配置信息
       break
     case 2:
-      //菜单
+      //菜单 成员端 - - 存在不创建目录的情况直接创建菜单
       const dirItem = state.menuArr.find((item) => item.id === record.parentId)
       state.employeesModalInfo = {
         width: '940px',
         typeText: '菜单',
-        dirText: dirItem.name,
-        menuText: `-${record.name}`,
+        dirText: dirItem?.name ? `${dirItem?.name}-` : ``,
+        menuText: `${record.name}`,
         btnText: '',
         employeesNum: record.userCount,
         needRole: true
       } //在职成员modal配置信息
       break
     case 3:
+      //成员端 - - 存在不创建目录的情况直接创建菜单
       const menuItem = state.menuArr.find((item) => item.id === record.parentId)
       const dirItemNew = state.menuArr.find((item) => item.id === menuItem.parentId)
       //按钮
       state.employeesModalInfo = {
         width: '763px',
         typeText: '按钮',
-        dirText: dirItemNew.name,
-        menuText: `-${menuItem.name}`,
+        dirText: dirItemNew?.name ? `${dirItem?.name}-` : ``,
+        menuText: `${menuItem.name}`,
         btnText: `-${record.name}`,
         employeesNum: record.userCount,
         needRole: false

@@ -4,6 +4,7 @@ import { MenuTreeList } from '@/views/system/business/business'
 import { useAppStore } from '@/store/modules/app'
 const appStore = useAppStore()
 import dayjs from 'dayjs'
+import { message } from 'ant-design-vue'
 /**
  * 过滤树形结构 更改对应的属性值
  * @param    treeData array              树结构数组对象 其中对象 children属性可有可无
@@ -295,4 +296,23 @@ export const dateFormat = (val, format = 'YYYY-MM-DD HH:mm:ss') => {
   } catch (e) {
     return val
   }
+}
+
+/**
+ * @param  params       obj{key}  要判断K对应的V是否为空的对象
+ * @param  paramsList   Array[obj{key,name}] key要判断的key name中文
+ * @return  true/false
+ * */
+export const validateParams = (params, paramsList) => {
+  const errors: any = []
+  paramsList.forEach(({ key, name }) => {
+    if (!params[key] || params[key] === '') {
+      errors.push(name)
+    }
+  })
+  if (errors.length > 0) {
+    message.warning(`以下字段不能为空：${errors.join(', ')}`)
+    return false
+  }
+  return true
 }

@@ -152,9 +152,11 @@
             >
               <div class="flex-content adress-content">
                 <a-cascader
+                  ref="companyAddressDataRef"
                   v-model:value="state.formState.companyAddressData"
                   :options="state.proMunAreaListData"
                   @change="cascadeChangeData"
+                  :disabled="state.companyAddressDataDisabled"
                   :fieldNames="{ label: 'name', value: 'code', children: 'children' }"
                   placeholder="请选择省市区"
                   class="adress-cascader"
@@ -164,13 +166,14 @@
 
             <!--  级联选择器  - -   -->
             <a-form-item
-              :label="`地址`"
+              :label="`门店地址`"
               name="detailedAddress"
               :rules="[{ required: true, message: '地址不能为空!' }]"
             >
               <div class="flex-content adress-content">
                 <a-form-item-rest>
                   <a-cascader
+                    ref="companyAddressRef"
                     v-model:value="state.formState.companyAddress"
                     :options="state.proMunAreaList"
                     @change="cascadeChange"
@@ -966,6 +969,10 @@ const numValidator = (rule, value) => {
   })
 }
 
+// 数据统计区域组件
+const companyAddressDataRef = ref()
+// 门店地址组件
+const companyAddressRef = ref()
 // 成立日期组件
 const establishRef = ref()
 // 试运营时间组件
@@ -974,9 +981,11 @@ const operationRef = ref()
 const acceptanceRef = ref()
 /** 弹窗滚动事件 */
 const handleModalScroll = () => {
-  establishRef.value.blur()
-  operationRef.value.blur()
-  acceptanceRef.value.blur()
+  companyAddressDataRef.value?.blur()
+  companyAddressRef.value?.blur()
+  establishRef.value?.blur()
+  operationRef.value?.blur()
+  acceptanceRef.value?.blur()
 }
 
 const layout = {
@@ -1078,7 +1087,8 @@ const state: any = reactive({
   notificationLetterSuccess: [], //告知函 新增编辑入参
   legalMobileRules: [{ validator: legalMobileValidator }],
   contactMobileRules: [{ validator: contactMobileValidator }],
-  contactMailRules: [{ validator: contactMailRulesValidator }]
+  contactMailRules: [{ validator: contactMailRulesValidator }],
+  companyAddressDataDisabled: false //新增子门店 数据区域统计 禁用
 })
 
 const loading = ref<boolean>(false)
@@ -1606,14 +1616,21 @@ const removeImg = (file, type) => {
   }
 }
 
-//级联选择器选中的内容 改变
+//级联选择器选中的内容 改变  门店地址
 const cascadeChange = (value, selectedOptions) => {
   state.formState.cascadeInfo = selectedOptions
 }
 
-//级联选择器选中的内容 改变
+//级联选择器选中的内容 改变 数据区域统计
 const cascadeChangeData = (value, selectedOptions) => {
   state.formState.cascadeInfoData = selectedOptions
+  if (state.formState?.cascadeInfo.length === 0) {
+    //门店地址没选的话 默认跟随数据统计区域
+    state.formState.cascadeInfo = selectedOptions
+    selectedOptions.forEach((item) => {
+      state.formState.companyAddress.push(item.code)
+    })
+  }
 }
 
 //设置属性 动态添加联系方式
@@ -1713,6 +1730,7 @@ const getOrganizationTypeListFN = async () => {
 }
 
 const getOrganizationDetailsFN = async () => {
+  console.log('props.storeType', props.storeType)
   if (props.useStoreList.needUseStore) {
     //子门店 上级机构为 父级主体 底下所有门店
     const storeListRes = await getStoreList({
@@ -1740,6 +1758,25 @@ const getOrganizationDetailsFN = async () => {
     if (props.storeType != organizationType.store) {
       //  非门店 判定为 子门店
       state.modalTitle = '新增子门店'
+      console.log('storeRecord', props.storeRecord)
+      const { dataProvinceCode, dataCityCode, dataCountyCode } = props.storeRecord
+      if (dataProvinceCode) {
+        // 数据区域统计回显 门店地址默认为数据区域统计
+        state.formState.companyAddressData.push(dataProvinceCode)
+        state.formState.companyAddress.push(dataProvinceCode)
+      }
+      if (dataCityCode) {
+        // 数据区域统计回显 门店地址默认为数据区域统计
+        state.formState.companyAddressData.push(dataCityCode)
+        state.formState.companyAddress.push(dataCityCode)
+      }
+      if (dataCountyCode) {
+        // 数据区域统计回显 门店地址默认为数据区域统计
+        state.formState.companyAddressData.push(dataCountyCode)
+        state.formState.companyAddress.push(dataCountyCode)
+      }
+      //新增子门店 数据区域统计
+      state.companyAddressDataDisabled = true
     }
     return
   } else {
@@ -1997,8 +2034,14 @@ onMounted(async () => {
   await getOrganizationDetailsFN()
   console.log('state.formState.belongTenantId>>>>>>>>>>>>>>>>', state.formState.belongTenantId)
   console.log('props.storeRecord', props.storeRecord)
-  console.log(' props.storeRecord.organizationType === organizationType.store',  props.storeRecord.organizationType === organizationType.store)
-  console.log('props.storeRecord.organizationType!!!!!!!!!!!!!!!!!!!!', props.storeRecord.organizationType)
+  console.log(
+    ' props.storeRecord.organizationType === organizationType.store',
+    props.storeRecord.organizationType === organizationType.store
+  )
+  console.log(
+    'props.storeRecord.organizationType!!!!!!!!!!!!!!!!!!!!',
+    props.storeRecord.organizationType
+  )
   const areaRes = await getCurrentStoreAreaList({
     tenantId:
       props.storeRecord.organizationType === organizationType.store

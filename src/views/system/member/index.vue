@@ -875,6 +875,7 @@
         <div class="form-content">
           <a-form-item :label="`出生日期`" class="width-50">
             <a-date-picker
+              ref="birthDayRef"
               placeholder="请选择时间"
               v-model:value="formState.birthDay"
               :disabled-date="disabledDate"
@@ -3291,9 +3292,12 @@ const handlePreview = async (file) => {
 
 // 成立日期组件
 const entryRef = ref()
+// 出生日期组件
+const birthDayRef = ref()
 /** 弹窗滚动事件 */
 const handleModalScroll = () => {
-  entryRef.value.blur()
+  birthDayRef.value?.blur()
+  entryRef.value?.blur()
 }
 
 //判断上传图片的宽高
