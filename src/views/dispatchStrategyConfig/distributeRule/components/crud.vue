@@ -11,7 +11,6 @@
         <el-input
           v-model="form.distributeRuleName"
           placeholder="请输入规则名称"
-          @change="changeRuleName"
           maxlength="20"
           show-word-limit
           type="text"
@@ -206,6 +205,8 @@ const openDialog = (id: number) => {
           })
         }
       })
+    } else {
+      editId.value = 0
     }
     getPostListApi()
     getexistRuleShopApi(applicableShopId)
@@ -237,18 +238,6 @@ const existShopList = ref<object[]>([])
 const getexistRuleShopApi = async (applicableShopId) => {
   existShopList.value = await dispatchApi.existRuleShop()
   shopTreeList.value = store.dealShopList(shopList.value, existShopList.value, applicableShopId)
-}
-
-const changeRuleName = (val) => {
-  if (!val) {
-    return message.error('请输入规则名称')
-  }
-  if (!editFlag) return
-  const isValid = dispatchApi.checkValidRuleName(editId.value, val)
-  if (!isValid) {
-    form.value.distributeRuleName = ''
-    message.error('名称已经存在，请重新输入')
-  }
 }
 
 // 添加团队
@@ -285,6 +274,11 @@ const onConfirm = async () => {
   if (form.value.shopIdList.length < 1) {
     return message.error('请选择适用门店')
   }
+  if (editId.value !== 0) {
+    // 编辑时 需要校验规则名称是否已经存在
+    await dispatchApi.checkValidRuleName(editId.value, form.value.distributeRuleName)
+  }
+
   let params = cloneDeep(form.value)
   params.applicableShopId = params.shopIdList.join(',')
 
