@@ -12,7 +12,8 @@ const props = defineProps({
   scroll: propTypes.bool.def(false), // 是否开启滚动条。如果是的话，按照 maxHeight 设置最大高度
   maxHeight: propTypes.oneOfType([String, Number]).def('300px'),
   confirmConfig: propTypes.object.def({ name: '确定', show: true }),
-  cancelConfig: propTypes.object.def({ name: '取消', show: true })
+  cancelConfig: propTypes.object.def({ name: '取消', show: true }),
+  confirmLoading: propTypes.bool.def(false)
 })
 
 const emits = defineEmits<{
@@ -111,6 +112,7 @@ const handleCancel = () => {
       <slot name="footer">
         <el-button
           v-if="confirmConfig.show"
+          :loading="confirmLoading"
           :disabled="confirmConfig.disabled"
           type="primary"
           @click="handleConfirm"
