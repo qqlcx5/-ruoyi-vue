@@ -102,6 +102,9 @@ export enum DICT_TYPE {
   SYSTEM_OAUTH2_GRANT_TYPE = 'system_oauth2_grant_type',
   SYSTEM_MAIL_SEND_STATUS = 'system_mail_send_status',
   SYSTEM_NOTIFY_TEMPLATE_TYPE = 'system_notify_template_type',
+  SYSTEM_SUCCESSFULLY_TYPE = 'successfully_type',
+  SYSTEM_SERVICE_TYPE = 'service_type',
+  SYSTEM_CLOUD_RECORD_TYPE = 'cloud_record_type',
 
   // ========== INFRA 模块 ==========
   INFRA_BOOLEAN_STRING = 'infra_boolean_string',
