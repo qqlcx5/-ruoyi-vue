@@ -25,7 +25,7 @@
         <XTextButton :title="t('action.modify')" @click="handleModify(row)" />
       </template>
     </form-table>
-    <addedPortraitFactor v-model="addTypeVisible" @refresh="handleRresh" />
+    <addedPortraitFactor ref="addRef" v-model="addTypeVisible" @refresh="handleRresh" />
   </div>
 </template>
 
@@ -50,7 +50,7 @@ const columns: TableColumn[] = [
   },
   {
     label: '创建人',
-    field: 'createBy'
+    field: 'creator'
   },
   {
     label: '创建时间',
@@ -122,9 +122,10 @@ const deleteFun = async () => {
     message.error('报错了')
   }
 }
-
+// 操作：修改
+let addRef = ref()
 function handleModify(row) {
-  console.log('handleModify', row)
+  addRef.value.openModal(true, row)
 }
 
 const { allSchemas } = useCrudSchemas(columns)

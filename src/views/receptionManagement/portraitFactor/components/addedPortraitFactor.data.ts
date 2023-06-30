@@ -4,8 +4,8 @@ import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
 
 // 表单校验
 export const addRules = reactive({
-  score: [{ required: true, message: '请输入类型名称', trigger: 'blur' }],
-  level: [{ required: true, message: '请输入类型关键字', trigger: 'blur' }]
+  score: [{ required: true, message: '请输入画像因子得分区间', trigger: 'blur' }],
+  level: [{ required: true, message: '请输入对应评级名称', trigger: 'blur' }]
 })
 
 // crudSchemas
