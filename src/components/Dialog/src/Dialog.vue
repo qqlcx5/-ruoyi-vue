@@ -110,14 +110,14 @@ const handleCancel = () => {
     <template #footer>
       <slot name="footer">
         <el-button
-          v-if="confirmConfig.show"
+          v-if="confirmConfig.show === undefined ? true : confirmConfig.show"
           :disabled="confirmConfig.disabled"
           type="primary"
           @click="handleConfirm"
           >{{ confirmConfig.name }}</el-button
         >
         <el-button
-          v-if="cancelConfig.show"
+          v-if="cancelConfig.show === undefined ? true : cancelConfig.show"
           :disabled="cancelConfig.disabled"
           @click="handleCancel"
           >{{ cancelConfig.name }}</el-button
