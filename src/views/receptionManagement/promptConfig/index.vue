@@ -119,7 +119,7 @@ const selectedIds = ref<number[]>([])
 let tableRef = ref()
 // 操作：新增
 async function handleAdd() {
-  newGeneralVisible.value = true
+  newGeneralRef.value?.openModal(true)
 }
 
 // 操作：删除
