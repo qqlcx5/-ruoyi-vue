@@ -39,5 +39,5 @@
   "i18n-ally.sourceLanguage": "en",
   "i18n-ally.displayLanguage": "zh-CN",
   "i18n-ally.enabledFrameworks": ["vue", "react"],
-  "vetur.validation.script": false,
+  "vetur.validation.script": false
 }
