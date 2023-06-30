@@ -21,8 +21,7 @@
       <!-- listApi: tabsName === 'currency' ? receptionHintConfigApi : receptionMustSayConfigApi, -->
       <template #tableAppend>
         <XButton @click="handleDel"> 删除</XButton>
-        <!-- 提示类型配置 -->
-        <XButton @click="handlePrompt"> 提示类型配置</XButton>
+        <!-- <XButton @click="handlePrompt"> 提示类型配置</XButton> -->
       </template>
 
       <!-- 操作：修改 -->
