@@ -73,7 +73,12 @@
   --transition-time-02: 0.2s;
 
   /* 表格 表头 */
-  --table-bg-color: #F6F6F6;
+  --table-bg-color: #f6f6f6;
+
+  /* FormTable组件 表头 */
+  --form-table-header-bg-color: #f6f6f6;
+
+  --form-table-header-font-color: #333333;
 }
 
 html,
