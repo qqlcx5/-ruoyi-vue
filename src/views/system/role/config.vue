@@ -60,6 +60,7 @@ import ConfigDetailItem from './component/ConfigDetailItem.vue'
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import { getAuthMenuList } from '@/api/system/tenantMenu'
 import { getRoleMenuDataScope } from '@/api/system/role'
+import { useUserStoreWithOut } from '@/store/modules/user'
 
 const { t } = useI18n() // 国际化
 const router = useRouter()
@@ -89,6 +90,7 @@ const onConfigChange = (config) => {
 }
 
 // ============ footer操作 ===========
+const userStore = useUserStoreWithOut()
 const handleOk = async () => {
   roleConfig.btnLoading = true
   try {
@@ -105,6 +107,10 @@ const handleOk = async () => {
     if (result) {
       message.success('保存成功')
       handleCancel()
+      await userStore.setUserInfoAction()
+      setTimeout(() => {
+        location.reload()
+      }, 500)
     } else {
       message.error('保存失败')
     }

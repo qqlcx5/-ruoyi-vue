@@ -18,7 +18,10 @@
         </template>
       </el-tree>
     </ContentWrap>
-    <ContentWrap title="规则数据" class="flex-1 rule-data">
+    <ContentWrap
+      :title="`规则数据${selectNode.ruleName ? '- ' + selectNode.ruleName : ''}`"
+      class="flex-1 rule-data"
+    >
       <FormTable
         ref="tableRef"
         :form-options="{
