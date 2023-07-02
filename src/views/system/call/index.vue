@@ -24,7 +24,9 @@
         <span class="blue-icon"></span>
         语音文件</div
       >
-      <call-record :callRecordId="callRecordId" :businessType="13" />
+      <div v-for="(item, index) in voiceAddressArr" :key="index">
+        <call-record ref="callRecordRef" :voiceAdressObj="item" />
+      </div>
     </template>
   </el-drawer>
 </template>
@@ -36,6 +38,7 @@ import * as callApi from '@/api/system/call/index'
 import { formatDate } from '@/utils/formatTime'
 import CallRecord from './components/callRecord/index.vue'
 import { DICT_TYPE } from '@/utils/dict'
+import { getCallRecordDetail } from '@/api/system/call/index'
 // const tableRef = ref()
 const detailVisible = ref(false)
 
@@ -143,17 +146,45 @@ const columns: TableColumn[] = [
   // }
 ]
 const detailData = ref() // 详情
-const callRecordId = ref('')
+const callRecordRef = ref()
 const actionButtons = [
   {
     name: '详情',
-    click: (row) => {
+    click: async (row) => {
       detailData.value = row
-      callRecordId.value = row.callRecordId
+      await queryCallRecordDetails(row.callRecordId)
       detailVisible.value = true
     }
   }
 ]
+const voiceAddressArr = ref<object[]>([])
+
+const queryCallRecordDetails = async (callRecordId) => {
+  const data = await getCallRecordDetail(callRecordId)
+  if (data.disposition === 'ANSWERED') {
+    // 接通情况下
+    voiceAddressArr.value = [
+      {
+        title: '混合语音',
+        voiceAddress: data.voiceAddress,
+        businessType: 11,
+        callRecordId: callRecordId
+      },
+      {
+        title: '员工语音',
+        voiceAddress: data.voiceAddressIn,
+        businessType: 12,
+        callRecordId: callRecordId
+      },
+      {
+        title: '客户语音',
+        voiceAddress: data.voiceAddressOut,
+        businessType: 13,
+        callRecordId: callRecordId
+      }
+    ]
+  }
+}
 const { allSchemas } = useCrudSchemas(columns)
 </script>
 
@@ -161,6 +192,7 @@ const { allSchemas } = useCrudSchemas(columns)
 .sub-title {
   display: flex;
   margin-top: 20px;
+  margin-bottom: 19px;
   font-size: 16px;
   font-weight: bold;
   justify-content: flex-start;
