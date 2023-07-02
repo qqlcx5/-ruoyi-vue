@@ -24,9 +24,11 @@
         <span class="blue-icon"></span>
         语音文件</div
       >
-      <div v-for="(item, index) in voiceAddressArr" :key="index">
-        <call-record ref="callRecordRef" :voiceAdressObj="item" />
-      </div>
+      <template v-if="voiceAddressArr.length > 0">
+        <div v-for="(item, index) in voiceAddressArr" :key="index">
+          <call-record ref="callRecordRef" :voiceAdressObj="item" />
+        </div>
+      </template>
     </template>
   </el-drawer>
 </template>
