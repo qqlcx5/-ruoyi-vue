@@ -1,7 +1,7 @@
 <template>
   <ContentWrap>
-    <Search :schema="schema" @search="search" @reset="getList">
-      <template #roleName="{ model }">
+    <Search :schema="schema" @search="search" @reset="search">
+      <template #roleId="{ model }">
         <el-cascader
           v-model="model.roleId"
           :options="ruleConfig.options.postList"
@@ -53,7 +53,6 @@ const ruleConfig = reactive({
     pageNo: 1,
     pageSize: 10,
     roleId: '',
-    visitLimitDay: '',
     visitSettingPurpose: '',
     visitSettingType: ''
   },
@@ -79,11 +78,11 @@ const schema = reactive<any>([
     component: 'Input'
   },
   {
-    field: 'roleName',
+    field: 'roleId',
     label: '回访岗位',
     componentProps: {
       slots: {
-        default: 'roleName'
+        default: 'roleId'
       }
     }
   }
@@ -106,7 +105,7 @@ const edit = (record) => {
 }
 const search = (data) => {
   Object.keys(data).forEach((item) => {
-    ruleConfig.params[item] = data[item]
+    ruleConfig.params[item] = data[item] || ''
   })
   getList()
 }
