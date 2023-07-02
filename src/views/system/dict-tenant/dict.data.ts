@@ -31,7 +31,8 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       },
       table: {
         width: 120
-      }
+      },
+      disabled: true
     },
     {
       title: '数据键值',
@@ -43,7 +44,8 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       },
       table: {
         width: 120
-      }
+      },
+      disabled: true
     },
     {
       title: '显示排序',
@@ -90,46 +92,16 @@ export const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: t('common.creater'),
       field: 'creatorName',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
     {
       title: t('common.createTime'),
       field: 'createTime',
       formatter: 'formatDate',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
-    // {
-    //   title: '标签类型',
-    //   field: 'colorType',
-    //   form: {
-    //     component: 'Select',
-    //     componentProps: {
-    //       options: [
-    //         {
-    //           label: 'default',
-    //           value: ''
-    //         },
-    //         {
-    //           label: 'success',
-    //           value: 'success'
-    //         },
-    //         {
-    //           label: 'info',
-    //           value: 'info'
-    //         },
-    //         {
-    //           label: 'warning',
-    //           value: 'warning'
-    //         },
-    //         {
-    //           label: 'danger',
-    //           value: 'danger'
-    //         }
-    //       ]
-    //     }
-    //   },
-    //   isTable: false
-    // },
     {
       title: '底纹',
       field: 'cssClass',
@@ -176,13 +148,15 @@ export const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: t('common.operator'),
       field: 'updaterName',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
     {
       title: t('common.operationTime'),
       field: 'updateTime',
       formatter: 'formatDate',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     }
   ]
 })
