@@ -201,12 +201,7 @@ const actionButtons = [
   {
     name: '删除',
     click: (row) => {
-      message
-        .wgOperateConfirm('是否确认删除这条回访话术？删除后无法恢复。', '提示')
-        .then(async () => {
-          handleDelete(row.id)
-        })
-        .catch(() => {})
+      handleDelete(row.id)
     }
   }
 ]
@@ -303,4 +298,15 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.table-block {
+  div {
+    height: 30px;
+    line-height: 30px;
+  }
+
+  div:not(:last-child) {
+    border-bottom: 1px solid #ddd;
+  }
+}
+</style>

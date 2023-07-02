@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts" setup>
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, uniqWith } from 'lodash-es'
 import { getDictLabel } from '@/utils/dict'
 import { visitContentUpdate, visitContentAdd } from '@/api/visit'
 import VisitRuleDialog from '../VisitRuleDialog/index.vue'
@@ -68,7 +68,13 @@ const verbalTrick = reactive<any>({
 })
 
 const onVisitRuleConfirm = (data) => {
-  verbalTrick.tableData = data
+  if (data && data.length > 0) {
+    verbalTrick.tableData = cloneDeep(
+      uniqWith(data, (arrVal, othVal) => {
+        return Number(arrVal!['visitSettingId']) === Number(othVal!['visitSettingId'])
+      })
+    )
+  }
 }
 
 const onAddRule = () => {
