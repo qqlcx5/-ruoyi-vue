@@ -12,7 +12,7 @@
       <el-form ref="formRef" :model="ruleObject" :rules="rules">
         <div class="item-header flex items-center justify-between">
           <div class="flex items-center">
-            <el-form-item prop="visitSettingType">
+            <el-form-item prop="visitSettingType" class="required">
               <el-select
                 v-model="ruleObject.visitSettingType"
                 placeholder="请选择回访类型"
@@ -27,11 +27,11 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item prop="visitSettingPurpose">
+            <el-form-item prop="visitSettingPurpose" class="required ml-12px">
               <el-input
                 v-model="ruleObject.visitSettingPurpose"
                 placeholder="请填写回访目的"
-                class="w-180px ml-12px"
+                class="w-180px"
               />
             </el-form-item>
           </div>
@@ -47,13 +47,13 @@
         <el-descriptions :column="2" border>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">参考时间(T）</div>
+              <div class="flex items-center required">参考时间(T）</div>
             </template>
-            <el-form-item prop="originTimeType">
+            <el-form-item prop="originTimeType" required>
               <el-select
                 v-model="ruleObject.originTimeType"
                 placeholder="请选择"
-                class="w-180px"
+                class="w-200px"
                 :disabled="isEdit"
               >
                 <el-option
@@ -67,7 +67,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">一般逾期时间</div>
+              <div class="flex items-center required">一般逾期时间</div>
             </template>
 
             <el-form-item prop="extInfo.overdueGeneral">
@@ -82,7 +82,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">生成时间</div>
+              <div class="flex items-center required">生成时间</div>
             </template>
             <el-form-item prop="extInfo.advanceDays">
               T+
@@ -96,7 +96,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">
+              <div class="flex items-center required">
                 严重逾期时间
                 <el-tooltip effect="dark" content="严重逾期时间＞一般逾期时间">
                   <el-icon class="ml-4px"><QuestionFilled /></el-icon>
@@ -115,7 +115,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">
+              <div class="flex items-center required">
                 计划回访时间(N)
                 <el-tooltip effect="dark" content="生成时间≤计划回访时间">
                   <el-icon class="ml-4px"><QuestionFilled /></el-icon>
@@ -153,7 +153,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">
+              <div class="flex items-center required">
                 过期时间
                 <el-tooltip effect="dark" content="过期时间＞计划回访时间">
                   <el-icon class="ml-4px"><QuestionFilled /></el-icon>
@@ -183,7 +183,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">回访岗位</div>
+              <div class="flex items-center required">回访岗位</div>
             </template>
             <el-form-item prop="roleId"
               ><el-cascader
@@ -199,7 +199,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">
+              <div class="flex items-center required">
                 回收时间
                 <el-tooltip effect="dark" content="X＝计划回访时间/分配时间/转派时间">
                   <el-icon class="ml-4px"><QuestionFilled /></el-icon>
@@ -218,7 +218,7 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">分配岗位</div>
+              <div class="flex items-center required">分配岗位</div>
             </template>
             <el-form-item prop="distributeRoleIds"
               ><el-cascader
@@ -258,13 +258,13 @@
           </el-descriptions-item>
           <el-descriptions-item label-align="left">
             <template #label>
-              <div class="flex items-center">回访对象</div>
+              <div class="flex items-center required">回访对象</div>
             </template>
             <el-form-item prop="visitObject"
               ><el-select
                 v-model="ruleObject.visitObject"
                 placeholder="请选择"
-                class="w-180px"
+                class="w-200px"
                 :disabled="isEdit"
               >
                 <el-option
@@ -304,7 +304,7 @@
                 :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
                 filterable
                 clearable
-                style="min-width: 180px"
+                class="w-200px"
                 @change="onDistributeRoleChange('visitUserDTO')"
             /></el-form-item>
           </el-descriptions-item>
@@ -322,14 +322,13 @@ import {
   updateVisitSetting,
   visitBatchAdd
 } from '@/api/visit'
-import { getUserMemberDataList } from '@/api/common'
 import { QuestionFilled } from '@element-plus/icons-vue'
 import { cloneDeep } from 'lodash-es'
 import { getIntDictOptions } from '@/utils/dict'
 import { useCommonList } from '@/hooks/web/useCommonList'
 
 const message = useMessage()
-const { getPostList, getSuitableShopList } = useCommonList()
+const { getPostList, getSuitableShopList, getUserMemberList } = useCommonList()
 
 const emits = defineEmits(['success'])
 const dialogVisible = ref<boolean>(false)
@@ -373,7 +372,7 @@ const formOptions = reactive({
   originTimeType: [], // 参考时间
   postList: getPostList(),
   storeList: getSuitableShopList(),
-  userList: []
+  userList: getUserMemberList()
 })
 const formRef = ref<FormInstance>()
 const rules = reactive({
@@ -473,13 +472,10 @@ const cancel = () => {
 defineExpose({ openDialog })
 
 onMounted(async () => {
-  await Promise.all([getVisitTypeList(), getOriginTimeTypeList(), getUserMemberDataList()]).then(
-    (res) => {
-      formOptions.type = res[0]
-      formOptions.originTimeType = res[1]
-      formOptions.userList = res[2]
-    }
-  )
+  await Promise.all([getVisitTypeList(), getOriginTimeTypeList()]).then((res) => {
+    formOptions.type = res[0]
+    formOptions.originTimeType = res[1]
+  })
 })
 </script>
 
@@ -495,6 +491,12 @@ onMounted(async () => {
 
   :deep(.el-form-item--default) {
     margin-bottom: 0;
+  }
+
+  .required::before {
+    margin-right: 2px;
+    color: $error-color;
+    content: '*';
   }
 }
 </style>

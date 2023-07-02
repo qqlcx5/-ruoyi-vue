@@ -127,7 +127,8 @@ const columns = reactive<TableColumn[]>([
   },
   {
     label: '回访话术内容',
-    field: 'visitContent'
+    field: 'visitContent',
+    width: 120
   },
   {
     label: '回访类型',
@@ -188,7 +189,8 @@ const columns = reactive<TableColumn[]>([
   },
   {
     label: '计划回访时间T+N(天数)',
-    field: 'visitLimitDay'
+    field: 'visitLimitDay',
+    width: 180
   }
 ])
 const actionButtons = [
