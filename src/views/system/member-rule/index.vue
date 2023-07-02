@@ -19,7 +19,7 @@
       </el-tree>
     </ContentWrap>
     <ContentWrap
-      :title="`规则数据${selectNode.ruleName ? '- ' + selectNode.ruleName : ''}`"
+      :title="`${selectNode.ruleName ? selectNode.ruleName + '- ' : ''}规则数据`"
       class="flex-1 rule-data"
     >
       <FormTable
@@ -179,6 +179,7 @@ const dialogData = ref<Recordable[]>([])
 const handleListEdit = async (row?: Recordable) => {
   const { tableMethods } = tableRef.value
   dialogData.value = !isEmpty(row) ? row : await tableMethods.getSelections()
+
   if (isEmpty(dialogData.value)) {
     message.warning('请选择成员规则')
     return

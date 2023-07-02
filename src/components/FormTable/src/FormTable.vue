@@ -335,11 +335,7 @@ const handleToolClick = (key): void => {
 
 /** 查询/重置 */
 const handleSearch = (model: Recordable) => {
-  tableObject.params = {
-    ...model,
-    ...tableProps.value.listParams
-  }
-  tableMethods.getList()
+  tableMethods.setSearchParams(model)
   elTableRef.value?.clearSelection()
 }
 
