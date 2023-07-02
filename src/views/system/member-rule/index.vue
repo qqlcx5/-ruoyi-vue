@@ -31,9 +31,9 @@
           selection: true,
           columns: allSchemas.tableColumns,
           listApi: tableApi,
-          listParams,
           showTools: false,
-          showAdd: hasPermission('system:member-rule:rule-list')
+          showAdd: hasPermission('system:member-rule:rule-list'),
+          actionButtons
         }"
         @add="handleAdd"
       >
@@ -41,12 +41,12 @@
           <XButton
             v-hasPermi="['system:member-rule:delete']"
             title="批量删除"
-            @click="handleListDel"
+            @click="handleListDel()"
           />
           <XButton
             v-hasPermi="['system:member-rule:edit']"
             title="批量编辑"
-            @click="handleListEdit"
+            @click="handleListEdit()"
           />
           <div :class="`${tipsStatus ? 'tip-status-true' : ''} tip-status ml-3`">{{ tips }}</div>
         </template>
@@ -109,20 +109,32 @@ const {
 const { treeData, getTree, selectNode } = useRuleTree()
 
 const tableRef = ref()
-const listParams = ref<Recordable>()
 const tips = ref('')
 const tipsStatus = ref(0)
+
+const actionButtons = [
+  {
+    name: '编辑',
+    permission: 'system:member-rule:edit',
+    click: (row) => {
+      handleListEdit([row])
+    }
+  }
+  // {
+  //   name: '删除',
+  //   click: (row) => {
+  //     handleListDel([row.id])
+  //   }
+  // }
+]
 /** 选择规则名称节点 */
-const handleNodeClick = (node: TreeNode) => {
+const handleNodeClick = async (node: TreeNode) => {
   selectNode.value = node
   const { tableMethods } = tableRef.value
-  listParams.value = { childRuleValue: node.ruleValue }
-  setTimeout(async () => {
-    tableMethods.getList()
-    const data = await getTipsData(node.ruleValue, node.ruleName)
-    tips.value = data.text
-    tipsStatus.value = data.status
-  }, 0)
+  tableMethods.setSearchParams({ childRuleValue: node.ruleValue })
+  const data = await getTipsData(node.ruleValue, node.ruleName)
+  tips.value = data.text
+  tipsStatus.value = data.status
 }
 
 /** 添加 */
@@ -138,34 +150,35 @@ const handleAdd = () => {
 }
 
 /** 批量删除 */
-const handleListDel = async () => {
+const handleListDel = async (ids?: number[]) => {
   const { tableMethods } = tableRef.value
   let selections = await tableMethods.getSelections()
-  selections = selections?.map((item) => item.id)
+  selections = !isEmpty(ids) ? ids : selections?.map((item) => item.id)
 
-  if (selections.length > 0) {
-    message
-      .wgOperateConfirm('是否确认删除成员规则？删除后无法恢复。', '提示')
-      .then(async () => {
-        const res = await delMemberRule({ ids: selections.join(',') })
-        if (res) {
-          message.success('删除成功')
-          await tableMethods.getList()
-        } else {
-          message.error('删除失败')
-        }
-      })
-      .catch(() => {})
-  } else {
+  if (isEmpty(selections)) {
     message.warning('请选择成员规则')
+    return
   }
+
+  message
+    .wgOperateConfirm('是否确认删除成员规则？删除后无法恢复。', '提示')
+    .then(async () => {
+      const res = await delMemberRule({ ids: selections.join(',') })
+      if (res) {
+        message.success('删除成功')
+        await tableMethods.getList()
+      } else {
+        message.error('删除失败')
+      }
+    })
+    .catch(() => {})
 }
 
 /** 批量修改 */
 const dialogData = ref<Recordable[]>([])
-const handleListEdit = async () => {
+const handleListEdit = async (row?: Recordable) => {
   const { tableMethods } = tableRef.value
-  dialogData.value = await tableMethods.getSelections()
+  dialogData.value = !isEmpty(row) ? row : await tableMethods.getSelections()
   if (isEmpty(dialogData.value)) {
     message.warning('请选择成员规则')
     return
