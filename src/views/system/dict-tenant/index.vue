@@ -61,31 +61,32 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col v-show="searchFormToggle" :span="8">
-              <el-form-item label="状态">
-                <el-select class="w-full" v-model="typeSearchForm.status" placeholder="请选择">
-                  <el-option
-                    v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
-                    :key="dict.value"
-                    :label="dict.label"
-                    :value="dict.value"
-                  />
-                </el-select>
-              </el-form-item>
-            </el-col>
+            <!--            <el-col v-show="searchFormToggle" :span="8">-->
+            <!--              <el-form-item label="状态">-->
+            <!--                <el-select class="w-full" v-model="typeSearchForm.status" placeholder="请选择">-->
+            <!--                  <el-option-->
+            <!--                    v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
+            <!--                    :key="dict.value"-->
+            <!--                    :label="dict.label"-->
+            <!--                    :value="dict.value"-->
+            <!--                  />-->
+            <!--                </el-select>-->
+            <!--              </el-form-item>-->
+            <!--            </el-col>-->
           </el-row>
         </el-form>
         <el-divider class="!mt-0 !mb-16px" />
         <XTable @register="registerType" @cell-click="cellClickEvent">
+          <template #toolbar_buttons></template>
           <!-- 操作：新增类型 -->
-          <template #toolbar_buttons>
-            <XButton
-              type="primary"
-              iconFont="icon-xinzeng"
-              :title="t('action.add')"
-              @click="handleTypeCreate()"
-            />
-          </template>
+          <!--          <template #toolbar_buttons>-->
+          <!--            <XButton-->
+          <!--              type="primary"-->
+          <!--              iconFont="icon-xinzeng"-->
+          <!--              :title="t('action.add')"-->
+          <!--              @click="handleTypeCreate()"-->
+          <!--            />-->
+          <!--          </template>-->
           <!--          <template #status_default="{ row }">-->
           <!--            <el-switch-->
           <!--              v-hasPermi="['system:tenant-dict-type:update']"-->
@@ -102,7 +103,7 @@
             <XTextButton
               :title="t('action.edit')"
               v-hasPermi="['system:tenant-dict-type:update']"
-              @click="handleTypeUpdate(row.id)"
+              @click="handleTypeUpdate(row)"
             />
           </template>
         </XTable>
@@ -160,7 +161,9 @@
                 :active-value="0"
                 :inactive-value="1"
                 @change="handleStatusChange(row, 'data')"
-                :disabled="!hasPermission(['system:tenant-dict:update'])"
+                :disabled="
+                  !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+                "
               />
             </template>
             <template #actionbtns_default="{ row }">
@@ -221,6 +224,25 @@
             />
           </template>
         </template>
+        <template #status="row">
+          <el-switch
+            v-hasPermi="['system:tenant-dict:update']"
+            v-model="row.status"
+            :active-value="0"
+            :inactive-value="1"
+            :disabled="
+              !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+            "
+          />
+          <el-checkbox
+            v-if="actionType === 'dataCreate'"
+            class="ml-16px"
+            v-model="row.allowModificationStatus"
+            :false-label="0"
+            :true-label="1"
+            label="状态可修改"
+          />
+        </template>
       </Form>
       <Form
         v-if="['dataLevel3Create', 'dataLevel3Update'].includes(actionType)"
@@ -239,6 +261,25 @@
               @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
             />
           </template>
+        </template>
+        <template #status="row">
+          <el-switch
+            v-hasPermi="['system:tenant-dict:update']"
+            v-model="row.status"
+            :active-value="0"
+            :inactive-value="1"
+            :disabled="
+              !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+            "
+          />
+          <el-checkbox
+            v-if="actionType === 'dataLevel3Create'"
+            class="ml-16px"
+            v-model="row.allowModificationStatus"
+            :false-label="0"
+            :true-label="1"
+            label="状态可修改"
+          />
         </template>
       </Form>
       <!-- 操作按钮 -->
@@ -309,7 +350,9 @@
             :active-value="0"
             :inactive-value="1"
             @change="handleStatusChange(row, 'dataLevel3')"
-            :disabled="!hasPermission(['system:tenant-dict:update'])"
+            :disabled="
+              !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+            "
           />
         </template>
         <template #actionbtns_default="{ row }">
@@ -340,7 +383,6 @@ import * as DictTypeApi from '@/api/system/dict-tenant/dict.type'
 import * as DictDataApi from '@/api/system/dict-tenant/dict.data'
 import { DictDataVO, DictTypeReqVO } from '@/api/system/dict/types'
 import { CommonStatusEnum } from '@/utils/constants'
-import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { hasPermission } from '@/utils/routerHelper'
 import { reactive } from 'vue'
 
@@ -390,16 +432,19 @@ const [registerDataLevel3, { reload: dataLevel3GetList, search: dataLevel3Search
 
 // ========== 字典分类列表相关 ==========
 const dictTypeValue = ref('')
-const handleTypeCreate = () => {
-  dictTypeValue.value = ''
-  setDialogTile('typeCreate')
-}
-const handleTypeUpdate = async (rowId: number) => {
+// const handleTypeCreate = () => {
+//   dictTypeValue.value = ''
+//   setDialogTile('typeCreate')
+//   nextTick(() => {
+//     unref(typeFormRef)?.setValues({ status: CommonStatusEnum.ENABLE })
+//   })
+// }
+const handleTypeUpdate = async (row) => {
   setDialogTile('typeUpdate')
   // 设置数据
-  const res = await DictTypeApi.getDictTypeApi(rowId)
-  dictTypeValue.value = res.type
-  unref(typeFormRef)?.setValues(res)
+  await nextTick()
+  dictTypeValue.value = row.type
+  unref(typeFormRef)?.setValues({ ...row })
 }
 // 分类搜索
 const searchFormToggle = ref(false)
@@ -433,10 +478,14 @@ const handleDataDetail = async (row) => {
 // 字典数据修改操作
 const handleDataCreate = (type = 'dataCreate') => {
   setDialogTile(type)
+  nextTick(() => {
+    unref(dataFormRef)?.setValues({ allowModificationStatus: 1 })
+  })
 }
 const handleDataUpdate = async (rowId: number, type = 'dataUpdate') => {
   setDialogTile(type)
   // 设置数据
+  await nextTick()
   const res = await DictDataApi.getDictDataApi(rowId)
   unref(dataFormRef)?.setValues(res)
 }
