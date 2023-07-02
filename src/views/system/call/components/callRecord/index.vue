@@ -19,7 +19,13 @@
         <span>暂停</span>
       </div>
       <div class="el-slider">
-        <el-slider v-model="currentTime" :min="0" :max="totalTime" />
+        <el-slider
+          ref="sliderRef"
+          v-model="currentTime"
+          :min="0"
+          :max="totalTime"
+          @change="changeTime"
+        />
         <span
           >{{ formatTime(currentTime) || '00:00:00' }}/{{
             formatTime(totalTime) || '00:00:00'
@@ -123,6 +129,11 @@ const chooseRate = (rate) => {
   if (audioRef.value) {
     audioRef.value.playbackRate = playbackRate.value
   }
+}
+// 进度条调整
+const sliderRef = ref()
+const changeTime = (val) => {
+  audioRef.value.currentTime = (val / totalTime.value) * totalTime.value
 }
 
 // 播放
