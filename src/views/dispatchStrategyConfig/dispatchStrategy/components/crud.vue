@@ -48,7 +48,7 @@
       max-height="40vh"
       headerAlign="left"
       :showOverflowTooltip="true"
-      :tooltip-options="{ hideAfter: 100000000, popperClass: 'dispatchStrategy-tooltip' }"
+      :tooltip-options="{ popperClass: 'dispatchStrategy-tooltip' }"
       align="left"
     />
 
