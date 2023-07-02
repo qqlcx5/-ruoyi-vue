@@ -281,7 +281,9 @@ const formatEditData = (record) => {
     item['visitSettingTypeStr'] = visitTypeMap[item.visitSettingType]
     return item
   })
-  record['intentionModelIds'] = record.intentionModel.split(',').map((i) => parseInt(i))
+  record['intentionModelIds'] = record.intentionModel
+    ? record.intentionModel.split(',').map((i) => parseInt(i))
+    : []
   return record
 }
 

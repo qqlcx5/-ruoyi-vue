@@ -301,7 +301,7 @@
                 ref="visitUserDTORef"
                 v-model="ruleObject.visitUserDTOIds"
                 :options="formOptions.userList"
-                :props="{ label: 'name', value: 'id', children: 'users', emitPath: false }"
+                :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
                 filterable
                 clearable
                 style="min-width: 180px"
@@ -322,13 +322,14 @@ import {
   updateVisitSetting,
   visitBatchAdd
 } from '@/api/visit'
+import { getUserMemberDataList } from '@/api/common'
 import { QuestionFilled } from '@element-plus/icons-vue'
 import { cloneDeep } from 'lodash-es'
 import { getIntDictOptions } from '@/utils/dict'
 import { useCommonList } from '@/hooks/web/useCommonList'
 
 const message = useMessage()
-const { getPostList, getShopList, getUserMemberList } = useCommonList()
+const { getPostList, getSuitableShopList } = useCommonList()
 
 const emits = defineEmits(['success'])
 const dialogVisible = ref<boolean>(false)
@@ -371,8 +372,8 @@ const formOptions = reactive({
   object: getIntDictOptions('visit_object'), // 对象
   originTimeType: [], // 参考时间
   postList: getPostList(),
-  storeList: getShopList(),
-  userList: getUserMemberList()
+  storeList: getSuitableShopList(),
+  userList: []
 })
 const formRef = ref<FormInstance>()
 const rules = reactive({
@@ -387,8 +388,8 @@ const rules = reactive({
   roleId: [{ required: true, message: '', trigger: 'blur' }],
   'extInfo.overdueRecycle': [{ required: true, message: '', trigger: 'blur' }],
   distributeRoleIds: [{ required: true, message: '', trigger: 'blur' }],
-  visitObject: [{ required: true, message: '', trigger: 'blur' }],
-  visitUserDTOIds: [{ required: true, message: '', trigger: 'blur' }]
+  visitObject: [{ required: true, message: '', trigger: 'blur' }]
+  // visitUserDTOIds: [{ required: true, message: '', trigger: 'blur' }]
 })
 
 const isEdit = computed(() => {
@@ -472,10 +473,13 @@ const cancel = () => {
 defineExpose({ openDialog })
 
 onMounted(async () => {
-  await Promise.all([getVisitTypeList(), getOriginTimeTypeList()]).then((res) => {
-    formOptions.type = res[0]
-    formOptions.originTimeType = res[1]
-  })
+  await Promise.all([getVisitTypeList(), getOriginTimeTypeList(), getUserMemberDataList()]).then(
+    (res) => {
+      formOptions.type = res[0]
+      formOptions.originTimeType = res[1]
+      formOptions.userList = res[2]
+    }
+  )
 })
 </script>
 
