@@ -4826,7 +4826,7 @@ const setRowClassName = (record) => {
 //主体tree 操作
 const clickOperation = ({ operationType, id }) => {
   //当前 record
-  const record = state.tableDataList.find((item) => item.id === id)
+  const record = state.tableDataArr.find((item) => item.id === id)
   switch (operationType) {
     case 'edit':
       //修改
