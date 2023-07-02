@@ -28,7 +28,8 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         colProps: {
           span: 24
         }
-      }
+      },
+      disabled: true
     },
     {
       title: '子项键值',
@@ -37,7 +38,8 @@ export const crudSchemas = reactive<VxeCrudSchema>({
         colProps: {
           span: 24
         }
-      }
+      },
+      disabled: true
     },
     {
       title: '子项排序',
@@ -46,7 +48,6 @@ export const crudSchemas = reactive<VxeCrudSchema>({
       form: {
         component: 'InputNumber',
         componentProps: {
-          modelValue: 0,
           controlsPosition: 'right'
         },
         colProps: {
@@ -80,46 +81,16 @@ export const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: t('common.creater'),
       field: 'creatorName',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
     {
       title: t('common.createTime'),
       field: 'createTime',
       formatter: 'formatDate',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
-    // {
-    //   title: '标签类型',
-    //   field: 'colorType',
-    //   form: {
-    //     component: 'Select',
-    //     componentProps: {
-    //       options: [
-    //         {
-    //           label: 'default',
-    //           value: ''
-    //         },
-    //         {
-    //           label: 'success',
-    //           value: 'success'
-    //         },
-    //         {
-    //           label: 'info',
-    //           value: 'info'
-    //         },
-    //         {
-    //           label: 'warning',
-    //           value: 'warning'
-    //         },
-    //         {
-    //           label: 'danger',
-    //           value: 'danger'
-    //         }
-    //       ]
-    //     }
-    //   },
-    //   isTable: false
-    // },
     {
       title: '底纹',
       field: 'dw',
@@ -166,13 +137,15 @@ export const crudSchemas = reactive<VxeCrudSchema>({
     {
       title: t('common.operator'),
       field: 'updaterName',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     },
     {
       title: t('common.operationTime'),
       field: 'updateTime',
       formatter: 'formatDate',
-      isForm: false
+      isForm: false,
+      defaultShow: false
     }
   ]
 })
