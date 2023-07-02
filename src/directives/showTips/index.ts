@@ -27,7 +27,15 @@ export function showTips(app: App<Element>) {
         document.body.removeChild(span)
 
         popperInstance = createPopper(el, content, {
-          placement: 'top'
+          placement: 'top',
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 10]
+              }
+            }
+          ]
         })
       }
     })
