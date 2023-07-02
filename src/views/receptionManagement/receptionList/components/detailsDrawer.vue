@@ -2,7 +2,7 @@
   <div>
     <el-drawer
       v-model="modelValue_"
-      class="reception-drawer"
+      custom-class="reception-drawer"
       direction="rtl"
       title="详情"
       :lockScroll="false"
@@ -11,6 +11,7 @@
       :modal-append-to-body="false"
     >
       <el-tabs v-model="activeName">
+        <div class="text-confirm-gray fs-16px">画像因子总分：100 当前得分：0 级别判定：N</div>
         <el-tab-pane label="接待信息" name="1">
           <div>
             <el-descriptions title="基本信息" :column="2">
@@ -127,7 +128,8 @@ async function receptionManageDetailApi(id) {
 /* --------------------------------- // 打开抽屉 -------------------------------- */
 function openDrawer(row) {
   modelValue_.value = true
-  receptionManageDetailApi(row.id)
+  // receptionManageDetailApi(row.id)
+  receptionManageDetailApi(968857)
 }
 defineExpose({
   openDrawer
@@ -148,5 +150,7 @@ const modelValue_ = computed({
 
 <style lang="scss" scoped>
 .reception-drawer {
+  background-color: #eee;
+  // display: none;
 }
 </style>
