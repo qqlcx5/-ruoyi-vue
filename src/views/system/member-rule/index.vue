@@ -15,6 +15,7 @@
       >
         <template #default="{ data }">
           <div
+            v-showTips
             :class="[
               'overflow-ellipsis overflow-hidden whitespace-nowrap',
               { 'font-bold': !isEmpty(data.childs) }
