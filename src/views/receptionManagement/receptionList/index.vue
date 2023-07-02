@@ -15,7 +15,7 @@
         actionButtons
       }"
     >
-      <template #form-receptionAudioDuration="{ model }">
+      <template #form-selectTime="{ model }">
         <el-input
           v-model="model.searchKey"
           placeholder="请输入按揭银行名称、联系人、最近操作人进行搜索"
@@ -41,35 +41,25 @@ const message = useMessage()
 const { t } = useI18n()
 let tableRef = ref()
 const selectedIds = ref<number[]>([])
+const searchComp = (options) => {
+  return {
+    component: 'Select',
+    componentProps: {
+      filterable: true,
+      clearable: true,
+      options: [
+        { label: '开启', value: 1 },
+        { label: '关闭', value: 0 }
+      ]
+    }
+  }
+}
 const columns: TableColumn[] = [
+  { label: '时间', field: 'select-time', isSearch: true, isTable: false },
+  { label: '接待', field: 'select-reception', isSearch: true, isTable: false },
   {
     label: '开始录音时间',
     field: 'recordBeginTime',
-    isSearch: true,
-    width: 200
-  },
-  {
-    label: '录音时长',
-    field: 'receptionAudioDuration',
-    isSearch: true,
-    width: 200
-  },
-  {
-    label: '成员所属门店',
-    field: 'userDepartment',
-    isSearch: true,
-    width: 200
-  },
-  {
-    label: '接待成员',
-    field: 'userName',
-    isSearch: true,
-    width: 200
-  },
-  {
-    label: '到店类型',
-    field: 'enterShopType',
-    isSearch: true,
     width: 200
   },
   {
@@ -88,60 +78,204 @@ const columns: TableColumn[] = [
     label: '意向车型',
     field: 'buyerIntentionModel',
     isSearch: true,
-    width: 200
+    width: 200,
+    search: {
+      component: 'Select',
+      componentProps: {
+        filterable: true,
+        clearable: true,
+        options: [
+          { label: '开启', value: 1 },
+          { label: '关闭', value: 0 }
+        ]
+      }
+    }
   },
   {
-    label: '下订车型-',
+    label: '下订车型$',
     field: 'receptionStatus',
     isSearch: true,
+    width: 200,
+    search: searchComp
+  },
+  { label: '到店类型', field: 'enterShopType', isSearch: true, isTable: false, search: searchComp },
+  // --------------------------------------------------------------------
+  {
+    label: '门店筛选',
+    field: 'storeScreening',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '接待成员',
+    field: 'receivingMembers',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '是否有点评',
+    field: 'doYouHaveAnyComments',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '是否有评论',
+    field: 'doYouComments',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '是否自查自纠',
+    field: 'whetherSelfCorrection',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '是否关联微信',
+    field: 'isLinkWechat',
+    isSearch: true,
+    search: searchComp,
     width: 200
   },
   {
     label: '意向等级',
     field: 'intentionLevel',
     isSearch: true,
+    search: searchComp,
     width: 200
   },
   {
-    label: '是否试乘试驾',
-    field: 'testDrive',
+    label: '接待时长',
+    field: 'receptionDuration',
     isSearch: true,
-    width: 200
+    isTable: false,
+    search: searchComp
   },
   {
-    label: '是否下订',
-    field: 'placeOrderStatus',
+    label: '录音时长',
+    field: 'receptionAudioDuration',
     isSearch: true,
-    width: 200
-  },
-  {
-    label: '是否关联微信',
-    field: 'isLinkWechat',
-    isSearch: true,
-    width: 200
-  },
-  {
-    label: '是否下载万车利-',
-    field: 'receptionStatus',
-    isSearch: true,
+    search: searchComp,
     width: 200
   },
   {
     label: '画像因子评级',
     field: 'portraitFactorLevel',
     isSearch: true,
+    search: searchComp,
+    width: 200
+  },
+  {
+    label: '是否下订',
+    field: 'placeOrderStatus',
+    isSearch: true,
+    search: searchComp,
+    width: 200
+  },
+
+  { label: '到店来源', field: 'arrivalSource', isSearch: true, isTable: false, search: searchComp },
+  {
+    label: '回访状态',
+    field: 'returnVisitStatus',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '购车预算',
+    field: 'carPurchaseBudget',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '是否下载万车利$',
+    field: 'receptionStatus',
+    isSearch: true,
+    search: searchComp,
+    width: 200
+  },
+  { label: '付款方式', field: 'paymentMethod', isSearch: true, isTable: false, search: searchComp },
+  {
+    label: '按揭产品等级',
+    field: 'mortgageProductGrade',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '成交按揭产品',
+    field: 'transactionMortgageProducts',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '购车类型',
+    field: 'carPurchaseType',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '是否试乘试驾',
+    field: 'testDriveOrNot',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '是否发生资料',
+    field: 'hasAnyInformationOccurred',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  { label: '客户类型', field: 'customerType', isSearch: true, isTable: false, search: searchComp },
+  {
+    label: '是否老客户',
+    field: 'isItARegularCustomer',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+  {
+    label: '客户性别',
+    field: 'customerGender',
+    isSearch: true,
+    isTable: false,
+    search: searchComp
+  },
+
+  {
+    label: '成员所属门店',
+    field: 'userDepartment',
+    width: 200
+  },
+  {
+    label: '接待成员',
+    field: 'userName',
+    width: 200
+  },
+
+  {
+    label: '是否试乘试驾',
+    field: 'testDrive',
     width: 200
   },
   {
     label: '接待状态',
     field: 'receptionStatus',
-    isSearch: true,
     width: 200
   },
   {
-    label: '回访满意度-',
+    label: '回访满意度$',
     field: 'portraitFactorStatus',
-    isSearch: true,
     width: 200
   }
 ]
