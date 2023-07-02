@@ -12,15 +12,48 @@
         listApi: receptionList.receptionManagePageApi,
         showAdd: false,
         selection: true,
-        actionButtons
+        actionButtons,
+        listParams: tableParams
       }"
     >
-      <template #form-selectTime="{ model }">
-        <el-input
-          v-model="model.searchKey"
-          placeholder="请输入按揭银行名称、联系人、最近操作人进行搜索"
-          style="width: 344px"
+      <template #form-selectReception="{ model }">
+        <el-radio-group radio-group v-model="model.receptionStatus">
+          <el-radio-button :label="undefined">全部{{ statisticsOpt.statusAll }}</el-radio-button>
+          <el-radio-button :label="2">接待完成{{ statisticsOpt.statusCompleted }}</el-radio-button>
+          <el-radio-button :label="1">接待暂停{{ statisticsOpt.statusSuspended }}</el-radio-button>
+          <el-radio-button :label="0">接待中{{ statisticsOpt.statusReception }}</el-radio-button>
+          <el-radio-button :label="3">取消接待{{ statisticsOpt.statusCancel }}</el-radio-button>
+
+          <!-- <el-radio-button :label="`接待完成${statisticsOpt.statusCompleted}`" />
+          <el-radio-button :label="`接待暂停${statisticsOpt.statusSuspended}`" />
+          <el-radio-button :label="`接待中${statisticsOpt.statusReception}`" />
+          <el-radio-button :label="`取消接待${statisticsOpt.statusCancel}`" /> -->
+        </el-radio-group>
+      </template>
+      <template #form-selectTime>
+        <el-radio-group v-model="selectTime">
+          <el-radio-button label="今天" />
+          <el-radio-button label="昨天" />
+          <el-radio-button label="近7天" />
+          <el-radio-button label="本月" />
+          <el-radio-button label="本年" />
+        </el-radio-group>
+        <el-date-picker
+          v-model="selectTimeRange"
+          class="ml-16px"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          @change="handleDateRange"
         />
+      </template>
+
+      <template #form-carPurchaseBudget="{ model }">
+        <el-input v-model="model.buyCarBudgetBegin" placeholder="最低预算" style="width: 94px" />
+        <span class="ml-4px mr-4px">-</span>
+        <el-input v-model="model.buyCarBudgetEnd" placeholder="最高预算" style="width: 94px" />
       </template>
 
       <template #tableAppend>
@@ -39,24 +72,32 @@ import addedPortraitFactor from './components/addedPortraitFactor.vue'
 
 const message = useMessage()
 const { t } = useI18n()
+/* -------------------------------- dayjs -------------------------------- */
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration'
+dayjs.extend(duration)
 let tableRef = ref()
 const selectedIds = ref<number[]>([])
-const searchComp = (options) => {
-  return {
-    component: 'Select',
-    componentProps: {
-      filterable: true,
-      clearable: true,
-      options: [
-        { label: '开启', value: 1 },
-        { label: '关闭', value: 0 }
-      ]
-    }
+const searchComp = (options = [{}]) => ({
+  component: 'Select',
+  componentProps: {
+    filterable: true,
+    clearable: true,
+    options
   }
-}
+})
+// 统计选项
+const statisticsOpt = reactive({
+  statusAll: 1,
+  statusCancel: 2,
+  statusCompleted: 20,
+  statusReception: 5,
+  statusSuspended: 10
+})
+
 const columns: TableColumn[] = [
-  { label: '时间', field: 'select-time', isSearch: true, isTable: false },
-  { label: '接待', field: 'select-reception', isSearch: true, isTable: false },
+  { label: '接待', field: 'selectReception', isSearch: true, isTable: false },
+  { label: '时间', field: 'selectTime', isSearch: true, isTable: false },
   {
     label: '开始录音时间',
     field: 'recordBeginTime',
@@ -72,193 +113,297 @@ const columns: TableColumn[] = [
     label: '客户手机',
     field: 'customerMobile',
     isSearch: true,
-    width: 200
-  },
-  {
-    label: '意向车型',
-    field: 'buyerIntentionModel',
-    isSearch: true,
     width: 200,
-    search: {
-      component: 'Select',
-      componentProps: {
-        filterable: true,
-        clearable: true,
-        options: [
-          { label: '开启', value: 1 },
-          { label: '关闭', value: 0 }
-        ]
-      }
+    formatter: (_, __, val) => {
+      return val ? val.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : ''
     }
   },
   {
-    label: '下订车型$',
+    label: '意向车型xxx',
+    field: 'buyerIntentionModel',
+    isSearch: true,
+    width: 200,
+    search: searchComp([])
+  },
+  {
+    label: '下订车型xxx',
     field: 'receptionStatus',
     isSearch: true,
     width: 200,
-    search: searchComp
+    search: searchComp([])
   },
-  { label: '到店类型', field: 'enterShopType', isSearch: true, isTable: false, search: searchComp },
-  // --------------------------------------------------------------------
   {
-    label: '门店筛选',
+    label: '到店类型',
+    field: 'enterShopType',
+    isSearch: true,
+    width: 200,
+    search: searchComp([
+      { value: 1, label: '首次进店看车' },
+      { value: 2, label: '再次到店洽谈' },
+      { value: 3, label: '提车' },
+      { value: 4, label: '办理手续' },
+      { value: 5, label: '交余款' },
+      { value: 7, label: '维保顺便看车' },
+      { value: 6, label: '其他' }
+    ]),
+    formatter: (_, __, val) => {
+      let list = [
+        { value: 1, label: '首次进店看车' },
+        { value: 2, label: '再次到店洽谈' },
+        { value: 3, label: '提车' },
+        { value: 4, label: '办理手续' },
+        { value: 5, label: '交余款' },
+        { value: 7, label: '维保顺便看车' },
+        { value: 6, label: '其他' }
+      ]
+      return list.find((item) => item.value === val)?.label || '未知'
+    }
+  },
+  {
+    label: '门店筛选xxx',
     field: 'storeScreening',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
-    label: '接待成员',
+    label: '接待成员xxx',
     field: 'receivingMembers',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
-    label: '是否有点评',
+    label: '是否有点评xxx',
     field: 'doYouHaveAnyComments',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
-    label: '是否有评论',
+    label: '是否有评论xxx',
     field: 'doYouComments',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
-    label: '是否自查自纠',
+    label: '是否自查自纠xxx',
     field: 'whetherSelfCorrection',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
     label: '是否关联微信',
     field: 'isLinkWechat',
     isSearch: true,
-    search: searchComp,
-    width: 200
+    search: searchComp([
+      { value: 1, label: '是' },
+      { value: 2, label: '否' }
+    ]),
+    width: 200,
+    formatter: (_, __, val) => {
+      return val === 1 ? '是' : '否'
+    }
   },
   {
     label: '意向等级',
     field: 'intentionLevel',
     isSearch: true,
-    search: searchComp,
-    width: 200
+    search: searchComp([
+      { value: 1, label: 'H' },
+      { value: 2, label: 'A' },
+      { value: 3, label: 'B' },
+      { value: 4, label: 'C' },
+      { value: 5, label: 'N' },
+      { value: 0, label: '其他' }
+    ]),
+    width: 200,
+    formatter: (_, __, val) => {
+      let list = [
+        { value: 1, label: 'H' },
+        { value: 2, label: 'A' },
+        { value: 3, label: 'B' },
+        { value: 4, label: 'C' },
+        { value: 5, label: 'N' },
+        { value: 0, label: '其他' }
+      ]
+      return list.find((item) => item.value === val)?.label || ''
+    }
   },
   {
     label: '接待时长',
     field: 'receptionDuration',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
     label: '录音时长',
     field: 'receptionAudioDuration',
     isSearch: true,
-    search: searchComp,
-    width: 200
+    search: searchComp([]),
+    width: 200,
+    formatter: (_, __, val) => {
+      return dayjs.duration(val, 'seconds').format('HH:mm:ss')
+    }
   },
   {
     label: '画像因子评级',
     field: 'portraitFactorLevel',
     isSearch: true,
-    search: searchComp,
+    search: searchComp([
+      { label: '未评分', value: 0 },
+      { label: '已评分', value: 1 }
+    ]),
     width: 200
   },
   {
     label: '是否下订',
     field: 'placeOrderStatus',
     isSearch: true,
-    search: searchComp,
-    width: 200
+    width: 200,
+    search: searchComp([
+      { value: 0, label: '否' },
+      { value: 1, label: '是' },
+      { value: 2, label: '考虑中' }
+    ]),
+
+    formatter: (_, __, val) => {
+      let list = [
+        { value: 0, label: '否' },
+        { value: 1, label: '是' },
+        { value: 2, label: '考虑中' }
+      ]
+      return list.find((item) => item.value === val)?.label || ''
+    }
   },
 
-  { label: '到店来源', field: 'arrivalSource', isSearch: true, isTable: false, search: searchComp },
+  {
+    label: '到店来源',
+    field: 'arrivalSource',
+    isSearch: true,
+    isTable: false,
+    search: searchComp([])
+  },
   {
     label: '回访状态',
     field: 'returnVisitStatus',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([
+      { value: 1, label: '已回访' },
+      { value: 0, label: '未回访' }
+    ]),
+    formatter: (_, __, val) => {
+      return val === 1 ? '已回访' : '未回访'
+    }
   },
   {
     label: '购车预算',
     field: 'carPurchaseBudget',
     isSearch: true,
-    isTable: false,
-    search: searchComp
+    isTable: false
   },
   {
-    label: '是否下载万车利$',
+    label: '是否下载万车利xxx',
     field: 'receptionStatus',
     isSearch: true,
-    search: searchComp,
-    width: 200
+    search: searchComp([]),
+    width: 200,
+    formatter: (_, __, val) => {
+      return val === 1 ? '是' : '否'
+    }
   },
-  { label: '付款方式', field: 'paymentMethod', isSearch: true, isTable: false, search: searchComp },
   {
-    label: '按揭产品等级',
+    label: '付款方式',
+    field: 'paymentMethod',
+    isSearch: true,
+    isTable: false,
+    search: searchComp([
+      { value: 1, label: '全款' },
+      { value: 2, label: '贷款' }
+    ])
+  },
+  {
+    label: '按揭产品等级xxx',
     field: 'mortgageProductGrade',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
-    label: '成交按揭产品',
+    label: '成交按揭产品xxx',
     field: 'transactionMortgageProducts',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
     label: '购车类型',
     field: 'carPurchaseType',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([
+      { value: 1, label: '新购' },
+      { value: 2, label: '再购' },
+      { value: 3, label: '置换' }
+    ])
   },
   {
     label: '是否试乘试驾',
     field: 'testDriveOrNot',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([
+      { value: 0, label: '否' },
+      { value: 1, label: '是' }
+    ]),
+    formatter: (_, __, val) => {
+      return val === 1 ? '是' : '否'
+    }
   },
   {
-    label: '是否发生资料',
+    label: '是否发生资料xxx',
     field: 'hasAnyInformationOccurred',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
-  { label: '客户类型', field: 'customerType', isSearch: true, isTable: false, search: searchComp },
   {
-    label: '是否老客户',
+    label: '客户类型xxx',
+    field: 'customerType',
+    isSearch: true,
+    isTable: false,
+    search: searchComp([])
+  },
+  {
+    label: '是否老客户xxx',
     field: 'isItARegularCustomer',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([])
   },
   {
     label: '客户性别',
     field: 'customerGender',
     isSearch: true,
     isTable: false,
-    search: searchComp
+    search: searchComp([
+      { value: 0, label: '未知' },
+      { value: 1, label: '男' },
+      { value: 2, label: '女' }
+    ])
   },
 
   {
-    label: '成员所属门店',
+    label: '成员所属门店xxx',
     field: 'userDepartment',
     width: 200
   },
   {
-    label: '接待成员',
+    label: '接待成员xxx',
     field: 'userName',
     width: 200
   },
@@ -266,16 +411,41 @@ const columns: TableColumn[] = [
   {
     label: '是否试乘试驾',
     field: 'testDrive',
-    width: 200
+    width: 200,
+    search: searchComp([
+      { value: 0, label: '否' },
+      { value: 1, label: '是' }
+    ])
   },
   {
     label: '接待状态',
     field: 'receptionStatus',
-    width: 200
+    width: 200,
+    formatter: (_, __, val) => {
+      let list = [
+        { value: 0, label: '接待中' },
+        { value: 1, label: '暂停接待' },
+        { value: 2, label: '接待完成' },
+        { value: 3, label: '取消接待' }
+      ]
+      return list.find((item) => item.value === val)?.label || ''
+    }
   },
   {
-    label: '回访满意度$',
+    label: '画像因子评分状态',
     field: 'portraitFactorStatus',
+    width: 200,
+    formatter: (_, __, val) => {
+      let list = [
+        { value: 0, label: '未评分' },
+        { value: 1, label: '已评分' }
+      ]
+      return list.find((item) => item.value === val)?.label || ''
+    }
+  },
+  {
+    label: '回访满意度xxx',
+    field: 'satisFollowUpVisits',
     width: 200
   }
 ]
@@ -283,30 +453,73 @@ const actionButtons = [
   {
     name: '详情',
     permission: true,
-    click: (row) => {}
+    click: () => {}
   },
   {
     name: '播放录音',
     permission: true,
-    click: (row) => {}
+    click: () => {}
   },
   {
     name: '查看日志',
     permission: true,
-    click: (row) => {}
+    click: () => {}
   },
   {
     name: '修改记录',
     permission: true,
-    click: (row) => {}
+    click: () => {}
   },
   {
     name: '删除',
     permission: true,
-    click: (row) => {}
+    click: () => {}
   }
 ]
-let addTypeVisible = ref(false) // 新增类型弹窗
+/* ---------------------------------- 时间选择 ---------------------------------- */
+let selectTime = ref('本年')
+let selectTimeRange = ref()
+let tableParams = reactive({
+  dateBegin: '',
+  dateEnd: ''
+})
+watch(
+  selectTime,
+  (val) => {
+    switch (val) {
+      case '今天':
+        tableParams.dateBegin = dayjs().format('YYYY-MM-DD 00:00:00')
+        tableParams.dateEnd = dayjs().format('YYYY-MM-DD 23:59:59')
+        break
+      case '昨天':
+        tableParams.dateBegin = dayjs().subtract(1, 'day').format('YYYY-MM-DD 00:00:00')
+        tableParams.dateEnd = dayjs().subtract(1, 'day').format('YYYY-MM-DD 23:59:59')
+        break
+      case '近7天':
+        tableParams.dateBegin = dayjs().subtract(7, 'day').format('YYYY-MM-DD 00:00:00')
+        tableParams.dateEnd = dayjs().format('YYYY-MM-DD 23:59:59')
+        break
+      case '本月':
+        tableParams.dateBegin = dayjs().startOf('month').format('YYYY-MM-DD 00:00:00')
+        tableParams.dateEnd = dayjs().format('YYYY-MM-DD 23:59:59')
+        break
+      case '本年':
+        tableParams.dateBegin = dayjs().startOf('year').format('YYYY-MM-DD 00:00:00')
+        tableParams.dateEnd = dayjs().format('YYYY-MM-DD 23:59:59')
+        break
+    }
+    selectTimeRange.value = [tableParams.dateBegin, tableParams.dateEnd]
+  },
+  { immediate: true }
+)
+
+function handleDateRange(val) {
+  tableParams.dateBegin = val[0]
+  tableParams.dateEnd = val[1]
+  selectTime.value = ''
+}
+/* -------------------------------- 操作事件 ------------------------------- */
+let addTypeVisible = ref(false)
 // 操作：新增
 async function handleAdd() {
   addTypeVisible.value = true
