@@ -15,6 +15,11 @@ export const getRolePostList = (params) => {
   return request.get({ url: '/system/post-role/get/post', params })
 }
 
+// 获取部门所属门店品牌
+export const getDepBrandsList = (params) => {
+  return request.get({ url: '/system/organization/brands-list', params })
+}
+
 // 查询成员管理列表分页
 export const getMemberList = (params: MajorIndividual) => {
   return request.get({ url: '/system/user/extra/page', params })

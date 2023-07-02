@@ -303,10 +303,10 @@
                 :key="`memberPhoneList${index}`"
                 class="phone-div-content"
               >
-                <div class="phone-div">{{ item.phoneNum }}</div>
                 <div :class="item.type === '1' ? 'private-tag' : 'company-tag'"
                   >{{ item.phoneType }}
                 </div>
+                <div class="phone-div">{{ item.phoneNum }}</div>
               </div>
             </template>
 
@@ -318,6 +318,9 @@
                 :key="`departmentPostList${index}`"
               >
                 <div class="phone-div">
+                  <div :class="item.type === 'main_post' ? 'principal-tag' : 'part-tag'"
+                    >{{ item.typeText }}
+                  </div>
                   <a-tooltip>
                     <template #title>{{ item.departmentAll }}</template>
                     <span
@@ -336,9 +339,6 @@
                     ]"
                     >{{ item.post }}</span
                   >
-                </div>
-                <div :class="item.type === 'main_post' ? 'principal-tag' : 'part-tag'"
-                  >{{ item.typeText }}
                 </div>
               </div>
             </template>
@@ -438,7 +438,7 @@
     :title="state.modalTitle"
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
-    :width="'950px'"
+    :width="'1014px'"
     :bodyStyle="{ padding: 0 }"
   >
     <div class="base_info_content" @scroll="handleModalScroll">
@@ -597,11 +597,11 @@
           <a-form-item
             :label="`联系电话`"
             :rules="[{ required: true, message: `联系电话不能为空` }]"
-            class="width-100"
+            class="width-100 phone-form-item"
           >
             <a-table
               :data-source="addDataSource.addEditTableData"
-              :columns="addEditColumns"
+              :columns="state.addEditColumns"
               :pagination="false"
               @resizeColumn="handleResizeColumn"
             >
@@ -692,11 +692,34 @@
 
                 <template v-if="column.key === 'existWxWork'">
                   <div>
-                    <a-switch
-                      v-model:checked="record.existWxWork"
-                      checked-children="开启"
-                      un-checked-children="关闭"
-                    />
+                    <!--                    <a-switch-->
+                    <!--                      v-model:checked="record.existWxWork"-->
+                    <!--                      checked-children="开启"-->
+                    <!--                      un-checked-children="关闭"-->
+                    <!--                    />-->
+
+                    <a-radio-group v-model:value="record.existWxWork" name="radioUseTypeGroup">
+                      <a-radio-button
+                        :value="false"
+                        size="small"
+                        style="margin-right: 5px; border-radius: 4px"
+                        class="radio-btn"
+                        ><Icon
+                          icon="svg-icon:check"
+                          :size="10"
+                          class="margin-right-4"
+                          v-if="record.existWxWork === false"
+                        />个人</a-radio-button
+                      >
+                      <a-radio-button :value="true" style="border-radius: 4px" class="radio-btn"
+                        ><Icon
+                          icon="svg-icon:check"
+                          :size="10"
+                          class="margin-right-4"
+                          v-if="record.existWxWork === true"
+                        />企微</a-radio-button
+                      >
+                    </a-radio-group>
                   </div>
                 </template>
 
@@ -762,7 +785,7 @@
         <a-form-item :label="``" class="width-100">
           <a-table
             :data-source="addPostDataSource.addEditTableData"
-            :columns="addEditPostColumns"
+            :columns="state.addEditPostColumns"
             :pagination="false"
             @resizeColumn="handleResizeColumn"
           >
@@ -800,6 +823,7 @@
                       value: 'key'
                     }"
                     treeNodeFilterProp="title"
+                    @select="organizationSelect"
                   />
                 </div>
               </template>
@@ -1293,9 +1317,11 @@ import { getRoleApi } from '@/api/system/role'
 import { provincesMunicipalitiesArea } from '@/constant/pr.ts'
 import {
   filterTree,
+  findByProperty,
   getAllIds,
   getColumns,
   hasPermission,
+  joinProperty,
   reconstructedTreeData,
   reconstructionArrayObject
 } from '@/utils/utils'
@@ -1310,6 +1336,7 @@ import LeftTreeSelect from '@/components/LeftTreeSelect/LeftTreeSelect.vue'
 import {
   addMember,
   deleteMember,
+  getDepBrandsList,
   getMemberDetails,
   getMemberList,
   getPostList,
@@ -1700,7 +1727,9 @@ const state: any = reactive({
     'statusSwitch',
     'operation'
   ], //定制列默认的keys
-  changedColumnsObj: {} //定制列组件接收到的当前列信息
+  changedColumnsObj: {}, //定制列组件接收到的当前列信息
+  addEditColumns: {},
+  addEditPostColumns: {}
 })
 
 //存放功能配置 选中的所有keys(包括父节点id)
@@ -2055,6 +2084,10 @@ const toggleExpandAll = () => {
 
 //打开Modal
 const openModal = async () => {
+  //伸缩还原
+  state.addEditColumns = cloneDeep(addEditColumns)
+  //伸缩还原
+  state.addEditPostColumns = cloneDeep(addEditPostColumns)
   state.isShow = true
 }
 //关闭Modal
@@ -2094,7 +2127,7 @@ const closeModal = () => {
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: true,
+      isService: false,
       existWxWork: true
     }
   ]
@@ -2182,7 +2215,7 @@ const edit = async (record, isCloseDetails = false) => {
       phoneType: '',
       phoneNum: '',
       useType: '',
-      isService: true,
+      isService: false,
       existWxWork: true
     })
   }
@@ -2302,7 +2335,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWxWork: item?.existWxWork, //是否开通企微
+        existWxWork: item?.existWxWork, //开通的微信
         userId: formState.id,
         id: item.id
       })
@@ -2312,7 +2345,7 @@ const addMajorIndividualFN = async () => {
         phone: item.phoneNum, //手机号
         usageType: item.useType, //使用类型
         recordEnable: item.isService, //是否开通云录音
-        existWxWork: item?.existWxWork //是否开通企微
+        existWxWork: item?.existWxWork //开通的微信
       })
     }
 
@@ -2792,17 +2825,21 @@ const detailsInfo = async (record) => {
       phoneNum: item?.phone,
       useType: item?.usageType === '1' ? '私人' : '公司',
       isService: item?.recordEnable ? '是' : '否',
-      existWxWork: item?.existWxWork ? '已开通' : '未开通' //是否开通企微
+      existWxWork: item?.existWxWork ? '企微' : '个人' //开通的微信
     })
   })
 
   //岗位信息
   postVOList?.map((item) => {
-    const tempBarn = state.barnOptions.find((barnItem) => barnItem.value === item?.brands)
+    // const tempBarn = state.barnOptions.find((barnItem) => barnItem.value === item?.brands)
+    const tempBarnArr = findByProperty(state.barnOptions, 'value', item.brands)
+    console.log('state.barnOptions', state.barnOptions)
+    console.log('item', item)
+    console.log('tempBarnArr', tempBarnArr)
     tablePostData.push({
       department: item?.componentName,
       post: item?.postName,
-      brand: tempBarn?.label,
+      brand: joinProperty(tempBarnArr, 'label', '、'),
       isMainPost: item?.type === 'main_post' ? '主岗' : '兼岗',
       isShow: item?.visible ? '显示' : '隐藏'
     })
@@ -3015,7 +3052,7 @@ const detailsInfo = async (record) => {
       sort: 4
     },
     {
-      title: '是否开通企微',
+      title: '开通的微信',
       width: 100,
       dataIndex: 'existWxWork',
       key: 'existWxWork',
@@ -3449,6 +3486,7 @@ const removeImg = (file, type) => {
 
 //table 列伸缩
 const handleResizeColumn = (w, col) => {
+  console.log('col', col)
   col.width = w
 }
 
@@ -3572,6 +3610,10 @@ const getOrganizationListFN = async () => {
   //   ['title', 'name'],
   //   ['key', 'component']
   // ]
+  console.log(
+    'tempOrganizationList++++++++++++++++++++++++++++++++++++++++++++++++',
+    tempOrganizationList
+  )
   let needReplaceIDKey: any = [
     ['title', 'name'],
     ['key', 'id'],
@@ -3659,6 +3701,7 @@ const addEditColumns = [
     key: 'index',
     align: 'center',
     resizable: true,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     customRender: (text: any, record: any, index: any, column: any) => {
       return text.index + 1
     }
@@ -3704,8 +3747,8 @@ const addEditColumns = [
     sort: 4
   },
   {
-    title: '是否开通企微',
-    width: 100,
+    title: '开通的微信',
+    width: 155,
     dataIndex: 'existWxWork',
     key: 'existWxWork',
     resizable: true,
@@ -3730,7 +3773,7 @@ const addDataSource = reactive({
       phoneType: '1',
       phoneNum: '',
       useType: '1',
-      isService: true,
+      isService: false,
       existWxWork: true
     }
   ]
@@ -3749,7 +3792,7 @@ const addColumns = (index) => {
     phoneType: '1',
     phoneNum: '',
     useType: '1',
-    isService: true,
+    isService: false,
     existWxWork: true
   }
 
@@ -3943,6 +3986,14 @@ const changeToPinYin = () => {
   formState.namePhoneticize = Pinyin.getFullChars(formState.memberName)
 }
 
+const organizationSelect = async (selectedKeys, e) => {
+  console.log('selectedKeys', selectedKeys)
+  console.log('e', e)
+  state.barnOptions = await getDepBrandsList({ id: selectedKeys })
+
+  console.log('state.barnOptions', state.barnOptions)
+}
+
 //监听  左侧选中数据  更新 右侧展示数据
 watch(
   () => [state.checkedKeys, checkedKeysBack.value],
@@ -4080,6 +4131,10 @@ onMounted(async () => {
 
 .width-100 {
   width: 100%;
+}
+
+.phone-form-item {
+  width: 900px;
 }
 
 //========================== search end ==================================
@@ -4609,7 +4664,6 @@ onMounted(async () => {
 .phone-div {
   display: flex;
   align-items: center;
-  margin-right: 14px;
 }
 
 //新增修改
@@ -4731,6 +4785,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-right: 8px;
   padding: 8px;
   width: 40px;
   height: 22px;
@@ -4744,6 +4799,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-right: 8px;
   padding: 8px;
   height: 22px;
   border-radius: 4px;
@@ -4756,6 +4812,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-right: 8px;
   padding: 8px;
   width: 40px;
   height: 22px;
@@ -4769,6 +4826,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-right: 8px;
   padding: 8px;
   width: 40px;
   height: 22px;
@@ -4894,6 +4952,13 @@ onMounted(async () => {
 
 //新增 编辑 modal
 .add-edit-modal {
+  .ant-radio-button-wrapper {
+    border-width: 1px;
+    &:not(:first-child)::before {
+      width: 0 !important;
+    }
+  }
+
   .phone-form-style {
     margin: 0 !important;
   }

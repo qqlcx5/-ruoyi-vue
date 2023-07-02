@@ -316,3 +316,27 @@ export const validateParams = (params, paramsList) => {
   }
   return true
 }
+
+/**
+ * 数组对象查找 字符串(如、分割) 存在的项
+ * @param  arr          []{any} 数组对象
+ * @param  propName     string  要查找的键名
+ * @param  propValue    x,x     要匹配的字符串
+ * @param  separator    string  分隔符
+ * @return []{any}
+ * */
+export const findByProperty = (arr, propName, propValue, separator = ',') => {
+  const propArray = propValue.split(separator).map((item) => item.trim())
+  return arr.filter((item) => propArray.includes(item[propName]))
+}
+
+/**
+ * 数组对象 拼接字符串
+ * @param   arr          []{any} 数组对象
+ * @param   propName     string  要查找的键名
+ * @param   separator    string  分割符
+ * @return  string
+ * */
+export const joinProperty = (arr, propName, separator = ',') => {
+  return arr.map((item) => item[propName]).join(separator)
+}
