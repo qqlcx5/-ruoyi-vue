@@ -17,7 +17,7 @@
   <ContentWrap v-loading="ruleConfig.loading">
     <div class="mb-16px">
       <XButton type="primary" icon-font="icon-xinzeng" title="新增" @click="add()" />
-      <XButton title="删除" @click="onDelete" />
+      <!--      <XButton title="删除" @click="onDelete" />-->
     </div>
     <el-row :gutter="16">
       <el-col v-for="item in ruleList" :key="item.id" :md="12" :lg="12" :xl="8">

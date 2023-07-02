@@ -41,7 +41,6 @@
           :loading="tableObject.loading"
           :expand-row-keys="expandKeys"
           row-key="id"
-          header-cell-class-name="table-header-style"
           height="100%"
           v-bind="tableProps"
           :columns="tableColumns"
@@ -335,11 +334,7 @@ const handleToolClick = (key): void => {
 
 /** 查询/重置 */
 const handleSearch = (model: Recordable) => {
-  tableObject.params = {
-    ...model,
-    ...tableProps.value.listParams
-  }
-  tableMethods.getList()
+  tableMethods.setSearchParams(model)
   elTableRef.value?.clearSelection()
 }
 
@@ -374,13 +369,6 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-:deep(.table-header-style) {
-  height: 50px;
-  font-size: 14px;
-  color: var(--form-table-header-font-color);
-  background-color: var(--form-table-header-bg-color) !important;
-}
-
 .fullscreen-open {
   position: fixed;
   top: 0;
