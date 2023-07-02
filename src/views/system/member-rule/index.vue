@@ -2,17 +2,24 @@
   <div class="flex h-full">
     <ContentWrap class="mr-3 tree-left" title="规则名称" style="width: 222px">
       <el-tree
+        ref="elTreeRef"
         :data="treeData"
         :props="{
           children: 'childs',
           label: 'ruleName'
         }"
+        node-key="ruleValue"
         highlight-current
         default-expand-all
         @node-click="handleNodeClick"
       >
         <template #default="{ data }">
-          <div class="overflow-ellipsis overflow-hidden whitespace-nowrap">
+          <div
+            :class="[
+              'overflow-ellipsis overflow-hidden whitespace-nowrap',
+              { 'font-bold': !isEmpty(data.childs) }
+            ]"
+          >
             {{ `${data.ruleName}(${data.totalRuleNum})` }}
           </div>
         </template>
@@ -128,9 +135,14 @@ const actionButtons = [
   // }
 ]
 /** 选择规则名称节点 */
+const elTreeRef = ref()
 const handleNodeClick = async (node: TreeNode) => {
-  selectNode.value = node
   const { tableMethods } = tableRef.value
+  if (!isEmpty(node.childs)) {
+    elTreeRef.value.setCurrentKey(isEmpty(selectNode.value) ? null : selectNode.value)
+    return
+  }
+  selectNode.value = node
   tableMethods.setSearchParams({ childRuleValue: node.ruleValue })
   const data = await getTipsData(node.ruleValue, node.ruleName)
   tips.value = data.text

@@ -284,6 +284,7 @@ export default defineComponent({
             ref={elTableRef}
             data={unref(getProps).data}
             onSelection-change={selectionChange}
+            headerCellClassName="table-header-style"
             {...unref(getBindValue)}
           >
             {{
@@ -312,6 +313,13 @@ export default defineComponent({
 :deep(.el-button.is-text) {
   padding: 8px 4px;
   margin-left: 0;
+}
+
+:deep(.table-header-style) {
+  height: 50px;
+  font-size: 14px;
+  color: var(--form-table-header-font-color);
+  background-color: var(--form-table-header-bg-color) !important;
 }
 
 :deep(.el-button.is-link) {
