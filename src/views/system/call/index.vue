@@ -24,7 +24,7 @@
         <span class="blue-icon"></span>
         语音文件</div
       >
-      <call-record :callRecordId="callRecordId" />
+      <call-record :callRecordId="callRecordId" :businessType="13" />
     </template>
   </el-drawer>
 </template>

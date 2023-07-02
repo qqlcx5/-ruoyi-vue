@@ -32,6 +32,16 @@ const download = {
   // 下载 Markdown 方法
   markdown: (data: Blob, fileName: string) => {
     download0(data, fileName, 'text/markdown')
+  },
+  downloadFunc: async (url, filename) => {
+    const response = await fetch(url) // 内容转变成blob地址
+    const blob = await response.blob() // 创建隐藏的可下载链接
+    const objectUrl = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    a.download = filename
+    a.click()
+    a.remove()
   }
 }
 
