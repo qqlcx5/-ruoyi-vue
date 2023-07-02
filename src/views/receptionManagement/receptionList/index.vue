@@ -60,7 +60,7 @@
         <XButton type="primary" @click="handleDel"> 导出</XButton>
       </template>
     </form-table>
-    <addedPortraitFactor ref="addRef" v-model="addTypeVisible" @refresh="handleRresh" />
+    <detailsDrawer ref="detailsRef" v-model="detailsVisible" @refresh="handleRresh" />
   </div>
 </template>
 
@@ -68,7 +68,7 @@
 import { TableColumn } from '@/types/table'
 import * as receptionList from '@/api/receptionManagement/receptionList'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import addedPortraitFactor from './components/addedPortraitFactor.vue'
+import detailsDrawer from './components/detailsDrawer.vue'
 
 const message = useMessage()
 const { t } = useI18n()
@@ -77,6 +77,7 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 dayjs.extend(duration)
 let tableRef = ref()
+let detailsRef = ref()
 const selectedIds = ref<number[]>([])
 const searchComp = (options = [{}]) => ({
   component: 'Select',
@@ -453,7 +454,9 @@ const actionButtons = [
   {
     name: '详情',
     permission: true,
-    click: () => {}
+    click: (row) => {
+      detailsRef.value?.openDrawer(row)
+    }
   },
   {
     name: '播放录音',
@@ -519,10 +522,10 @@ function handleDateRange(val) {
   selectTime.value = ''
 }
 /* -------------------------------- 操作事件 ------------------------------- */
-let addTypeVisible = ref(false)
+let detailsVisible = ref(false)
 // 操作：新增
 async function handleAdd() {
-  addTypeVisible.value = true
+  detailsVisible.value = true
 }
 // 操作：刷新
 function handleRresh() {
