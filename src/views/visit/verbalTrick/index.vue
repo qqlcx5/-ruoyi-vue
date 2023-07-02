@@ -16,7 +16,7 @@
   >
     <template #tableAppend>
       <XButton type="primary" icon-font="icon-xinzeng" title="新增" @click="handleCreate()" />
-      <el-button @click="handleDelete">删除</el-button>
+      <el-button @click="handleDelete()">删除</el-button>
     </template>
 
     <!--    <template #form-organizationIds="{ model }"> </template>-->
@@ -260,7 +260,7 @@ const handleCreate = () => {
 }
 const handleDelete = async (id) => {
   const selectedData = await tableRef.value.tableMethods.getSelections()
-  if (!id && selectedData.length > 0) {
+  if (!id && selectedData.length === 0) {
     return message.warning('请选择删除的话术')
   }
   message
