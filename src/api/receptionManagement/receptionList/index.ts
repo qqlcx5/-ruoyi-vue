@@ -28,7 +28,7 @@ export const receptionManageDetailApi = (params: any) => {
 }
 // reception/mange/receptionManage/statistics
 // 查询接待管理统计
-export const receptionManageStatisticsApi = (data: any) => {
+export const receptionManageStatisticsApi = (data) => {
   return request.post({ url: '/reception/mange/receptionManage/statistics', data })
 }
 //admin-api/reception/mange/receptionManage/cancelReception

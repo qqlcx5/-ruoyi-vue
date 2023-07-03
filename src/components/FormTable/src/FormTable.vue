@@ -157,6 +157,7 @@ const props = defineProps({
 const emits = defineEmits<{
   (e: 'expandAll', isExpandAll: boolean): void
   (e: 'add'): void
+  (e: 'search', model: Recordable): void
 }>()
 
 const { t } = useI18n() // 国际化
