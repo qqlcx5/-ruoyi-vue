@@ -29,7 +29,7 @@ export const getTenantDictOptions = (dictType: string | string[]): any => {
 
 export const getIntDictOptions = (dictType: string) => {
   const dictOption: DictDataType[] = []
-  const dictOptions: DictDataType[] = getDictOptions(dictType)
+  const dictOptions: DictDataType[] = getDictOptions(dictType) || []
   if (dictOptions) {
     dictOptions.forEach((dict: DictDataType) => {
       dictOption.push({
@@ -43,7 +43,7 @@ export const getIntDictOptions = (dictType: string) => {
 
 export const getStrDictOptions = (dictType: string) => {
   const dictOption: DictDataType[] = []
-  const dictOptions: DictDataType[] = getDictOptions(dictType)
+  const dictOptions: DictDataType[] = getDictOptions(dictType) || []
   dictOptions.forEach((dict: DictDataType) => {
     dictOption.push({
       ...dict,
@@ -55,7 +55,7 @@ export const getStrDictOptions = (dictType: string) => {
 
 export const getBoolDictOptions = (dictType: string) => {
   const dictOption: DictDataType[] = []
-  const dictOptions: DictDataType[] = getDictOptions(dictType)
+  const dictOptions: DictDataType[] = getDictOptions(dictType) || []
   dictOptions.forEach((dict: DictDataType) => {
     dictOption.push({
       ...dict,
@@ -66,7 +66,7 @@ export const getBoolDictOptions = (dictType: string) => {
 }
 
 export const getDictObj = (dictType: string, value: any) => {
-  const dictOptions: DictDataType[] = getDictOptions(dictType)
+  const dictOptions: DictDataType[] = getDictOptions(dictType) || []
   dictOptions.forEach((dict: DictDataType) => {
     if (dict.value === value.toString()) {
       return dict
@@ -75,8 +75,8 @@ export const getDictObj = (dictType: string, value: any) => {
 }
 
 export const getDictLabel = (dictType: string, value: any): any => {
-  const dictOptions: DictDataType[] = getDictOptions(dictType)
-  const idx = dictOptions.findIndex((dict: DictDataType) => dict.value === value.toString())
+  const dictOptions: DictDataType[] = getDictOptions(dictType) || []
+  const idx = dictOptions.findIndex((dict: DictDataType) => dict.value == value)
   return idx === -1 ? '' : dictOptions[idx].label
 }
 
