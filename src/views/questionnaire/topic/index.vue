@@ -20,11 +20,13 @@
           />
           <div class="flex-1 overflow-auto">
             <el-tree
+              ref="treeRef"
               :data="groupList"
               :expand-on-click-node="false"
               highlight-current
               :props="{ label: 'appraiseTypeName' }"
               @node-click="handleSelect"
+              :filter-node-method="filterNode"
             >
               <template #default="{ data }">
                 <span class="custom-tree-node">
@@ -39,8 +41,13 @@
                     </span>
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item @click="handleAddGroup(data)">编辑</el-dropdown-item>
-                        <el-dropdown-item @click="handleGroupDelete(data)">删除</el-dropdown-item>
+                        <el-dropdown-item @click="handleAddGroup(data)">编辑分组</el-dropdown-item>
+                        <el-dropdown-item @click="handleAddChild(data)"
+                          >添加子分组</el-dropdown-item
+                        >
+                        <el-dropdown-item @click="handleGroupDelete(data)"
+                          >删除分组</el-dropdown-item
+                        >
                       </el-dropdown-menu>
                     </template>
                   </el-dropdown>
@@ -58,13 +65,17 @@
         :table-options="{
           columns: allSchemas.tableColumns,
           selection: true,
-          listApi: getTenant,
-          listParams
+          listApi: getTopicList,
+          listParams,
+          actionButtons
         }"
         @add="handleAdd"
       >
         <template #tableAppend>
           <XButton title="删除" @click="handleDelete" />
+        </template>
+        <template #appraiseTypeNameList="{ row }">
+          <span>{{ row.appraiseTypeName }}</span>
         </template>
         <template #status="{ row }">
           <el-switch
@@ -73,6 +84,9 @@
             :inactive-value="0"
             @change="handleChangeStatus(row)"
           />
+        </template>
+        <template #matchField="{ row }">
+          <span>{{ fieldList.find((item) => item.key === row.matchField)?.value }}</span>
         </template>
       </FormTable>
     </div>
@@ -83,38 +97,89 @@
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
 import AddTopicDialog from './components/AddTopicDialog.vue'
 import AddGroupDialog from './components/AddGroupDialog.vue'
-import { getTenant } from '@/api/system/tenant'
 import { Search as searchIcon } from '@element-plus/icons-vue'
 import { useCreateDialog } from '@/hooks/web/useCreateDialog'
 import { useTable, useGroup } from './helpers'
-import { addGroup, delTopic, delGroup, setTopicStatus } from '@/api/questionnaire/topic'
+import {
+  addTopic,
+  getTopicList,
+  addGroup,
+  delTopic,
+  delGroup,
+  setTopicStatus
+} from '@/api/questionnaire/topic'
 import { onMounted } from 'vue'
 import { useMessage } from '@/hooks/web/useMessage'
 import { isEmpty } from 'lodash-es'
+import { hasPermission } from '@/utils/utils'
+import { ElTree } from 'element-plus'
 
 const searchValue = ref('')
+const treeRef = ref<InstanceType<typeof ElTree>>()
 
 const { openDialog } = useCreateDialog()
 const { allSchemas, tableRef, listParams } = useTable()
-const { getGroupData, groupList } = useGroup()
+const { getGroupData, groupList, getFieldData, fieldList } = useGroup()
 const message = useMessage()
 
 onMounted(async () => {
   await getGroupData()
+  await getFieldData()
 })
+
+watch(searchValue, (val) => {
+  treeRef.value!.filter(val)
+})
+
+const actionButtons = [
+  {
+    name: '编辑',
+    permission: hasPermission('system:sensitive-word:update'),
+    click: async (row) => {
+      handleAdd(row)
+    }
+  },
+  {
+    name: '删除',
+    permission: hasPermission('system:sensitive-word:delete'),
+    click: async (row) => {
+      message
+        .wgOperateConfirm('是否删除所选中数据？', '系统提示')
+        .then(async () => {
+          const res = await delTopic({ ids: [row.appraiseTopicId] })
+          const { tableMethods } = tableRef.value
+          if (res) {
+            message.success('删除成功')
+            await tableMethods.getList()
+          } else {
+            message.error('删除失败')
+          }
+        })
+        .catch(() => {})
+    }
+  }
+]
+
+/** 过滤分组 */
+const filterNode = (value: string, data: Tree) => {
+  if (!value) return true
+  return data.appraiseTypeName.includes(value)
+}
 
 /** 查询/重置 */
 const handleSearch = (model: Recordable) => {
   const { tableMethods, elTableRef } = tableRef.value
   listParams.value = model
-  tableMethods.getList()
+  setTimeout(() => {
+    tableMethods.getList()
+  }, 0)
   elTableRef.value?.clearSelection()
 }
 
 /** 选中分组 */
 const handleSelect = (node) => {
   const { tableMethods } = tableRef.value
-  listParams.value = { appraiseTopicId: node.appraiseTopicId }
+  listParams.value = { appraiseTypeId: node.appraiseTypeId }
   setTimeout(() => {
     tableMethods.getList()
   }, 0)
@@ -122,28 +187,65 @@ const handleSelect = (node) => {
 
 /** 改变列表状态 */
 const handleChangeStatus = async (row) => {
+  if (!row.appraiseTopicId) return
   await setTopicStatus({ id: row.appraiseTopicId, status: row.status })
   message.success('修改状态成功')
 }
 
-/** 新增 */
-const handleAdd = () => {
-  openDialog(AddTopicDialog, {
-    title: '123'
+/** 新增/编辑题目 */
+const handleAdd = (params?: Recordable) => {
+  const id = params?.appraiseTopicId
+  const { tableMethods } = tableRef.value
+  const { close } = openDialog(AddTopicDialog, {
+    title: `${id ? '编辑' : '新增'}题目`,
+    data: { params, fieldList, groupList },
+    onCommit: async (data: Recordable) => {
+      console.log('🚀 ~ file: index.vue:177 ~ onCommit: ~ data:', data)
+      await addTopic({
+        ...data,
+        ...(id ? { appraiseTypeId: id } : {})
+      })
+      message.success('添加成功')
+      close()
+      await tableMethods.getList()
+    }
   })
 }
 
 /** 新增/编辑分组 */
 const handleAddGroup = (params?: Recordable) => {
+  console.log('🚀 ~ file: index.vue:217 ~ handleAddGroup ~ params:', params)
   const id = params?.appraiseTypeId
   const { close } = openDialog(AddGroupDialog, {
     title: `${id ? '编辑' : '新增'}分组`,
     width: 498,
     data: params,
     onConfirm: async (data) => {
+      console.log('🚀 ~ file: index.vue:223 ~ onConfirm: ~ data:', data)
       await addGroup({
         ...data,
-        ...(id ? { appraiseTypeId: id } : {})
+        ...(id ? { appraiseTypeId: id } : { parentId: null })
+      })
+      message.success('添加成功')
+      close()
+      getGroupData()
+    }
+  })
+}
+
+/** 新增子分组 */
+const handleAddChild = (params: Recordable) => {
+  console.log('🚀 ~ file: index.vue:238 ~ handleAddChild ~ params:', params)
+  const id = params.appraiseTypeId
+  const { close } = openDialog(AddGroupDialog, {
+    title: `新增子分组`,
+    width: 498,
+    data: { appraiseTypeName: '', status: 1 },
+    onConfirm: async (data) => {
+      console.log('🚀 ~ file: index.vue:245 ~ onConfirm: ~ data:', data)
+      await addGroup({
+        ...data,
+        ...{ parentId: id }
       })
       message.success('添加成功')
       close()
@@ -168,8 +270,7 @@ const handleGroupDelete = async (data) => {
 const handleDelete = async () => {
   const { tableMethods } = tableRef.value
   let selections = await tableMethods.getSelections()
-  selections = selections?.map((item) => item.appraiseTypeId)
-
+  selections = selections?.map((item) => item.appraiseTopicId)
   if (isEmpty(selections)) {
     message.warning('请选择题目')
     return

@@ -26,7 +26,7 @@ export interface topicReqVO {
   status?: number
 }
 
-// 题目管理左侧
+// 问卷管理左侧
 /** 添加分组 */
 export const addGroup = (data: groupReqVO) => {
   return request.post({ url: '/appraise/type/create', data })
@@ -42,28 +42,23 @@ export const getGroupList = () => {
   return request.get<Questionnaire.GroupList[]>({ url: '/appraise/type/query/all' })
 }
 
-//题目管理右侧
-/** 查询题目列表 */
-export const getTopicList = (data: topicPageReqVO) => {
-  return request.post({ url: '/appraise/topic/query/page', data })
+// 问卷管理右侧
+/** 查询问卷列表 */
+export const getAppraiseList = (data) => {
+  return request.post({ url: '/appraise/queryAppraisePage', data })
 }
 
 /** 新增题目 */
-export const addTopic = (data) => {
-  return request.post({ url: '/appraise/topic/save', data })
+export const addAppraise = (data) => {
+  return request.post({ url: '/appraise/saveAppraise', data })
 }
 
 /** 批量删除题目 */
-export const delTopic = (data: { ids: number[] }) => {
-  return request.post({ url: '/appraise/topic/batch/delete', data })
+export const delAppraise = (data: { ids: number[] }) => {
+  return request.post({ url: '/appraise/batch/delete/appraise', data })
 }
 
 /** 修改列表状态 */
-export const setTopicStatus = (data: { id: number; status: number }) => {
-  return request.post({ url: '/appraise/topic/update/status', data })
-}
-
-/** 获取匹配字段 */
-export const getField = () => {
-  return request.get({ url: '/appraise/topic/query/match/field' })
+export const setAppraiseStatus = (data: { id: number; status: number }) => {
+  return request.post({ url: '/appraise/update/appraise/status', data })
 }

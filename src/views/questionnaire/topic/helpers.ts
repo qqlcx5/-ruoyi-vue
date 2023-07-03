@@ -1,7 +1,7 @@
 import { formatDate } from '@/utils/formatTime'
 import { useCrudSchemas, CrudSchema } from '@/hooks/web/useCrudSchemas'
 import { DICT_TYPE } from '@/utils/dict'
-import { getGroupList } from '@/api/questionnaire/topic'
+import { getField, getGroupList } from '@/api/questionnaire/topic'
 import { ref } from 'vue'
 
 const { t } = useI18n()
@@ -116,13 +116,20 @@ export const useTable = () => {
 
 export const useGroup = () => {
   const groupList = ref<Questionnaire.GroupList[]>([])
+  const fieldList = ref<Questionnaire.FieldList[]>([])
   const getGroupData = async () => {
     const data = await getGroupList()
     groupList.value = data
   }
+  const getFieldData = async () => {
+    const data = await getField()
+    fieldList.value = data
+  }
 
   return {
     getGroupData,
-    groupList
+    groupList,
+    getFieldData,
+    fieldList
   }
 }
