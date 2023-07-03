@@ -807,6 +807,32 @@ const state: any = reactive({
   modalType: 'add', //add新增edit编辑
   addEditTitle: '新增', //新增编辑 modal title
   majorIndividualTypeOptions: [], //适用主体类型Options
+  dataScopesOptions: [
+    {
+      label: '仅看自己',
+      value: 5
+    },
+    {
+      label: '仅看本部门及以下',
+      value: 4
+    },
+    {
+      label: '仅看本部门',
+      value: 3
+    },
+    {
+      label: '指定经销商',
+      value: 6
+    },
+    {
+      label: '指定部门',
+      value: 2
+    },
+    {
+      label: '看所有人',
+      value: 1
+    }
+  ], //数据权限展示
   formState: {
     id: 0,
     name: '', //目录名称
@@ -959,6 +985,25 @@ const getList = async (isRefresh = false) => {
       })
 
       item.tenantTypeString = tempTenantTypeString
+
+      let tempDataScopesString = ''
+      if (!item.dataScopes) {
+        item.dataScopes = []
+      }
+
+      //数据权限展示 label
+      const tempDataScopesListOptions = state.dataScopesOptions.filter((topItem) => {
+        return item.dataScopes.some((item) => topItem.value === item)
+      })
+      tempDataScopesListOptions.map((item) => {
+        if (tempDataScopesString === '') {
+          //避免开头多拼一个 、
+          tempDataScopesString = item.label
+        } else {
+          tempDataScopesString = tempDataScopesString + '、' + item.label
+        }
+      })
+      item.dataScopesString = tempDataScopesString
     })
     state.menuArr = res
     list.value = handleTree(res)
@@ -1349,6 +1394,14 @@ const detailsInfo = async (record) => {
         {
           textSpan: '适用主体类型：',
           text: record?.tenantTypeString
+        },
+        {
+          textSpan: '数据权限展示：',
+          text: record?.dataScopesString
+        },
+        {
+          textSpan: '品牌权限展示：',
+          text: record?.showBrand === 1 ? '显示' : '不显示'
         },
         {
           textSpan: '组件名字：',

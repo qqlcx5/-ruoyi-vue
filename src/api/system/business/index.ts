@@ -10,6 +10,11 @@ export interface MajorIndividual {
   expireTime?: Date
 }
 
+// 获得指定主体的全部字典数据列表(通过type过滤)
+export const getMajDictList = (params) => {
+  return request.get({ url: '/system/tenant-dict-data/list-all-simple-tenant', params })
+}
+
 // 修改主体 系统名称 - - 系统logo
 export const putUserNameLogo = (data) => {
   return request.put({ url: '/system/tenant/update-system', data })

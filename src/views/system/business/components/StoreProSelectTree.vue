@@ -12,7 +12,9 @@
         :auto-expand-parent="autoExpandParent"
         :tree-data="state.treeData"
         v-model:selectedKeys="state.selectedKeys"
+        blockNode
         :height="610"
+        class="backstage-store-tree"
         @select="selectTree"
         @expand="onExpand"
       >
@@ -258,6 +260,7 @@ watch(
 }
 .tree-node {
   display: flex;
+  padding: 2px 0;
 }
 .has-transferred {
   margin-left: 10px;
@@ -272,5 +275,20 @@ watch(
   font-size: 12px;
   text-align: right;
   font-family: PingFangSC-Regular;
+}
+</style>
+
+<style lang="scss">
+.backstage-store-tree {
+  .ant-tree-treenode-selected {
+    background: rgb(209, 230, 251) !important;
+  }
+  /*ant-tree-node-content-wrapper ant-tree-node-content-wrapper-close ant-tree-node-selected*/
+  .ant-tree-node-selected {
+    background: rgb(209, 230, 251) !important;
+  }
+  .ant-tree-treenode {
+    padding: 0 !important;
+  }
 }
 </style>

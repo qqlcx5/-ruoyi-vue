@@ -18,6 +18,8 @@ export interface MenuVO {
   alwaysShow?: boolean
   createTime: Date
   entrance: string
+  dataScopes: any
+  showBrand: any
 }
 
 // 查询菜单（精简）列表

@@ -442,6 +442,7 @@
       v-else
       :tree-data="state.tableDataList"
       :currentSelectRecord="state.currentClickRecord"
+      :selectedKeys="state.majSelectedKeys"
       @sendCurrentSelect="clickMaj"
       @expandMaj="
         () => {
@@ -467,6 +468,7 @@
               @click="
                 () => {
                   state.currentClickRecord = {}
+                  state.majSelectedKeys = []
                   currentSelectChange()
                   getListStoreFN()
                 }
@@ -485,7 +487,7 @@
         </div>
         <div :class="['flex flex-1 flex-col overflow-auto']">
           <!-- 搜索工作栏 -->
-          <a-card :class="['search-card width-715', { 'width-100': !state.isShowTable }]">
+          <a-card :class="['search-card', { 'width-100': !state.isShowTable }]">
             <a-form
               :model="queryParamsStore"
               ref="queryFormStoreRef"
@@ -3223,10 +3225,14 @@ const edit = async (
   console.log('isStore', isStore)
   // TODO: 有空重写一下 - - 判断 冗余了  一直叠一直改 没空处理
   if (isStore) {
-    if (record.type === storeSubType.popStore || record.type === storeSubType.cityHall) {
+    if (
+      record.type === storeSubType.popStore ||
+      record.type === storeSubType.cityHall ||
+      record.organizationCategory === organizationCategory.childStore
+    ) {
       // 子门店
       state.parentId = record.id
-      state.belongTenantId = record.belongTenantId
+      state.belongTenantId = record.belongTenantId || record.tenantId
       state.needBelongTenantId = false
       state.needParentId = true
       state.needOrganizationType = false
@@ -3235,7 +3241,7 @@ const edit = async (
       state.storeType = storeSubType.popStore
       state.useStoreList = {
         needUseStore: true,
-        belongTenantId: record.belongTenantId
+        belongTenantId: record.belongTenantId || record.tenantId
       }
     } else {
       //门店
@@ -4804,9 +4810,26 @@ const getCurrentAreaListFN = async () => {
 }
 
 //主体下拉框选中
-const clickMaj = (record, selectedKeys) => {
+const clickMaj = (record, selectedKeys, isFromTable = false) => {
+  if (!isFromTable && selectedKeys.length === 0) {
+    //清除当前选中的主体 回显 左侧树
+    nextTick(() => {
+      state.currentClickRecord = {}
+    })
+  } else {
+    if (
+      Object.keys(state.currentClickRecord).length >= 0 &&
+      state.currentClickRecord.id === record.id
+    ) {
+      //  当为表格且当前选中的值 为再次点击时 清空
+      state.currentClickRecord = {}
+    } else {
+      // 赋值
+      state.currentClickRecord = record
+    }
+  }
   state.majSelectedKeys = selectedKeys
-  state.currentClickRecord = record
+
   console.log('state.currentClickRecord', state.currentClickRecord)
   currentSelectChange()
   getListStoreFN()
@@ -4815,7 +4838,8 @@ const clickMaj = (record, selectedKeys) => {
 const clickRow = (record) => {
   return {
     onClick: () => {
-      clickMaj(record, [])
+      console.log('record', record)
+      clickMaj(record, [], true)
     } // 点击行
   }
 }

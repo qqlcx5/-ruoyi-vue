@@ -310,6 +310,39 @@
         </a-form-item>
 
         <a-form-item
+          label="数据权限展示"
+          name="dataScopes"
+          v-if="state.formState.type === SystemMenuTypeEnum.MENU"
+          :rules="[{ required: true, message: '数据权限展示不能为空' }]"
+        >
+          <a-checkbox-group v-model:value="state.formState.dataScopes" class="checkbox-group">
+            <div class="major-individual-type">
+              <a-checkbox
+                v-for="item in state.dataScopesOptions"
+                :value="item.value"
+                :key="item.value"
+                class="checkbox-style"
+              >
+                {{ item.label }}
+              </a-checkbox>
+            </div>
+          </a-checkbox-group>
+        </a-form-item>
+
+        <a-form-item
+          label="品牌权限展示"
+          name="showBrand"
+          v-if="state.formState.type === SystemMenuTypeEnum.MENU"
+          :rules="[{ required: true, message: '品牌权限展示不能为空' }]"
+        >
+          <a-radio-group
+            v-model:value="state.formState.showBrand"
+            :options="state.showBrandOptions"
+            @change="typeChange"
+          />
+        </a-form-item>
+
+        <a-form-item
           v-if="state.formState.type === SystemMenuTypeEnum.MENU"
           label="组件地址"
           name="component"
@@ -871,10 +904,48 @@ const state: any = reactive({
   modalType: 'add', //add新增edit编辑
   addEditTitle: '新增', //新增编辑 modal title
   majorIndividualTypeOptions: [], //适用主体类型Options
+  dataScopesOptions: [
+    {
+      label: '仅看自己',
+      value: 5
+    },
+    {
+      label: '仅看本部门及以下',
+      value: 4
+    },
+    {
+      label: '仅看本部门',
+      value: 3
+    },
+    {
+      label: '指定经销商',
+      value: 6
+    },
+    {
+      label: '指定部门',
+      value: 2
+    },
+    {
+      label: '看所有人',
+      value: 1
+    }
+  ], //数据权限展示
+  showBrandOptions: [
+    {
+      label: '显示',
+      value: 1
+    },
+    {
+      label: '不显示',
+      value: 0
+    }
+  ], //品牌权限展示
   formState: {
     id: 0,
     name: '', //目录名称
     type: SystemMenuTypeEnum.DIR, //菜单类型
+    dataScopes: [1, 2, 3, 4, 5, 6], //菜单的 数据权限展示
+    showBrand: 1, //菜单的 品牌权限展示
     parentId: 0, //上级目录
     icon: '', //图标
     path: '', //路由地址
@@ -1023,7 +1094,27 @@ const getList = async (isRefresh = false) => {
       })
 
       item.tenantTypeString = tempTenantTypeString
+
+      let tempDataScopesString = ''
+      if (!item.dataScopes) {
+        item.dataScopes = []
+      }
+
+      //数据权限展示 label
+      const tempDataScopesListOptions = state.dataScopesOptions.filter((topItem) => {
+        return item.dataScopes.some((item) => topItem.value === item)
+      })
+      tempDataScopesListOptions.map((item) => {
+        if (tempDataScopesString === '') {
+          //避免开头多拼一个 、
+          tempDataScopesString = item.label
+        } else {
+          tempDataScopesString = tempDataScopesString + '、' + item.label
+        }
+      })
+      item.dataScopesString = tempDataScopesString
     })
+
     state.menuArr = res
     list.value = handleTree(res)
     if (isRefresh) {
@@ -1088,6 +1179,8 @@ const closeModal = () => {
     id: 0,
     name: '', //目录名称
     type: SystemMenuTypeEnum.DIR, //菜单类型
+    dataScopes: [1, 2, 3, 4, 5, 6], //菜单的 数据权限展示
+    showBrand: 1, //菜单的 品牌权限展示
     parentId: 0, //上级目录
     icon: '', //图标
     path: '', //路由地址
@@ -1166,6 +1259,11 @@ const saveForm = async () => {
   params.tenantType = tempTenantTypeString
   params.entrance = queryParams.entrance
   state.modalBtnLoading = true
+  if (state.formState.type === SystemMenuTypeEnum.MENU) {
+    //菜单
+    params.dataScopes = state.formState.dataScopes
+    params.showBrand = state.formState.showBrand
+  }
   //
   try {
     let res = []
@@ -1215,6 +1313,7 @@ const typeChange = (type) => {
 }
 
 const edit = (record, isCloseDetails = false) => {
+  console.log('record', record)
   if (isCloseDetails) {
     //关闭详情moal
     state.isShowDetails = false
@@ -1227,6 +1326,11 @@ const edit = (record, isCloseDetails = false) => {
   record.tenantType = record.tenantTypeList
   //赋值
   state.formState = { ...record }
+  if (record.type === SystemMenuTypeEnum.MENU) {
+    //菜单
+    state.formState.dataScopes = record.dataScopes
+    state.formState.showBrand = record.showBrand
+  }
   openModal()
 }
 
@@ -1449,6 +1553,14 @@ const detailsInfo = async (record) => {
         {
           textSpan: '适用主体类型：',
           text: record?.tenantTypeString
+        },
+        {
+          textSpan: '数据权限展示：',
+          text: record?.dataScopesString
+        },
+        {
+          textSpan: '品牌权限展示：',
+          text: record?.showBrand === 1 ? '显示' : '不显示'
         },
         {
           textSpan: '组件名字：',
@@ -2151,6 +2263,7 @@ function changeMode() {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  flex-wrap: wrap;
 }
 .checkbox-style {
   margin-right: 15px;
