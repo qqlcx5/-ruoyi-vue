@@ -103,27 +103,47 @@ const getTableList = async (params) => {
 
 const columns: TableColumn[] = [
   {
+    label: '敏感词ID',
+    field: 'id',
+    width: 100,
+    check: false
+  },
+  {
     label: '敏感词编号',
     field: 'index',
     width: 100,
-    type: 'index'
+    type: 'index',
+    disabled: true,
+    check: false
   },
   {
     label: '敏感词',
     field: 'name',
-    isSearch: true
+    isSearch: true,
+    disabled: true
   },
   {
     label: '标签',
     field: 'tag',
-    isTable: false,
-    isForm: false,
-    isDetail: false,
-    isSearch: true
-  },
-  {
-    label: '标签',
-    field: 'tags'
+    isSearch: true,
+    search: {
+      component: 'Select',
+      componentProps: {
+        multiple: true,
+        filterable: true,
+        style: {
+          width: '100%'
+        },
+        options: computed(() => {
+          return tagsOptions.value?.map((item) => {
+            return {
+              label: item,
+              value: item
+            }
+          })
+        })
+      }
+    }
   },
   {
     label: t('common.status'),
@@ -159,10 +179,17 @@ const columns: TableColumn[] = [
   //   }
   // },
   {
+    label: '创建人',
+    field: 'creator',
+    width: 100,
+    check: false
+  },
+  {
     label: t('common.createTime'),
     field: 'createTime',
     width: 170,
     isSearch: true,
+    check: false,
     search: {
       component: 'DatePicker',
       componentProps: {
@@ -170,6 +197,21 @@ const columns: TableColumn[] = [
         valueFormat: 'YYYY-MM-DD hh:mm:ss'
       }
     },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
+  },
+  {
+    label: '最近操作人',
+    field: 'updater',
+    width: 100,
+    check: false
+  },
+  {
+    label: '最近操作时间',
+    field: 'updateTime',
+    width: 200,
+    check: false,
     formatter: (_, __, val: string) => {
       return formatDate(new Date(val))
     }
