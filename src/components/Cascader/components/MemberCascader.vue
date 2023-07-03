@@ -7,17 +7,25 @@ import BaseCascader from './BaseCascader.vue'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { propTypes } from '@/utils/propTypes'
 import { UserMemberList } from '@/api/common'
-import { computed } from 'vue'
+import { watch } from 'vue'
+
+const { getUserMemberList } = useCommonList()
 
 const props = defineProps({
   params: propTypes.object.def({})
 })
+let options: Ref<Recordable[]>
 
-const { getUserMemberList } = useCommonList()
-
-const options = computed(() => {
-  return getUserMemberList(props.params as UserMemberList).value
-})
+watch(
+  () => props.params,
+  (val: UserMemberList) => {
+    options = getUserMemberList(val)
+  },
+  {
+    immediate: true,
+    deep: true
+  }
+)
 </script>
 
 <style lang="scss" scoped></style>
