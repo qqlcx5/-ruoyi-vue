@@ -32,6 +32,7 @@
     >
       <FormTable
         ref="tableRef"
+        layout="internal"
         :form-options="{
           schema: allSchemas.searchSchema
         }"

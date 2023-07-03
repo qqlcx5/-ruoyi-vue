@@ -4,6 +4,7 @@
       title="画像因子等级配置"
       ref="tableRef"
       @add="handleAdd"
+      @search="receptionManageStatisticsApi"
       :form-options="{
         schema: allSchemas.searchSchema
       }"
@@ -11,23 +12,17 @@
         columns: allSchemas.tableColumns,
         listApi: receptionList.receptionManagePageApi,
         showAdd: false,
-        selection: true,
         actionButtons,
         listParams: tableParams
       }"
     >
-      <template #form-selectReception="{ model }">
-        <el-radio-group radio-group v-model="model.receptionStatus">
+      <template #form-selectReception>
+        <el-radio-group radio-group v-model="receptionStatus">
           <el-radio-button :label="undefined">全部{{ statisticsOpt.statusAll }}</el-radio-button>
           <el-radio-button :label="2">接待完成{{ statisticsOpt.statusCompleted }}</el-radio-button>
           <el-radio-button :label="1">接待暂停{{ statisticsOpt.statusSuspended }}</el-radio-button>
           <el-radio-button :label="0">接待中{{ statisticsOpt.statusReception }}</el-radio-button>
           <el-radio-button :label="3">取消接待{{ statisticsOpt.statusCancel }}</el-radio-button>
-
-          <!-- <el-radio-button :label="`接待完成${statisticsOpt.statusCompleted}`" />
-          <el-radio-button :label="`接待暂停${statisticsOpt.statusSuspended}`" />
-          <el-radio-button :label="`接待中${statisticsOpt.statusReception}`" />
-          <el-radio-button :label="`取消接待${statisticsOpt.statusCancel}`" /> -->
         </el-radio-group>
       </template>
       <template #form-selectTime>
@@ -60,7 +55,7 @@
         <XButton type="primary" @click="handleDel"> 导出</XButton>
       </template>
     </form-table>
-    <addedPortraitFactor ref="addRef" v-model="addTypeVisible" @refresh="handleRresh" />
+    <detailsDrawer ref="detailsRef" v-model="detailsVisible" @refresh="handleRresh" />
   </div>
 </template>
 
@@ -68,7 +63,7 @@
 import { TableColumn } from '@/types/table'
 import * as receptionList from '@/api/receptionManagement/receptionList'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import addedPortraitFactor from './components/addedPortraitFactor.vue'
+import detailsDrawer from './components/detailsDrawer.vue'
 
 const message = useMessage()
 const { t } = useI18n()
@@ -77,6 +72,7 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 dayjs.extend(duration)
 let tableRef = ref()
+let detailsRef = ref()
 const selectedIds = ref<number[]>([])
 const searchComp = (options = [{}]) => ({
   component: 'Select',
@@ -86,14 +82,32 @@ const searchComp = (options = [{}]) => ({
     options
   }
 })
+
 // 统计选项
 const statisticsOpt = reactive({
-  statusAll: 1,
-  statusCancel: 2,
-  statusCompleted: 20,
-  statusReception: 5,
-  statusSuspended: 10
+  statusAll: 0,
+  statusCancel: 0,
+  statusCompleted: 0,
+  statusReception: 0,
+  statusSuspended: 0
 })
+async function receptionManageStatisticsApi() {
+  let data = {
+    ...tableParams,
+    ...tableRef.value.tableObject.params
+  }
+  console.log('----------', tableRef.value.tableObject.params)
+
+  let res = await receptionList.receptionManageStatisticsApi(data)
+  if (res) {
+    statisticsOpt.statusAll = res.all
+    statisticsOpt.statusCancel = res.cancel
+    statisticsOpt.statusCompleted = res.completed
+    statisticsOpt.statusReception = res.reception
+    statisticsOpt.statusSuspended = res.suspended
+  }
+}
+receptionManageStatisticsApi()
 
 const columns: TableColumn[] = [
   { label: '接待', field: 'selectReception', isSearch: true, isTable: false },
@@ -453,7 +467,9 @@ const actionButtons = [
   {
     name: '详情',
     permission: true,
-    click: () => {}
+    click: (row) => {
+      detailsRef.value?.openDrawer(row)
+    }
   },
   {
     name: '播放录音',
@@ -477,12 +493,21 @@ const actionButtons = [
   }
 ]
 /* ---------------------------------- 时间选择 ---------------------------------- */
-let selectTime = ref('本年')
+let selectTime = ref('今日')
+let receptionStatus = ref()
 let selectTimeRange = ref()
 let tableParams = reactive({
   dateBegin: '',
-  dateEnd: ''
+  dateEnd: '',
+  receptionStatus: ''
 })
+watch(
+  receptionStatus,
+  (val) => {
+    tableParams.receptionStatus = val
+  },
+  { immediate: true }
+)
 watch(
   selectTime,
   (val) => {
@@ -519,10 +544,10 @@ function handleDateRange(val) {
   selectTime.value = ''
 }
 /* -------------------------------- 操作事件 ------------------------------- */
-let addTypeVisible = ref(false)
+let detailsVisible = ref(false)
 // 操作：新增
 async function handleAdd() {
-  addTypeVisible.value = true
+  detailsVisible.value = true
 }
 // 操作：刷新
 function handleRresh() {

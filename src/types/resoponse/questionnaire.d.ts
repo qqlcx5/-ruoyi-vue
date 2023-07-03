@@ -4,4 +4,9 @@ declare namespace Questionnaire {
     appraiseTypeName: string
     topicNum: number
   }
+  type FieldList = {
+    key: number
+    value: string
+    keyword: null
+  }
 }

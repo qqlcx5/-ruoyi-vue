@@ -78,7 +78,7 @@ const setDefaultShowOneLint = () => {
       // 判断一行是否还能放下下一个查询组件
       if (formWidth - itemsWidth < getItemWidth(formItems[index + 1]) + 5) {
         // 判断一行是否还能放下查询重置按钮，不能就把当前及之后的选项收起
-        if (formWidth - itemsWidth < lastFormItemWidth + 90) {
+        if (props.layout === 'inline' && formWidth - itemsWidth < lastFormItemWidth + 90) {
           defaultExpanField.value = props.schema[index - 1].field
           break
         }
@@ -179,7 +179,6 @@ const setVisible = () => {
     <template v-if="layout === 'bottom'">
       <div :style="bottonButtonStyle">
         <ElButton v-if="showSearch" type="primary" @click="search">
-          <Icon icon="ep:search" class="mr-5px" />
           {{ t('common.query') }}
         </ElButton>
         <ElButton v-if="showReset" @click="reset">

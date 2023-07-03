@@ -1,7 +1,5 @@
-import { TableColumn } from '@/types/table'
 import { formatDate } from '@/utils/formatTime'
-import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { useCommonList } from '@/hooks/web/useCommonList'
+import { useCrudSchemas, CrudSchema } from '@/hooks/web/useCrudSchemas'
 import { getMemberRuleTree, getMemberRuleList } from '@/api/system/memberRule'
 import { ref, createVNode, reactive } from 'vue'
 import { XTextButton } from '@/components/XButton'
@@ -11,6 +9,7 @@ export type TreeNode = {
   totalRuleNum: number
   ruleName: string
   ruleValue: string
+  childs?: TreeNode[]
 }
 
 const { t } = useI18n()
@@ -66,30 +65,17 @@ export const useColumnOptions = () => {
 
 export const useFormTable = () => {
   const { brandOptions, areaOptions, choiceOptions } = useColumnOptions()
-  const { getSuitableShopList } = useCommonList()
   const dialogTreeData = ref<Recordable[]>([])
   const showTreeDialog = ref(false)
   const dialogTreeTitle = ref('')
-  const columns: TableColumn[] = reactive([
+  const columns: CrudSchema[] = reactive([
     {
       field: 'applicableShopIds',
       label: '门店名称',
       isSearch: true,
       isTable: false,
       search: {
-        component: 'Cascader',
-        componentProps: {
-          options: getSuitableShopList(),
-          collapseTags: true,
-          collapseTagsTooltip: true,
-          filterable: true,
-          props: {
-            label: 'name',
-            value: 'id',
-            emitPath: false,
-            multiple: true
-          }
-        }
+        component: 'ShopCascader'
       }
     },
     {
@@ -98,19 +84,7 @@ export const useFormTable = () => {
       isSearch: true,
       isTable: false,
       search: {
-        component: 'Cascader',
-        collapseTags: true,
-        collapseTagsTooltip: true,
-        filterable: true,
-        componentProps: {
-          options: getSuitableShopList(),
-          props: {
-            label: 'name',
-            value: 'id',
-            emitPath: false,
-            multiple: true
-          }
-        }
+        component: 'ShopCascader'
       }
     },
     {

@@ -107,7 +107,7 @@ const handleOk = async () => {
     if (result) {
       message.success('保存成功')
       handleCancel()
-      await userStore.setUserInfoAction()
+      await userStore.setPermissions()
       setTimeout(() => {
         location.reload()
       }, 500)
