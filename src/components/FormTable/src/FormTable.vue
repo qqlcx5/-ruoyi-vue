@@ -157,6 +157,7 @@ const props = defineProps({
 const emits = defineEmits<{
   (e: 'expandAll', isExpandAll: boolean): void
   (e: 'add'): void
+  (e: 'search', params: Recordable): void
 }>()
 
 const { t } = useI18n() // 国际化
@@ -344,6 +345,7 @@ const handleToolClick = (key): void => {
 const handleSearch = (model: Recordable) => {
   tableMethods.setSearchParams(model)
   elTableRef.value?.clearSelection()
+  emits('search', tableObject.params)
 }
 
 /** 改变列的排序 */
