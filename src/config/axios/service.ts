@@ -6,7 +6,7 @@ import axios, {
   InternalAxiosRequestConfig
 } from 'axios'
 
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import qs from 'qs'
 import { config } from '@/config/axios/config'
 import { getAccessToken, getRefreshToken, getTenantId, removeToken, setToken } from '@/utils/auth'
@@ -228,22 +228,29 @@ const handleAuthorized = () => {
   const { t } = useI18n()
   if (!isRelogin.show) {
     isRelogin.show = true
-    ElMessageBox.confirm(t('sys.api.timeoutMessage'), t('common.confirmTitle'), {
-      confirmButtonText: t('login.relogin'),
-      cancelButtonText: t('common.cancel'),
-      type: 'warning'
-    })
-      .then(() => {
-        const { wsCache } = useCache()
-        resetRouter() // 重置静态路由表
-        wsCache.clear()
-        removeToken()
-        isRelogin.show = false
-        window.location.href = '/'
-      })
-      .catch(() => {
-        isRelogin.show = false
-      })
+    message.error('您的登录已超时，请重新登录')
+    const { wsCache } = useCache()
+    resetRouter() // 重置静态路由表
+    wsCache.clear()
+    removeToken()
+    isRelogin.show = false
+    window.location.href = '/'
+    // ElMessageBox.confirm(t('sys.api.timeoutMessage'), t('common.confirmTitle'), {
+    //   confirmButtonText: t('login.relogin'),
+    //   cancelButtonText: t('common.cancel'),
+    //   type: 'warning'
+    // })
+    //   .then(() => {
+    //     const { wsCache } = useCache()
+    //     resetRouter() // 重置静态路由表
+    //     wsCache.clear()
+    //     removeToken()
+    //     isRelogin.show = false
+    //     window.location.href = '/'
+    //   })
+    //   .catch(() => {
+    //     isRelogin.show = false
+    //   })
   }
   return Promise.reject(t('sys.api.timeoutMessage'))
 }

@@ -66,6 +66,12 @@ export const useUserStore = defineStore('admin-user', {
       userInfo.tenant.watermark = watermark || ''
       wsCache.set(CACHE_KEY.USER, userInfo)
     },
+    async setPermissions() {
+      const userInfo = await getInfoApi()
+      this.permissions = userInfo.permissions
+      this.roles = userInfo.roles
+      wsCache.set(CACHE_KEY.USER, userInfo)
+    },
     async setUserInfoAction() {
       if (!getAccessToken()) {
         this.resetState()

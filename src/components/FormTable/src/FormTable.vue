@@ -1,7 +1,7 @@
 <template>
   <div :class="['form-table flex flex-col h-full', { 'layout-internal': layout === 'internal' }]">
     <ContentWrap v-if="formProps.isSearch" class="form-content-wrap">
-      <Search v-bind="formProps" @search="handleSearch" @reset="handleSearch">
+      <Search v-bind="formProps" @search="handleSearch" @reset="handleReset">
         <template #[item]="data" v-for="item in Object.keys(formSlots)" :key="item">
           <slot :name="`form-${item}`" v-bind="data || {}" :model="data.model"></slot>
         </template>
@@ -158,6 +158,7 @@ const emits = defineEmits<{
   (e: 'expandAll', isExpandAll: boolean): void
   (e: 'add'): void
   (e: 'search', params: Recordable): void
+  (e: 'reset', params: Recordable): void
 }>()
 
 const { t } = useI18n() // 国际化
@@ -341,11 +342,18 @@ const handleToolClick = (key): void => {
   }
 }
 
-/** 查询/重置 */
+/** 查询 */
 const handleSearch = (model: Recordable) => {
   tableMethods.setSearchParams(model)
   elTableRef.value?.clearSelection()
   emits('search', tableObject.params)
+}
+
+/** 重置 */
+const handleReset = (model: Recordable) => {
+  tableMethods.setSearchParams(model)
+  elTableRef.value?.clearSelection()
+  emits('reset', tableObject.params)
 }
 
 /** 改变列的排序 */
