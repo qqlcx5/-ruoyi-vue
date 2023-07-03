@@ -145,6 +145,7 @@ const handleDelRow = (index) => {
   flex-direction: column;
   height: 100%;
   padding: 15px;
+  background-color: #ffffff;
   .el-form {
     display: flex;
     flex-direction: column;
