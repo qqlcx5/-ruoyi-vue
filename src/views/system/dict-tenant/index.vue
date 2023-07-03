@@ -1,334 +1,380 @@
 <template>
-  <el-card class="dict" :gutter="12" shadow="never">
-    <template #header>
-      <div class="card-header text-18px font-medium">
-        <span>字典分类</span>
-      </div>
-    </template>
-    <div class="flex">
-      <!-- ====== 字典分类 ====== -->
-      <div class="w-1/2 overflow-hidden">
+  <div class="grid grid-cols-2 gap-16px">
+    <el-card class="dict" :gutter="12" shadow="never">
+      <template #header>
+        <div class="card-header text-18px font-medium">
+          <span>字典分类</span>
+        </div>
+      </template>
+      <el-form
+        class="query-form w-full"
+        ref="elFormRef"
+        :model="typeSearchForm"
+        label-position="left"
+        label-width="70px"
+      >
+        <el-row :gutter="12">
+          <el-col :xl="8" :lg="8" :md="12" :sm="12" :xs="24">
+            <el-form-item label="字典名称">
+              <el-input
+                v-model="typeSearchForm.name"
+                placeholder="请输入字典名称"
+                @keyup.enter="typeSearch"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :xl="8" :lg="8" :md="12" :sm="12" :xs="24">
+            <el-form-item label="字典编码">
+              <el-input
+                v-model="typeSearchForm.type"
+                placeholder="请输入字典编码"
+                @keyup.enter="typeSearch"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+
+          <el-col
+            :xl="8"
+            :lg="8"
+            :md="12"
+            :sm="12"
+            :xs="24"
+            class="!flex flex-column justify-between"
+          >
+            <div>
+              <el-button type="primary" @click="typeSearch">查询</el-button>
+              <el-button @click="onTypeSearchReset">重置</el-button>
+            </div>
+            <el-button class="!px-0" text @click="onTypeSearchToggle">
+              {{ searchFormToggle ? '收起' : '展开'
+              }}<i
+                class="iconfont icon-a-bianzu3 !text-12px transform transition-transform ml-2px"
+                :class="{ 'rotate-180': !searchFormToggle }"
+              ></i>
+            </el-button>
+          </el-col>
+          <el-col v-show="searchFormToggle" :span="8">
+            <el-form-item label="创建时间">
+              <el-date-picker
+                v-model="typeSearchForm.createTime"
+                type="datetimerange"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+              />
+            </el-form-item>
+          </el-col>
+          <!--            <el-col v-show="searchFormToggle" :span="8">-->
+          <!--              <el-form-item label="状态">-->
+          <!--                <el-select class="w-full" v-model="typeSearchForm.status" placeholder="请选择">-->
+          <!--                  <el-option-->
+          <!--                    v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"-->
+          <!--                    :key="dict.value"-->
+          <!--                    :label="dict.label"-->
+          <!--                    :value="dict.value"-->
+          <!--                  />-->
+          <!--                </el-select>-->
+          <!--              </el-form-item>-->
+          <!--            </el-col>-->
+        </el-row>
+      </el-form>
+      <el-divider class="!mt-0 !mb-16px" />
+      <XTable @register="registerType" @cell-click="cellClickEvent">
+        <template #toolbar_buttons></template>
+        <!-- 操作：新增类型 -->
+        <!--          <template #toolbar_buttons>-->
+        <!--            <XButton-->
+        <!--              type="primary"-->
+        <!--              iconFont="icon-xinzeng"-->
+        <!--              :title="t('action.add')"-->
+        <!--              @click="handleTypeCreate()"-->
+        <!--            />-->
+        <!--          </template>-->
+        <!--          <template #status_default="{ row }">-->
+        <!--            <el-switch-->
+        <!--              v-hasPermi="['system:tenant-dict-type:update']"-->
+        <!--              v-model="row.status"-->
+        <!--              :active-value="0"-->
+        <!--              :inactive-value="1"-->
+        <!--              @click.stop-->
+        <!--              @change="handleStatusChange(row, 'type')"-->
+        <!--              disabled-->
+        <!--            />-->
+        <!--          </template>-->
+        <template #actionbtns_default="{ row }">
+          <!-- 操作：编辑类型 -->
+          <XTextButton
+            :title="t('action.edit')"
+            v-hasPermi="['system:tenant-dict-type:update']"
+            @click="handleTypeUpdate(row)"
+          />
+        </template>
+      </XTable>
+    </el-card>
+    <el-card class="dict" :gutter="12" shadow="never">
+      <template #header>
+        <div class="card-header text-18px font-medium"> 字典数据 </div>
+      </template>
+      <!-- ====== 字典数据 ====== -->
+      <div v-if="!tableTypeSelect" class="text-20px text-tip text-center mt-248px"
+        >请从左侧选择</div
+      >
+      <div v-else>
         <el-form
           class="query-form w-full"
           ref="elFormRef"
-          :model="typeSearchForm"
+          :model="queryParams"
           label-position="left"
           label-width="70px"
         >
           <el-row :gutter="12">
             <el-col :span="8">
-              <el-form-item label="字典名称">
+              <el-form-item label="数据标签">
                 <el-input
-                  v-model="typeSearchForm.name"
-                  placeholder="请输入字典名称"
-                  @keyup.enter="typeSearch"
+                  v-model="queryParams.label"
+                  placeholder="请输入数据标签"
+                  @keyup.enter="dataSearch"
                   clearable
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="8">
-              <el-form-item label="字典编码">
-                <el-input
-                  v-model="typeSearchForm.type"
-                  placeholder="请输入字典编码"
-                  @keyup.enter="typeSearch"
-                  clearable
-                />
-              </el-form-item>
-            </el-col>
-
             <el-col :span="8" class="!flex flex-column justify-between">
               <div>
-                <el-button type="primary" @click="typeSearch">查询</el-button>
-                <el-button @click="onTypeSearchReset">重置</el-button>
+                <el-button type="primary" @click="dataSearch">查询</el-button>
+                <el-button @click="onDataSearchReset">重置</el-button>
               </div>
-              <el-button class="!px-0" text @click="onTypeSearchToggle">
-                {{ searchFormToggle ? '收起' : '展开'
-                }}<i
-                  class="iconfont icon-a-bianzu3 !text-12px transform transition-transform ml-2px"
-                  :class="{ 'rotate-180': !searchFormToggle }"
-                ></i>
-              </el-button>
-            </el-col>
-            <el-col v-show="searchFormToggle" :span="8">
-              <el-form-item label="创建时间">
-                <el-date-picker
-                  v-model="typeSearchForm.createTime"
-                  type="datetimerange"
-                  value-format="YYYY-MM-DD HH:mm:ss"
-                  start-placeholder="开始时间"
-                  end-placeholder="结束时间"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col v-show="searchFormToggle" :span="8">
-              <el-form-item label="状态">
-                <el-select class="w-full" v-model="typeSearchForm.status" placeholder="请选择">
-                  <el-option
-                    v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
-                    :key="dict.value"
-                    :label="dict.label"
-                    :value="dict.value"
-                  />
-                </el-select>
-              </el-form-item>
             </el-col>
           </el-row>
         </el-form>
         <el-divider class="!mt-0 !mb-16px" />
-        <XTable @register="registerType" @cell-click="cellClickEvent">
-          <!-- 操作：新增类型 -->
+        <!-- 列表 -->
+        <XTable @register="registerData">
+          <!-- 操作：新增数据 -->
           <template #toolbar_buttons>
             <XButton
               type="primary"
               iconFont="icon-xinzeng"
               :title="t('action.add')"
-              @click="handleTypeCreate()"
+              v-hasPermi="['system:tenant-dict:create']"
+              @click="handleDataCreate()"
             />
           </template>
-          <!--          <template #status_default="{ row }">-->
-          <!--            <el-switch-->
-          <!--              v-hasPermi="['system:tenant-dict-type:update']"-->
-          <!--              v-model="row.status"-->
-          <!--              :active-value="0"-->
-          <!--              :inactive-value="1"-->
-          <!--              @click.stop-->
-          <!--              @change="handleStatusChange(row, 'type')"-->
-          <!--              disabled-->
-          <!--            />-->
-          <!--          </template>-->
-          <template #actionbtns_default="{ row }">
-            <!-- 操作：编辑类型 -->
-            <XTextButton
-              :title="t('action.edit')"
-              v-hasPermi="['system:tenant-dict-type:update']"
-              @click="handleTypeUpdate(row.id)"
+          <template #status_default="{ row }">
+            <el-switch
+              v-model="row.status"
+              :active-value="0"
+              :inactive-value="1"
+              @change="handleStatusChange(row, 'data')"
+              :disabled="
+                !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+              "
             />
+          </template>
+          <template #actionbtns_default="{ row }">
+            <!-- 操作：修改数据 -->
+            <XTextButton
+              v-hasPermi="['system:tenant-dict:update']"
+              :title="t('action.edit')"
+              @click="handleDataUpdate(row.id)"
+            />
+            <!-- 操作：详情 -->
+            <XTextButton :title="t('action.detail')" @click="handleDataDetail(row)" />
+            <!--              &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
+            <!--              <XTextButton-->
+            <!--                v-hasPermi="['system:dict:delete']"-->
+            <!--                :title="t('action.del')"-->
+            <!--                @click="dataDeleteData(row.id, `是否确认删除数据标签为''${row.label}''的数据项?`)"-->
+            <!--              />-->
           </template>
         </XTable>
       </div>
-
-      <!-- ====== 字典数据 ====== -->
-      <div class="w-1/2 dict px-12px py-18px ml-50px shadow-card rounded-2px overflow-hidden">
-        <p class="text-18px font-medium">字典数据</p>
-        <div v-if="!tableTypeSelect" class="text-20px text-tip text-center mt-248px"
-          >请从左侧选择</div
-        >
-        <div v-else>
-          <el-form
-            class="query-form w-full"
-            ref="elFormRef"
-            :model="queryParams"
-            label-position="left"
-            label-width="70px"
-          >
-            <el-row :gutter="12">
-              <el-col :span="8">
-                <el-form-item label="数据标签">
-                  <el-input
-                    v-model="queryParams.label"
-                    placeholder="请输入数据标签"
-                    @keyup.enter="dataSearch"
-                    clearable
-                  />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8" class="!flex flex-column justify-between">
-                <div>
-                  <el-button type="primary" @click="dataSearch">查询</el-button>
-                  <el-button @click="onDataSearchReset">重置</el-button>
-                </div>
-              </el-col>
-            </el-row>
-          </el-form>
-          <el-divider class="!mt-0 !mb-16px" />
-          <!-- 列表 -->
-          <XTable @register="registerData">
-            <!-- 操作：新增数据 -->
-            <template #toolbar_buttons>
-              <XButton
-                type="primary"
-                iconFont="icon-xinzeng"
-                :title="t('action.add')"
-                v-hasPermi="['system:tenant-dict:create']"
-                @click="handleDataCreate()"
-              />
-            </template>
-            <template #status_default="{ row }">
-              <el-switch
-                v-model="row.status"
-                :active-value="0"
-                :inactive-value="1"
-                @change="handleStatusChange(row, 'data')"
-                :disabled="!hasPermission(['system:tenant-dict:update'])"
-              />
-            </template>
-            <template #actionbtns_default="{ row }">
-              <!-- 操作：修改数据 -->
-              <XTextButton
-                v-hasPermi="['system:tenant-dict:update']"
-                :title="t('action.edit')"
-                @click="handleDataUpdate(row.id)"
-              />
-              <!-- 操作：详情 -->
-              <XTextButton :title="t('action.detail')" @click="handleDataDetail(row)" />
-              <!--              &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
-              <!--              <XTextButton-->
-              <!--                v-hasPermi="['system:dict:delete']"-->
-              <!--                :title="t('action.del')"-->
-              <!--                @click="dataDeleteData(row.id, `是否确认删除数据标签为''${row.label}''的数据项?`)"-->
-              <!--              />-->
-            </template>
-          </XTable>
-        </div>
-      </div>
-    </div>
-    <XModal id="dictModel" v-model="dialogVisible" :title="dialogTitle" width="534px">
-      <Form
-        v-if="['typeCreate', 'typeUpdate'].includes(actionType)"
-        :schema="DictTypeSchemas.allSchemas.formSchema"
-        :rules="DictTypeSchemas.dictTypeRules"
-        ref="typeFormRef"
-      >
-        <template #type>
-          <template v-if="actionType == 'typeUpdate'">
-            <el-tag>{{ dictTypeValue }}</el-tag>
-          </template>
-          <template v-else>
-            <el-input
-              v-model="dictTypeValue"
-              placeholder="请输入字典编码"
-              @input="(val) => (dictTypeValue = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
-            />
-          </template>
+    </el-card>
+  </div>
+  <XModal id="dictModel" v-model="dialogVisible" :title="dialogTitle" width="534px">
+    <Form
+      v-if="['typeCreate', 'typeUpdate'].includes(actionType)"
+      :schema="DictTypeSchemas.allSchemas.formSchema"
+      :rules="DictTypeSchemas.dictTypeRules"
+      ref="typeFormRef"
+    >
+      <template #type>
+        <template v-if="actionType == 'typeUpdate'">
+          <el-tag>{{ dictTypeValue }}</el-tag>
         </template>
-      </Form>
-      <Form
-        v-if="['dataCreate', 'dataUpdate'].includes(actionType)"
-        :schema="DictDataSchemas.allSchemas.formSchema"
-        :rules="DictDataSchemas.dictDataRules"
-        ref="dataFormRef"
-      >
-        <template #value="row">
-          <template v-if="['dataUpdate'].includes(actionType)">
-            <div>{{ row.value }}</div>
-          </template>
-          <template v-else
-            ><el-input
-              v-model="row.value"
-              placeholder="请输入数据键值"
-              @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
-            />
-          </template>
+        <template v-else>
+          <el-input
+            v-model="dictTypeValue"
+            placeholder="请输入字典编码"
+            @input="(val) => (dictTypeValue = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
+          />
         </template>
-      </Form>
-      <Form
-        v-if="['dataLevel3Create', 'dataLevel3Update'].includes(actionType)"
-        :schema="DictDataLevel3Schemas.allSchemas.formSchema"
-        :rules="DictDataLevel3Schemas.dictDataRules"
-        ref="dataFormRef"
-      >
-        <template #value="row">
-          <template v-if="['dataLevel3Update'].includes(actionType)">
-            <div>{{ row.value }}</div>
-          </template>
-          <template v-else
-            ><el-input
-              v-model="row.value"
-              placeholder="请输入子项键值"
-              @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
-            />
-          </template>
-        </template>
-      </Form>
-      <!-- 操作按钮 -->
-      <template #footer>
-        <XButton
-          v-if="['typeCreate', 'typeUpdate'].includes(actionType)"
-          type="primary"
-          :title="t('action.save')"
-          :loading="actionLoading"
-          @click="submitTypeForm"
-        />
-        <XButton
-          v-if="
-            ['dataCreate', 'dataUpdate', 'dataLevel3Create', 'dataLevel3Update'].includes(
-              actionType
-            )
-          "
-          type="primary"
-          :title="t('action.save')"
-          :loading="actionLoading"
-          @click="submitDataForm"
-        />
-        <XButton :title="t('dialog.close')" @click="dialogVisible = false" />
       </template>
-    </XModal>
-    <XModal v-model="dictDataVisible" :title="`${dictDataSelected?.label}数据详情`" width="1045px">
-      <el-form
-        class="query-form w-full"
-        ref="elFormRef"
-        :model="dataLevel3queryParams"
-        label-position="left"
-        label-width="70px"
-      >
-        <el-row :gutter="12">
-          <el-col :span="8">
-            <el-form-item label="子项标签" class="!mb-0">
-              <el-input
-                v-model="dataLevel3queryParams.label"
-                placeholder="请输入子项标签"
-                @keyup.enter="dataLevel3Search"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8" class="!flex flex-column justify-between">
-            <div>
-              <el-button type="primary" @click="dataLevel3Search">查询</el-button>
-              <el-button @click="onDataSearchReset('dataLevel3')">重置</el-button>
-            </div>
-          </el-col>
-        </el-row>
-      </el-form>
-      <el-divider class="!my-12px" />
-      <XTable @register="registerDataLevel3">
-        <!-- 操作：新增数据 -->
-        <template #toolbar_buttons>
-          <XButton
-            type="primary"
-            iconFont="icon-xinzeng"
-            :title="t('action.add')"
-            v-hasPermi="['system:tenant-dict:create']"
-            @click="handleDataCreate('dataLevel3Create')"
+    </Form>
+    <Form
+      v-if="['dataCreate', 'dataUpdate'].includes(actionType)"
+      :schema="DictDataSchemas.allSchemas.formSchema"
+      :rules="DictDataSchemas.dictDataRules"
+      ref="dataFormRef"
+    >
+      <template #value="row">
+        <template v-if="['dataUpdate'].includes(actionType)">
+          <div>{{ row.value }}</div>
+        </template>
+        <template v-else
+          ><el-input
+            v-model="row.value"
+            placeholder="请输入数据键值"
+            @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
           />
         </template>
-        <template #status_default="{ row }">
-          <el-switch
-            v-model="row.status"
-            :active-value="0"
-            :inactive-value="1"
-            @change="handleStatusChange(row, 'dataLevel3')"
-            :disabled="!hasPermission(['system:tenant-dict:update'])"
+      </template>
+      <template #status="row">
+        <el-switch
+          v-hasPermi="['system:tenant-dict:update']"
+          v-model="row.status"
+          :active-value="0"
+          :inactive-value="1"
+          :disabled="
+            !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+          "
+        />
+        <el-checkbox
+          v-if="actionType === 'dataCreate'"
+          class="ml-16px"
+          v-model="row.allowModificationStatus"
+          :false-label="0"
+          :true-label="1"
+          label="状态可修改"
+        />
+      </template>
+    </Form>
+    <Form
+      v-if="['dataLevel3Create', 'dataLevel3Update'].includes(actionType)"
+      :schema="DictDataLevel3Schemas.allSchemas.formSchema"
+      :rules="DictDataLevel3Schemas.dictDataRules"
+      ref="dataFormRef"
+    >
+      <template #value="row">
+        <template v-if="['dataLevel3Update'].includes(actionType)">
+          <div>{{ row.value }}</div>
+        </template>
+        <template v-else
+          ><el-input
+            v-model="row.value"
+            placeholder="请输入子项键值"
+            @input="(val) => (row.value = val.replace(/[\u4e00-\u9fa5]+/g, ''))"
           />
         </template>
-        <template #actionbtns_default="{ row }">
-          <!-- 操作：修改数据 -->
-          <XTextButton
-            v-hasPermi="['system:tenant-dict:update']"
-            :title="t('action.edit')"
-            @click="handleDataUpdate(row.id, 'dataLevel3Update')"
-          />
-          <!--          &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
-          <!--          <XTextButton-->
-          <!--            v-hasPermi="['system:dict:delete']"-->
-          <!--            :title="t('action.del')"-->
-          <!--            @click="dataLevel3DeleteData(row.id, `是否确认删除子项标签为''${row.label}''的数据项?`)"-->
-          <!--          />-->
-        </template>
-      </XTable>
-    </XModal>
-  </el-card>
+      </template>
+      <template #status="row">
+        <el-switch
+          v-hasPermi="['system:tenant-dict:update']"
+          v-model="row.status"
+          :active-value="0"
+          :inactive-value="1"
+          :disabled="
+            !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+          "
+        />
+        <el-checkbox
+          v-if="actionType === 'dataLevel3Create'"
+          class="ml-16px"
+          v-model="row.allowModificationStatus"
+          :false-label="0"
+          :true-label="1"
+          label="状态可修改"
+        />
+      </template>
+    </Form>
+    <!-- 操作按钮 -->
+    <template #footer>
+      <XButton
+        v-if="['typeCreate', 'typeUpdate'].includes(actionType)"
+        type="primary"
+        :title="t('action.save')"
+        :loading="actionLoading"
+        @click="submitTypeForm"
+      />
+      <XButton
+        v-if="
+          ['dataCreate', 'dataUpdate', 'dataLevel3Create', 'dataLevel3Update'].includes(actionType)
+        "
+        type="primary"
+        :title="t('action.save')"
+        :loading="actionLoading"
+        @click="submitDataForm"
+      />
+      <XButton :title="t('dialog.close')" @click="dialogVisible = false" />
+    </template>
+  </XModal>
+  <XModal v-model="dictDataVisible" :title="`${dictDataSelected?.label}数据详情`" width="1045px">
+    <el-form
+      class="query-form w-full"
+      ref="elFormRef"
+      :model="dataLevel3queryParams"
+      label-position="left"
+      label-width="70px"
+    >
+      <el-row :gutter="12">
+        <el-col :span="8">
+          <el-form-item label="子项标签" class="!mb-0">
+            <el-input
+              v-model="dataLevel3queryParams.label"
+              placeholder="请输入子项标签"
+              @keyup.enter="dataLevel3Search"
+              clearable
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8" class="!flex flex-column justify-between">
+          <div>
+            <el-button type="primary" @click="dataLevel3Search">查询</el-button>
+            <el-button @click="onDataSearchReset('dataLevel3')">重置</el-button>
+          </div>
+        </el-col>
+      </el-row>
+    </el-form>
+    <el-divider class="!my-12px" />
+    <XTable @register="registerDataLevel3">
+      <!-- 操作：新增数据 -->
+      <template #toolbar_buttons>
+        <XButton
+          type="primary"
+          iconFont="icon-xinzeng"
+          :title="t('action.add')"
+          v-hasPermi="['system:tenant-dict:create']"
+          @click="handleDataCreate('dataLevel3Create')"
+        />
+      </template>
+      <template #status_default="{ row }">
+        <el-switch
+          v-model="row.status"
+          :active-value="0"
+          :inactive-value="1"
+          @change="handleStatusChange(row, 'dataLevel3')"
+          :disabled="
+            !hasPermission(['system:tenant-dict:update']) || row.allowModificationStatus === 0
+          "
+        />
+      </template>
+      <template #actionbtns_default="{ row }">
+        <!-- 操作：修改数据 -->
+        <XTextButton
+          v-hasPermi="['system:tenant-dict:update']"
+          :title="t('action.edit')"
+          @click="handleDataUpdate(row.id, 'dataLevel3Update')"
+        />
+        <!--          &lt;!&ndash; 操作：删除数据 &ndash;&gt;-->
+        <!--          <XTextButton-->
+        <!--            v-hasPermi="['system:dict:delete']"-->
+        <!--            :title="t('action.del')"-->
+        <!--            @click="dataLevel3DeleteData(row.id, `是否确认删除子项标签为''${row.label}''的数据项?`)"-->
+        <!--          />-->
+      </template>
+    </XTable>
+  </XModal>
 </template>
 <script setup lang="ts" name="Dict">
 import { VxeTableEvents } from 'vxe-table'
@@ -340,7 +386,6 @@ import * as DictTypeApi from '@/api/system/dict-tenant/dict.type'
 import * as DictDataApi from '@/api/system/dict-tenant/dict.data'
 import { DictDataVO, DictTypeReqVO } from '@/api/system/dict/types'
 import { CommonStatusEnum } from '@/utils/constants'
-import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
 import { hasPermission } from '@/utils/routerHelper'
 import { reactive } from 'vue'
 
@@ -372,7 +417,7 @@ const [registerData, { reload: dataGetList, search: dataSearch }] = useXTable({
   getListApi: DictDataApi.getDictDataPageApi,
   deleteApi: DictDataApi.deleteDictDataApi,
   border: true,
-  height: 606
+  height: 660
 })
 
 const dataLevel3queryParams = reactive({
@@ -390,16 +435,19 @@ const [registerDataLevel3, { reload: dataLevel3GetList, search: dataLevel3Search
 
 // ========== 字典分类列表相关 ==========
 const dictTypeValue = ref('')
-const handleTypeCreate = () => {
-  dictTypeValue.value = ''
-  setDialogTile('typeCreate')
-}
-const handleTypeUpdate = async (rowId: number) => {
+// const handleTypeCreate = () => {
+//   dictTypeValue.value = ''
+//   setDialogTile('typeCreate')
+//   nextTick(() => {
+//     unref(typeFormRef)?.setValues({ status: CommonStatusEnum.ENABLE })
+//   })
+// }
+const handleTypeUpdate = async (row) => {
   setDialogTile('typeUpdate')
   // 设置数据
-  const res = await DictTypeApi.getDictTypeApi(rowId)
-  dictTypeValue.value = res.type
-  unref(typeFormRef)?.setValues(res)
+  await nextTick()
+  dictTypeValue.value = row.type
+  unref(typeFormRef)?.setValues({ ...row })
 }
 // 分类搜索
 const searchFormToggle = ref(false)
@@ -433,10 +481,14 @@ const handleDataDetail = async (row) => {
 // 字典数据修改操作
 const handleDataCreate = (type = 'dataCreate') => {
   setDialogTile(type)
+  nextTick(() => {
+    unref(dataFormRef)?.setValues({ allowModificationStatus: 1 })
+  })
 }
 const handleDataUpdate = async (rowId: number, type = 'dataUpdate') => {
   setDialogTile(type)
   // 设置数据
+  await nextTick()
   const res = await DictDataApi.getDictDataApi(rowId)
   unref(dataFormRef)?.setValues(res)
 }

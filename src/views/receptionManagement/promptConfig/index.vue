@@ -21,8 +21,7 @@
       <!-- listApi: tabsName === 'currency' ? receptionHintConfigApi : receptionMustSayConfigApi, -->
       <template #tableAppend>
         <XButton @click="handleDel"> 删除</XButton>
-        <!-- 提示类型配置 -->
-        <XButton @click="handlePrompt"> 提示类型配置</XButton>
+        <!-- <XButton @click="handlePrompt"> 提示类型配置</XButton> -->
       </template>
 
       <!-- 操作：修改 -->
@@ -119,7 +118,7 @@ const selectedIds = ref<number[]>([])
 let tableRef = ref()
 // 操作：新增
 async function handleAdd() {
-  newGeneralVisible.value = true
+  newGeneralRef.value?.openModal(true)
 }
 
 // 操作：删除
@@ -180,9 +179,9 @@ const deleteFun = async () => {
 }
 
 // 操作：提示类型配置
-function handlePrompt() {
-  promptTypeVisible.value = true
-}
+// function handlePrompt() {
+//   promptTypeVisible.value = true
+// }
 
 // 操作：修改
 const newGeneralRef = ref() // 表单 Ref

@@ -147,6 +147,7 @@ watch(
     if (val.length === 0) {
       return
     }
+    //TODO 删除增加了子项 提示 这里后续需要 处理 否则刚进来使用删除则无法获取到 子项数量
     // state.treeData = val
     //   -1显示全部区划item
     const tempArr = val.filter((item) => item.code !== '-1')

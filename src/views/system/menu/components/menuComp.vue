@@ -718,11 +718,17 @@ const routeValidator = (rule, value) => {
   return new Promise<void>((resolve, reject) => {
     if (value) {
       //目录必须以/开头
-      if (state.formState.type === SystemMenuTypeEnum.DIR && !value.startsWith('/')) {
-        reject('路由地址必须以/开头')
-      } else if (state.formState.type === SystemMenuTypeEnum.MENU && value.startsWith('/')) {
-        //菜单不能以/开头
-        reject('路由地址不能以/开头')
+      if (
+        (state.formState.type === SystemMenuTypeEnum.DIR && !value.startsWith('/')) ||
+        value.includes('#')
+      ) {
+        reject('路由地址必须以/开头且不能包含#')
+      } else if (
+        (state.formState.type === SystemMenuTypeEnum.MENU && value.startsWith('/')) ||
+        value.includes('#')
+      ) {
+        //菜单不能以/开头 #
+        reject('路由地址不能以/开头且不能包含#')
       } else {
         resolve()
       }
@@ -1565,27 +1571,28 @@ const openDetails = async (record) => {
       } //在职成员modal配置信息
       break
     case 2:
-      //菜单
+      //菜单 成员端 - - 存在不创建目录的情况直接创建菜单
       const dirItem = state.menuArr.find((item) => item.id === record.parentId)
       state.employeesModalInfo = {
         width: '940px',
         typeText: '菜单',
-        dirText: dirItem.name,
-        menuText: `-${record.name}`,
+        dirText: dirItem?.name ? `${dirItem?.name}-` : ``,
+        menuText: `${record.name}`,
         btnText: '',
         employeesNum: record.userCount,
         needRole: true
       } //在职成员modal配置信息
       break
     case 3:
+      //成员端 - - 存在不创建目录的情况直接创建菜单
       const menuItem = state.menuArr.find((item) => item.id === record.parentId)
       const dirItemNew = state.menuArr.find((item) => item.id === menuItem.parentId)
       //按钮
       state.employeesModalInfo = {
         width: '763px',
         typeText: '按钮',
-        dirText: dirItemNew.name,
-        menuText: `-${menuItem.name}`,
+        dirText: dirItemNew?.name ? `${dirItem?.name}-` : ``,
+        menuText: `${menuItem.name}`,
         btnText: `-${record.name}`,
         employeesNum: record.userCount,
         needRole: false

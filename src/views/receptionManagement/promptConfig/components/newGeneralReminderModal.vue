@@ -1,7 +1,7 @@
 <template>
   <div class="new-general-reminder-modal">
     <!-- 新增-通用提示 -->
-    <XModal v-model="modelValue_" width="80%" height="90%" title="新增-通用提示">
+    <XModal v-model="modelValue_" width="60%" height="90%" title="新增-通用提示">
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px">
         <el-form-item label="状态" prop="status" required>
           <el-switch v-model="formData.status" :inactive-value="0" :active-value="1" />
@@ -22,7 +22,7 @@
               <el-option
                 v-for="item in promptTypeList"
                 :key="item.id"
-                :label="item.typeName"
+                :label="item.label"
                 :value="item.id"
               />
             </el-select>
@@ -104,6 +104,7 @@
 import { ref, reactive, computed } from 'vue'
 import dayjs from 'dayjs'
 import * as promptConfig from '@/api/receptionManagement/promptConfig'
+import * as DictDataApi from '@/api/system/dict-tenant/dict.data'
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -130,15 +131,33 @@ watch(
 )
 function openModal(open: boolean, data?: any) {
   modelValue_.value = open
-  formData = data
+  if (data) {
+    formData = data
+  } else {
+    formData = {
+      title: '',
+      hintTypeId: '',
+      status: 1,
+      validityDateType: 1,
+      applyBrandType: 1,
+      applyShopType: 1,
+      content: '',
+      minute: '',
+      validityDate: '',
+      applyShopList: [],
+      applyBrandList: [],
+      validityDateBegin: '',
+      validityDateEnd: ''
+    }
+  }
 }
 defineExpose({ openModal })
 
 /* -------------------------------- // 获取提示类型 ------------------------------- */
 const promptTypeList = ref<any[]>([])
 async function getPromptType() {
-  const data = await promptConfig.receptionHintTypeAllListApi({})
-  promptTypeList.value = data
+  const data = await DictDataApi.getDictDataPageApi({ dictType: 'reception_hint_type' } as any)
+  promptTypeList.value = data.list
 }
 /* ------------------------ queryModelByNameApi ----------------------- */
 const modelByList = ref<any[]>([])

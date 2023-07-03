@@ -1,198 +1,202 @@
 <template>
-  <el-card class="post-container" :gutter="12" shadow="never">
-    <template #header>
-      <div class="text-18px font-medium">
-        <span class="font-500">岗位类型</span>
-      </div>
-    </template>
-    <div class="flex">
+  <div class="grid grid-cols-2 gap-16px">
+    <el-card class="post-container" :gutter="12" shadow="never">
+      <template #header>
+        <div class="text-18px font-medium leading-40px">
+          <span class="font-500">岗位类型</span>
+        </div>
+      </template>
       <!-- ====== 岗位类型 ====== -->
-      <div class="w-1/2 overflow-hidden">
-        <el-form
-          class="query-form w-full"
-          ref="elFormRef"
-          :model="postTypeSearchForm"
-          label-position="left"
-        >
-          <el-row :gutter="12">
-            <el-col :span="8">
-              <el-form-item label-width="70px" label="岗位类型">
-                <el-input
-                  v-model="postTypeSearchForm.nameOrCode"
-                  placeholder="请输入岗位类型或编码"
-                  @keyup.enter="postSearch"
-                  clearable
-                />
-              </el-form-item>
-            </el-col>
+      <el-form
+        class="query-form w-full"
+        ref="elFormRef"
+        :model="postTypeSearchForm"
+        label-position="left"
+      >
+        <el-row :gutter="12">
+          <el-col :span="8">
+            <el-form-item label-width="70px" label="岗位类型">
+              <el-input
+                v-model="postTypeSearchForm.nameOrCode"
+                placeholder="请输入岗位类型或编码"
+                @keyup.enter="postSearch"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
 
-            <el-col :span="8" class="!flex flex-column justify-between">
-              <div>
-                <el-button type="primary" @click="postSearch">查询</el-button>
-                <el-button @click="onPostTypeSearchReset">重置</el-button>
-              </div>
-            </el-col>
-          </el-row>
-        </el-form>
-        <el-divider class="!mt-0 !mb-16px" />
-        <XTable ref="postTypeRef" @register="registerPostType" @cell-click="cellClickEvent">
-          <!-- 操作：新增类型 -->
-          <template #toolbar_buttons>
-            <XButton
-              type="primary"
-              iconFont="icon-xinzeng"
-              :title="t('action.add')"
-              v-hasPermi="['system:post-type:create']"
-              @click="openModal('create', 'type')"
-            />
-          </template>
-          <template #user_count="{ row }">
-            <el-link type="primary" @click="goto(row, 'postType')">{{ row.userCount }}</el-link>
-          </template>
-          <template #actionbtns_default="{ row }">
-            <!-- 操作：修改数据 -->
-            <XTextButton
-              :title="t('action.modify')"
-              v-hasPermi="['system:post-type:update']"
-              @click="openModal('update', 'type', row?.id)"
-            />
-            <!-- 操作：删除 -->
-            <XTextButton
-              :title="t('action.delete')"
-              v-hasPermi="['system:post-type:delete']"
-              @click="onPostDel(row, 'type')"
-            />
-          </template>
-        </XTable>
-      </div>
-
-      <!-- ====== 岗位信息 ====== -->
-      <div class="w-1/2 px-12px py-18px ml-50px shadow-card rounded-2px overflow-hidden">
-        <p class="text-18px font-500">
+          <el-col :span="8" class="!flex flex-column justify-between">
+            <div>
+              <el-button type="primary" @click="postSearch">查询</el-button>
+              <el-button @click="onPostTypeSearchReset">重置</el-button>
+            </div>
+          </el-col>
+        </el-row>
+      </el-form>
+      <el-divider class="!mt-0 !mb-16px" />
+      <XTable ref="postTypeRef" @register="registerPostType" @cell-click="cellClickEvent">
+        <!-- 操作：新增类型 -->
+        <template #toolbar_buttons>
+          <XButton
+            type="primary"
+            iconFont="icon-xinzeng"
+            :title="t('action.add')"
+            v-hasPermi="['system:post-type:create']"
+            @click="openModal('create', 'type')"
+          />
+        </template>
+        <template #user_count="{ row }">
+          <el-link type="primary" @click="goto(row, 'postType')">{{ row.userCount }}</el-link>
+        </template>
+        <template #actionbtns_default="{ row }">
+          <!-- 操作：修改数据 -->
+          <XTextButton
+            :title="t('action.modify')"
+            v-hasPermi="['system:post-type:update']"
+            @click="openModal('update', 'type', row?.id)"
+          />
+          <!-- 操作：删除 -->
+          <XTextButton
+            :title="t('action.delete')"
+            v-hasPermi="['system:post-type:delete']"
+            @click="onPostDel(row, 'type')"
+          />
+        </template>
+      </XTable>
+    </el-card>
+    <el-card class="post-container" :gutter="12" shadow="never">
+      <template #header>
+        <div class="flex text-18px font-medium leading-40px">
           <span v-show="postParent?.name">{{ `${postParent?.name}-` }}</span>
           岗位信息
-          <el-button v-if="postParent?.id" type="primary" text bg @click="removePostType"
-            >清除</el-button
+          <el-button
+            v-if="postParent?.id"
+            class="!h-28px mt-6px ml-10px"
+            type="primary"
+            text
+            bg
+            @click="removePostType"
           >
-        </p>
-        <!--        <div v-if="!postParent" class="text-20px text-tip text-center mt-248px"> 请从左侧选择 </div>-->
-        <div>
-          <el-form
-            class="query-form w-full"
-            ref="elFormRef"
-            :model="postInfoSearchForm"
-            label-position="left"
-          >
-            <el-row :gutter="12">
-              <el-col :span="8">
-                <el-form-item label="岗位名称">
-                  <el-input
-                    v-model="postInfoSearchForm.nameOrCode"
-                    placeholder="请输入岗位名称或编码"
-                    @keyup.enter="postInfoSearch"
-                    clearable
-                  />
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="状态">
-                  <el-select
-                    class="w-full"
-                    v-model="postInfoSearchForm.status"
-                    placeholder="请选择"
-                    clearable
-                  >
-                    <el-option
-                      v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value"
-                    />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8" class="!flex flex-column justify-between">
-                <div>
-                  <el-button type="primary" @click="postInfoSearch">查询</el-button>
-                  <el-button @click="onPostInfoSearchReset">重置</el-button>
-                </div>
-              </el-col>
-            </el-row>
-          </el-form>
-          <el-divider class="!mt-0 !mb-16px" />
-          <!-- 列表 -->
-          <XTable @register="registerPostInfo">
-            <!-- 操作：新增数据 -->
-            <template #toolbar_buttons>
-              <XButton
-                type="primary"
-                iconFont="icon-xinzeng"
-                :title="t('action.add')"
-                v-hasPermi="['system:post:create']"
-                @click="openModal('create', 'info', postParent?.code)"
-              />
-              <XButton
-                color="#666666"
-                plain
-                title="批量分配角色"
-                v-hasPermi="['system:post-role:create-batch']"
-                @click="openDistributeModal(false, 'multi')"
-              />
-            </template>
-            <template #role_list="{ row }">
-              <div v-for="item in row.roleList" :key="item.roleId" class="role-tag-box">
-                <div
-                  v-if="item.roleName"
-                  class="role-tag"
-                  :class="{
-                    delete: item.roleDeleted === CommonStatusEnum.DISABLE,
-                    close: item.roleStatus === CommonStatusEnum.DISABLE
-                  }"
-                >
-                  {{ item.roleName }}
-                  <span v-if="item.roleDeleted === CommonStatusEnum.DISABLE">(删除)</span>
-                  <span v-else-if="item.roleStatus === CommonStatusEnum.DISABLE">(关闭)</span>
-                </div>
-              </div>
-            </template>
-            <template #status_default="{ row }">
-              <el-switch
-                v-model="row.status"
-                :active-value="0"
-                :inactive-value="1"
-                @click.stop
-                @change="postInfoStatusChange(row)"
-                :disabled="!hasPermission(['system:post:update-status'])"
-              />
-            </template>
-            <template #user_count="{ row }">
-              <el-link type="primary" @click="goto(row, 'post')">{{ row.userCount }}</el-link>
-            </template>
-            <template #actionbtns_default="{ row }">
-              <!-- 操作：修改数据 -->
-              <XTextButton
-                :title="t('action.modify')"
-                v-hasPermi="['system:post:update']"
-                @click="openModal('update', 'info', row?.id)"
-              />
-              <!-- 操作：分配角色 -->
-              <XTextButton
-                title="分配角色"
-                v-hasPermi="['system:post-role:update']"
-                @click="openDistributeModal(row, 'single')"
-              />
-              <!-- 操作：删除 -->
-              <XTextButton
-                :title="t('action.delete')"
-                v-hasPermi="['system:post:delete']"
-                @click="onPostDel(row, 'info')"
-              />
-            </template>
-          </XTable>
+            清除
+          </el-button>
         </div>
-      </div>
-    </div>
-  </el-card>
+      </template>
+      <!-- ====== 岗位信息 ====== -->
+      <!--        <div v-if="!postParent" class="text-20px text-tip text-center mt-248px"> 请从左侧选择 </div>-->
+      <el-form
+        class="query-form w-full"
+        ref="elFormRef"
+        :model="postInfoSearchForm"
+        label-position="left"
+      >
+        <el-row :gutter="12">
+          <el-col :span="8">
+            <el-form-item label="岗位名称">
+              <el-input
+                v-model="postInfoSearchForm.nameOrCode"
+                placeholder="请输入岗位名称或编码"
+                @keyup.enter="postInfoSearch"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="状态">
+              <el-select
+                class="w-full"
+                v-model="postInfoSearchForm.status"
+                placeholder="请选择"
+                clearable
+              >
+                <el-option
+                  v-for="item in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8" class="!flex flex-column justify-between">
+            <div>
+              <el-button type="primary" @click="postInfoSearch">查询</el-button>
+              <el-button @click="onPostInfoSearchReset">重置</el-button>
+            </div>
+          </el-col>
+        </el-row>
+      </el-form>
+      <el-divider class="!mt-0 !mb-16px" />
+      <!-- 列表 -->
+      <XTable @register="registerPostInfo">
+        <!-- 操作：新增数据 -->
+        <template #toolbar_buttons>
+          <XButton
+            type="primary"
+            iconFont="icon-xinzeng"
+            :title="t('action.add')"
+            v-hasPermi="['system:post:create']"
+            @click="openModal('create', 'info', postParent?.code)"
+          />
+          <XButton
+            color="#666666"
+            plain
+            title="批量分配角色"
+            v-hasPermi="['system:post-role:create-batch']"
+            @click="openDistributeModal(false, 'multi')"
+          />
+        </template>
+        <template #role_list="{ row }">
+          <div v-for="item in row.roleList" :key="item.roleId" class="role-tag-box">
+            <div
+              v-if="item.roleName"
+              class="role-tag"
+              :class="{
+                delete: item.roleDeleted === CommonStatusEnum.DISABLE,
+                close: item.roleStatus === CommonStatusEnum.DISABLE
+              }"
+            >
+              {{ item.roleName }}
+              <span v-if="item.roleDeleted === CommonStatusEnum.DISABLE">(删除)</span>
+              <span v-else-if="item.roleStatus === CommonStatusEnum.DISABLE">(关闭)</span>
+            </div>
+          </div>
+        </template>
+        <template #status_default="{ row }">
+          <el-switch
+            v-model="row.status"
+            :active-value="0"
+            :inactive-value="1"
+            @click.stop
+            @change="postInfoStatusChange(row)"
+            :disabled="!hasPermission(['system:post:update-status'])"
+          />
+        </template>
+        <template #user_count="{ row }">
+          <el-link type="primary" @click="goto(row, 'post')">{{ row.userCount }}</el-link>
+        </template>
+        <template #actionbtns_default="{ row }">
+          <!-- 操作：修改数据 -->
+          <XTextButton
+            :title="t('action.modify')"
+            v-hasPermi="['system:post:update']"
+            @click="openModal('update', 'info', row?.id)"
+          />
+          <!-- 操作：分配角色 -->
+          <XTextButton
+            title="分配角色"
+            v-hasPermi="['system:post-role:update']"
+            @click="openDistributeModal(row, 'single')"
+          />
+          <!-- 操作：删除 -->
+          <XTextButton
+            :title="t('action.delete')"
+            v-hasPermi="['system:post:delete']"
+            @click="onPostDel(row, 'info')"
+          />
+        </template>
+      </XTable>
+    </el-card>
+  </div>
   <!-- 表单弹窗：添加/修改/详情 -->
   <PostForm ref="modalRef" @success="postFormSuccess" />
   <!--  分配岗位-->
@@ -274,7 +278,7 @@ const [
   deleteApi: PostInfoApi.deletePostApi, // 删除数据的 API
   exportListApi: PostInfoApi.exportPostApi, // 导出数据的 API
   border: true,
-  height: 606
+  height: 660
 })
 // 查询重置
 const onPostInfoSearchReset = () => {
@@ -454,8 +458,8 @@ const goto = ({ code, typeCode, id }, type) => {
 <style lang="scss" scoped>
 .post-container {
   :deep(.el-card__header) {
-    border: none;
-    box-shadow: 0 2px 4px 0 rgb(218 218 218 / 50%);
+    height: 56px;
+    padding: 8px 20px;
   }
 
   .role-tag-box {

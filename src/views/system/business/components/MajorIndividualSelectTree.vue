@@ -1,6 +1,14 @@
 <!--  左侧树形选择 主体 -->
 <template>
-  <a-card style="max-width: 350px; height: 100%; padding-bottom: 30px; margin-right: 10px">
+  <a-card
+    style="
+      min-width: 209px;
+      max-width: 350px;
+      height: 100%;
+      padding-bottom: 30px;
+      margin-right: 10px;
+    "
+  >
     <div class="setting-content">
       主体信息
       <div class="expand-narrow" @click="expandMaj">

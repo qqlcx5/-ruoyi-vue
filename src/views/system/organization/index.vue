@@ -504,9 +504,9 @@
     wrapClassName="add-edit-modal"
     @cancel="closeModal"
     :width="'665px'"
-    :bodyStyle="{ height: '520px', margin: 'auto', paddingBottom: '25px', overflow: 'auto' }"
+    :bodyStyle="{ margin: 'auto', paddingBottom: '25px' }"
   >
-    <div class="base_info_content">
+    <div class="base_info_content" @scroll="handleModalScroll">
       <a-form
         :model="state.formState"
         ref="formRef"
@@ -574,7 +574,11 @@
           />
         </a-form-item>
 
-        <a-form-item :label="`机构简称`" name="abbreviate">
+        <a-form-item
+          :label="`机构简称`"
+          name="abbreviate"
+          :rules="[{ required: true, message: `机构简称不能为空` }]"
+        >
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -588,6 +592,7 @@
           <div class="flex-content adress-content">
             <a-form-item-rest>
               <a-cascader
+                ref="companyAddressRef"
                 v-model:value="state.formState.companyAddress"
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
@@ -2281,11 +2286,19 @@ let needReplaceKey = [
 ]
 state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
 
+//  地址组件
+const companyAddressRef = ref()
+/** 弹窗滚动事件 */
+const handleModalScroll = () => {
+  console.log('companyAddressRef.value', companyAddressRef.value)
+  companyAddressRef.value?.blur()
+}
+
 //新增机构
 const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
-  const valid = await formRef.value.validate()
+  await formRef.value.validate()
   state.addEditLoading = true
   let params = {
     parentId: state.formState.parentId, //上级机构
@@ -3440,8 +3453,10 @@ watch(
 
 .base_info_content {
   width: 100%;
+  height: 520px;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 }
 //上传
 .avatar-uploader > .ant-upload {

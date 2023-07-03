@@ -4,11 +4,11 @@
     :small="small"
     v-model:current-page="currentPage"
     v-model:page-size="pageSize"
-    :background="false"
+    :background="true"
     :page-sizes="[10, 20, 30, 50, 100, 200, 300, 500, 1000]"
     :pager-count="pagerCount"
     :total="total"
-    class="custom-pagination float-right mt-15px mb-15px"
+    class="float-right mt-15px mb-15px"
     :layout="`${small ? 'prev, pager, next' : 'sizes, total, prev, pager, next, jumper'} `"
     :hide-on-single-page="false"
     @size-change="handleSizeChange"
@@ -39,10 +39,10 @@ const props = defineProps({
     default: 10
   },
   // 设置最大页码按钮数。 页码按钮的数量，当总页数超过该值时会折叠
-  // 移动端页码按钮的数量端默认值 5
+  // 移动端页码按钮的数量端默认值 3
   pagerCount: {
     type: Number,
-    default: document.body.clientWidth < 992 ? 5 : 7
+    default: document.body.clientWidth < 992 ? 3 : 5
   }
 })
 
@@ -78,27 +78,5 @@ const handleCurrentChange = (val) => {
   // 触发 pagination 事件，重新加载列表
   emit('pagination', { pageNo: val, pageSize: pageSize.value })
 }
-
-onMounted(() => {
-  try {
-    document
-      .getElementsByClassName('el-pagination__goto')
-      .forEach((el) => (el.innerHTML = '跳转至'))
-  } catch (e) {
-    console.error(e.message)
-  }
-})
 </script>
-<style lang="scss" scoped>
-.custom-pagination {
-  background-color: #ffffff;
-}
-:deep(.el-pager) {
-  li {
-    border-radius: 50%;
-  }
-  .is-active {
-    background-color: #e8f4ff;
-  }
-}
-</style>
+<style lang="scss" scoped></style>

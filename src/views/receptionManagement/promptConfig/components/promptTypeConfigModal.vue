@@ -19,9 +19,7 @@
       </form-table>
       <!-- 操作按钮 -->
       <template #footer>
-        <!-- 按钮：保存 -->
         <!-- <XButton type="primary" title="确认" :loading="dialogLoading" /> -->
-        <!-- 按钮：关闭 -->
         <XButton title="关闭" @click="modelValue_ = false" />
       </template>
     </XModal>

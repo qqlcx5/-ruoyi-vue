@@ -1,4 +1,4 @@
-<!--  行政区划  -->
+<!--  租户行政区划  -->
 <template>
   <div class="total-content">
     <LeftSelectTree
@@ -42,7 +42,13 @@
           iconSize="10"
           preIcon="svg-icon:add"
         />
-        <XButton title="删除" v-hasPermi="['system:tenant-area:delete']" @click="openDeleteModal" />
+        <!--  说是不要删除了  -->
+        <XButton
+          title="删除"
+          v-if="false"
+          v-hasPermi="['system:tenant-area:delete']"
+          @click="openDeleteModal"
+        />
         <!--        <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">-->
         <!--          <div>显示全部区划</div>-->
         <!--          <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />-->
@@ -76,7 +82,7 @@
           <el-form-item label="区划编号" prop="code">
             <el-input
               v-model="form.code"
-              :disabled="state.isDisabled"
+              :disabled="state.codeDisabled"
               placeholder="请输入区划编号"
               class="input-width"
             >
@@ -121,7 +127,7 @@
           </el-form-item>
           <el-form-item v-if="state.operationType">
             <el-button type="primary" @click="onSubmit" :loading="state.loading">提交</el-button>
-            <el-button @click="resetForm">清空</el-button>
+            <el-button @click="resetForm">取消</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -130,7 +136,7 @@
     <el-dialog v-model="state.isShow" title="提示" width="424" custom-class="delete-modal">
       <div class="message-text">
         <img :src="warningImg" alt="" class="tip-img message-img" />
-        是否删除所选数据？
+        {{ state.deleteText }}
       </div>
       <template #footer>
         <span class="dialog-footer">
@@ -180,7 +186,9 @@ const state: any = reactive({
   statusValue: false,
   isDisabled: true,
   useDefRules: true, //使用默认校验
-  loading: false //提交加载中
+  loading: false, //提交加载中
+  deleteText: '是否删除所选数据？',
+  codeDisabled: false //区划编号禁用
 })
 
 const formRef = ref()
@@ -275,15 +283,17 @@ const onSubmit = async () => {
 
 //重置
 const resetForm = () => {
-  // formRef.value.resetFields()
-  // //TODO 这有坑 表单清空 这两玩意没被清空 有空再看看
-  form.code = '' //区划编号
-  form.name = '' //区划名称
-  form.level = '' //区划等级
-  form.visible = true //是否显示区划
-
-  form.sort = ''
-  form.remark = ''
+  state.isDisabled = true
+  state.operationType = false
+  // // formRef.value.resetFields()
+  // // //TODO 这有坑 表单清空 这两玩意没被清空 有空再看看
+  // form.code = '' //区划编号
+  // form.name = '' //区划名称
+  // form.level = '' //区划等级
+  // form.visible = true //是否显示区划
+  //
+  // form.sort = ''
+  // form.remark = ''
 }
 
 //接收选中的省市区节点
@@ -311,10 +321,20 @@ const sendCurrentSelect = (currentSelectNode) => {
 }
 
 const addEditArea = (type) => {
+  if (type === 'add' && state.currentNode.level + 1 > 5) {
+    message.warning('只能新增到村委哦~，不能再增加下级了')
+    state.operationType = ''
+    return
+  }
+
   state.operationType = type
 
   switch (type) {
     case 'add':
+      setTimeout(() => {
+        formRef.value?.clearValidate()
+      }, 0)
+      state.codeDisabled = false
       state.useDefRules = true
       form.parentCode = state.currentNode.code
       form.parentName = state.currentNode.name
@@ -323,6 +343,7 @@ const addEditArea = (type) => {
       form.name = ''
       break
     case 'edit':
+      state.codeDisabled = true
       // form.parentCode = state.currentNode.parentCode //父区划编号
       if (state.currentNode.level === 0) {
         //国家无父级
@@ -342,13 +363,18 @@ const addEditArea = (type) => {
 
 //open 删除 modal
 const openDeleteModal = () => {
+  console.log('state.currentNode', state.currentNode)
+  const num = toTreeCount(state.currentNode?.children)
+  if (num === 0) {
+    state.deleteText = '是否删除所选数据？'
+  } else {
+    state.deleteText = `所选${state.currentNode.parentName}下级存在${num}条数据，删除后下级数据也会被删除。是否删除所选数据？`
+  }
+  console.log('num', num)
   state.isShow = true
 }
 //删除 modal ok
 const modalDelete = async () => {
-  console.log('state.currentNode', state.currentNode)
-  const num = toTreeCount(state.currentNode?.children)
-  console.log('num', num)
   await deleteArea(state.currentNode.id)
   message.success('删除成功')
   state.isShow = false

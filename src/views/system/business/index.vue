@@ -95,11 +95,11 @@
         </a-form>
       </a-card>
 
-      <!--  表格  -->
+      <!--  表格  id card-content 全屏时 -->
       <a-card
         :bordered="false"
         style="width: 100%; height: 100%; padding-bottom: 30px; overflow: hidden"
-        id="card-content"
+        :id="state.majCardId"
       >
         <!--  <ContentWrap>-->
         <!--    <a-button type="primary" @click="toggleExpandAll" v-hasPermi="['system:menu:create']">-->
@@ -133,7 +133,7 @@
               icon="svg-icon:full-screen"
               :size="50"
               class="cursor-pointer"
-              @click="fullScreen()"
+              @click="fullScreenFN('majCardId')"
             />
             <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
             <Icon
@@ -476,8 +476,8 @@
           </div>
         </div>
       </a-card>
-      <div class="test">
-        <div class="test111">
+      <div class="store-total-content">
+        <div class="store-tree-content">
           <StoreProSelectTree
             :tree-data="state.areaListOptions"
             @sendCurrentSelect="sendCurrentSelect"
@@ -570,12 +570,12 @@
             </a-form>
           </a-card>
 
-          <!--  表格  -->
+          <!--  表格  id card-content 全屏时 -->
           <a-card
             :bordered="false"
             class="w-full"
             style="height: 649px; padding-bottom: 30px; overflow: hidden"
-            id="card-content"
+            :id="state.storeId"
           >
             <div class="card-content">
               <!--  左侧按钮  -->
@@ -611,7 +611,7 @@
                   icon="svg-icon:full-screen"
                   :size="50"
                   class="cursor-pointer"
-                  @click="fullScreen()"
+                  @click="fullScreenFN('storeId')"
                 />
                 <!--        <Icon icon="svg-icon:print-connect" :size="50" class="cursor-pointer" />-->
                 <Icon
@@ -913,7 +913,11 @@
           />
         </a-form-item>
 
-        <a-form-item :label="`主体简称`" name="abbreviate">
+        <a-form-item
+          :label="`主体简称`"
+          name="abbreviate"
+          :rules="[{ required: true, message: `主体简称不能为空` }]"
+        >
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -944,6 +948,7 @@
           <div class="flex-content adress-content">
             <a-form-item-rest>
               <a-cascader
+                ref="companyAddressRef"
                 v-model:value="state.formState.companyAddress"
                 :options="state.proMunAreaList"
                 @change="cascadeChange"
@@ -1893,7 +1898,8 @@ import {
   fullScreen,
   hasPermission,
   getAllChildIds,
-  findParentIds
+  findParentIds,
+  validateParams
 } from '@/utils/utils'
 import dayjs from 'dayjs'
 import warningImg from '@/assets/imgs/system/warning.png'
@@ -2073,6 +2079,8 @@ const imageUrl = ref<string>('')
 
 //TODO 有空补吧
 const state: any = reactive({
+  majCardId: '',
+  storeId: '',
   pageNo: 1,
   pageSize: 10,
   pageNoStore: 1,
@@ -2277,10 +2285,13 @@ const checkedKeysDirIdsFrontDesk: Ref<(string | number)[]> = ref([])
 const effectiveRef = ref()
 // 成立日期组件
 const establishRef = ref()
+// 公司地址
+const companyAddressRef = ref()
 /** 弹窗滚动事件 */
 const handleModalScroll = () => {
-  effectiveRef.value.blur()
-  establishRef.value.blur()
+  effectiveRef.value?.blur()
+  establishRef.value?.blur()
+  companyAddressRef.value?.blur()
 }
 
 //获取子节点的 父节点id 成员端
@@ -2564,15 +2575,6 @@ const allColumns = [
 //ALL columns 用于定制列过滤 排序 门店
 const allStoreColumns = [
   {
-    title: '机构ID',
-    width: 100,
-    dataIndex: 'id',
-    key: 'id',
-    resizable: true,
-    ellipsis: true,
-    sort: 2
-  },
-  {
     title: '门店名称',
     width: 200,
     dataIndex: 'name',
@@ -2590,15 +2592,6 @@ const allStoreColumns = [
     resizable: true,
     ellipsis: true,
     disabled: true,
-    sort: 2
-  },
-  {
-    title: '机构编码',
-    width: 100,
-    dataIndex: 'code',
-    key: 'code',
-    resizable: true,
-    ellipsis: true,
     sort: 2
   },
   {
@@ -2620,6 +2613,24 @@ const allStoreColumns = [
     ellipsis: true,
     disabled: true,
     sort: 3
+  },
+  {
+    title: '机构ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 2
+  },
+  {
+    title: '机构编码',
+    width: 100,
+    dataIndex: 'code',
+    key: 'code',
+    resizable: true,
+    ellipsis: true,
+    sort: 2
   },
   {
     title: '品牌',
@@ -2807,8 +2818,17 @@ const getList = async (isRefresh = false) => {
  * */
 const getListStoreFN = async (isRefresh = false) => {
   state.loadingStore = true
+  let tempTenantId: any = null
+  if (state.isShowTable) {
+    //主体 table
+    tempTenantId = state.currentClickRecord.id
+  } else {
+    //主体 selectTree
+    tempTenantId = state.majSelectedKeys.length === 1 ? state.currentClickRecord.id : null
+  }
+
   const params = {
-    tenantId: state.majSelectedKeys.length === 1 ? state.currentClickRecord.id : null,
+    tenantId: tempTenantId,
     keyword: queryParamsStore.keyword,
     specialtyCode: queryParamsStore.specialtyCode,
     systemName: queryParamsStore.organizationType,
@@ -2936,6 +2956,7 @@ const openEditParentMajorIndividual = (record) => {
 //打开Modal
 const openModal = async (record: any = {}, isChildStore = false) => {
   console.log('record', record)
+  console.log('isChildStore', isChildStore)
   //新增门店
   if (record.type === 'dealer' && state.modalType === 'add') {
     if (!(Object.keys(record).length === 0)) {
@@ -2959,7 +2980,7 @@ const openModal = async (record: any = {}, isChildStore = false) => {
     console.log('record=======>', record)
     state.storeRecord = record
     state.parentId = record.id
-    state.belongTenantId = record.belongTenantId
+    state.belongTenantId = record.belongTenantId || record.tenantId
     state.needBelongTenantId = false
     state.needParentId = true
     state.needOrganizationType = false
@@ -3371,11 +3392,6 @@ const onChange = ({ pageSize, current }) => {
 
 //新增主体
 const addMajorIndividualFN = async () => {
-  console.log('state.logoListUrl', state.logoListUrl)
-  // 校验表单
-  if (!formRef) return
-  await formRef.value.validate()
-  state.addEditLoading = true
   let params = {
     type: state.formState!.majorIndividualType, //主体类型
     belongTenantId: state.formState!.belongTenantId, //上级主体
@@ -3445,6 +3461,57 @@ const addMajorIndividualFN = async () => {
     params['establishDate'] = state.formState.establishDate?.format('YYYY-MM-DD') //成立日期
     // establishDate: state.formState.establishDate.format('YYYY/MM/DD'), //成立日期
   }
+
+  //必填项 是否为空 判断的 array
+  const paramsList = [
+    {
+      key: 'type',
+      name: '主体类型'
+    },
+    {
+      key: 'code',
+      name: '主体编码'
+    },
+    {
+      key: 'name',
+      name: '主体名称'
+    },
+    {
+      key: 'abbreviate',
+      name: '主体简称'
+    },
+    {
+      key: 'contactName',
+      name: '负责人'
+    },
+    {
+      key: 'contactMobile',
+      name: '负责人电话'
+    },
+    {
+      key: 'address',
+      name: '公司地址'
+    },
+    {
+      key: 'systemName',
+      name: '系统名称'
+    },
+    {
+      key: 'expireTime',
+      name: '有效期'
+    },
+    {
+      key: 'accountCount',
+      name: '可用名额'
+    }
+  ]
+  //message提示
+  validateParams(params, paramsList)
+
+  // 校验表单
+  if (!formRef) return
+  await formRef.value.validate()
+  state.addEditLoading = true
 
   try {
     let res = ''
@@ -3649,25 +3716,6 @@ const PermissionOk = async () => {
   await getList()
   closePermissionModal()
 }
-
-// const findParent = (childrenId, arr, path) => {
-//   if (path === undefined) {
-//     path = []
-//   }
-//   for (let i = 0; i < arr.length; i++) {
-//     let tmpPath = path.concat()
-//     tmpPath.push(arr[i].id)
-//     if (childrenId == arr[i].id) {
-//       return tmpPath
-//     }
-//     if (arr[i].children) {
-//       let findResult = findParent(childrenId, arr[i].children, tmpPath)
-//       if (findResult) {
-//         return findResult
-//       }
-//     }
-//   }
-// }
 
 const assignPermission = async (record) => {
   console.log('record)', record)
@@ -4697,8 +4745,6 @@ allColumns.map((item, index) => {
   item.sort = index + 1
 })
 state.columns = getColumns(state, PageKeyObj.business, allColumns, state.defaultKeys)
-console.log('state.columns++++++++++++', state.columns)
-console.log('state.defaultKeys', state.defaultKeys)
 //初始化 获取默认的 columns
 allStoreColumns.map((item, index) => {
   item.sort = index + 1
@@ -4710,8 +4756,6 @@ state.columnsStore = getColumns(
   state.defaultStoreKeys,
   'changedStoreColumnsObj'
 )
-console.log('state.columnsStore+++++++', state.columnsStore)
-console.log('state.defaultStoreKeys', state.defaultStoreKeys)
 
 //主体状态权限
 state.majorIndividualHasPermission = hasPermission('system:tenant:update-status')
@@ -4763,6 +4807,7 @@ const getCurrentAreaListFN = async () => {
 const clickMaj = (record, selectedKeys) => {
   state.majSelectedKeys = selectedKeys
   state.currentClickRecord = record
+  console.log('state.currentClickRecord', state.currentClickRecord)
   currentSelectChange()
   getListStoreFN()
 }
@@ -4782,7 +4827,7 @@ const setRowClassName = (record) => {
 //主体tree 操作
 const clickOperation = ({ operationType, id }) => {
   //当前 record
-  const record = state.tableDataList.find((item) => item.id === id)
+  const record = state.tableDataArr.find((item) => item.id === id)
   switch (operationType) {
     case 'edit':
       //修改
@@ -4815,26 +4860,22 @@ const clickOperation = ({ operationType, id }) => {
   }
 }
 
-// //监听  左侧选中数据  更新 右侧展示数据
-// watch(
-//   () => [state.checkedKeys, checkedKeysBack.value, checkedKeysDirIds.value],
-//   () => {
-//     state.idArr = [
-//       ...new Set(checkedKeysBack.value.concat(state.checkedKeys)),
-//       ...new Set(checkedKeysDirIds.value)
-//     ]
-//     state.selectTree = filterTree(state.menuTreeList, state.idArr)
-//     state.isShowRightTree = false
-//     //右侧展开显示 左侧选中的数据
-//     nextTick(() => {
-//       state.isShowRightTree = true
-//     })
-//   },
-//   {
-//     immediate: true,
-//     deep: true
-//   }
-// )
+const fullScreenFN = (type) => {
+  switch (type) {
+    case 'majCardId':
+      state.majCardId = 'card-content'
+      state.storeId = ''
+      break
+    case 'storeId':
+      state.majCardId = ''
+      state.storeId = 'card-content'
+      break
+  }
+
+  nextTick(() => {
+    fullScreen()
+  })
+}
 
 //成员端
 watch(
@@ -5021,6 +5062,7 @@ watch(
   () => state.columnsStore,
   (columns) => {
     const needItem = columns!.find((item) => item.key === 'name')
+    console.log('needItem', needItem)
     state.treeIconIndexStore = needItem.sort - 1
   },
   {
@@ -5034,6 +5076,8 @@ onMounted(async () => {
   await getList()
   await getListStoreFN()
   getCurrentAreaListFN()
+  toggleExpandAll(true)
+  toggleExpandAll(false)
   //仅超管 有新增 btn
   const { roles = [] } = wsCache.get(CACHE_KEY.USER)
   state.isSuperAdmin = roles.includes('super_admin')
@@ -5221,11 +5265,11 @@ onMounted(async () => {
 .right-store-content {
   display: flex;
 }
-.test {
+.store-total-content {
   display: flex;
   height: 100%;
 }
-.test111 {
+.store-tree-content {
   width: 209px !important;
 }
 .content {

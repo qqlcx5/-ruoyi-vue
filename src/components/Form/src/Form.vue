@@ -129,6 +129,9 @@ export default defineComponent({
       () => unref(getProps).schema,
       (schema = []) => {
         formModel.value = initModel(schema, unref(formModel))
+        setTimeout(() => {
+          elFormRef.value?.clearValidate()
+        }, 0)
       },
       {
         immediate: true,
