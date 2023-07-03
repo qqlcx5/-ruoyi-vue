@@ -5,6 +5,7 @@
       ref="tableRef"
       @add="handleAdd"
       @search="receptionManageStatisticsApi"
+      @reset="handleReset"
       :form-options="{
         schema: allSchemas.searchSchema
       }"
@@ -91,23 +92,16 @@ const statisticsOpt = reactive({
   statusReception: 0,
   statusSuspended: 0
 })
-async function receptionManageStatisticsApi() {
-  let data = {
-    ...tableParams,
-    ...tableRef.value.tableObject.params
-  }
-  console.log('----------', tableRef.value.tableObject.params)
-
-  let res = await receptionList.receptionManageStatisticsApi(data)
-  if (res) {
-    statisticsOpt.statusAll = res.all
-    statisticsOpt.statusCancel = res.cancel
-    statisticsOpt.statusCompleted = res.completed
-    statisticsOpt.statusReception = res.reception
-    statisticsOpt.statusSuspended = res.suspended
+async function receptionManageStatisticsApi(params) {
+  let data = await receptionList.receptionManageStatisticsApi(params)
+  if (data) {
+    statisticsOpt.statusAll = data.statusAll
+    statisticsOpt.statusCancel = data.statusCancel
+    statisticsOpt.statusCompleted = data.statusCompleted
+    statisticsOpt.statusReception = data.statusReception
+    statisticsOpt.statusSuspended = data.statusSuspended
   }
 }
-receptionManageStatisticsApi()
 
 const columns: TableColumn[] = [
   { label: '接待', field: 'selectReception', isSearch: true, isTable: false },
@@ -493,7 +487,7 @@ const actionButtons = [
   }
 ]
 /* ---------------------------------- 时间选择 ---------------------------------- */
-let selectTime = ref('今日')
+let selectTime = ref('今天')
 let receptionStatus = ref()
 let selectTimeRange = ref()
 let tableParams = reactive({
@@ -543,6 +537,14 @@ function handleDateRange(val) {
   tableParams.dateEnd = val[1]
   selectTime.value = ''
 }
+/* ---------------------------------- 重置 ---------------------------------- */
+function handleReset(params) {
+  selectTime.value = '今天'
+  receptionStatus.value = ''
+  let paramsList = Object.assign({}, params, tableParams)
+  receptionManageStatisticsApi(paramsList)
+}
+// setSearchParams
 /* -------------------------------- 操作事件 ------------------------------- */
 let detailsVisible = ref(false)
 // 操作：新增

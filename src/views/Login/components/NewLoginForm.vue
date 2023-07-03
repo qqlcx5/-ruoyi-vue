@@ -269,7 +269,7 @@ const captchaType = ref('blockPuzzle') // blockPuzzle 滑块 clickWord 点击文
 
 const LoginFormTitle = computed(() => LoginStateMap[unref(getLoginState)])
 
-const validateMobile = (rule: any, value: any, callback: any) => {
+const validateMobile = (_, value: any, callback: any) => {
   if (
     [LoginStateEnum.RESET_PASSWORD, LoginStateEnum.MOBILE].includes(getLoginState.value) &&
     !validate.tel(value)
@@ -279,7 +279,7 @@ const validateMobile = (rule: any, value: any, callback: any) => {
     callback()
   }
 }
-const validatePassword = (rule: any, value: any, callback: any) => {
+const validatePassword = (_, value: any, callback: any) => {
   if (getLoginState.value === LoginStateEnum.RESET_PASSWORD && !value) {
     callback(new Error('请输入正确格式新密码'))
   } else {
