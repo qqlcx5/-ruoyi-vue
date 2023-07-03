@@ -164,6 +164,7 @@
       />
     </el-form>
     <div class="bottom-btns">
+      <el-button size="large" @click="handleCancel">取消</el-button>
       <el-button
         type="primary"
         size="large"
@@ -263,6 +264,10 @@ const handleDelRow = (list, index) => {
 }
 
 const btnLoading = ref<boolean>(false)
+const handleCancel = () => {
+  router.push('/clue/basic-config/dcc')
+  tagsView.delVisitedView(route)
+}
 const handleSave = async () => {
   ruleFormRef.value?.validate(async (vali) => {
     if (vali) {
@@ -275,8 +280,7 @@ const handleSave = async () => {
         }
         await saveDccConfig(params)
         message.success('提交成功')
-        router.push('/clue/basic-config/dcc')
-        tagsView.delVisitedView(route)
+        handleCancel()
       } finally {
         loading.value = false
       }
@@ -290,6 +294,8 @@ const handleSave = async () => {
 <style scoped lang="scss">
 @import '@/styles/custom.scss';
 .dcc-edit-container {
+  padding: 15px 15px $btnWrapHeight;
+  background-color: #ffffff;
   .page-title {
     line-height: 25px;
     font-size: 14px;
