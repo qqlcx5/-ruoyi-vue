@@ -25,6 +25,9 @@ export type ComponentName =
   | 'UploadImgs'
   | 'UploadFile'
   | 'ButtonRadio'
+  | 'MemberCascader'
+  | 'ShopCascader'
+  | 'PostCascader'
 
 export type ColProps = {
   span?: number
