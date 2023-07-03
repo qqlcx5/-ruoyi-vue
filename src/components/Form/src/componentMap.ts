@@ -24,6 +24,7 @@ import { InputPassword } from '@/components/InputPassword'
 import { Editor } from '@/components/Editor'
 import { UploadImg, UploadImgs, UploadFile } from '@/components/UploadFile'
 import { ComponentName } from '@/types/components'
+import { MemberCascader, ShopCascader, PostCascader } from '@/components/Cascader'
 
 const componentMap: Recordable<Component, ComponentName> = {
   Radio: ElRadioGroup,
@@ -51,7 +52,10 @@ const componentMap: Recordable<Component, ComponentName> = {
   UploadImg: UploadImg,
   UploadImgs: UploadImgs,
   UploadFile: UploadFile,
-  ButtonRadio: ButtonRadio
+  ButtonRadio: ButtonRadio,
+  MemberCascader: MemberCascader,
+  ShopCascader: ShopCascader,
+  PostCascader: PostCascader
 }
 
 export { componentMap }

@@ -21,51 +21,20 @@
       <div>
         <Table :columns="allSchemas.tableColumns" :data="tableData" :max-height="400">
           <template #applicableShopId="{ row, $index }">
-            <el-cascader
+            <BaseCascader
               v-model="row.applicableShopId"
-              clearable
-              filterable
-              collapse-tags
-              collapse-tags-tooltip
               :options="allSuitableShopList[$index]"
-              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
               @change="handleSuitableShop"
             />
           </template>
           <template #dataRangShopId="{ row, $index }">
-            <el-cascader
-              v-model="row.dataRangShopId"
-              clearable
-              filterable
-              collapse-tags
-              collapse-tags-tooltip
-              :options="shopList"
-              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
-              @change="handleShopChange(row, $index)"
-            />
+            <ShopCascader v-model="row.dataRangShopId" @change="handleShopChange(row, $index)" />
           </template>
           <template #dataRangPostId="{ row, $index }">
-            <el-cascader
-              v-model="row.dataRangPostId"
-              clearable
-              filterable
-              collapse-tags
-              collapse-tags-tooltip
-              :options="postList"
-              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
-              @change="handleShopChange(row, $index)"
-            />
+            <PostCascader v-model="row.dataRangPostId" @change="handleShopChange(row, $index)" />
           </template>
           <template #dataRangUserId="{ row, $index }">
-            <el-cascader
-              v-model="row.dataRangUserId"
-              clearable
-              filterable
-              collapse-tags
-              collapse-tags-tooltip
-              :options="allMemberList[$index]"
-              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
-            />
+            <BaseCascader v-model="row.dataRangUserId" :options="allMemberList[$index]" />
           </template>
           <template #brandCondition="{ row }">
             <ButtonRadio v-model="row.brandCondition" :options="brandOptions" margin-right="10px" />
@@ -130,6 +99,7 @@ import { useColumnOptions, stringToArray, arrayToString } from '../helpers'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { autoSetMemberRule, getHasShopId } from '@/api/system/memberRule'
 import { getUserMemberDataList } from '@/api/common'
+import { ShopCascader, PostCascader, BaseCascader } from '@/components/Cascader'
 
 type RuleItem = {
   applicableShopId: string
@@ -154,11 +124,10 @@ const emits = defineEmits<{
   (e: 'save', data: Recordable): void
 }>()
 
-const { getPostList, getSuitableShopList } = useCommonList()
+const { getSuitableShopList } = useCommonList()
 const suitableShop = getSuitableShopList()
 const shopList = ref<Recordable[]>([])
 const suitableShopList = ref<Recordable[]>([])
-const postList = ref(getPostList())
 const allMemberList: Recordable[][] = reactive([])
 const allSuitableShopList = ref<Recordable[][]>([])
 

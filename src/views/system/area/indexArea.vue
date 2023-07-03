@@ -1,4 +1,4 @@
-<!--  租户行政区划  -->
+<!--  行政区划 TODO 后续需要 先留一份到时候换接口 -->
 <template>
   <div class="total-content">
     <LeftSelectTree
@@ -42,13 +42,7 @@
           iconSize="10"
           preIcon="svg-icon:add"
         />
-        <!--  说是不要删除了  -->
-        <XButton
-          title="删除"
-          v-if="false"
-          v-hasPermi="['system:tenant-area:delete']"
-          @click="openDeleteModal"
-        />
+        <XButton title="删除" v-hasPermi="['system:tenant-area:delete']" @click="openDeleteModal" />
         <!--        <div class="switch-content" v-hasPermi="['system:tenant-area:visible-all']">-->
         <!--          <div>显示全部区划</div>-->
         <!--          <el-switch v-model="state.statusValue" @change="statusChange" class="switch-style" />-->
@@ -82,7 +76,7 @@
           <el-form-item label="区划编号" prop="code">
             <el-input
               v-model="form.code"
-              :disabled="state.codeDisabled"
+              :disabled="state.isDisabled"
               placeholder="请输入区划编号"
               class="input-width"
             >
@@ -187,8 +181,7 @@ const state: any = reactive({
   isDisabled: true,
   useDefRules: true, //使用默认校验
   loading: false, //提交加载中
-  deleteText: '是否删除所选数据？',
-  codeDisabled: false //区划编号禁用
+  deleteText: '是否删除所选数据？'
 })
 
 const formRef = ref()
@@ -260,6 +253,9 @@ const onSubmit = async () => {
   try {
     switch (state.operationType) {
       case 'add':
+        setTimeout(() => {
+          formRef.value?.clearValidate()
+        }, 0)
         await addChildArea(params)
         message.success('新增下级成功')
         getList()
@@ -331,10 +327,6 @@ const addEditArea = (type) => {
 
   switch (type) {
     case 'add':
-      setTimeout(() => {
-        formRef.value?.clearValidate()
-      }, 0)
-      state.codeDisabled = false
       state.useDefRules = true
       form.parentCode = state.currentNode.code
       form.parentName = state.currentNode.name
@@ -343,7 +335,6 @@ const addEditArea = (type) => {
       form.name = ''
       break
     case 'edit':
-      state.codeDisabled = true
       // form.parentCode = state.currentNode.parentCode //父区划编号
       if (state.currentNode.level === 0) {
         //国家无父级

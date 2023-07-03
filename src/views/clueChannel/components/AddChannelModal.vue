@@ -356,8 +356,7 @@ const submitForm = async () => {
     data = await channelApi.addClueChannel(paramsList)
   }
   console.log(data)
-
-  if (data.code == 0) {
+  if (data.code == 0 || data == true) {
     dialogVisible.value = false
     message.success('操作成功')
     emit('refreshList')

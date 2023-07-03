@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-bind="$attrs" title="一键新增单店子规则" @confirm="handleConfirm">
+  <Dialog title="一键新增单店子规则" @confirm="handleConfirm">
     <div class="directions">
       说明：一键新增单店子规则后，每家门店会生成一条子规则，门店数据范围对应适用门店。
       生成后，可对单条子规则进行编辑

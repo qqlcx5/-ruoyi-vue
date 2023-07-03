@@ -574,7 +574,11 @@
           />
         </a-form-item>
 
-        <a-form-item :label="`机构简称`" name="abbreviate">
+        <a-form-item
+          :label="`机构简称`"
+          name="abbreviate"
+          :rules="[{ required: true, message: `机构简称不能为空` }]"
+        >
           <a-input
             v-model:value="state.formState.abbreviate"
             show-count
@@ -2294,7 +2298,7 @@ const handleModalScroll = () => {
 const addMajorIndividualFN = async () => {
   // 校验表单
   if (!formRef) return
-  const valid = await formRef.value.validate()
+  await formRef.value.validate()
   state.addEditLoading = true
   let params = {
     parentId: state.formState.parentId, //上级机构

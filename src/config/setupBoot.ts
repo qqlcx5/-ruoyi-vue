@@ -11,7 +11,7 @@ import { setupFormCreate } from '@/plugins/formCreate'
 // 路由
 import router, { setupRouter } from '@/router'
 // 权限
-import { setupAuth } from '@/directives'
+import { setupDirectives } from '@/directives'
 import { setupColorPicker } from '@/plugins/colorpicker/idnex'
 import hljs from 'highlight.js' //导入代码高亮文件
 import { MyPD } from '@/components/bpmnProcessDesigner/package/index.js'
@@ -41,7 +41,7 @@ export const setupBoot = async (app: App<Element>) => {
 
   setupRouter(app)
 
-  setupAuth(app)
+  setupDirectives(app)
 
   await setupColorPicker(app)
 

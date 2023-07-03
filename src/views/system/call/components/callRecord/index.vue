@@ -18,12 +18,13 @@
         </el-button>
         <span>暂停</span>
       </div>
-      <div class="el-slider">
+      <div class="el-slider" @mousedown="sliderFlag = true" @mouseup="sliderFlag = false">
         <el-slider
           ref="sliderRef"
           v-model="currentTime"
           :min="0"
           :max="totalTime"
+          :show-tooltip="false"
           @change="changeTime"
         />
         <span
@@ -93,7 +94,9 @@ onMounted(() => {
     totalTime.value = audioRef.value.duration
   })
   audioRef.value.addEventListener('timeupdate', (e) => {
-    currentTime.value = e.target.currentTime
+    if (!audioRef.value.sliderFlag) {
+      currentTime.value = e.target.currentTime
+    }
     if (currentTime.value >= totalTime.value) {
       isPlaying.value = true
       currentTime.value = 0
@@ -104,6 +107,13 @@ onMounted(() => {
     onStop(audioRef.value)
   })
 })
+const sliderFlag = false
+// 进度条调整
+const sliderRef = ref()
+const changeTime = (val) => {
+  audioRef.value.currentTime = val
+  playAudio()
+}
 
 const props = defineProps({
   voiceAdressObj: { type: Object, defaullt: () => ({}) }
@@ -129,11 +139,6 @@ const chooseRate = (rate) => {
   if (audioRef.value) {
     audioRef.value.playbackRate = playbackRate.value
   }
-}
-// 进度条调整
-const sliderRef = ref()
-const changeTime = (val) => {
-  audioRef.value.currentTime = (val / totalTime.value) * totalTime.value
 }
 
 // 播放

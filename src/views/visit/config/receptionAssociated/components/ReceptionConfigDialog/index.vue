@@ -19,7 +19,6 @@
           collapse-tags
           collapse-tags-tooltip
           clearable
-          style="min-width: 240px"
           @change="onModelChange"
         />
       </template>

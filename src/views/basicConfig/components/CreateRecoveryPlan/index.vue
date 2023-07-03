@@ -134,7 +134,7 @@ import { DICT_TYPE, getTenantDictOptions } from '@/utils/dict'
 import { saveRecycleSchedule } from '@/api/clue/basicConfig'
 import { getAllBrand } from '@/api/model/brand'
 import { useCommonList } from '@/hooks/web/useCommonList'
-const { getSuitableShopList, getUserMemberList } = useCommonList()
+const { getSuitableShopList, getMemberTreeList } = useCommonList()
 const message = useMessage()
 
 interface IProps {
@@ -165,7 +165,8 @@ const reason = ref<object[]>([])
 const getDicts = async () => {
   reason.value = await getTenantDictOptions(DICT_TYPE.MANUAL_RECYCLING_REASON)
 }
-const userList = ref(getUserMemberList())
+const userList = ref(getMemberTreeList({}))
+console.log(userList)
 const brandList = ref<object[]>([])
 const getBrandInfo = async () => {
   const data = await getAllBrand()

@@ -718,11 +718,17 @@ const routeValidator = (rule, value) => {
   return new Promise<void>((resolve, reject) => {
     if (value) {
       //目录必须以/开头
-      if (state.formState.type === SystemMenuTypeEnum.DIR && !value.startsWith('/')) {
-        reject('路由地址必须以/开头')
-      } else if (state.formState.type === SystemMenuTypeEnum.MENU && value.startsWith('/')) {
-        //菜单不能以/开头
-        reject('路由地址不能以/开头')
+      if (
+        (state.formState.type === SystemMenuTypeEnum.DIR && !value.startsWith('/')) ||
+        value.includes('#')
+      ) {
+        reject('路由地址必须以/开头且不能包含#')
+      } else if (
+        (state.formState.type === SystemMenuTypeEnum.MENU && value.startsWith('/')) ||
+        value.includes('#')
+      ) {
+        //菜单不能以/开头 #
+        reject('路由地址不能以/开头且不能包含#')
       } else {
         resolve()
       }

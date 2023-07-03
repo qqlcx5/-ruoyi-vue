@@ -15,6 +15,7 @@
       >
         <template #default="{ data }">
           <div
+            v-showTips
             :class="[
               'overflow-ellipsis overflow-hidden whitespace-nowrap',
               { 'font-bold': !isEmpty(data.childs) }
@@ -31,6 +32,7 @@
     >
       <FormTable
         ref="tableRef"
+        layout="internal"
         :form-options="{
           schema: allSchemas.searchSchema
         }"
