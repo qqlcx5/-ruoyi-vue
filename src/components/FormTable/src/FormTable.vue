@@ -1,12 +1,13 @@
 <template>
-  <div class="form-table flex flex-col h-full">
-    <ContentWrap v-if="formProps.isSearch">
+  <div :class="['form-table flex flex-col h-full', { 'layout-internal': layout === 'internal' }]">
+    <ContentWrap v-if="formProps.isSearch" class="form-content-wrap">
       <Search v-bind="formProps" @search="handleSearch" @reset="handleSearch">
         <template #[item]="data" v-for="item in Object.keys(formSlots)" :key="item">
           <slot :name="`form-${item}`" v-bind="data || {}" :model="data.model"></slot>
         </template>
       </Search>
     </ContentWrap>
+    <el-divider v-if="layout === 'internal'" class="!mt-0" />
     <ContentWrap :class="{ 'fullscreen-open': fullscreen }" class="flex-1 table-wrap">
       <div class="flex flex-col h-full">
         <div class="flex justify-between items-center mb-5">
@@ -115,6 +116,11 @@ import { isEmpty, isString, isBoolean, cloneDeep } from 'lodash-es'
 import { useExpandTree } from '@/hooks/web/useExpandTree'
 
 const props = defineProps({
+  /** 组件布局，默认为page，可选值 page: 页面使用，internal: 内置组件使用 */
+  layout: {
+    type: String as PropType<'page' | 'internal'>,
+    default: () => 'page'
+  },
   tableOptions: {
     type: Object as PropType<
       TableProps &
@@ -211,6 +217,8 @@ const tableProps = computed(() => {
 const formProps = computed(() => {
   return {
     isSearch: true,
+    labelWidth: 0,
+    buttomPosition: 'left',
     ...props.formOptions
   }
 })
@@ -395,6 +403,17 @@ defineExpose({
   .el-pagination {
     display: flex;
     justify-content: flex-end;
+  }
+}
+
+.layout-internal {
+  :deep(.el-card) {
+    margin-bottom: 0;
+    border: none;
+
+    .el-card__body {
+      padding: 0;
+    }
   }
 }
 </style>
