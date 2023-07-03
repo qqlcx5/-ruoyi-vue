@@ -1,231 +1,298 @@
 <template>
   <!-- 搜索 -->
-  <ContentWrap>
-    <el-form
-      class="-mb-15px"
-      :model="queryParams"
-      ref="queryFormRef"
-      :inline="true"
-      label-width="68px"
-    >
-      <el-form-item label="问卷名称" prop="name">
-        <el-input
-          v-model="queryParams.name"
-          placeholder="请输入题目名称"
-          clearable
-          @keyup.enter="handleQuery"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item label="创建时间" prop="createTime">
-        <el-date-picker
-          v-model="queryParams.createTime"
-          type="daterange"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          class="!w-240px"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="handleQuery" type="primary">查询</el-button>
-        <el-button @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-  </ContentWrap>
+  <div class="flex flex-col h-full">
+    <ContentWrap>
+      <Search :schema="allSchemas.searchSchema" @reset="handleSearch" @search="handleSearch" />
+    </ContentWrap>
 
-  <div class="card-wrap">
-    <ContentWrap class="mr-5" style="width: 260px">
-      <div class="tree-title-content">
-        <div class="title">题目分组</div>
-        <el-link type="primary" @click="dialogVisible = true">添加</el-link>
-      </div>
-      <div style="margin: 10px 0">所有分组</div>
-      <div class="tree-select-content">
-        <el-tree :data="dataSource" node-key="id" default-expand-all :expand-on-click-node="false">
-          <template #default="{ node }">
-            <span class="custom-tree-node">
-              <span>{{ node.label }}</span>
-              <el-dropdown>
-                <span class="el-dropdown-link">
-                  <Icon
-                    icon="svg-icon:ellipsis"
-                    class="btn-icon"
-                    style="transform: rotate(90deg)"
-                  />
+    <div class="card-wrap flex flex-1">
+      <ContentWrap class="mr-5 group-wrap" style="width: 260px">
+        <div class="tree-title-content">
+          <div class="title">分组管理</div>
+          <XTextButton title="添加" @click="handleAddGroup()" />
+        </div>
+        <div class="tree-select-content flex flex-col">
+          <el-input
+            v-model="searchValue"
+            style="margin: 10px 0"
+            placeholder="搜索分组"
+            :suffix-icon="searchIcon"
+          />
+          <div class="flex-1 overflow-auto">
+            <el-tree
+              :data="groupList"
+              :expand-on-click-node="false"
+              highlight-current
+              :props="{ label: 'appraiseTypeName' }"
+              @node-click="handleSelect"
+            >
+              <template #default="{ data }">
+                <span class="custom-tree-node">
+                  <span>{{ `${data.appraiseTypeName}(${data.topicNum})` }}</span>
+                  <el-dropdown>
+                    <span class="el-dropdown-link">
+                      <Icon
+                        icon="svg-icon:ellipsis"
+                        class="btn-icon"
+                        style="transform: rotate(90deg)"
+                      />
+                    </span>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item @click="handleAddGroup(data)">编辑分组</el-dropdown-item>
+                        <el-dropdown-item @click="handleAddGroup(data)"
+                          >添加子分组</el-dropdown-item
+                        >
+                        <el-dropdown-item @click="handleGroupDelete(data)"
+                          >删除分组</el-dropdown-item
+                        >
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
                 </span>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item>编辑分组</el-dropdown-item>
-                    <el-dropdown-item>添加子分组</el-dropdown-item>
-                    <el-dropdown-item>删除分组</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </span>
-          </template>
-        </el-tree>
-      </div>
-    </ContentWrap>
-    <ContentWrap style="flex: 1">
-      <div style="margin-bottom: 10px">
-        <el-button type="primary" @click="openForm('create')"
-          ><Icon icon="ep:plus" class="mr-5px" /> 新增</el-button
-        >
-        <el-button>删除</el-button>
-      </div>
-      <el-table v-loading="loading" :data="list">
-        <el-table-column label="问卷编码" />
-        <!--        <el-table-column label="题目类型">-->
-        <!--          <template #default="scope">-->
-        <!--            <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
-        <!--        <el-table-column label="题目" />-->
-        <!--        <el-table-column label="所属分组" />-->
-        <!--        <el-table-column label="状态">-->
-        <!--          <template #default="scope">-->
-        <!--            <dict-tag :type="DICT_TYPE.COMMON_STATUS" :value="scope.row.status" />-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
-        <el-table-column label="问卷名称" />
-        <el-table-column label="所属分组" />
-        <el-table-column label="适用门店" />
-        <el-table-column label="适用车型" />
-        <el-table-column label="题目数量" />
-        <el-table-column label="答卷数" />
-        <el-table-column label="是否分值卷" />
-        <el-table-column label="状态" />
+              </template>
+            </el-tree>
+          </div>
+        </div>
+      </ContentWrap>
 
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-          <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row.id)"> 编辑 </el-button>
-            <el-button link type="primary" @click="handleDetail(scope.row.id)"> 详情 </el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row.id)"> 删除 </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <!-- 分页 -->
-      <Pagination
-        :total="total"
-        v-model:page="queryParams.pageNo"
-        v-model:limit="queryParams.pageSize"
-        @pagination="getList"
-      />
-    </ContentWrap>
+      <FormTable
+        class="flex-1"
+        ref="tableRef"
+        :form-options="{ isSearch: false }"
+        :table-options="{
+          columns: allSchemas.tableColumns,
+          selection: true,
+          listApi: getAppraiseList,
+          listParams,
+          actionButtons
+        }"
+        @add="handleAdd"
+      >
+        <template #tableAppend>
+          <XButton title="删除" @click="handleDelete" />
+        </template>
+        <template #appraiseTypeNameList="{ row }">
+          <span>{{ row.appraiseTypeName }}</span>
+        </template>
+        <template #status="{ row }">
+          <el-switch
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleChangeStatus(row)"
+          />
+        </template>
+        <template #matchField="{ row }">
+          <span>{{ fieldList.find((item) => item.key === row.matchField)?.value }}</span>
+        </template>
+      </FormTable>
+    </div>
   </div>
-
-  <el-dialog v-model="dialogVisible" title="新增分组" style="width: 500px">
-    <el-form :model="form" label-width="100px">
-      <el-form-item label="分组名称">
-        <el-input
-          type="text"
-          v-model="form.name"
-          placeholder="请输入分组名称"
-          maxlength="15"
-          :show-word-limit="true"
-        />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="dialogVisible = false"> 确定 </el-button>
-      </span>
-    </template>
-  </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue'
+import AddTopicDialog from './components/AddTopicDialog.vue'
+import AddGroupDialog from './components/AddGroupDialog.vue'
+import { Search as searchIcon } from '@element-plus/icons-vue'
+import { useCreateDialog } from '@/hooks/web/useCreateDialog'
+import { useTable, useGroup } from './helpers'
+import {
+  addAppraise,
+  getAppraiseList,
+  addGroup,
+  delAppraise,
+  delGroup,
+  setAppraiseStatus
+} from '@/api/questionnaire/questionnaire'
+import { onMounted } from 'vue'
+import { useMessage } from '@/hooks/web/useMessage'
+import { isEmpty } from 'lodash-es'
+import { hasPermission } from '@/utils/utils'
 
-const loading = ref(false) // 列表的加载中
-const total = ref(0) // 列表的总页数
-const list = ref([]) // 列表的数据
-const queryParams = reactive({
-  pageNo: 1,
-  pageSize: 10,
-  name: null,
-  status: null,
-  remark: null,
-  createTime: []
+const searchValue = ref('')
+
+const { openDialog } = useCreateDialog()
+const { allSchemas, tableRef, listParams } = useTable()
+const { getGroupData, groupList, getFieldData, fieldList } = useGroup()
+const message = useMessage()
+
+onMounted(async () => {
+  await getGroupData()
+  await getFieldData()
 })
-const queryFormRef = ref()
 
-const formRef = ref()
-const openForm = (type: string, id?: number) => {
-  formRef.value.open(type, id)
-}
-
-/** 查询列表 */
-const getList = async () => {
-  loading.value = true
-  try {
-    const data = { list: [], total: 10 }
-    list.value = data.list
-    total.value = data.total
-  } finally {
-    loading.value = false
-  }
-}
-
-/** 列表行编辑 */
-const handleEdit = () => {}
-
-/** 列表行详情 */
-const handleDetail = () => {}
-
-/** 列表行删除 */
-const handleDelete = () => {}
-
-/** 搜索按钮操作 */
-const handleQuery = () => {
-  queryParams.pageNo = 1
-  getList()
-}
-
-/** 重置按钮操作 */
-const resetQuery = () => {
-  queryFormRef.value?.resetFields()
-  getList()
-}
-
-const dialogVisible = ref(false) // 题目分组添加弹窗
-const form = reactive({ name: '' })
-const dataSource = ref<Tree[]>([
+const actionButtons = [
   {
-    id: 1,
-    label: 'Level one 1',
-    children: [
-      {
-        id: 4,
-        label: 'Level one 4'
+    name: '编辑',
+    permission: hasPermission('system:sensitive-word:update'),
+    click: async (row) => {
+      handleAdd(row)
+    }
+  },
+  {
+    name: '详情',
+    permission: false && hasPermission('system:sensitive-word:update'),
+    click: () => {
+      console.log('详情')
+    }
+  },
+  {
+    name: '删除',
+    permission: hasPermission('system:sensitive-word:delete'),
+    click: async (row) => {
+      message
+        .wgOperateConfirm('是否删除所选中数据？', '系统提示')
+        .then(async () => {
+          const res = await delAppraise({ ids: [row.id] })
+          const { tableMethods } = tableRef.value
+          if (res) {
+            message.success('删除成功')
+            await tableMethods.getList()
+          } else {
+            message.error('删除失败')
+          }
+        })
+        .catch(() => {})
+    }
+  }
+]
+
+/** 查询/重置 */
+const handleSearch = (model: Recordable) => {
+  const { tableMethods, elTableRef } = tableRef.value
+  listParams.value = model
+  setTimeout(() => {
+    tableMethods.getList()
+  }, 0)
+  elTableRef.value?.clearSelection()
+}
+
+/** 选中分组 */
+const handleSelect = (node) => {
+  const { tableMethods } = tableRef.value
+  listParams.value = { appraiseTypeId: node.appraiseTypeId }
+  setTimeout(() => {
+    tableMethods.getList()
+  }, 0)
+}
+
+/** 改变列表状态 */
+const handleChangeStatus = async (row) => {
+  if (!row.id) return
+  await setAppraiseStatus({ id: row.id, status: row.status })
+  message.success('修改状态成功')
+}
+
+/** 新增/编辑题目 */
+const handleAdd = (params?: Recordable) => {
+  const id = params?.id
+  const { tableMethods } = tableRef.value
+  const { close } = openDialog(AddTopicDialog, {
+    title: `${id ? '编辑' : '新增'}题目`,
+    data: { params, fieldList, groupList },
+    onCommit: async (data: Recordable) => {
+      console.log('🚀 ~ file: index.vue:177 ~ onCommit: ~ data:', data)
+      await addAppraise({
+        ...data,
+        ...(id ? { appraiseTypeId: id } : {})
+      })
+      message.success('添加成功')
+      close()
+      await tableMethods.getList()
+    }
+  })
+}
+
+/** 新增/编辑分组 */
+const handleAddGroup = (params?: Recordable) => {
+  const id = params?.appraiseTypeId
+  const { close } = openDialog(AddGroupDialog, {
+    title: `${id ? '编辑' : '新增'}分组`,
+    width: 498,
+    data: params,
+    onConfirm: async (data) => {
+      await addGroup({
+        ...data,
+        ...(id ? { appraiseTypeId: id } : {})
+      })
+      message.success('添加成功')
+      close()
+      getGroupData()
+    }
+  })
+}
+
+/** 题目分组删除 */
+const handleGroupDelete = async (data) => {
+  message
+    .wgOperateConfirm('是否确认删除题目？删除后无法恢复。', '提示')
+    .then(async () => {
+      await delGroup({ ids: [data.appraiseTypeId] })
+      message.success('删除成功')
+      getGroupData()
+    })
+    .catch(() => {})
+}
+
+/** 批量删除题目 */
+const handleDelete = async () => {
+  const { tableMethods } = tableRef.value
+  let selections = await tableMethods.getSelections()
+  selections = selections?.map((item) => item.id)
+  if (isEmpty(selections)) {
+    message.warning('请选择题目')
+    return
+  }
+
+  message
+    .wgOperateConfirm('是否确认删除题目？删除后无法恢复。', '提示')
+    .then(async () => {
+      const res = await delAppraise({ ids: selections })
+      if (res) {
+        message.success('删除成功')
+        await tableMethods.getList()
+      } else {
+        message.error('删除失败')
       }
-    ]
-  },
-  {
-    id: 2,
-    label: 'Level one 2'
-  },
-  {
-    id: 3,
-    label: 'Level one 3'
-  }
-])
+    })
+    .catch(() => {})
+}
 </script>
 
 <style lang="scss" scoped>
+:deep(.el-card) {
+  overflow: visible;
+}
+
 .card-wrap {
   display: flex;
+
+  .group-wrap {
+    :deep(.el-card__body) {
+      height: 100%;
+
+      & > div {
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+      }
+    }
+  }
+
   .tree-title-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
+
   .tree-select-content {
+    flex: 1;
+
     .custom-tree-node {
-      width: 100%;
       display: flex;
+      width: 100%;
       justify-content: space-between;
     }
   }

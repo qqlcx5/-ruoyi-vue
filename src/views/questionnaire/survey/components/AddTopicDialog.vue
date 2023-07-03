@@ -28,7 +28,7 @@
       <el-form-item label="所属分组" prop="appraiseTypeId">
         <el-select v-model="formData.appraiseTypeId" placeholder="请选择所属分组">
           <el-option
-            v-for="(item, index) in props.data.groupList"
+            v-for="(item, index) in groupList"
             :key="index"
             :label="item.appraiseTypeName"
             :value="item.appraiseTypeId"
@@ -135,7 +135,7 @@
       <el-form-item label="匹配字段" prop="matchField">
         <el-select v-model="formData.matchField" placeholder="请选择">
           <el-option
-            v-for="(item, index) in props.data.fieldList"
+            v-for="(item, index) in fieldList"
             :key="index"
             :label="item.value"
             :value="item.key"
@@ -146,8 +146,11 @@
   </Dialog>
 </template>
 <script lang="ts" setup>
+import { useGroup } from '../helpers'
+
 const { t } = useI18n() // 国际化
 // const message = useMessage() // 消息弹窗
+const { getGroupData, groupList, getFieldData, fieldList } = useGroup()
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
@@ -259,20 +262,24 @@ watch(
 watch(
   () => formData.value.appraiseTopicType,
   () => {
-    // if (formData.value.optionsList) {
-    //   const len = formData.value.optionsList.length
-    //   for (let i = 0; i < len; i++) {
-    //     formData.value.optionsList[i].optionName = ''
-    //   }
-    // }
+    if (formData.value.optionsList) {
+      const len = formData.value.optionsList.length
+      for (let i = 0; i < len; i++) {
+        formData.value.optionsList[i].optionName = ''
+      }
+    }
   }
 )
 
 watch(formRef, (val) => {
   if (val) {
-    formData.value = Object.assign(unref(formData), props.data.params)
-    console.log('🚀 ~ file: AddTopicDialog.vue:274 ~ watch ~ props.data.params:', props.data.params)
+    formData.value = Object.assign(unref(formData), props.data)
   }
+})
+
+onMounted(async () => {
+  await getGroupData()
+  await getFieldData()
 })
 </script>
 <style lang="scss" scoped></style>
