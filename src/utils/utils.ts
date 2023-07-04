@@ -340,3 +340,73 @@ export const findByProperty = (arr, propName, propValue, separator = ',') => {
 export const joinProperty = (arr, propName, separator = ',') => {
   return arr.map((item) => item[propName]).join(separator)
 }
+
+/**
+ * 过滤字典
+ * @param   dictList    []{any} 数组对象
+ * @param   dictKey     string  要过滤的键名
+ * @return  Array       []{any} 数组对象
+ * */
+export const dictFilter = (dictList, dictKey) => {
+  return dictList.filter((item) => item.dictType === dictKey)
+}
+
+/**
+ * 将树形数据结构中符合自定义属性条件的节点的 needEs 属性设置为 true，其他节点的 needEs 属性设置为 false。
+ * @param   treeData  []{any}  - 要更新的树形数据结构。
+ * @param   customPropName string - 要匹配的自定义属性名称。
+ * @param   customPropValue any - 要匹配的自定义属性值。
+ * @param   needEsPropName string - 要设置的自定义属性名称。
+ * @returns void
+ */
+export const setNeedEsPropertyByCustomProp = (
+  treeData,
+  customPropName,
+  customPropValue,
+  needEsPropName
+) => {
+  let nodeFound = false
+
+  const traverse = (node) => {
+    if (node[customPropName] === customPropValue) {
+      node[needEsPropName] = true
+      nodeFound = true
+    } else if (node.hasOwnProperty(needEsPropName)) {
+      node[needEsPropName] = false
+    } else {
+      node[needEsPropName] = false
+    }
+
+    if (node.children && node.children.length > 0) {
+      node.children.forEach((childNode) => {
+        traverse(childNode)
+      })
+    }
+  }
+
+  if (!customPropValue || customPropValue === '') {
+    // If the custom property value is empty, set all needEs properties to false
+    treeData.forEach((node) => {
+      if (node.hasOwnProperty(needEsPropName)) {
+        node[needEsPropName] = false
+      } else {
+        node[needEsPropName] = false
+      }
+
+      if (node.children && node.children.length > 0) {
+        node.children.forEach((childNode) => {
+          traverse(childNode)
+        })
+      }
+    })
+  } else {
+    // Set the needEs property for the node with the given custom property value
+    treeData.forEach((node) => {
+      traverse(node)
+    })
+
+    if (!nodeFound) {
+      console.warn(`Node with ${customPropName}=${customPropValue} not found`)
+    }
+  }
+}

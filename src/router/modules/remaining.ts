@@ -360,6 +360,29 @@ const remainingRouter: AppRouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: '/survey',
+    component: Layout,
+    name: 'SurveyEdit',
+    meta: {
+      hidden: true
+    },
+    children: [
+      {
+        path: 'edit',
+        component: () => import('@/views/questionnaire/survey/edit.vue'),
+        name: 'EditPage',
+        meta: {
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          icon: 'ep:edit',
+          title: '新增问卷',
+          activeMenu: 'questionnaire/survey/index'
+        }
+      }
+    ]
+  },
   ...whiteRouter
 ]
 

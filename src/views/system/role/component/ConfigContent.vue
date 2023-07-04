@@ -18,7 +18,7 @@
           />
         </div>
         <el-tree
-          class="py-10px max-h-560px overflow-y-scroll"
+          class="menu-tree"
           ref="treeRef"
           node-key="id"
           show-checkbox
@@ -415,6 +415,7 @@ defineExpose({ getParams, init }) // 提供 openModal 方法，用于打开弹�
 .role-config {
   .box {
     height: 100%;
+    overflow: hidden;
     border: 1px solid #eaebef;
     border-radius: 2px;
   }
@@ -428,9 +429,18 @@ defineExpose({ getParams, init }) // 提供 openModal 方法，用于打开弹�
     border-bottom: 1px solid #eaebef;
   }
 
+  .box-content {
+    height: calc(100% - 42px);
+  }
+
   .box-content .el-radio-group {
     align-items: normal;
     flex-flow: column nowrap;
+  }
+
+  .menu-tree {
+    height: calc(100% - 42px);
+    overflow-y: scroll;
   }
 
   .depart {

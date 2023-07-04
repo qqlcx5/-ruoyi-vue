@@ -3,7 +3,7 @@ import { AxiosPromise } from 'axios'
 import { findIndex } from '@/utils'
 import { eachTree, treeMap, filter } from '@/utils/tree'
 import { getBoolDictOptions, getDictOptions, getIntDictOptions } from '@/utils/dict'
-
+import { isBoolean } from 'lodash-es'
 import { FormSchema } from '@/types/form'
 import { TableColumn } from '@/types/table'
 import { DescriptionsSchema } from '@/types/descriptions'
@@ -167,7 +167,7 @@ const filterTableSchema = (crudSchema: CrudSchema[]): TableColumn[] => {
   })
   tableColumns = tableColumns.map((item) => ({
     ...item,
-    check: item.check || true,
+    check: isBoolean(item.check) ? item.check : true,
     disabled: item.disabled || false,
     ...(item.dictType
       ? item.formatter
