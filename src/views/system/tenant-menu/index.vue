@@ -10,7 +10,7 @@
     <ContentWrap style="min-height: 78px">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
         <a-form-item :label="`菜单名称`" name="name">
-          <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
+          <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称或ID" />
         </a-form-item>
         <a-form-item :label="`菜单类型`" name="type">
           <a-select
@@ -477,6 +477,7 @@
     destroyOnClose
     wrapClassName="details-modal"
     title="详情"
+    width="763px"
     :bodyStyle="{
       width: '100%',
       height: '192px',
@@ -706,6 +707,15 @@ const allColumns = [
     ellipsis: true,
     disabled: true,
     sort: 2
+  },
+  {
+    title: '租户菜单ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
   },
   {
     title: '在职成员',
@@ -2101,6 +2111,13 @@ async function changeMode() {
 </style>
 
 <style lang="scss">
+//所有modal title
+.ant-modal-title {
+  color: rgba(51, 51, 51, 1);
+  font-size: 18px !important;
+  font-weight: bold !important;
+  font-family: PingFangSC-Medium;
+}
 //修改 详细 modal位置
 .details-modal {
   //display: flex;

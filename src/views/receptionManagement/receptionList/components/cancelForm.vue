@@ -1,15 +1,19 @@
 <template>
   <div>
     <!--  画像因子新增 类型 -->
-    <XModal v-model="modelValue_" title="新增">
+    <XModal v-model="modelValue_" title="提示">
       <!-- 表单 -->
-      <Form ref="formRef" :schema="allSchemas.formSchema" :rules="addRules" :isCol="false">
-        <template #score="form">
-          <div class="flex">
-            <el-input v-model="form.lowestScore" />
-            <span class="pl-4 pr-4">——</span>
-            <el-input v-model="form.topScore" />
-          </div>
+      <Form ref="formRef" :schema="allSchemas.formSchema" :rules="rules" :isCol="false">
+        <template #cancelReason="form">
+          <el-select v-model="form.cancelReason" placeholder="请选择取消原因">
+            <el-option label="测试" value="测试" />
+            <el-option label="点错了" value="点错了" />
+            <el-option label="客户进店后就马上走了" value="客户进店后就马上走了" />
+            <el-option label="其他" value="其他" />
+          </el-select>
+        </template>
+        <template #cancelExplain="form">
+          <el-input v-model="form.cancelExplain" type="textarea" clearable />
         </template>
       </Form>
       <!-- 操作按钮 -->
@@ -24,15 +28,42 @@
 </template>
 
 <script setup lang="ts">
-import * as portraitFactor from '@/api/receptionManagement/portraitFactor'
-import { allSchemas, addRules } from './addedPortraitFactor.data.js'
-
+import * as receptionList from '@/api/receptionManagement/receptionList'
 const { t } = useI18n() // 国际化
 // let dialogLoading = ref(false) // 弹窗加载状态
 // const [registerTable, { reload }] = useXTable({
 //   allSchemas: allSchemas,
 //   getListApi: promptConfig.portraitFactorLevelConfigSaveOrUpdateApi
 // })
+
+import type { VxeCrudSchema } from '@/hooks/web/useVxeCrudSchemas'
+
+// const { t } = useI18n() // 国际化
+
+// 表单校验
+const rules = reactive({
+  cancelReason: [{ required: true, message: '请输入画像因子得分区间', trigger: 'blur' }],
+  cancelExplain: [{ required: true, message: '请输入对应评级名称', trigger: 'blur' }]
+})
+
+// crudSchemas
+const crudSchemas = reactive<VxeCrudSchema>({
+  action: true,
+  actionWidth: '130',
+  columns: [
+    {
+      title: '取消原因',
+      field: 'cancelReason',
+      requried: true
+    },
+    {
+      title: '取消说明',
+      field: 'cancelExplain',
+      requried: true
+    }
+  ]
+})
+const { allSchemas } = useVxeCrudSchemas(crudSchemas)
 
 /* --------------------------------- // 新增类型 -------------------------------- */
 import { FormExpose } from '@/components/Form'
@@ -41,25 +72,10 @@ import { FormExpose } from '@/components/Form'
 const actionLoading = ref(false) // 按钮 Loading
 const formRef = ref<FormExpose>() // 表单 Ref
 const message = useMessage() // 消息弹窗
-
-// 表单监听
-watch(
-  () => {
-    const formModel = formRef.value?.formModel
-    return [formModel?.lowestScore, formModel?.topScore]
-  },
-  ([newfoo, prevfoo]) => {
-    formRef.value?.setValues({
-      score: newfoo && prevfoo ? `${newfoo} - ${prevfoo}` : ''
-    })
-  }
-)
-
+let rowData = ref<any>({}) // 行数据
 function openModal(open: boolean, data?: any) {
   modelValue_.value = open
-  nextTick(() => {
-    formRef.value?.setValues(data)
-  })
+  rowData.value = data
 }
 defineExpose({ openModal })
 
@@ -71,8 +87,10 @@ const submitForm = async () => {
     if (!valid) return
     try {
       actionLoading.value = true
-      const data = unref(formRef)?.formModel
-      await portraitFactor.portraitFactorLevelConfigSaveOrUpdateApi(data)
+      const data = unref(formRef)?.formModel as any
+      data.receptionId = rowData.value.id
+      await receptionList.receptionManageCancelReceptionApi(data)
+
       modelValue_.value = false
       emits('refresh', true)
       message.success(t('common.createSuccess'))

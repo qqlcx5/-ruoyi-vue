@@ -18,7 +18,7 @@
             <el-form-item label-width="70px" label="岗位类型">
               <el-input
                 v-model="postTypeSearchForm.nameOrCode"
-                placeholder="请输入岗位类型或编码"
+                placeholder="请输入岗位类型或编码或ID"
                 @keyup.enter="postSearch"
                 clearable
               />
@@ -94,7 +94,7 @@
             <el-form-item label="岗位名称">
               <el-input
                 v-model="postInfoSearchForm.nameOrCode"
-                placeholder="请输入岗位名称或编码"
+                placeholder="请输入岗位名称或编码或ID"
                 @keyup.enter="postInfoSearch"
                 clearable
               />

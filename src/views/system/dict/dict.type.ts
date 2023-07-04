@@ -19,6 +19,11 @@ const crudSchemas = reactive<VxeCrudSchema>({
   searchSpan: 12,
   columns: [
     {
+      title: '字典ID',
+      field: 'id',
+      defaultShow: false
+    },
+    {
       title: '字典名称',
       field: 'name',
       // isSearch: true,

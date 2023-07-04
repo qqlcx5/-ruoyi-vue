@@ -113,8 +113,6 @@ const setCurrentNodeStatus = (key) => {
   } else {
     currentNode.value.userIds = []
   }
-  // const status = treeRef.value!.getCheckedNodes().find((item) => item.id === currentNode.value.id)
-  // currentNode.value.userIds = status ? currentNodeUsers.value.map((item) => item.id) : []
 }
 const onCheckboxChange = (value, data) => {
   treeRef.value!.setChecked(data.id, value, true)
@@ -125,26 +123,45 @@ const onCheckboxChange = (value, data) => {
 const selectedTreeData = ref<any[]>([])
 // 获取已选信息
 const getSelectedTreeData = () => {
-  selectedTreeData.value = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
+  const checkNodes = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
+  checkNodes.forEach((i) => {
+    recursiveFn(i)
+  })
+  function recursiveFn(item) {
+    if (item['children']) {
+      item['children'].sort((a, b) => {
+        if (typeof a.id === 'string' && typeof b.id === 'number') {
+          return -1 // 字符串在数字前面
+        } else {
+          return 0
+        }
+      })
+      for (const c of item['children']) {
+        recursiveFn(c)
+      }
+    }
+  }
+  selectedTreeData.value = checkNodes
 }
 
 const init = async () => {
   const { orgList, userList } = await getListDeptUser()
   const users = userList.map((item) => {
     return {
-      id: item.id,
+      id: 'user-' + item.userId,
       name: item.nickname,
       account: item.username,
       parentId: item.deptId,
-      type: 'user'
+      type: item.type
     }
   })
   treeData.value = handleTree([...cloneDeep(orgList), ...cloneDeep(users)])
 }
 
 // 打开弹窗
-const openModal = async (deptIds?: any[], dataScopeUsers?) => {
-  if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = [...deptIds, ...dataScopeUsers]
+const openModal = async (deptIds?: any[], dataScopeUsers = []) => {
+  const userIds = dataScopeUsers.map((uId) => `user-${uId}`)
+  if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = [...userIds, ...deptIds]
   await init()
   modelVisible.value = true
   await nextTick()
@@ -161,7 +178,12 @@ const submitForm = async () => {
     emit('confirm', checkedNodes[0])
   } else {
     const selectedData = checkedNodes.filter((i) => i.type !== 'user')
-    const selectedStaffData = checkedNodes.filter((i) => i.type === 'user')
+    const selectedStaffData = cloneDeep(checkedNodes)
+      .filter((i) => i.type === 'user')
+      .map((i) => {
+        i.id = i.id.slice(5)
+        return i
+      })
     emit('confirm', selectedData, selectedStaffData)
   }
   close()

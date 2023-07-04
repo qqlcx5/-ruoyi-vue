@@ -83,10 +83,10 @@ const setDefaultShowOneLint = () => {
           formWidth - itemsWidth < lastFormItemWidth + 90 &&
           index !== 0
         ) {
-          defaultExpanField.value = props.schema[index - 1].field
+          defaultExpanField.value = props.schema[index - 1]?.field
           break
         }
-        defaultExpanField.value = props.schema[index].field
+        defaultExpanField.value = props.schema[index]?.field
         break
       }
     }

@@ -105,15 +105,20 @@ const columns = reactive<any>([
       },
       {
         label: '到店类型',
-        field: 'enterShopTypeList',
-        width: '120px',
+        field: 'enterShopType',
+        isTable: false,
         isSearch: true,
         search: {
           component: 'Select',
           componentProps: {
             options: computed(() => tableConfig.options.enterShopType)
           }
-        },
+        }
+      },
+      {
+        label: '到店类型',
+        field: 'enterShopTypeList',
+        width: '120px',
         formatter: (_, __, val) => {
           return val.join(',') || ''
         }
@@ -173,8 +178,9 @@ const columns = reactive<any>([
     children: [
       {
         label: '回访类型',
-        field: 'visitSettingType',
+        field: 'visitType',
         width: '120px',
+        isTable: false,
         isSearch: true,
         search: {
           component: 'Select',
@@ -183,7 +189,13 @@ const columns = reactive<any>([
           }
         }
       },
-      { label: '回访目的', field: 'visitSettingPurposeStr', width: '100px', isSearch: true },
+      {
+        label: '回访类型',
+        field: 'visitSettingType',
+        width: '120px'
+      },
+      { label: '回访目的', field: 'visitPurpose', width: '100px', isSearch: true, isTable: false },
+      { label: '回访目的', field: 'visitSettingPurposeStr', width: '100px' },
       { label: '回访角色', field: 'roleName', width: '100px' },
       { label: '参考时间', field: 'originTimeTypeStr', width: '100px' },
       { label: '计划回访时间T+N(天数)', field: 'visitLimitDay', width: '180px' }
@@ -213,8 +225,8 @@ const { allSchemas } = useCrudSchemas(columns)
 
 const formatSheet = (val, key) => {
   if (key === 'visitSettingType') {
-    const res = tableConfig.options.visitType.find((i) => i['key'] === val)
-    return res ? res['value'] : ''
+    const res = tableConfig.options.visitType.find((i) => i['value'] === val)
+    return res ? res['label'] : ''
   } else if (key === 'originTimeType') {
     const res = tableConfig.options.originTimeType.find((i) => i['key'] === val)
     return res ? res['value'] : ''
@@ -294,8 +306,18 @@ onMounted(() => {
     getOriginTimeTypeList(),
     getReceptionStatuslList()
   ]).then((res) => {
-    tableConfig.options.enterShopType = res[0]
-    tableConfig.options.visitType = res[1]
+    tableConfig.options.enterShopType = res[0].map((i) => {
+      return {
+        label: i.value,
+        value: i.key
+      }
+    })
+    tableConfig.options.visitType = res[1].map((i) => {
+      return {
+        label: i.value,
+        value: i.key
+      }
+    })
     tableConfig.options.originTimeType = res[2]
     tableConfig.options.receptionStatus = res[3]
   })

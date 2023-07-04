@@ -109,6 +109,7 @@ const columns: TableColumn[] = [
     showOverflowTooltip: false
   }
 ]
+
 const { allSchemas } = useCrudSchemas(columns)
 
 let newGeneralVisible = ref(false) // 新增通用提示
@@ -219,33 +220,34 @@ async function handleTabChange() {
   :deep(.el-tabs--border-card) {
     border: none;
   }
+
   :deep(.el-tabs__content) {
     display: none;
   }
   // 选中的样式
   :deep(.el-tabs--border-card > .el-tabs__header) {
-    border-bottom: none;
     background-color: #f1f3f6;
+    border-bottom: none;
   }
 
   :deep(.el-tabs__item) {
     position: relative;
     height: 50px;
-    line-height: 50px;
-    padding-left: 34px !important;
     padding-right: 34px !important;
+    padding-left: 34px !important;
+    line-height: 50px;
 
     &.is-active {
       background-color: #fff;
 
       &::before {
-        content: '';
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 2px;
         background-color: #409eff;
+        content: '';
       }
     }
   }

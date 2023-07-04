@@ -57,6 +57,8 @@
       </template>
     </form-table>
     <detailsDrawer ref="detailsRef" v-model="detailsVisible" @refresh="handleRresh" />
+    <cancelForm ref="cancelFormRef" v-model="cancelVisible" @refresh="handleRresh" />
+    <logsModal ref="logsModalRef" v-model="logsVisible" />
   </div>
 </template>
 
@@ -65,6 +67,8 @@ import { TableColumn } from '@/types/table'
 import * as receptionList from '@/api/receptionManagement/receptionList'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import detailsDrawer from './components/detailsDrawer.vue'
+import cancelForm from './components/cancelForm.vue'
+import logsModal from './components/LogsModal.vue'
 
 const message = useMessage()
 const { t } = useI18n()
@@ -74,6 +78,8 @@ import duration from 'dayjs/plugin/duration'
 dayjs.extend(duration)
 let tableRef = ref()
 let detailsRef = ref()
+let cancelFormRef = ref()
+let logsModalRef = ref()
 const selectedIds = ref<number[]>([])
 const searchComp = (options = [{}]) => ({
   component: 'Select',
@@ -102,7 +108,7 @@ async function receptionManageStatisticsApi(params) {
     statisticsOpt.statusSuspended = data.statusSuspended
   }
 }
-
+// 表格列
 const columns: TableColumn[] = [
   { label: '接待', field: 'selectReception', isSearch: true, isTable: false },
   { label: '时间', field: 'selectTime', isSearch: true, isTable: false },
@@ -473,7 +479,9 @@ const actionButtons = [
   {
     name: '查看日志',
     permission: true,
-    click: () => {}
+    click: (row) => {
+      logsModalRef.value?.openModal(true, row)
+    }
   },
   {
     name: '修改记录',
@@ -483,11 +491,14 @@ const actionButtons = [
   {
     name: '删除',
     permission: true,
-    click: () => {}
+    click: (row) => {
+      handleModelDel(row)
+    }
   }
 ]
 /* ---------------------------------- 时间选择 ---------------------------------- */
-let selectTime = ref('今天')
+// let selectTime = ref('今天')
+let selectTime = ref('本年')
 let receptionStatus = ref()
 let selectTimeRange = ref()
 let tableParams = reactive({
@@ -538,15 +549,17 @@ function handleDateRange(val) {
   selectTime.value = ''
 }
 /* ---------------------------------- 重置 ---------------------------------- */
-function handleReset(params) {
+function handleReset() {
   selectTime.value = '今天'
   receptionStatus.value = ''
-  let paramsList = Object.assign({}, params, tableParams)
-  receptionManageStatisticsApi(paramsList)
+  nextTick(() => {
+    receptionManageStatisticsApi(tableParams)
+  })
 }
-// setSearchParams
 /* -------------------------------- 操作事件 ------------------------------- */
 let detailsVisible = ref(false)
+let cancelVisible = ref(false)
+let logsVisible = ref(false)
 // 操作：新增
 async function handleAdd() {
   detailsVisible.value = true
@@ -557,6 +570,9 @@ function handleRresh() {
 }
 
 // 操作：删除
+function handleModelDel(row) {
+  cancelFormRef.value?.openModal(true, row)
+}
 async function handleDel() {
   const list = await tableRef.value?.tableMethods?.getSelections()
   if (list) {
@@ -568,7 +584,7 @@ async function handleDel() {
   confirmDel(null)
 }
 const confirmDel = (row) => {
-  row && selectedIds.value.push(row.id)
+  selectedIds.value = [row.id]
   if (selectedIds.value.length < 1) {
     return message.warning('未选择数据')
   }

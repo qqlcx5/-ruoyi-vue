@@ -62,7 +62,7 @@
         <div class="box-header"> 请选择数据权限 </div>
         <div class="box-content px-14px py-10px">
           <div v-if="currentNode && currentNode.type === 2">
-            <el-radio-group v-model="currentNode.dataScope">
+            <el-radio-group v-model="currentNode.dataScope" @change="onDataScopeChange">
               <el-radio :label="5">仅看自己</el-radio>
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
@@ -110,7 +110,7 @@
           <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
         </div>
       </div>
-      <div>
+      <div v-if="currentNode.dataScope !== 5">
         <div class="box-header"> 请选择品牌权限 </div>
         <div class="box-content px-14px py-10px">
           <div v-if="currentNode && currentNode.type === 2">
@@ -336,6 +336,12 @@ const handleBrandCheckAllChange = (val: boolean) => {
 }
 const onBrandScopeChange = (value) => {
   if (value === 1) currentNode.value.dataScopeBrandIds = []
+}
+const onDataScopeChange = (value) => {
+  if (value === 5) {
+    currentNode.value['databrandScope'] = 1
+    currentNode.value['dataScopeBrandIds'] = []
+  }
 }
 
 // ================= 初始化 ====================

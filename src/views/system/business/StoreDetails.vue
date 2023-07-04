@@ -263,7 +263,7 @@ import { organizationType, storeSubType } from '@/utils/constants'
 import { getMemberAllList } from '@/api/system/member'
 import { hasPermission, reconstructionArrayObject } from '@/utils/utils'
 import editImg from '@/assets/imgs/system/editImg.png'
-import { getSimpleTenantList, getStoreDetails } from '@/api/system/business'
+import { getMajDictList, getSimpleTenantList, getStoreDetails } from '@/api/system/business'
 
 interface Props {
   currentRecord?: any
@@ -308,6 +308,9 @@ const previewTitle = ref('')
 
 //详情(打开)
 const detailsInfo = async (record) => {
+  console.log('re!!!!!!!!!!!', record)
+  //数据字典
+  let dictRes = []
   state.detailsRecord = record
   //获取机构详情
   // const res = await getOrganizationDetails({ id: record.id })
@@ -324,10 +327,16 @@ const detailsInfo = async (record) => {
     case 'business':
       //主体管理 门店 详情
       res = await getStoreDetails(params)
+      //数据字典
+      dictRes = await getMajDictList({
+        tenantId: record.tenantId
+      })
       break
     default:
       //机构管理
       res = await getOrganizationStoreDetails(params)
+      //数据字典
+      dictRes = await getOrganizationTypeList()
   }
 
   const { relVO = {} } = res
@@ -347,9 +356,6 @@ const detailsInfo = async (record) => {
   //主体列表
   const majorIndividualRes = await getSimpleTenantList()
   const tempParentMajorIndividual = majorIndividualRes.find((item) => item.id === res.tenantId)
-
-  //数据字典
-  const dictRes = await getOrganizationTypeList()
 
   //类型
   let tempArrTypeString = ''
