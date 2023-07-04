@@ -6,31 +6,31 @@
       :model="principalForm"
       :rules="principalRules"
       label-position="right"
-      label-width="100px"
+      label-width="112px"
     >
-      <el-form-item label="企业ID">
-        <el-input placeholder="请输入企业ID" />
+      <el-form-item label="企业ID" prop="wecomId">
+        <el-input placeholder="请输入企业ID" v-model="principalForm.wecomId" />
       </el-form-item>
       <div class="small-gray m-20"
         >我的企业 > 企业信息 > 企业ID
         <XTextButton title="去获取" type="primary" />
       </div>
-      <el-form-item label="联系人Secret">
-        <el-input placeholder="请输入联系人Secret" />
+      <el-form-item label="联系人Secret" prop="contact">
+        <el-input placeholder="请输入联系人Secret" v-model="principalForm.customer" />
       </el-form-item>
       <div class="small-gray m-20"
         >客户与上下游 > 客户 > API > Secret
         <XTextButton title="去获取" type="primary" />
       </div>
-      <el-form-item label="通讯录Secret">
-        <el-input placeholder="请输入通讯录Secret" />
+      <el-form-item label="通讯录Secret" prop="contact">
+        <el-input placeholder="请输入通讯录Secret" v-model="principalForm.contact" />
       </el-form-item>
       <div class="small-gray m-20"
         >管理工具 > 通讯录同步 > Secret
         <XTextButton title="去获取" type="primary" />
       </div>
       <el-form-item label="可信IP地址">
-        <el-input placeholder="请输入联系人Secret" v-model="principalForm.ipAdress">
+        <el-input placeholder="请输入联系人Secret" disabled v-model="principalForm.ipAdress">
           <template #suffix>
             <XButton title="复制" type="primary" @click="onCopy()" />
           </template>
@@ -61,21 +61,21 @@
       label-width="100px"
     >
       <el-form-item label="URL">
-        <el-input>
+        <el-input disabled>
           <template #suffix>
             <XButton title="复制" type="primary" @click="onCopy()" />
           </template>
         </el-input>
       </el-form-item>
       <el-form-item label="Token">
-        <el-input>
+        <el-input disabled>
           <template #suffix>
             <XButton title="复制" type="primary" @click="onCopy()" />
           </template>
         </el-input>
       </el-form-item>
       <el-form-item label="EncodingAESKey">
-        <el-input>
+        <el-input disabled>
           <template #suffix>
             <XButton title="复制" type="primary" @click="onCopy()" />
           </template>
@@ -125,14 +125,40 @@ import AddAppDialog from './components/addAppDialog.vue'
 import AppDetail from './components/appDetailDialog.vue'
 const { toClipboard } = useClipboard()
 const message = useMessage()
-const principalFormRef = ref<FormInstance>()
-const principalRules = ref<FormRules>()
+
 const principalForm = ref({
+  wecomId: '',
+  customer: '',
+  contact: '',
   ipAdress: ''
+})
+const principalFormRef = ref<FormInstance>()
+const principalRules = reactive<FormRules>({
+  wecomId: [
+    { required: true, message: '请输入企业ID', trigger: 'blur' },
+    {
+      pattern: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{1,32}$',
+      message: '仅支持英文、数字输入，字数上限32位'
+    }
+  ],
+  customer: [
+    { required: true, message: '请输入联系人secret', trigger: 'blur' },
+    {
+      pattern: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{1,64}$',
+      message: '仅支持英文、数字输入，字数上限64位'
+    }
+  ],
+  contact: [
+    { required: true, message: '请输入通讯录secret', trigger: 'blur' },
+    {
+      pattern: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{1,64}$',
+      message: '仅支持英文、数字输入，字数上限64位'
+    }
+  ]
 })
 
 const callbackFormRef = ref<FormInstance>()
-const callbackRules = ref<FormRules>()
+const callbackRules = reactive<FormRules>({})
 const callbackForm = ref({})
 const onCopy = async (val = '') => {
   try {
@@ -182,12 +208,12 @@ const showDetail = () => {
   }
 
   &.m-20 {
-    margin: 8px 0 20px 100px;
+    margin: 12px 0 20px 112px;
   }
 
   &.mt-20 {
     margin-top: -20px;
-    margin-left: 100px;
+    margin-left: 112px;
   }
 }
 
