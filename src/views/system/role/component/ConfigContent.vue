@@ -246,6 +246,10 @@ watch(
         treeRef.value!.setChecked(data.id, false, true)
       }
     }
+    if (data.dataScope === 5) {
+      currentNode.value['databrandScope'] = 1
+      currentNode.value['dataScopeBrandIds'] = []
+    }
   },
   { deep: true }
 )
