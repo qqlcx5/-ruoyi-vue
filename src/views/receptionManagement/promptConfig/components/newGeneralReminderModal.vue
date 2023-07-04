@@ -35,7 +35,14 @@
             <el-radio :label="2">自定义</el-radio>
           </el-radio-group>
           <div v-if="formData.validityDateType === 2" class="w-10 ml-4">
-            <el-date-picker v-model:value="formData.validityDate" type="daterange" />
+            <el-date-picker
+              v-model="formData.validityDate"
+              type="daterange"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+            />
           </div>
         </el-form-item>
         <el-form-item v-if="mode === 'needlessToSay'" label="提示时间节点" prop="minute" required>
@@ -132,6 +139,12 @@ function openModal(open: boolean, row: any) {
   modelValue_.value = open
   formData.value = row ? { ...row } : { ...defaultFormData.value }
   formData.value.hintTypeId = row && row.hintTypeId * 1
+  let validityDate = [
+    dayjs(row.validityDateBegin).format('YYYY-MM-DD HH:mm:ss'),
+    dayjs(row.validityDateEnd).format('YYYY-MM-DD HH:mm:ss')
+  ]
+  formData.value.validityDate = validityDate
+  formData.value.validityDateType = row && row.validityDateBegin && row.validityDateEnd ? 2 : 1
 }
 defineExpose({ openModal })
 
@@ -206,14 +219,12 @@ const submitForm = async () => {
       // 必讲 有效期
       data.validityDateBegin =
         formData.value.validityDateType === 2
-          ? dayjs(formData.value.validityDate[0]).format('YYYY-MM-DD')
+          ? dayjs(formData.value.validityDate[0]).format('YYYY-MM-DD HH:mm:ss')
           : ''
       data.validityDateEnd =
         formData.value.validityDateType === 2
-          ? dayjs(formData.value.validityDate[1]).format('YYYY-MM-DD')
+          ? dayjs(formData.value.validityDate[1]).format('YYYY-MM-DD HH:mm:ss')
           : ''
-      console.log(data, 'datadatadata')
-
       props.mode === 'currency'
         ? await promptConfig.receptionHintConfigSaveOrUpdateApi(data)
         : await promptConfig.receptionMustSayConfigSaveOrUpdateApi(data)
