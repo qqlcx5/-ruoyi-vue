@@ -158,12 +158,13 @@
               :rules="[{ required: true, message: '数据统计区域不能为空!' }]"
             >
               <div class="flex-content adress-content">
+                <!--  新增子门店禁用  新增门店未选中上级主体也禁用-->
                 <a-cascader
                   ref="companyAddressDataRef"
                   v-model:value="state.formState.companyAddressData"
                   :options="state.proMunAreaListData"
                   @change="cascadeChangeData"
-                  :disabled="state.companyAddressDataDisabled"
+                  :disabled="state.companyAddressDataDisabled || !state.formState.belongTenantId"
                   :fieldNames="{ label: 'name', value: 'code', children: 'children' }"
                   placeholder="请选择省市区"
                   class="adress-cascader"
@@ -184,6 +185,7 @@
                     v-model:value="state.formState.companyAddress"
                     :options="state.proMunAreaList"
                     @change="cascadeChange"
+                    :disabled="!state.formState.belongTenantId"
                     :fieldNames="{ label: 'name', value: 'code', children: 'children' }"
                     placeholder="请选择省市区"
                     class="adress-cascader"
@@ -191,6 +193,7 @@
                 </a-form-item-rest>
                 <a-input
                   v-model:value="state.formState.detailedAddress"
+                  :disabled="!state.formState.belongTenantId"
                   placeholder="请输入详细的公司地址，具体门牌号"
                   class="adress-input"
                 />
@@ -205,6 +208,7 @@
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                 placeholder="请选择负责人"
                 :tree-data="state.memberOptions"
+                :disabled="!state.formState.belongTenantId"
                 treeNodeFilterProp="label"
                 @change="getPhoneList"
               />
@@ -216,6 +220,7 @@
                 v-model:value="state.formState.contactMobile"
                 class="width-100"
                 :options="state.memberPhoneOptions"
+                :disabled="!state.formState.belongTenantId"
                 placeholder="请选择负责人电话"
                 optionFilterProp="label"
               />
@@ -274,7 +279,10 @@
                 )
               "
             >
-              <a-checkbox-group v-model:value="state.formState.type">
+              <a-checkbox-group
+                v-model:value="state.formState.type"
+                :disabled="!state.formState.belongTenantId"
+              >
                 <a-checkbox
                   v-for="(item, index) in state.storeTypeOptions"
                   :value="item.value"
@@ -287,7 +295,10 @@
 
             <div class="form-content">
               <a-form-item label="是否有销售" name="isSale" class="width-50">
-                <a-radio-group v-model:value="state.formState.isSale">
+                <a-radio-group
+                  v-model:value="state.formState.isSale"
+                  :disabled="!state.formState.belongTenantId"
+                >
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
                     :key="`isSale-${index}`"
@@ -316,7 +327,10 @@
             </div>
             <div class="form-content">
               <a-form-item label="是否提供救援" name="isRescue" class="width-50">
-                <a-radio-group v-model:value="state.formState.isRescue">
+                <a-radio-group
+                  v-model:value="state.formState.isRescue"
+                  :disabled="!state.formState.belongTenantId"
+                >
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
                     :key="`isRescue-${index}`"
@@ -345,7 +359,10 @@
             </div>
             <div class="form-content">
               <a-form-item label="是否提供维保" name="isMaintenance" class="width-50">
-                <a-radio-group v-model:value="state.formState.isMaintenance">
+                <a-radio-group
+                  v-model:value="state.formState.isMaintenance"
+                  :disabled="!state.formState.belongTenantId"
+                >
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
                     :key="`isMaintenance-${index}`"
@@ -867,7 +884,7 @@ const state: any = reactive({
     companyAddress: [], //公司地址
     companyAddressData: [], //公司地址 数据统计区域
     cascadeInfo: [], //选中的省市区全部信息
-    cascadeInfoDataData: [], //选中的省市区全部信息
+    cascadeInfoData: [], //选中的省市区全部信息
     detailedAddress: '', //公司地址 详细地址
     contactInformationArr: [
       {
@@ -1344,16 +1361,27 @@ const getOrganizationDetailsFN = async () => {
         // 数据区域统计回显 门店地址默认为数据区域统计
         state.formState.companyAddressData.push(dataProvinceCode)
         state.formState.companyAddress.push(dataProvinceCode)
+        console.log('state.formState.cascadeInfoData', state.formState.cascadeInfoData)
+        state.formState.cascadeInfoData.push({
+          code: dataProvinceCode
+        })
+        console.log('state.formState.cascadeInfoData', state.formState.cascadeInfoData)
       }
       if (dataCityCode) {
         // 数据区域统计回显 门店地址默认为数据区域统计
         state.formState.companyAddressData.push(dataCityCode)
         state.formState.companyAddress.push(dataCityCode)
+        state.formState.cascadeInfoData.push({
+          code: dataCityCode
+        })
       }
       if (dataCountyCode) {
         // 数据区域统计回显 门店地址默认为数据区域统计
         state.formState.companyAddressData.push(dataCountyCode)
         state.formState.companyAddress.push(dataCountyCode)
+        state.formState.cascadeInfoData.push({
+          code: dataCountyCode
+        })
       }
       //新增子门店 数据区域统计
       state.companyAddressDataDisabled = true
@@ -1621,6 +1649,7 @@ const tenantIdChange = async (value, label, extra) => {
     tenantId: value
   })
   nextTick(() => {
+    console.log('上级主体')
     // 字典赋值
     dictAssign(res)
     //数据统计区域 门店地址 赋值
