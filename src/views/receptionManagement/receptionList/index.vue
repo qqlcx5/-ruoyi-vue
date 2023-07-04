@@ -102,7 +102,7 @@ async function receptionManageStatisticsApi(params) {
     statisticsOpt.statusSuspended = data.statusSuspended
   }
 }
-
+// 表格列
 const columns: TableColumn[] = [
   { label: '接待', field: 'selectReception', isSearch: true, isTable: false },
   { label: '时间', field: 'selectTime', isSearch: true, isTable: false },
@@ -527,6 +527,7 @@ watch(
         tableParams.dateEnd = dayjs().format('YYYY-MM-DD 23:59:59')
         break
     }
+    console.log('🚀 ~ file: index.vue:545 ~ selectTime-------------', tableParams)
     selectTimeRange.value = [tableParams.dateBegin, tableParams.dateEnd]
   },
   { immediate: true }
@@ -538,13 +539,13 @@ function handleDateRange(val) {
   selectTime.value = ''
 }
 /* ---------------------------------- 重置 ---------------------------------- */
-function handleReset(params) {
+function handleReset() {
   selectTime.value = '今天'
   receptionStatus.value = ''
-  let paramsList = Object.assign({}, params, tableParams)
-  receptionManageStatisticsApi(paramsList)
+  nextTick(() => {
+    receptionManageStatisticsApi(tableParams)
+  })
 }
-// setSearchParams
 /* -------------------------------- 操作事件 ------------------------------- */
 let detailsVisible = ref(false)
 // 操作：新增
