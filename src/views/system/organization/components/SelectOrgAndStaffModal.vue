@@ -113,8 +113,6 @@ const setCurrentNodeStatus = (key) => {
   } else {
     currentNode.value.userIds = []
   }
-  // const status = treeRef.value!.getCheckedNodes().find((item) => item.id === currentNode.value.id)
-  // currentNode.value.userIds = status ? currentNodeUsers.value.map((item) => item.id) : []
 }
 const onCheckboxChange = (value, data) => {
   treeRef.value!.setChecked(data.id, value, true)
@@ -125,16 +123,6 @@ const onCheckboxChange = (value, data) => {
 const selectedTreeData = ref<any[]>([])
 // 获取已选信息
 const getSelectedTreeData = () => {
-  // selectedTreeData.value = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
-  // console.log(
-  //   cloneDeep(treeRef.value!.getCheckedNodes(false, true)).sort((a, b) => {
-  //     if (typeof a.id === 'string' && typeof b.id === 'number') {
-  //       return -1 // 字符串在数字前面
-  //     } else {
-  //       return 0
-  //     }
-  //   })
-  // )
   const checkNodes = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
   checkNodes.forEach((i) => {
     recursiveFn(i)
@@ -154,7 +142,6 @@ const getSelectedTreeData = () => {
     }
   }
   selectedTreeData.value = checkNodes
-  // console.log(checkNodes)
 }
 
 const init = async () => {
