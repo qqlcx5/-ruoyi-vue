@@ -3,6 +3,7 @@
     v-model="dialogVisible"
     :title="'回访计划规则'"
     width="860px"
+    :close-on-click-modal="false"
     @confirm="confirm"
     @cancel="cancel"
     @close="cancel"
@@ -303,6 +304,8 @@
                 :options="formOptions.userList"
                 :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
                 filterable
+                collapse-tags
+                collapse-tags-tooltip
                 clearable
                 class="w-200px"
                 @change="onDistributeRoleChange('visitUserDTO')"
