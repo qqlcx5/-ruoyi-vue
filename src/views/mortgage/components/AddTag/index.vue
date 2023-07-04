@@ -6,7 +6,7 @@
       </template>
       <el-table-column label="标签名称">
         <template #default="{ row }">
-          <el-input v-model="row.tagName" />
+          <el-input v-model="row.tagName" maxlength="200" />
         </template>
       </el-table-column>
       <el-table-column label="启用状态">
@@ -31,7 +31,6 @@
 
 <script setup lang="ts">
 import { cloneDeep } from 'lodash-es'
-
 interface IProps {
   modelValue: boolean
   tagList: object[]

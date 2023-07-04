@@ -7,7 +7,12 @@
         <el-form ref="formRef" class="left-form" :model="ruleForm" :rules="rules" label-width="110">
           <el-form-item label="所属资金方" prop="mortgageFinanceVOList">
             <el-select v-model="ruleForm.mortgageFinanceVOList" multiple>
-              <el-option label="1" value="23" />
+              <el-option
+                v-for="item in financeList"
+                :key="item.id"
+                :label="item.financeName"
+                :value="item.id"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="金融产品名称" prop="productName">
@@ -15,13 +20,24 @@
           </el-form-item>
           <el-form-item label="金融产品类别" prop="productType">
             <el-select v-model="ruleForm.productType">
-              <el-option label="1" value="23" />
+              <el-option
+                v-for="item in financeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
             </el-select>
           </el-form-item>
           <el-form-item label="适用门店" prop="shopVOList">
-            <el-select v-model="ruleForm.shopVOList" multiple>
-              <el-option label="1" value="23" />
-            </el-select>
+            <el-cascader
+              v-model="ruleForm.shopVOList"
+              :options="shopTreeList"
+              :props="{ label: 'name', value: 'id', multiple: true, emitPath: false }"
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              clearable
+            />
           </el-form-item>
           <el-form-item label="产品简介">
             <el-input
@@ -105,7 +121,12 @@
     <div class="right-content">
       <div class="sub-title">金融产品明细</div>
       <div class="detail-list">
-        <div class="detail-part" v-for="(item, index) in ruleForm.detailSaveVOList" :key="index">
+        <div
+          class="detail-part"
+          v-for="(item, index) in ruleForm.detailSaveVOList"
+          :id="'detail-table-' + index"
+          :key="index"
+        >
           <div class="part-index-title">产品明细{{ index + 1 }}</div>
           <Icon
             v-if="ruleForm.detailSaveVOList.length > 1"
@@ -262,7 +283,12 @@
 <script setup lang="ts">
 import { cloneDeep } from 'lodash-es'
 import type { FormInstance, FormRules } from 'element-plus'
+import { mortgageFinancePage } from '@/api/mortgage'
+
 import AddTag from '../components/AddTag/index.vue'
+import { useCommonList } from '@/hooks/web/useCommonList'
+import { DICT_TYPE, getIntDictOptions } from '@/utils/dict'
+const { getSuitableShopList } = useCommonList()
 const tableItem = {
   rateLevel: '', // 名称
   apr: null, // 总费率
@@ -280,7 +306,7 @@ const itemDetail = {
   detailStatus: 1,
   itemSaveVOList: [cloneDeep(tableItem), cloneDeep(tableItem)]
 }
-const rules = reactive({
+const rules: FormRules = reactive({
   mortgageFinanceVOList: [{ required: true, message: '请选择所属资金方', trigger: 'change' }],
   productName: [{ required: true, message: '请输入金融产品名称', trigger: 'blur' }],
   productType: [{ required: true, message: '请选择金融产品类型', trigger: 'change' }],
@@ -299,6 +325,21 @@ const ruleForm = reactive({
   speakTechnique: '', // 话术
   detailSaveVOList: [cloneDeep(itemDetail)] // 金融产品明细
 })
+
+interface IFinance {
+  id: number
+  financeName: string
+}
+const financeList = ref<IFinance[]>([])
+const getFinancialList = async () => {
+  const { list } = await mortgageFinancePage({ pageNo: 1, pageSize: 1000 })
+  financeList.value = list as IFinance[]
+}
+getFinancialList()
+let financeOptions = getIntDictOptions(DICT_TYPE.FINANCE_PRODUCT_CATEGORY)
+
+const shopTreeList = ref(getSuitableShopList())
+
 const visible = ref<boolean>(false)
 const handleAddTag = () => {
   visible.value = true
@@ -311,7 +352,7 @@ const deleteTag = (index) => {
 }
 const itemAdd = (index, list) => {
   console.log(index, list)
-  list.push(cloneDeep(tableItem))
+  list.splice(index, 0, cloneDeep(tableItem))
 }
 const itemCopy = (index, list) => {
   list.splice(index, 0, cloneDeep(list[index]))
@@ -319,7 +360,7 @@ const itemCopy = (index, list) => {
 const itemDelete = (index, list) => {
   list.splice(index, 1)
 }
-const addDetail = () => {
+const addDetail = async () => {
   ruleForm.detailSaveVOList.push(cloneDeep(itemDetail))
 }
 const deleteDetail = (index) => {
@@ -372,6 +413,7 @@ const deleteDetail = (index) => {
       .el-select,
       .el-input,
       .el-textarea,
+      :deep(.el-cascader),
       .product-tags {
         width: 360px;
       }

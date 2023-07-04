@@ -8,6 +8,7 @@
           children: 'childs',
           label: 'ruleName'
         }"
+        :indent="0"
         node-key="ruleValue"
         highlight-current
         default-expand-all

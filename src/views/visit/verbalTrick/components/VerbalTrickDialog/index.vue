@@ -5,6 +5,7 @@
     :title="'回访话术'"
     width="1000px"
     :confirm-loading="dialogLoading"
+    :close-on-click-modal="false"
     @confirm="confirm"
     @cancel="cancel"
   >

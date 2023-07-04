@@ -4,6 +4,7 @@
     v-model="dialogVisible"
     title="选择回访规则"
     width="1000px"
+    :close-on-click-modal="false"
     @confirm="confirm"
     @cancel="cancel"
   >

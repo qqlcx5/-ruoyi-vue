@@ -5,7 +5,7 @@
     <ContentWrap style="min-height: 78px">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
         <a-form-item :label="`菜单名称`" name="name">
-          <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称" />
+          <a-input v-model:value="queryParams.name" placeholder="请输入菜单名称或ID" />
         </a-form-item>
         <a-form-item :label="`菜单类型`" name="type">
           <a-select
@@ -803,6 +803,15 @@ const allColumns = [
     ellipsis: true,
     disabled: true,
     sort: 2
+  },
+  {
+    title: '菜单ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
   },
   {
     title: '在职成员',

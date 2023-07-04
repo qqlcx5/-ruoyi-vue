@@ -40,7 +40,7 @@
                 <div class="item-condition">
                   <a-input
                     v-model:value="queryParams.keyword"
-                    placeholder="请输入主体名称或者编码"
+                    placeholder="主体名称或编码或ID"
                     class="width-100"
                   />
                 </div>
@@ -507,7 +507,7 @@
                     <div class="item-condition">
                       <a-input
                         v-model:value="queryParamsStore.keyword"
-                        placeholder="请输入门店名称或者编码"
+                        placeholder="门店名称或编码或ID"
                         class="width-100"
                       />
                     </div>
@@ -876,7 +876,11 @@
           </a-radio-group>
         </a-form-item>
 
-        <a-form-item :label="`上级主体`" name="belongTenantId">
+        <a-form-item
+          :label="`上级主体`"
+          name="belongTenantId"
+          :rules="[{ required: true, message: `上级主体不能为空` }]"
+        >
           <a-tree-select
             v-model:value="state.formState.belongTenantId"
             :disabled="state.modalType === 'edit'"
@@ -1347,7 +1351,7 @@
                 >全选</a-checkbox
               >
             </div>
-            <div>
+            <div class="tree-content">
               <a-checkbox-group
                 v-model:value="state.operationCheckedValueFrontDesk"
                 @change="operationCheckedValueChangeFrontDesk"
@@ -1378,7 +1382,7 @@
                 >全选</a-checkbox
               >
             </div>
-            <div>
+            <div class="tree-content">
               <a-checkbox-group
                 v-model:value="state.operationCheckedValue"
                 @change="operationCheckedValueChange"
@@ -2436,6 +2440,15 @@ const treeSelect = (selectedKeys, e) => {
 //ALL columns 用于定制列过滤 排序
 const allColumns = [
   {
+    title: '主体ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
+  },
+  {
     title: '主体名称',
     width: 200,
     dataIndex: 'name',
@@ -2622,13 +2635,13 @@ const allStoreColumns = [
     sort: 3
   },
   {
-    title: '机构ID',
+    title: '门店ID',
     width: 100,
     dataIndex: 'id',
     key: 'id',
     resizable: true,
     ellipsis: true,
-    sort: 2
+    sort: 1
   },
   {
     title: '机构编码',
@@ -2838,8 +2851,8 @@ const getListStoreFN = async (isRefresh = false) => {
     tenantId: tempTenantId,
     keyword: queryParamsStore.keyword,
     specialtyCode: queryParamsStore.specialtyCode,
-    systemName: queryParamsStore.organizationType,
-    type: queryParamsStore.brand,
+    organizationType: queryParamsStore.organizationType,
+    brand: queryParamsStore.brand,
     status: queryParamsStore.status
   }
 
@@ -3085,6 +3098,7 @@ const closeModal = () => {
   state.modalTitle = '新增'
   state.modalType = 'add'
   state.selectTree = []
+  state.optionalMenuTreeChange = [] //上级主体 select
 }
 
 //关闭 新增/编辑门店 子门店
@@ -4138,11 +4152,11 @@ const operationCheckedValueChange = (checkedValue) => {
 const operationCheckedChangeFrontDesk = (e) => {
   console.log('e', e)
   console.log('e.target.value', e.target.value)
-  const dom = document.querySelector(`.right-tree-item-front-desk${e.target.value}`)
+  const dom = document.querySelector(`.right-tree-item-front-desk-${e.target.value}`)
   dom && dom.scrollIntoView({ behavior: 'smooth' })
   console.log('dom !!!!!!!!!', dom)
   setTimeout(() => {
-    const dom = document.querySelector(`.right-tree-item-front-desk${e.target.value}`)
+    const dom = document.querySelector(`.right-tree-item-front-desk-${e.target.value}`)
     dom && dom.scrollIntoView({ behavior: 'smooth' })
     console.log('dom !!!!!!!!!', dom)
   }, 0)
@@ -4647,6 +4661,10 @@ const onPageChange = (type = PageKeyObj.business) => {
 
       // 根据起始索引和结束索引提取要显示的数据
       state.tableDataPseudoPaginationList = state.tableDataList.slice(startIndex, endIndex)
+      state.refreshTable = false
+      nextTick(() => {
+        state.refreshTable = true
+      })
       break
     case PageKeyObj.businessStore:
       // 计算要显示的数据的起始索引和结束索引
@@ -4658,6 +4676,10 @@ const onPageChange = (type = PageKeyObj.business) => {
         startIndexStore,
         endIndexStore
       )
+      state.refreshTableStore = false
+      nextTick(() => {
+        state.refreshTableStore = true
+      })
       break
   }
 }
@@ -4800,7 +4822,9 @@ const sendCurrentSelect = async (currentKey) => {
   } else {
     state.currentSelectArea = null
   }
+  state.refreshTableStore = false
   await getListStoreFN()
+  state.refreshTableStore = true
 }
 
 currentSelectChange()
@@ -5455,6 +5479,12 @@ onMounted(async () => {
   height: 620px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.tree-content {
+  height: 100%;
+  overflow: auto;
 }
 
 //表格状态改变 modal
@@ -5554,6 +5584,7 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
   //background: skyblue;
   border-bottom: 1px solid rgb(234, 235, 239);
 }
@@ -5793,6 +5824,7 @@ onMounted(async () => {
   padding-left: 18px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   background: rgba(246, 246, 246, 1);
 }
 .corporateCulture-text {

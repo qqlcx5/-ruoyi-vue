@@ -6,7 +6,7 @@
     }"
     :table-options="{
       columns: allSchemas.tableColumns,
-      listApi: mortgageFinancePage,
+      listApi: mortgageFinanceProductPage,
       showAdd: true,
       selection: true
     }"
@@ -37,7 +37,7 @@
 <script lang="ts" setup>
 import { TableColumn } from '@/types/table'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
-import { mortgageFinancePage } from '@/api/mortgage'
+import { mortgageFinanceProductPage } from '@/api/mortgage'
 import { useCommonList } from '@/hooks/web/useCommonList'
 import { DICT_TYPE } from '@/utils/dict'
 const { getSuitableShopList } = useCommonList()
