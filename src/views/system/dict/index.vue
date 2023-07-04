@@ -17,7 +17,7 @@
             <el-form-item label="字典名称">
               <el-input
                 v-model="typeSearchForm.name"
-                placeholder="请输入字典名称"
+                placeholder="请输入字典名称或ID"
                 @keyup.enter="typeSearch"
                 clearable
               />
@@ -138,7 +138,7 @@
               <el-form-item label="数据标签">
                 <el-input
                   v-model="queryParams.label"
-                  placeholder="请输入数据标签"
+                  placeholder="请输入数据标签或ID"
                   @keyup.enter="dataSearch"
                   clearable
                 />

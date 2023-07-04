@@ -15,6 +15,11 @@ const crudSchemas = reactive<VxeCrudSchema>({
   action: true,
   columns: [
     {
+      title: '岗位类型ID',
+      field: 'id',
+      defaultShow: false
+    },
+    {
       title: '岗位类型编码',
       field: 'code',
       disabled: true

@@ -11,11 +11,15 @@ export const rules = reactive({
 
 // 增删改查 CrudSchema 配置
 const crudSchemas = reactive<VxeCrudSchema>({
-  primaryKey: 'id',
-  primaryType: 'checkbox',
+  firstColumn: 'checkbox',
   actionWidth: '180px',
   action: true,
   columns: [
+    {
+      title: '岗位ID',
+      field: 'id',
+      defaultShow: false
+    },
     {
       title: '岗位编码',
       field: 'code',
