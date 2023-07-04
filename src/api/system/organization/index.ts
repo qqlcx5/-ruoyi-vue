@@ -45,6 +45,11 @@ export const getCurrentAreaList = () => {
   return request.get({ url: '/system/tenant-area/list-all-simple' })
 }
 
+// 获取初始化行政区划精简信息列表 主体新增 modal 的公司地址 取全量
+export const getAllAreaList = () => {
+  return request.get({ url: '/system/tenant-area/list-simple-store-init' })
+}
+
 // 获取上级机构列表() 成员管理 左侧 部门
 export const getDeptList = (params) => {
   return request.get({ url: '/system/user/extra/list-org', params })

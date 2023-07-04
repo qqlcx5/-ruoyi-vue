@@ -1927,7 +1927,13 @@ import UploadImg from '@/components/UploadFile/src/UploadImg.vue'
 import MajorIndividualSelectTree from '@/views/system/business/components/MajorIndividualSelectTree.vue'
 import StoreProSelectTree from '@/views/system/business/components/StoreProSelectTree.vue'
 import isBetween from 'dayjs/plugin/isBetween'
-import { getAreaList, getCurrentAreaList, getOrganizationTypeList } from '@/api/system/organization'
+import {
+  getAllAreaList,
+  getAreaList,
+  getCurrentAreaList,
+  getCurrentStoreAreaList,
+  getOrganizationTypeList
+} from '@/api/system/organization'
 import { majorIndividualType } from '@/utils/constants'
 import Pagination from '@/components/Pagination/index.vue'
 import loginLogo from '@/assets/imgs/system/loginLogo.png'
@@ -2440,15 +2446,6 @@ const treeSelect = (selectedKeys, e) => {
 //ALL columns 用于定制列过滤 排序
 const allColumns = [
   {
-    title: '主体ID',
-    width: 100,
-    dataIndex: 'id',
-    key: 'id',
-    resizable: true,
-    ellipsis: true,
-    sort: 1
-  },
-  {
     title: '主体名称',
     width: 200,
     dataIndex: 'name',
@@ -2477,6 +2474,15 @@ const allColumns = [
     ellipsis: true,
     disabled: true,
     sort: 2
+  },
+  {
+    title: '主体ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
   },
   {
     title: '系统名称',
@@ -3049,6 +3055,19 @@ const openModal = async (record: any = {}, isChildStore = false) => {
     // state.formState.belongTenantId = null
     state.formState!.belongTenantId = null
   }
+
+  if (state.modalType === 'edit') {
+    // 公司地址 省市区 取当前主体自己的
+    const res = await getCurrentStoreAreaList({
+      tenantId: state.permissionRecord.id
+    })
+    await getCurrentAreaListFN(res)
+  } else {
+    // 公司地址取全量
+    const res = await getAllAreaList()
+    await getCurrentAreaListFN(res)
+  }
+
   state.isShow = true
 }
 
@@ -3407,14 +3426,6 @@ const onChange = ({ pageSize, current }) => {
   getList()
 }
 
-// //处理省市区数据
-// // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
-// let needReplaceKey: any = [
-//   ['label', 'fullname'],
-//   ['value', 'code']
-// ]
-// state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
-
 //新增主体
 const addMajorIndividualFN = async () => {
   let params = {
@@ -3492,6 +3503,10 @@ const addMajorIndividualFN = async () => {
     {
       key: 'type',
       name: '主体类型'
+    },
+    {
+      key: 'belongTenantId',
+      name: '上级主体'
     },
     {
       key: 'code',
@@ -4829,8 +4844,8 @@ const sendCurrentSelect = async (currentKey) => {
 
 currentSelectChange()
 
-const getCurrentAreaListFN = async () => {
-  const res = await getCurrentAreaList()
+const getCurrentAreaListFN = async (res) => {
+  // const res = await getCurrentAreaList()
   //去除 国家 '100000'为中国 定值
   const tempRes = res.filter((item) => item.code !== '100000')
   await tempRes.some((item) => {
@@ -5130,7 +5145,7 @@ onMounted(async () => {
   await getAllType()
   await getList()
   await getListStoreFN()
-  getCurrentAreaListFN()
+  // getCurrentAreaListFN()
   toggleExpandAll(true)
   toggleExpandAll(false)
   //仅超管 有新增 btn

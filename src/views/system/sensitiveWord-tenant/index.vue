@@ -198,7 +198,7 @@ const columns: TableColumn[] = [
       component: 'DatePicker',
       componentProps: {
         type: 'datetimerange',
-        valueFormat: 'YYYY-MM-DD hh:mm:ss'
+        valueFormat: 'YYYY-MM-DD HH:mm:ss'
       }
     },
     formatter: (_, __, val: string) => {

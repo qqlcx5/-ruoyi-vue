@@ -577,7 +577,12 @@
         <a-form-item
           :label="`机构简称`"
           name="abbreviate"
-          :rules="[{ required: true, message: `机构简称不能为空` }]"
+          :rules="[
+            {
+              required: state.formState.organizationType !== organizationType.department,
+              message: `机构简称不能为空`
+            }
+          ]"
         >
           <a-input
             v-model:value="state.formState.abbreviate"
@@ -3465,7 +3470,7 @@ watch(
   height: 520px;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  //overflow: auto;
 }
 //上传
 .avatar-uploader > .ant-upload {

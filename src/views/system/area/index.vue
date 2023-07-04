@@ -164,6 +164,7 @@ import type { FormRules } from 'element-plus'
 import warningImg from '@/assets/imgs/system/warning.png'
 import imExModal from '@/views/system/area/imExModal.vue'
 import { toTreeCount } from '@/utils/utils'
+import { cloneDeep } from 'lodash-es'
 const message = useMessage() // 消息弹窗
 
 const form = reactive({
@@ -188,7 +189,8 @@ const state: any = reactive({
   useDefRules: true, //使用默认校验
   loading: false, //提交加载中
   deleteText: '是否删除所选数据？',
-  codeDisabled: false //区划编号禁用
+  codeDisabled: true, //区划编号禁用
+  rawCurrentSelectNode: null //当前选中的项 主要用于取消 还原
 })
 
 const formRef = ref()
@@ -283,8 +285,9 @@ const onSubmit = async () => {
 
 //重置
 const resetForm = () => {
-  state.isDisabled = true
+  state.isDisabled = state.codeDisabled = true
   state.operationType = false
+  sendCurrentSelect(state.rawCurrentSelectNode)
   // // formRef.value.resetFields()
   // // //TODO 这有坑 表单清空 这两玩意没被清空 有空再看看
   // form.code = '' //区划编号
@@ -298,6 +301,8 @@ const resetForm = () => {
 
 //接收选中的省市区节点
 const sendCurrentSelect = (currentSelectNode) => {
+  //深拷贝当前选中的项 主要用于取消 还原
+  state.rawCurrentSelectNode = cloneDeep(currentSelectNode)
   if (currentSelectNode.level === 0) {
     //国家 无父级 特殊处理
     state.useDefRules = false
@@ -308,7 +313,7 @@ const sendCurrentSelect = (currentSelectNode) => {
   }
 
   state.operationType = ''
-  state.isDisabled = true
+  state.isDisabled = state.codeDisabled = true
   state.currentNode = currentSelectNode
 
   form.parentName = currentSelectNode.parentName //父区划名称
