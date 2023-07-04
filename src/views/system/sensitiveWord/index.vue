@@ -96,7 +96,8 @@ const { t } = useI18n()
 const tableRef = ref()
 
 const getTableList = async (params) => {
-  const res = getSensitiveWordPageApi(params)
+  params.tag = params.tag?.join(' | ')
+  const res = await getSensitiveWordPageApi(params)
   console.log('res', res)
   return res
 }
@@ -113,8 +114,7 @@ const columns: TableColumn[] = [
     field: 'index',
     width: 100,
     type: 'index',
-    disabled: true,
-    check: false
+    disabled: true
   },
   {
     label: '敏感词',
@@ -125,6 +125,7 @@ const columns: TableColumn[] = [
   {
     label: '标签',
     field: 'tag',
+    isTable: false,
     isSearch: true,
     search: {
       component: 'Select',
@@ -144,6 +145,10 @@ const columns: TableColumn[] = [
         })
       }
     }
+  },
+  {
+    label: '标签',
+    field: 'tags'
   },
   {
     label: t('common.status'),

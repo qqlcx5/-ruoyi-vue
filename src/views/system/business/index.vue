@@ -1644,17 +1644,22 @@
       </div>
       <div class="details-modal-content select-content" v-else>
         <div class="details-modal-left">
-          <div class="details-heard">前台</div>
-          <!--          <a-tree-->
-          <!--            defaultExpandAll-->
-          <!--            :tree-data="item.treeArr"-->
-          <!--            :fieldNames="state.fieldNames"-->
-          <!--          >-->
-          <!--          </a-tree>-->
+          <div class="details-heard">前台({{ item.frontDeskTreeArr?.length }})</div>
+          <a-tree
+            defaultExpandAll
+            :tree-data="item.frontDeskTreeArr"
+            :fieldNames="state.fieldNames"
+            :height="250"
+          />
         </div>
         <div class="details-modal-left">
-          <div class="details-heard">后台({{ item.treeArr?.length }})</div>
-          <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
+          <div class="details-heard">后台({{ item.backstageTreeArr?.length }})</div>
+          <a-tree
+            defaultExpandAll
+            :tree-data="item.backstageTreeArr"
+            :fieldNames="state.fieldNames"
+            :height="250"
+          />
         </div>
       </div>
     </div>
@@ -4222,8 +4227,9 @@ const detailsInfo = async (record) => {
   // state.record = record
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = res.menus?.filter((item) => item.type !== 3)
+  //不要展示按钮 默认按钮全选 ... type===3 btn又说要了 去除过滤 res.menus?.filter((item) => item.type !== 3)
+  const tempFrontDeskArr = res.memberMenus
+  const tempBackstageArr = res.menus
 
   state.record = res
 
@@ -4384,7 +4390,8 @@ const detailsInfo = async (record) => {
     },
     {
       baseTitle: '配置权限',
-      treeArr: handleTree(tempArr)
+      frontDeskTreeArr: handleTree(tempFrontDeskArr),
+      backstageTreeArr: handleTree(tempBackstageArr)
     }
   ]
 
