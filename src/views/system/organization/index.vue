@@ -5,7 +5,7 @@
     <ContentWrap style="min-height: 72px">
       <a-form :model="queryParams" ref="queryFormRef" layout="inline" autocomplete="off">
         <a-form-item :label="`机构名称`" name="keyword">
-          <a-input v-model:value="queryParams.keyword" placeholder="请输入机构名称或者编码" />
+          <a-input v-model:value="queryParams.keyword" placeholder="机构名称或编码或ID" />
         </a-form-item>
 
         <a-form-item :label="`机构类型`" name="organizationType">
@@ -1864,6 +1864,15 @@ const allColumns = [
     ellipsis: true,
     disabled: true,
     sort: 3
+  },
+  {
+    title: '机构ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
   },
   {
     title: '在职成员',
@@ -3873,6 +3882,13 @@ watch(
 </style>
 
 <style lang="scss">
+//所有modal title
+.ant-modal-title {
+  color: rgba(51, 51, 51, 1);
+  font-size: 18px !important;
+  font-weight: bold !important;
+  font-family: PingFangSC-Medium;
+}
 //修改 详细 modal位置
 .details-modal {
   .ant-modal {

@@ -35,7 +35,7 @@
             <el-radio :label="2">自定义</el-radio>
           </el-radio-group>
           <div v-if="formData.validityDateType === 2" class="w-10 ml-4">
-            <el-date-picker v-model="formData.validityDate" type="daterange" />
+            <el-date-picker v-model:value="formData.validityDate" type="daterange" />
           </div>
         </el-form-item>
         <el-form-item v-if="mode === 'needlessToSay'" label="提示时间节点" prop="minute" required>
@@ -124,32 +124,14 @@ const modelValue_ = computed({
 watch(
   () => modelValue_.value,
   (newValue) => {
-    newValue && getPromptType()
     newValue && queryModelByNameApi()
     newValue && allStoreListApi()
   }
 )
-function openModal(open: boolean, data?: any) {
+function openModal(open: boolean, row: any) {
   modelValue_.value = open
-  if (data) {
-    formData = data
-  } else {
-    formData = {
-      title: '',
-      hintTypeId: '',
-      status: 1,
-      validityDateType: 1,
-      applyBrandType: 1,
-      applyShopType: 1,
-      content: '',
-      minute: '',
-      validityDate: '',
-      applyShopList: [],
-      applyBrandList: [],
-      validityDateBegin: '',
-      validityDateEnd: ''
-    }
-  }
+  formData.value = row ? { ...row } : { ...defaultFormData.value }
+  formData.value.hintTypeId = row && row.hintTypeId * 1
 }
 defineExpose({ openModal })
 
@@ -159,6 +141,7 @@ async function getPromptType() {
   const data = await DictDataApi.getDictDataPageApi({ dictType: 'reception_hint_type' } as any)
   promptTypeList.value = data.list
 }
+getPromptType()
 /* ------------------------ queryModelByNameApi ----------------------- */
 const modelByList = ref<any[]>([])
 async function queryModelByNameApi() {
@@ -182,20 +165,24 @@ let formRules = reactive({
   applyShopType: [{ required: true, message: '请选择适用门店', trigger: 'change' }],
   minute: [{ required: true, message: '请输入提示时间节点', trigger: 'blur' }]
 })
-let formData = reactive({
+const defaultFormData = ref({
+  id: '',
   title: '',
   hintTypeId: '',
   status: 1,
-  validityDateType: 1,
-  applyBrandType: 1,
-  applyShopType: 1,
   content: '',
+  applyBrandType: 1,
+  applyBrandList: [], // 适用品牌
+  applyShopType: 1,
+  applyShopList: [], // 适用门店
   minute: '',
-  validityDate: '',
-  applyShopList: [],
-  applyBrandList: [],
+  validityDateType: 1,
+  validityDate: [], // 有效期
   validityDateBegin: '',
   validityDateEnd: ''
+})
+let formData = ref({
+  ...defaultFormData.value
 })
 
 // 提交按钮
@@ -209,27 +196,31 @@ const submitForm = async () => {
   if (!elForm) return
   elForm.validate(async (valid) => {
     if (!valid) return
-    if (!formData.validityDate && formData.validityDateType === 2)
+    if (!formData.value.validityDate && formData.value.validityDateType === 2)
       return message.error('请选择提示有效期')
     try {
       dialogLoading.value = true
       const data = {
-        ...formData
+        ...formData.value
       }
       // 必讲 有效期
       data.validityDateBegin =
-        formData.validityDateType === 2 ? dayjs(formData.validityDate[0]).format('YYYY-MM-DD') : ''
+        formData.value.validityDateType === 2
+          ? dayjs(formData.value.validityDate[0]).format('YYYY-MM-DD')
+          : ''
       data.validityDateEnd =
-        formData.validityDateType === 2 ? dayjs(formData.validityDate[1]).format('YYYY-MM-DD') : ''
+        formData.value.validityDateType === 2
+          ? dayjs(formData.value.validityDate[1]).format('YYYY-MM-DD')
+          : ''
       console.log(data, 'datadatadata')
 
       props.mode === 'currency'
         ? await promptConfig.receptionHintConfigSaveOrUpdateApi(data)
         : await promptConfig.receptionMustSayConfigSaveOrUpdateApi(data)
       message.success(t('common.createSuccess'))
+      modelValue_.value = false
     } finally {
       dialogLoading.value = false
-      modelValue_.value = false
       emits('refresh', true)
     }
   })

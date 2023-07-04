@@ -36,3 +36,8 @@ export const receptionManageStatisticsApi = (data) => {
 export const receptionManageCancelReceptionApi = (data: any) => {
   return request.post({ url: '/reception/mange/receptionManage/cancelReception', data })
 }
+// /reception/mange/receptionManage/pageOperateLog
+// 分页查询操作日志
+export const receptionManagePageOperateLogApi = (data: any) => {
+  return request.post({ url: '/reception/mange/receptionManage/pageOperateLog', data })
+}

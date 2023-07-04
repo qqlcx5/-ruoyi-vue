@@ -16,6 +16,11 @@ export const crudSchemas = reactive<VxeCrudSchema>({
   searchSpan: 12,
   columns: [
     {
+      title: '数据标签ID',
+      field: 'id',
+      defaultShow: false
+    },
+    {
       title: '字典类型',
       field: 'dictType',
       isTable: false,

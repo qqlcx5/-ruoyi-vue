@@ -8,6 +8,7 @@
           children: 'childs',
           label: 'ruleName'
         }"
+        :indent="0"
         node-key="ruleValue"
         highlight-current
         default-expand-all
@@ -224,6 +225,7 @@ const handleSave = async (data: Recordable) => {
 
 /** 改变状态 */
 const handleChangStatus = async (row: Recordable) => {
+  if (!row.id) return
   await setSwitchStatus(row.id, row.isEnable)
   const { tableMethods } = tableRef.value
   tableMethods.getList()

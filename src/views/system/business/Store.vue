@@ -38,7 +38,12 @@
               </a-radio-group>
             </a-form-item>
 
-            <a-form-item :label="`上级主体`" name="belongTenantId" v-if="props.needBelongTenantId">
+            <a-form-item
+              :label="`上级主体`"
+              name="belongTenantId"
+              v-if="props.needBelongTenantId"
+              :rules="[{ required: true, message: `上级主体不能为空` }]"
+            >
               <a-tree-select
                 v-model:value="state.formState.belongTenantId"
                 :disabled="state.modalType === 'edit'"
@@ -48,6 +53,7 @@
                 placeholder="请选择上级主体"
                 :tree-data="state.majorIndividualOption"
                 :fieldNames="{ children: 'children', label: 'name', value: 'id' }"
+                @change="tenantIdChange"
                 treeNodeFilterProp="name"
               />
             </a-form-item>
@@ -138,6 +144,7 @@
                 v-model:value="state.formState.brand"
                 style="width: 100%"
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                :disabled="!state.formState.belongTenantId"
                 placeholder="请选择品牌，可多选"
                 multiple
                 :tree-data="state.barnOptions"
@@ -151,12 +158,13 @@
               :rules="[{ required: true, message: '数据统计区域不能为空!' }]"
             >
               <div class="flex-content adress-content">
+                <!--  新增子门店禁用  新增门店未选中上级主体也禁用-->
                 <a-cascader
                   ref="companyAddressDataRef"
                   v-model:value="state.formState.companyAddressData"
                   :options="state.proMunAreaListData"
                   @change="cascadeChangeData"
-                  :disabled="state.companyAddressDataDisabled"
+                  :disabled="state.companyAddressDataDisabled || !state.formState.belongTenantId"
                   :fieldNames="{ label: 'name', value: 'code', children: 'children' }"
                   placeholder="请选择省市区"
                   class="adress-cascader"
@@ -177,6 +185,7 @@
                     v-model:value="state.formState.companyAddress"
                     :options="state.proMunAreaList"
                     @change="cascadeChange"
+                    :disabled="!state.formState.belongTenantId"
                     :fieldNames="{ label: 'name', value: 'code', children: 'children' }"
                     placeholder="请选择省市区"
                     class="adress-cascader"
@@ -184,6 +193,7 @@
                 </a-form-item-rest>
                 <a-input
                   v-model:value="state.formState.detailedAddress"
+                  :disabled="!state.formState.belongTenantId"
                   placeholder="请输入详细的公司地址，具体门牌号"
                   class="adress-input"
                 />
@@ -198,6 +208,7 @@
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
                 placeholder="请选择负责人"
                 :tree-data="state.memberOptions"
+                :disabled="!state.formState.belongTenantId"
                 treeNodeFilterProp="label"
                 @change="getPhoneList"
               />
@@ -209,6 +220,7 @@
                 v-model:value="state.formState.contactMobile"
                 class="width-100"
                 :options="state.memberPhoneOptions"
+                :disabled="!state.formState.belongTenantId"
                 placeholder="请选择负责人电话"
                 optionFilterProp="label"
               />
@@ -267,7 +279,10 @@
                 )
               "
             >
-              <a-checkbox-group v-model:value="state.formState.type">
+              <a-checkbox-group
+                v-model:value="state.formState.type"
+                :disabled="!state.formState.belongTenantId"
+              >
                 <a-checkbox
                   v-for="(item, index) in state.storeTypeOptions"
                   :value="item.value"
@@ -280,7 +295,10 @@
 
             <div class="form-content">
               <a-form-item label="是否有销售" name="isSale" class="width-50">
-                <a-radio-group v-model:value="state.formState.isSale">
+                <a-radio-group
+                  v-model:value="state.formState.isSale"
+                  :disabled="!state.formState.belongTenantId"
+                >
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
                     :key="`isSale-${index}`"
@@ -309,7 +327,10 @@
             </div>
             <div class="form-content">
               <a-form-item label="是否提供救援" name="isRescue" class="width-50">
-                <a-radio-group v-model:value="state.formState.isRescue">
+                <a-radio-group
+                  v-model:value="state.formState.isRescue"
+                  :disabled="!state.formState.belongTenantId"
+                >
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
                     :key="`isRescue-${index}`"
@@ -338,7 +359,10 @@
             </div>
             <div class="form-content">
               <a-form-item label="是否提供维保" name="isMaintenance" class="width-50">
-                <a-radio-group v-model:value="state.formState.isMaintenance">
+                <a-radio-group
+                  v-model:value="state.formState.isMaintenance"
+                  :disabled="!state.formState.belongTenantId"
+                >
                   <a-radio-button
                     v-for="(item, index) in state.barndOptions"
                     :key="`isMaintenance-${index}`"
@@ -618,24 +642,6 @@
       <a-button @click="closeModal()">取消</a-button>
     </template>
   </a-modal>
-
-  <!--  上传图片预览  -->
-  <a-modal
-    :visible="previewVisible"
-    destroyOnClose
-    :title="previewTitle"
-    :footer="null"
-    @cancel="handleCancel"
-    :bodyStyle="{
-      width: `100%`,
-      height: `100%`,
-      margin: '0',
-      padding: '0',
-      overflow: 'auto'
-    }"
-  >
-    <img alt="example" style="width: 100%; height: 100%" :src="previewImage" />
-  </a-modal>
 </template>
 
 <script lang="ts" setup>
@@ -649,13 +655,19 @@ import {
   getStoreList,
   updateOrganizationStore
 } from '@/api/system/organization'
-import { getMemberAllList, getMemberAllListBusiness, getMemberPhoneList } from '@/api/system/member'
-import { findByProperty, reconstructionArrayObject } from '@/utils/utils'
+import {
+  getMemberAllList,
+  getMemberAllListBusiness,
+  getMemberPhoneList,
+  getMajMemberPhoneList
+} from '@/api/system/member'
+import { dictFilter, findByProperty, reconstructionArrayObject } from '@/utils/utils'
 import { message, Upload, UploadChangeParam, UploadProps } from 'ant-design-vue'
 import { getAccessToken, getTenantId } from '@/utils/auth'
 import {
   addChildStore,
   addStore,
+  getMajDictList,
   getSimpleTenantList,
   getStoreDetails,
   updateStore
@@ -872,7 +884,7 @@ const state: any = reactive({
     companyAddress: [], //公司地址
     companyAddressData: [], //公司地址 数据统计区域
     cascadeInfo: [], //选中的省市区全部信息
-    cascadeInfoDataData: [], //选中的省市区全部信息
+    cascadeInfoData: [], //选中的省市区全部信息
     detailedAddress: '', //公司地址 详细地址
     contactInformationArr: [
       {
@@ -933,17 +945,6 @@ const state: any = reactive({
   companyAddressDataDisabled: false //新增子门店 数据区域统计 禁用
 })
 
-const loading = ref<boolean>(false)
-const imageUrl = ref<string>('')
-let updateUrl = import.meta.env.VITE_UPLOAD_URL
-let regVersion = import.meta.env.VITE_REG_VERSION
-const updateSupport = ref(0)
-const uploadHeaders = ref({
-  Authorization: 'Bearer ' + getAccessToken(),
-  'tenant-id': getTenantId(),
-  'Reg-Version': regVersion
-})
-
 //关闭Modal
 const closeModal = (isRefresh = false) => {
   console.log('isRefresh???/**/', isRefresh)
@@ -951,7 +952,15 @@ const closeModal = (isRefresh = false) => {
 }
 
 const getPhoneList = async (value) => {
-  const res = await getMemberPhoneList({ id: value })
+  let res
+  switch (props.fromPage) {
+    case 'business':
+      res = await getMajMemberPhoneList({ tenantId: state.formState.belongTenantId, id: value })
+      break
+    default:
+      res = await getMemberPhoneList({ id: value })
+  }
+
   state.memberPhoneOptions = []
   res.map((item) => {
     state.memberPhoneOptions.push({
@@ -1159,305 +1168,6 @@ const addMajorIndividualFN = async () => {
   }
 }
 
-const rgbFN = () => {
-  //rgb颜色随机
-  const r = Math.floor(Math.random() * 256)
-  const g = Math.floor(Math.random() * 256)
-  const b = Math.floor(Math.random() * 256)
-  return `rgb(${r},${g},${b})`
-}
-
-//上传图片转base64
-function getBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = (error) => reject(error)
-  })
-}
-const previewVisible = ref(false)
-const previewImage = ref('')
-const previewTitle = ref('')
-//上传的 预览 关闭modal
-const handleCancel = () => {
-  previewVisible.value = false
-  previewTitle.value = ''
-}
-//上传图片预览
-const handlePreview = async (file) => {
-  console.log('file', file)
-  //   const w = window.open(file.url);
-  //   //延迟刷新浏览器标签页名 防止不显示
-  //   setTimeout(function () {
-  //     w.document.title = `${file.name}`
-  //   }, 100);
-  // return
-  if (!file.url && !file.preview) {
-    file.preview = await getBase64(file.originFileObj)
-  }
-  previewImage.value = file.url || file.preview
-  previewVisible.value = true
-  previewTitle.value = file.name || file.url.substring(file.url.lastIndexOf('/') + 1)
-}
-
-//判断上传图片的宽高
-const checkImageWH = (file, width, height) => {
-  return new Promise((resolve, reject) => {
-    let filereader = new FileReader()
-    let isTrue = false
-    filereader.onload = (e) => {
-      let src = e.target.result
-      const image = new Image()
-      image.onload = function () {
-        if (width && this.width != width) {
-          // message.error('请上传宽小于' + width + 'px的图片')
-          message.error('请上传' + width + 'px*' + height + 'px的图片')
-          resolve(false)
-          // reject(false)
-        } else if (height && this.height != height) {
-          // message.error('请上传高小于' + height + 'px的图片')
-          message.error('请上传' + width + 'px*' + height + 'px的图片')
-          resolve(false)
-          // reject(false)
-        } else {
-          resolve(true)
-          // resolve(true)
-        }
-      }
-      image.onerror = reject
-      image.src = src
-    }
-    filereader.readAsDataURL(file)
-  })
-}
-//上传前
-const beforeUpload = async (file: UploadProps['beforeUpload'][number], fileList, type) => {
-  if (type === 'environment') {
-    //环境图片
-    const isJpgOrPng =
-      file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif'
-    if (!isJpgOrPng) {
-      message.error('仅支持jpg/jpeg/png/gif格式')
-      return Upload.LIST_IGNORE
-    }
-  } else if (type === 'noticeLetter') {
-    //通知函
-    if (state.noticeLetterUrl.length === 3) {
-      message.warning(`通知函最多只能上传三个`)
-      return Upload.LIST_IGNORE
-    }
-  } else if (type === 'notificationLetter') {
-    //告知函
-    if (state.notificationLetterUrl.length === 3) {
-      message.warning(`告知函最多只能上传三个`)
-      return Upload.LIST_IGNORE
-    }
-  } else {
-    //其他图片上传
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-    if (!isJpgOrPng) {
-      message.error('仅支持jpg/png格式')
-      return Upload.LIST_IGNORE
-    }
-  }
-  //是否放行  - - 图片 宽高 满足 则放行
-  let isTrue = true
-  switch (type) {
-    case 'logo':
-      isTrue = await checkImageWH(file, 400, 400)
-      if (!isTrue) {
-        //不上传 包括前端不显示
-        return Upload.LIST_IGNORE
-      }
-
-      const isLt30kb = file.size / 1024 / 1024 < 0.3
-      //max 300kb
-      if (!isLt30kb) {
-        message.error('图片不能超过300kb')
-        return Upload.LIST_IGNORE
-      }
-      break
-    case 'environment':
-      isTrue = await checkImageWH(file, 1125, 633)
-      if (!isTrue) {
-        //不上传 包括前端不显示
-        return Upload.LIST_IGNORE
-      }
-
-      const isLt5M = file.size / 1024 / 1024 < 5
-      //max 5M
-      if (!isLt5M) {
-        message.error('图片不能超过5M')
-        return Upload.LIST_IGNORE
-      }
-      break
-  }
-
-  // const isLt2M = file.size / 1024 / 1024 < 2
-  // if (!isLt2M) {
-  //   message.error('Image must smaller than 2MB!')
-  // }
-  // return isJpgOrPng && isLt30kb
-}
-
-//上传 change
-const handleChange = (info: UploadChangeParam, fileList, type) => {
-  if (info.file.status === 'uploading') {
-    loading.value = true
-    return
-  }
-  if (info.file.status === 'done') {
-    switch (type) {
-      case 'logo':
-        if (!info?.file.response?.data) {
-          message.error(info?.file.response?.msg)
-          state.logoListUrl = []
-          return
-        }
-        state.logoUrlSuccess = info?.file.response?.data?.store || ''
-        break
-      case 'legalPerson':
-        if (!info?.file.response?.data) {
-          message.error(info?.file.response?.msg)
-          state.legalPersonListUrl = []
-          return
-        }
-        state.legalPersonUrlSuccess = info?.file.response?.data?.store || ''
-        break
-      case 'businessLicense':
-        if (!info?.file.response?.data) {
-          message.error(info?.file.response?.msg)
-          state.businessLicenseListUrl = []
-          return
-        }
-        state.businessLicenseSuccess = info?.file.response?.data?.store || ''
-        break
-      case 'environment':
-        if (!info?.file.response?.data) {
-          message.error(info?.file.response?.msg)
-          state.environmentUrl = []
-          return
-        }
-        state.environmentSuccess = info?.file.response?.data?.store || ''
-        break
-      case 'noticeLetter':
-        if (!info?.file.response?.data) {
-          message.error(info?.file.response?.msg)
-          // state.noticeLetterUrl = []
-          return
-        }
-        const tempNoticeLetter = state.noticeLetterUrl.filter((item) => item?.status != 'error')
-        state.noticeLetterSuccess = []
-        tempNoticeLetter.map((item) => {
-          if (item.status === 'done') {
-            state.noticeLetterSuccess.push({
-              fileName: item.name,
-              fileUrl: item.response?.data?.store
-            })
-          }
-        })
-
-        console.log('state.noticeLetterUrl', state.noticeLetterUrl)
-        console.log('state.noticeLetterSuccess===>', state.noticeLetterSuccess)
-        break
-      case 'notificationLetter':
-        if (!info?.file.response?.data) {
-          message.error(info?.file.response?.msg)
-          // state.notificationLetterUrl = []
-          return
-        }
-        const tempNotificationLetterUrl = state.notificationLetterUrl.filter(
-          (item) => item?.status != 'error'
-        )
-        console.log('state.notificationLetterUrl', state.notificationLetterUrl)
-        console.log('tempNotificationLetterUrl', tempNotificationLetterUrl)
-        state.notificationLetterSuccess = []
-        tempNotificationLetterUrl.map((item) => {
-          if (item.status === 'done') {
-            state.notificationLetterSuccess.push({
-              fileName: item.name,
-              fileUrl: item.response?.data?.store
-            })
-          }
-        })
-        break
-    }
-
-    // Get this url from response in real world.
-    getBase64(info.file.originFileObj, (base64Url: string) => {
-      imageUrl.value = base64Url
-      loading.value = false
-    })
-    message.success('上传成功')
-  }
-  if (info.file.status === 'error') {
-    switch (type) {
-      case 'logo':
-        state.logoListUrl = []
-        break
-      case 'legalPerson':
-        state.legalPersonListUrl = []
-        break
-      case 'businessLicense':
-        state.businessLicenseListUrl = []
-        break
-      case 'environment':
-        state.environmentUrl = []
-        break
-      case 'noticeLetter':
-        state.noticeLetterUrl = state.noticeLetterUrl.filter((item) => item?.status != 'error')
-        break
-      case 'notificationLetter':
-        state.notificationLetterUrl = state.notificationLetterUrl.filter(
-          (item) => item?.status != 'error'
-        )
-        break
-    }
-    loading.value = false
-    message.error('上传失败')
-  }
-}
-
-//删除上传的图片 回调  - -
-const removeImg = (file, type) => {
-  switch (type) {
-    case 'logo':
-      //系统logo
-      state.logoListUrl = [] //系统logo 上传 回显 - -
-      state.logoUrlSuccess = '' //系统logo 新增编辑入参
-      break
-    case 'legalPerson':
-      //法人身份证
-      state.legalPersonListUrl = [] //法人身份证 上传回显
-      state.legalPersonUrlSuccess = '' //法人身份证 新增编辑入参
-      break
-    case 'businessLicense':
-      //营业执照
-      state.businessLicenseListUrl = [] //营业执照 上传回显
-      state.businessLicenseSuccess = '' //营业执照 新增编辑入参
-      break
-    case 'environment':
-      //环境图片
-      state.environmentUrl = [] //环境图片 上传回显
-      state.environmentSuccess = '' //环境图片 新增编辑入参
-      break
-    case 'noticeLetter':
-      //通知函 新增编辑入参
-      state.noticeLetterSuccess = state.noticeLetterSuccess.filter(
-        (item) => item.fileUrl != file.fileUrl
-      )
-      break
-    case 'notificationLetter':
-      //告知函 新增编辑入参
-      state.notificationLetterSuccess = state.notificationLetterSuccess.filter(
-        (item) => item.fileUrl != file.fileUrl
-      )
-      console.log('state.notificationLetterSuccess', state.notificationLetterSuccess)
-      break
-  }
-}
-
 //级联选择器选中的内容 改变  门店地址
 const cascadeChange = (value, selectedOptions) => {
   state.formState.cascadeInfo = selectedOptions
@@ -1509,6 +1219,56 @@ const trialOperationStoreLevelChange = () => {
   state.formState.acceptanceStoreLevel = state.formState.trialOperationStoreLevel
 }
 
+//字典赋值  去除品牌(品牌需要根据上级主体联动)
+const dictAssign = (dictList) => {
+  //机构类型
+  state.organizationTypeOptions = dictFilter(dictList, 'organization_type')
+  //子门店类型
+  state.childStoreOptions = dictFilter(dictList, 'store_subtyping')
+  console.log(
+    'state.childStoreOptions!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
+    state.childStoreOptions
+  )
+  //分公司类型
+  state.branchCompanyTypeOptions = dictFilter(dictList, 'branch_company_type')
+  //门店类型
+  state.storeTypeOptions = dictFilter(dictList, 'store_type')
+  //联系方式类型
+  state.contactInformationOptions = dictFilter(dictList, 'contact_type')
+  //销售品牌
+  state.saleBrandOptions = dictFilter(dictList, 'sellingBrand')
+  //救援品牌
+  state.rescueBrandOptions = dictFilter(dictList, 'rescueBrand')
+  //维保品牌
+  state.maintenanceBrandOptions = dictFilter(dictList, 'maintenanceBrand')
+  //品牌
+  state.barnOptions = state.barnOptionsArr = dictFilter(dictList, 'brand')
+}
+
+//数据统计区域 门店地址 赋值(根据上级主体联动)
+const areaAssign = (areaList) => {
+  state.proMunAreaList = state.proMunAreaListData = handleTree(
+    areaList as any[],
+    'code',
+    'parentCode',
+    'children'
+  )
+}
+
+//负责人 赋值(根据上级主体联动)
+const memberAssign = (memberList) => {
+  //username nickname
+  const needReplacePartPostKey = [
+    ['tempLabel', 'nickname'],
+    ['value', 'id'],
+    ['memberNum', 'username']
+  ]
+  state.memberOptions = reconstructionArrayObject(memberList, needReplacePartPostKey)
+  state.memberOptions.map((item) => {
+    item.label = `${item.tempLabel}-${item.memberNum}`
+  })
+}
+
 //获取数据字典
 const getOrganizationTypeListFN = async () => {
   let majorIndividualOptionRes = await getSimpleTenantList()
@@ -1521,54 +1281,49 @@ const getOrganizationTypeListFN = async () => {
     'children'
   )
   console.log('state.majorIndividualOption', state.majorIndividualOption)
-  const res = await getOrganizationTypeList()
-  //机构类型
-  state.organizationTypeOptions = res.filter((item) => item.dictType === 'organization_type')
-  //子门店类型
-  state.childStoreOptions = res.filter((item) => item.dictType === 'store_subtyping')
-  //分公司类型
-  state.branchCompanyTypeOptions = res.filter((item) => item.dictType === 'branch_company_type')
-  //品牌
-  const tempBarnOptions = res.filter((item) => item.dictType === 'brand')
-  //门店类型
-  state.storeTypeOptions = res.filter((item) => item.dictType === 'store_type')
-  //联系方式类型
-  state.contactInformationOptions = res.filter((item) => item.dictType === 'contact_type')
-  //销售品牌
-  state.saleBrandOptions = res.filter((item) => item.dictType === 'sellingBrand')
-  //救援品牌
-  state.rescueBrandOptions = res.filter((item) => item.dictType === 'rescueBrand')
-  //维保品牌
-  state.maintenanceBrandOptions = res.filter((item) => item.dictType === 'maintenanceBrand')
+
   //获取成员列表(不分页) 新增编辑 modal内的负责人list
   // const memberRes = await getMemberList()
   let memberRes = []
-  if (props.fromPage === 'business') {
-    //主体管理
-    //TODO 主体管理内 门店与子门店 需要tenantId  没空没空 先全上 有空再看取哪个
-    memberRes = await getMemberAllListBusiness({
-      tenantId:
-        props.editRecord.belongTenantId ||
-        props.editRecord.tenantId ||
-        props.useStoreList.belongTenantId ||
-        state.formState.belongTenantId
-    })
-  } else {
-    //机构管理页面
-    memberRes = await getMemberAllList()
+  let res = []
+  switch (props.fromPage) {
+    case 'business':
+      //主体管理页面
+      //TODO 主体管理内 门店与子门店 需要tenantId  没空没空 先全上 有空再看取哪个
+      // 负责人
+      memberRes = await getMemberAllListBusiness({
+        tenantId:
+          props.editRecord.belongTenantId ||
+          props.editRecord.tenantId ||
+          props.useStoreList.belongTenantId ||
+          state.formState.belongTenantId
+      })
+      console.log('props.editRecord.belongTenantId', props.editRecord.belongTenantId)
+      console.log('props.editRecord.tenantId', props.editRecord.tenantId)
+      console.log('props.useStoreList.belongTenantId', props.useStoreList.belongTenantId)
+      console.log('state.formState.belongTenantId', state.formState.belongTenantId)
+      console.log('props.editRecord', props.editRecord)
+      switch (state.modalType) {
+        case 'add':
+          //当前账号主体所在的 (租户)字典
+          res = await getOrganizationTypeList()
+          break
+        case 'edit':
+          res = await getMajDictList({
+            tenantId: props.editRecord.tenantId
+          })
+      }
+      break
+    default:
+      //机构管理页面
+      memberRes = await getMemberAllList()
+      res = await getOrganizationTypeList()
   }
-  //username nickname
-  const needReplacePartPostKey = [
-    ['tempLabel', 'nickname'],
-    ['value', 'id'],
-    ['memberNum', 'username']
-  ]
-  state.memberOptions = reconstructionArrayObject(memberRes, needReplacePartPostKey)
-  state.memberOptions.map((item) => {
-    item.label = `${item.tempLabel}-${item.memberNum}`
-  })
 
-  state.barnOptions = state.barnOptionsArr = tempBarnOptions
+  //字典赋值
+  dictAssign(res)
+  // 负责人 赋值
+  memberAssign(memberRes)
 }
 
 const getOrganizationDetailsFN = async () => {
@@ -1606,21 +1361,32 @@ const getOrganizationDetailsFN = async () => {
         // 数据区域统计回显 门店地址默认为数据区域统计
         state.formState.companyAddressData.push(dataProvinceCode)
         state.formState.companyAddress.push(dataProvinceCode)
+        console.log('state.formState.cascadeInfoData', state.formState.cascadeInfoData)
+        state.formState.cascadeInfoData.push({
+          code: dataProvinceCode
+        })
+        console.log('state.formState.cascadeInfoData', state.formState.cascadeInfoData)
       }
       if (dataCityCode) {
         // 数据区域统计回显 门店地址默认为数据区域统计
         state.formState.companyAddressData.push(dataCityCode)
         state.formState.companyAddress.push(dataCityCode)
+        state.formState.cascadeInfoData.push({
+          code: dataCityCode
+        })
       }
       if (dataCountyCode) {
         // 数据区域统计回显 门店地址默认为数据区域统计
         state.formState.companyAddressData.push(dataCountyCode)
         state.formState.companyAddress.push(dataCountyCode)
+        state.formState.cascadeInfoData.push({
+          code: dataCountyCode
+        })
       }
       //新增子门店 数据区域统计
       state.companyAddressDataDisabled = true
-      //新增子门店时 品牌下拉项取 上级门店所选的品牌
-      state.barnOptions = findByProperty(state.barnOptionsArr, 'value', props.storeRecord.brandIds)
+      //新增子门店时 品牌下拉项取 上级门店所选的品牌  TODO 吐了 做完之后又不要了  - - 又要改成联动.... 先注释 指不定 过两天有想要
+      // state.barnOptions = findByProperty(state.barnOptionsArr, 'value', props.storeRecord.brandIds)
     }
     return
   } else {
@@ -1639,8 +1405,8 @@ const getOrganizationDetailsFN = async () => {
       }
       //主体管理 门店 详情
       res = await getStoreDetails(params)
-      // 修改子门店时 品牌下拉项取 上级门店所选的品牌
-      state.barnOptions = findByProperty(state.barnOptionsArr, 'value', res.parenBrandIds)
+      // 修改子门店时 品牌下拉项取 上级门店所选的品牌 TODO 吐了 做完之后又不要了  - - 又要改成联动.... 先注释 指不定 过两天有想要
+      // state.barnOptions = findByProperty(state.barnOptionsArr, 'value', res.parenBrandIds)
     }
     state.activeKey = props.tabsActiveKey
   }
@@ -1870,18 +1636,34 @@ const getOrganizationDetailsFN = async () => {
   }
 }
 
-// //处理省市区数据
-// // 树结构数据过滤 数组中嵌数组 里面的数组为需要替换的属性名以及替换后的属性名
-// let needReplaceKey = [
-//   ['label', 'fullname'],
-//   ['value', 'code']
-// ]
-// state.proMunAreaList = reconstructedTreeData(provincesMunicipalitiesArea, needReplaceKey)
+//上级主体 选中值改变 需要动态获取 主体对应的品牌
+const tenantIdChange = async (value, label, extra) => {
+  console.log('value, label, extra', value, label, extra)
+  const res = await getMajDictList({
+    tenantId: value
+  })
+  const areaRes = await getCurrentStoreAreaList({
+    tenantId: value
+  })
+  const memberRes = await getMemberAllListBusiness({
+    tenantId: value
+  })
+  nextTick(() => {
+    console.log('上级主体')
+    // 字典赋值
+    dictAssign(res)
+    //数据统计区域 门店地址 赋值
+    areaAssign(areaRes)
+    // 负责人 赋值
+    memberAssign(memberRes)
+  })
+  console.log('res', res)
+}
 
 onMounted(async () => {
+  await getOrganizationDetailsFN()
   //获取机构类型
   await getOrganizationTypeListFN()
-  await getOrganizationDetailsFN()
   console.log('state.formState.belongTenantId>>>>>>>>>>>>>>>>', state.formState.belongTenantId)
   console.log('props.storeRecord', props.storeRecord)
   console.log(
@@ -1899,13 +1681,8 @@ onMounted(async () => {
         : props.storeRecord.id
   })
 
-  state.proMunAreaList = state.proMunAreaListData = handleTree(
-    areaRes as any[],
-    'code',
-    'parentCode',
-    'children'
-  )
-  console.log('areaRes', areaRes)
+  //数据统计区域 门店地址 赋值
+  areaAssign(areaRes)
 })
 </script>
 

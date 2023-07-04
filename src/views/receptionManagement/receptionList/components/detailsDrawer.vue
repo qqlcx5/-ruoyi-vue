@@ -11,7 +11,9 @@
     >
       <div class="tabs-header">
         <div class="tabs-header-right text-confirm-gray fs-16px"
-          >画像因子总分：100 当前得分：0 级别判定：N</div
+          >画像因子总分：100 当前得分：{{ pageInfo.portraitFactorScore || '0' }} 级别判定：{{
+            pageInfo.portraitFactorLevel || 'N'
+          }}</div
         >
       </div>
       <el-tabs v-model="activeName">
@@ -121,8 +123,8 @@
               </el-descriptions-item>
               <el-descriptions-item label="未下订说明xxx">111</el-descriptions-item>
               <el-descriptions-item label="主管是否参与接待xxx">111</el-descriptions-item>
-              <el-descriptions-item label="下次跟进时间xxx"> </el-descriptions-item>
-              <el-descriptions-item label="下次跟进事项xxx"> </el-descriptions-item>
+              <el-descriptions-item label="下次跟进时间xxx" />
+              <el-descriptions-item label="下次跟进事项xxx" />
               <el-descriptions-item label="备忘图片xxx">
                 <el-image
                   style="width: 100px; height: 100px"
@@ -331,19 +333,21 @@ const modelValue_ = computed({
 <style lang="scss">
 .reception-drawer {
   .el-drawer__header {
-    color: rgba(51, 51, 51, 1);
-    font-size: 32px;
-    margin-bottom: 0;
     padding: 16px 20px;
-    border-bottom: 1px solid #eaebef;
+    margin-bottom: 0;
+    font-size: 32px;
     font-weight: bold;
+    color: rgb(51 51 51 / 100%);
+    border-bottom: 1px solid #eaebef;
   }
+
   .tabs-header {
     position: relative;
+
     &-right {
       position: absolute;
-      right: 0;
       top: 10px;
+      right: 0;
     }
   }
 }

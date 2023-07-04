@@ -40,7 +40,7 @@
                 <div class="item-condition">
                   <a-input
                     v-model:value="queryParams.keyword"
-                    placeholder="请输入主体名称或者编码"
+                    placeholder="主体名称或编码或ID"
                     class="width-100"
                   />
                 </div>
@@ -442,6 +442,7 @@
       v-else
       :tree-data="state.tableDataList"
       :currentSelectRecord="state.currentClickRecord"
+      :selectedKeys="state.majSelectedKeys"
       @sendCurrentSelect="clickMaj"
       @expandMaj="
         () => {
@@ -467,6 +468,7 @@
               @click="
                 () => {
                   state.currentClickRecord = {}
+                  state.majSelectedKeys = []
                   currentSelectChange()
                   getListStoreFN()
                 }
@@ -485,7 +487,7 @@
         </div>
         <div :class="['flex flex-1 flex-col overflow-auto']">
           <!-- 搜索工作栏 -->
-          <a-card :class="['search-card width-715', { 'width-100': !state.isShowTable }]">
+          <a-card :class="['search-card', { 'width-100': !state.isShowTable }]">
             <a-form
               :model="queryParamsStore"
               ref="queryFormStoreRef"
@@ -505,7 +507,7 @@
                     <div class="item-condition">
                       <a-input
                         v-model:value="queryParamsStore.keyword"
-                        placeholder="请输入门店名称或者编码"
+                        placeholder="门店名称或编码或ID"
                         class="width-100"
                       />
                     </div>
@@ -874,7 +876,11 @@
           </a-radio-group>
         </a-form-item>
 
-        <a-form-item :label="`上级主体`" name="belongTenantId">
+        <a-form-item
+          :label="`上级主体`"
+          name="belongTenantId"
+          :rules="[{ required: true, message: `上级主体不能为空` }]"
+        >
           <a-tree-select
             v-model:value="state.formState.belongTenantId"
             :disabled="state.modalType === 'edit'"
@@ -1345,7 +1351,7 @@
                 >全选</a-checkbox
               >
             </div>
-            <div>
+            <div class="tree-content">
               <a-checkbox-group
                 v-model:value="state.operationCheckedValueFrontDesk"
                 @change="operationCheckedValueChangeFrontDesk"
@@ -1376,7 +1382,7 @@
                 >全选</a-checkbox
               >
             </div>
-            <div>
+            <div class="tree-content">
               <a-checkbox-group
                 v-model:value="state.operationCheckedValue"
                 @change="operationCheckedValueChange"
@@ -1642,17 +1648,22 @@
       </div>
       <div class="details-modal-content select-content" v-else>
         <div class="details-modal-left">
-          <div class="details-heard">前台</div>
-          <!--          <a-tree-->
-          <!--            defaultExpandAll-->
-          <!--            :tree-data="item.treeArr"-->
-          <!--            :fieldNames="state.fieldNames"-->
-          <!--          >-->
-          <!--          </a-tree>-->
+          <div class="details-heard">前台({{ item.frontDeskTreeArr?.length }})</div>
+          <a-tree
+            defaultExpandAll
+            :tree-data="item.frontDeskTreeArr"
+            :fieldNames="state.fieldNames"
+            :height="250"
+          />
         </div>
         <div class="details-modal-left">
-          <div class="details-heard">后台({{ item.treeArr?.length }})</div>
-          <a-tree defaultExpandAll :tree-data="item.treeArr" :fieldNames="state.fieldNames" />
+          <div class="details-heard">后台({{ item.backstageTreeArr?.length }})</div>
+          <a-tree
+            defaultExpandAll
+            :tree-data="item.backstageTreeArr"
+            :fieldNames="state.fieldNames"
+            :height="250"
+          />
         </div>
       </div>
     </div>
@@ -2429,6 +2440,15 @@ const treeSelect = (selectedKeys, e) => {
 //ALL columns 用于定制列过滤 排序
 const allColumns = [
   {
+    title: '主体ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
+  },
+  {
     title: '主体名称',
     width: 200,
     dataIndex: 'name',
@@ -2615,13 +2635,13 @@ const allStoreColumns = [
     sort: 3
   },
   {
-    title: '机构ID',
+    title: '门店ID',
     width: 100,
     dataIndex: 'id',
     key: 'id',
     resizable: true,
     ellipsis: true,
-    sort: 2
+    sort: 1
   },
   {
     title: '机构编码',
@@ -2831,8 +2851,8 @@ const getListStoreFN = async (isRefresh = false) => {
     tenantId: tempTenantId,
     keyword: queryParamsStore.keyword,
     specialtyCode: queryParamsStore.specialtyCode,
-    systemName: queryParamsStore.organizationType,
-    type: queryParamsStore.brand,
+    organizationType: queryParamsStore.organizationType,
+    brand: queryParamsStore.brand,
     status: queryParamsStore.status
   }
 
@@ -3078,6 +3098,7 @@ const closeModal = () => {
   state.modalTitle = '新增'
   state.modalType = 'add'
   state.selectTree = []
+  state.optionalMenuTreeChange = [] //上级主体 select
 }
 
 //关闭 新增/编辑门店 子门店
@@ -3223,10 +3244,14 @@ const edit = async (
   console.log('isStore', isStore)
   // TODO: 有空重写一下 - - 判断 冗余了  一直叠一直改 没空处理
   if (isStore) {
-    if (record.type === storeSubType.popStore || record.type === storeSubType.cityHall) {
+    if (
+      record.type === storeSubType.popStore ||
+      record.type === storeSubType.cityHall ||
+      record.organizationCategory === organizationCategory.childStore
+    ) {
       // 子门店
       state.parentId = record.id
-      state.belongTenantId = record.belongTenantId
+      state.belongTenantId = record.belongTenantId || record.tenantId
       state.needBelongTenantId = false
       state.needParentId = true
       state.needOrganizationType = false
@@ -3235,7 +3260,7 @@ const edit = async (
       state.storeType = storeSubType.popStore
       state.useStoreList = {
         needUseStore: true,
-        belongTenantId: record.belongTenantId
+        belongTenantId: record.belongTenantId || record.tenantId
       }
     } else {
       //门店
@@ -4127,11 +4152,11 @@ const operationCheckedValueChange = (checkedValue) => {
 const operationCheckedChangeFrontDesk = (e) => {
   console.log('e', e)
   console.log('e.target.value', e.target.value)
-  const dom = document.querySelector(`.right-tree-item-front-desk${e.target.value}`)
+  const dom = document.querySelector(`.right-tree-item-front-desk-${e.target.value}`)
   dom && dom.scrollIntoView({ behavior: 'smooth' })
   console.log('dom !!!!!!!!!', dom)
   setTimeout(() => {
-    const dom = document.querySelector(`.right-tree-item-front-desk${e.target.value}`)
+    const dom = document.querySelector(`.right-tree-item-front-desk-${e.target.value}`)
     dom && dom.scrollIntoView({ behavior: 'smooth' })
     console.log('dom !!!!!!!!!', dom)
   }, 0)
@@ -4216,8 +4241,9 @@ const detailsInfo = async (record) => {
   // state.record = record
   //获取主体详情
   const res = await getMajorIndividualDetails({ id: record.id })
-  //不要展示按钮 默认按钮全选 后端处理
-  const tempArr = res.menus?.filter((item) => item.type !== 3)
+  //不要展示按钮 默认按钮全选 ... type===3 btn又说要了 去除过滤 res.menus?.filter((item) => item.type !== 3)
+  const tempFrontDeskArr = res.memberMenus
+  const tempBackstageArr = res.menus
 
   state.record = res
 
@@ -4378,7 +4404,8 @@ const detailsInfo = async (record) => {
     },
     {
       baseTitle: '配置权限',
-      treeArr: handleTree(tempArr)
+      frontDeskTreeArr: handleTree(tempFrontDeskArr),
+      backstageTreeArr: handleTree(tempBackstageArr)
     }
   ]
 
@@ -4634,6 +4661,10 @@ const onPageChange = (type = PageKeyObj.business) => {
 
       // 根据起始索引和结束索引提取要显示的数据
       state.tableDataPseudoPaginationList = state.tableDataList.slice(startIndex, endIndex)
+      state.refreshTable = false
+      nextTick(() => {
+        state.refreshTable = true
+      })
       break
     case PageKeyObj.businessStore:
       // 计算要显示的数据的起始索引和结束索引
@@ -4645,6 +4676,10 @@ const onPageChange = (type = PageKeyObj.business) => {
         startIndexStore,
         endIndexStore
       )
+      state.refreshTableStore = false
+      nextTick(() => {
+        state.refreshTableStore = true
+      })
       break
   }
 }
@@ -4787,7 +4822,9 @@ const sendCurrentSelect = async (currentKey) => {
   } else {
     state.currentSelectArea = null
   }
+  state.refreshTableStore = false
   await getListStoreFN()
+  state.refreshTableStore = true
 }
 
 currentSelectChange()
@@ -4804,9 +4841,26 @@ const getCurrentAreaListFN = async () => {
 }
 
 //主体下拉框选中
-const clickMaj = (record, selectedKeys) => {
+const clickMaj = (record, selectedKeys, isFromTable = false) => {
+  if (!isFromTable && selectedKeys.length === 0) {
+    //清除当前选中的主体 回显 左侧树
+    nextTick(() => {
+      state.currentClickRecord = {}
+    })
+  } else {
+    if (
+      Object.keys(state.currentClickRecord).length >= 0 &&
+      state.currentClickRecord.id === record.id
+    ) {
+      //  当为表格且当前选中的值 为再次点击时 清空
+      state.currentClickRecord = {}
+    } else {
+      // 赋值
+      state.currentClickRecord = record
+    }
+  }
   state.majSelectedKeys = selectedKeys
-  state.currentClickRecord = record
+
   console.log('state.currentClickRecord', state.currentClickRecord)
   currentSelectChange()
   getListStoreFN()
@@ -4815,7 +4869,8 @@ const clickMaj = (record, selectedKeys) => {
 const clickRow = (record) => {
   return {
     onClick: () => {
-      clickMaj(record, [])
+      console.log('record', record)
+      clickMaj(record, [], true)
     } // 点击行
   }
 }
@@ -5424,6 +5479,12 @@ onMounted(async () => {
   height: 620px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.tree-content {
+  height: 100%;
+  overflow: auto;
 }
 
 //表格状态改变 modal
@@ -5523,6 +5584,7 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
   //background: skyblue;
   border-bottom: 1px solid rgb(234, 235, 239);
 }
@@ -5762,6 +5824,7 @@ onMounted(async () => {
   padding-left: 18px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   background: rgba(246, 246, 246, 1);
 }
 .corporateCulture-text {

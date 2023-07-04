@@ -2,8 +2,8 @@
   <div class="prompt-configuration">
     <!-- 成员端、管理端、客户端  memberSide、managementEnd、client -->
     <el-tabs type="border-card" v-model="tabsName" @tab-change="handleTabChange">
-      <el-tab-pane label="通用提示配置" name="currency"></el-tab-pane>
-      <el-tab-pane label="必讲项提示配置" name="needlessToSay"></el-tab-pane>
+      <el-tab-pane label="通用提示配置" name="currency" />
+      <el-tab-pane label="必讲项提示配置" name="needlessToSay" />
     </el-tabs>
     <form-table
       ref="tableRef"

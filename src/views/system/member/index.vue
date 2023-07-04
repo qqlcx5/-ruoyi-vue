@@ -24,7 +24,7 @@
                     class="width-100"
                     v-model:value="queryParams.memberName"
                     @pressEnter="getList(1)"
-                    placeholder="请输入姓名或工号"
+                    placeholder="姓名或工号或ID"
                     allowClear
                   />
                 </div>
@@ -1772,6 +1772,15 @@ const allColumns = [
     ellipsis: true,
     disabled: true,
     sort: 3
+  },
+  {
+    title: '成员ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
   },
   {
     title: '部门/岗位',
@@ -4915,6 +4924,13 @@ onMounted(async () => {
 </style>
 
 <style lang="scss">
+//所有modal title
+.ant-modal-title {
+  color: rgba(51, 51, 51, 1);
+  font-size: 18px !important;
+  font-weight: bold !important;
+  font-family: PingFangSC-Medium;
+}
 //修改 详细 modal位置
 .details-modal {
   .ant-modal {

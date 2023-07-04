@@ -21,7 +21,7 @@
       <a-input-search
         v-model:value="searchValue"
         style="margin-bottom: 8px"
-        placeholder="请输入区域搜索"
+        placeholder="请输入主体名称或编码搜索"
       />
       <a-button
         type="primary"
@@ -39,10 +39,11 @@
         v-model:selectedKeys="state.selectedKeys"
         :height="610"
         blockNode
+        class="backstage-maj-tree"
         @select="selectTree"
         @expand="onExpand"
       >
-        <template #title="{ title, storeCount, type, id }">
+        <template #title="{ title, storeCount, type, id, needEllipsis }">
           <div class="tree-node">
             <div>
               <span v-if="title.indexOf(searchValue) > -1">
@@ -53,7 +54,7 @@
               </span>
               <span v-else>{{ title }}{{ storeCount ? `(${storeCount})` : '' }}</span>
             </div>
-            <div>
+            <div v-if="needEllipsis" class="popover-content">
               <a-popover placement="bottom" class="margin-left-14">
                 <template #content>
                   <!--  TODO 换成数组遍历吧  -->
@@ -122,7 +123,7 @@
 import { ref, watch } from 'vue'
 import type { TreeProps } from 'ant-design-vue'
 import { cloneDeep } from 'lodash-es'
-import { getAllCustomKeys } from '@/utils/utils'
+import { getAllCustomKeys, setNeedEsPropertyByCustomProp } from '@/utils/utils'
 import { majorIndividualType } from '@/utils/constants'
 
 // interface treeDataType {
@@ -162,7 +163,7 @@ const expandedKeys = ref<(string | number)[]>([])
 const searchValue = ref<string>('')
 const autoExpandParent = ref<boolean>(true)
 
-const state = reactive({
+const state: any = reactive({
   treeData: cloneDeep(props.treeData),
   selectedKeys: []
   // selectedKeys: [cloneDeep(props.treeData[0]?.key)]
@@ -297,7 +298,10 @@ watch(searchValue, (value) => {
 })
 
 const selectTree = (selectedKeys, e) => {
+  //自定义属性 用来控制显示隐藏省略号
+  setNeedEsPropertyByCustomProp(state.treeData, 'id', selectedKeys[0], 'needEllipsis')
   console.log('selectedKeys', selectedKeys)
+  console.log('e', e)
   emit('sendCurrentSelect', e.node, selectedKeys)
 }
 
@@ -334,6 +338,12 @@ watch(
     immediate: true
   }
 )
+watch(
+  () => props.selectedKeys,
+  (val) => {
+    state.selectedKeys = val
+  }
+)
 </script>
 
 <style lang="scss" scoped>
@@ -364,6 +374,7 @@ watch(
 .tree-node {
   display: flex;
   justify-content: space-between;
+  padding: 2px 0;
 }
 .has-transferred {
   margin-left: 10px;
@@ -393,5 +404,24 @@ watch(
   justify-content: center;
   align-items: center;
   cursor: pointer;
+}
+.popover-content {
+  display: flex;
+  align-items: center;
+}
+</style>
+
+<style lang="scss">
+.backstage-maj-tree {
+  .ant-tree-treenode-selected {
+    background: rgb(209, 230, 251) !important;
+  }
+  /*ant-tree-node-content-wrapper ant-tree-node-content-wrapper-close ant-tree-node-selected*/
+  .ant-tree-node-selected {
+    background: rgb(209, 230, 251) !important;
+  }
+  .ant-tree-treenode {
+    padding: 0 !important;
+  }
 }
 </style>

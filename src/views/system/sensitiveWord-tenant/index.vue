@@ -1,4 +1,4 @@
-<!--  敏感词管理  -->
+<!--  租户敏感词管理  -->
 <template>
   <FormTable
     ref="tableRef"
@@ -96,17 +96,25 @@ const { t } = useI18n()
 const tableRef = ref()
 
 const getTableList = async (params) => {
-  const res = getSensitiveWordPageApi(params)
+  params.tag = params.tag?.join('|')
+  const res = await getSensitiveWordPageApi(params)
   console.log('res', res)
   return res
 }
 
 const columns: TableColumn[] = [
   {
+    label: '敏感词ID',
+    field: 'id',
+    width: 100,
+    check: false
+  },
+  {
     label: '敏感词编号',
     field: 'index',
     width: 100,
-    type: 'index'
+    type: 'index',
+    disabled: true
   },
   {
     label: '敏感词',
@@ -117,9 +125,25 @@ const columns: TableColumn[] = [
     label: '标签',
     field: 'tag',
     isTable: false,
-    isForm: false,
-    isDetail: false,
-    isSearch: true
+    isSearch: true,
+    search: {
+      component: 'Select',
+      componentProps: {
+        multiple: true,
+        filterable: true,
+        style: {
+          width: '100%'
+        },
+        options: computed(() => {
+          return tagsOptions.value?.map((item) => {
+            return {
+              label: item,
+              value: item
+            }
+          })
+        })
+      }
+    }
   },
   {
     label: '标签',
@@ -159,10 +183,17 @@ const columns: TableColumn[] = [
   //   }
   // },
   {
+    label: '创建人',
+    field: 'creator',
+    width: 100,
+    check: false
+  },
+  {
     label: t('common.createTime'),
     field: 'createTime',
     width: 170,
     isSearch: true,
+    check: false,
     search: {
       component: 'DatePicker',
       componentProps: {
@@ -170,6 +201,21 @@ const columns: TableColumn[] = [
         valueFormat: 'YYYY-MM-DD hh:mm:ss'
       }
     },
+    formatter: (_, __, val: string) => {
+      return formatDate(new Date(val))
+    }
+  },
+  {
+    label: '最近操作人',
+    field: 'updater',
+    width: 100,
+    check: false
+  },
+  {
+    label: '最近操作时间',
+    field: 'updateTime',
+    width: 200,
+    check: false,
     formatter: (_, __, val: string) => {
       return formatDate(new Date(val))
     }

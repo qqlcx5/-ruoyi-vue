@@ -40,6 +40,11 @@ export const getMemberPhoneList = (params: MajorIndividual) => {
   return request.get({ url: '/system/user/extra/get_phone_list', params })
 }
 
+// 成员id获取手机号 主体门店使用
+export const getMajMemberPhoneList = (params: MajorIndividual) => {
+  return request.get({ url: '/system/user/extra/get_phone_list_tenant', params })
+}
+
 // 获取岗位类型
 export const getPostTypeList = () => {
   return request.get({ url: '/system/post-type/list-all-simple' })
