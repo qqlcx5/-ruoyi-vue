@@ -110,7 +110,7 @@
           <div v-else class="flex justify-center text-tip mt-24px">请选择菜单</div>
         </div>
       </div>
-      <div>
+      <div v-if="currentNode.dataScope !== 5">
         <div class="box-header"> 请选择品牌权限 </div>
         <div class="box-content px-14px py-10px">
           <div v-if="currentNode && currentNode.type === 2">
