@@ -125,7 +125,36 @@ const onCheckboxChange = (value, data) => {
 const selectedTreeData = ref<any[]>([])
 // 获取已选信息
 const getSelectedTreeData = () => {
-  selectedTreeData.value = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
+  // selectedTreeData.value = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
+  // console.log(
+  //   cloneDeep(treeRef.value!.getCheckedNodes(false, true)).sort((a, b) => {
+  //     if (typeof a.id === 'string' && typeof b.id === 'number') {
+  //       return -1 // 字符串在数字前面
+  //     } else {
+  //       return 0
+  //     }
+  //   })
+  // )
+  const checkNodes = handleTree(cloneDeep(treeRef.value!.getCheckedNodes(false, true)))
+  checkNodes.forEach((i) => {
+    recursiveFn(i)
+  })
+  function recursiveFn(item) {
+    if (item['children']) {
+      item['children'].sort((a, b) => {
+        if (typeof a.id === 'string' && typeof b.id === 'number') {
+          return -1 // 字符串在数字前面
+        } else {
+          return 0
+        }
+      })
+      for (const c of item['children']) {
+        recursiveFn(c)
+      }
+    }
+  }
+  selectedTreeData.value = checkNodes
+  // console.log(checkNodes)
 }
 
 const init = async () => {
@@ -145,7 +174,7 @@ const init = async () => {
 // 打开弹窗
 const openModal = async (deptIds?: any[], dataScopeUsers = []) => {
   const userIds = dataScopeUsers.map((uId) => `user-${uId}`)
-  if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = [...deptIds, ...userIds]
+  if (deptIds && deptIds.length > 0) defaultCheckedKeys.value = [...userIds, ...deptIds]
   await init()
   modelVisible.value = true
   await nextTick()

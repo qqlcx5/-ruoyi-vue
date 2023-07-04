@@ -62,7 +62,7 @@
         <div class="box-header"> 请选择数据权限 </div>
         <div class="box-content px-14px py-10px">
           <div v-if="currentNode && currentNode.type === 2">
-            <el-radio-group v-model="currentNode.dataScope">
+            <el-radio-group v-model="currentNode.dataScope" @change="onDataScopeChange">
               <el-radio :label="5">仅看自己</el-radio>
               <el-radio :label="4">仅看本部门及以下</el-radio>
               <el-radio :label="3">仅看本部门</el-radio>
@@ -246,10 +246,6 @@ watch(
         treeRef.value!.setChecked(data.id, false, true)
       }
     }
-    if (data.dataScope === 5) {
-      currentNode.value['databrandScope'] = 1
-      currentNode.value['dataScopeBrandIds'] = []
-    }
   },
   { deep: true }
 )
@@ -340,6 +336,12 @@ const handleBrandCheckAllChange = (val: boolean) => {
 }
 const onBrandScopeChange = (value) => {
   if (value === 1) currentNode.value.dataScopeBrandIds = []
+}
+const onDataScopeChange = (value) => {
+  if (value === 5) {
+    currentNode.value['databrandScope'] = 1
+    currentNode.value['dataScopeBrandIds'] = []
+  }
 }
 
 // ================= 初始化 ====================
