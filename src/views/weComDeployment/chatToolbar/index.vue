@@ -32,7 +32,7 @@
         </el-form-item>
         <div class="sub-title">应用OAuth2.0网页授权功能的回调域名</div>
         <el-form-item label="可信域名">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
@@ -46,14 +46,14 @@
         </div>
         <div class="sub-title">调用JS-SDK、跳转小程序的可信域名</div>
         <el-form-item label="可信域名">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="可信域名">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
@@ -102,21 +102,21 @@
       <template #header> 3、聊天工具栏地址 </template>
       <el-form label-position="right" label-width="100px">
         <el-form-item label="客户详情页">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="客户跟进">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="内容引擎">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>

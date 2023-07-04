@@ -14,14 +14,14 @@
       </template>
       <el-form label-position="right" label-width="112px">
         <el-form-item label="可信IP地址">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="信息加密公钥">
-          <el-input type="textarea" />
+          <el-input disabled type="textarea" />
           <XTextButton title="复制" type="primary" @click="onCopy()" />
         </el-form-item>
         <div class="small-gray mt-5">
@@ -70,21 +70,21 @@
           </template>
         </el-form-item>
         <el-form-item label="URL">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="Token">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
           </el-input>
         </el-form-item>
         <el-form-item label="EncodingAESKey">
-          <el-input>
+          <el-input disabled>
             <template #suffix>
               <XButton title="复制" type="primary" @click="onCopy()" />
             </template>
@@ -168,7 +168,7 @@ const goConfigApp = () => {
   }
 
   &.m-20 {
-    margin: 8px 0 20px 100px;
+    margin: 12px 0 20px 100px;
   }
 
   &.mt-20 {

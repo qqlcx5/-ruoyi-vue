@@ -1,7 +1,7 @@
 <template>
   <Dialog title="添加应用" width="660px" :confirmConfig="{ name: '保存' }" @confirm="submitForm">
     <div class="dialog-box">
-      <Form :schema="schema" ref="addFormRef" :rules="rules" :isCol="false">
+      <Form :schema="schema" ref="addFormRef" :model="addForm" :rules="rules" :isCol="false">
         <template #secret="form">
           <el-input v-model="form['secret']" placeholder="请输入应用Secret" />
           <div
@@ -19,16 +19,23 @@ import { FormSchema } from '@/types/form'
 import type { FormRules } from 'element-plus'
 import { FormExpose } from '@/components/Form'
 
-const rules: FormRules = {
+const addForm = ref({
+  id: '',
+  secret: ''
+})
+const rules = reactive<FormRules>({
   id: [
     { required: true, message: '请输入应用ID', trigger: 'blur' },
-    { max: 32, message: '最多输入32位', trigger: 'blur' }
+    { pattern: '^\\d{32}$', message: '仅数字输入，字数上限32位' }
   ],
   secret: [
     { required: true, message: '请输入应用Secret', trigger: 'blur' },
-    { max: 64, message: '最多输入64位', trigger: 'blur' }
+    {
+      pattern: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{1,64}$',
+      message: '仅支持英文、数字输入，字数上限64位'
+    }
   ]
-}
+})
 
 const addFormRef = ref<FormExpose>()
 const submitForm = async () => {
