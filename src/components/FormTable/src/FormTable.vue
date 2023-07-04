@@ -270,7 +270,7 @@ watch(
         : [])
     ]
 
-    tableColumns.value = cloneDeep(columns)
+    tableColumns.value = cloneDeep(columns).filter((item) => item.check)
     drawerColumns.value = cloneDeep(columns)
   },
   {
