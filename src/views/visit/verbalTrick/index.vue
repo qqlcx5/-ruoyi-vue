@@ -74,7 +74,7 @@
     <template #visitLimitDay="{ row }">
       <div class="table-block">
         <div v-for="item in row.visitSettingContentRelate" :key="item.id">
-          {{ item.visitLimitDay }}
+          T + {{ item.visitLimitDay }}
         </div>
       </div>
     </template>
@@ -183,7 +183,7 @@ const columns = reactive<TableColumn[]>([
     width: 140
   },
   {
-    label: '参考时间',
+    label: '参考时间(T)',
     field: 'originTimeTypeStr',
     width: 140
   },

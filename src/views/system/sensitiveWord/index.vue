@@ -96,7 +96,7 @@ const { t } = useI18n()
 const tableRef = ref()
 
 const getTableList = async (params) => {
-  params.tag = params.tag?.join(' | ')
+  params.tag = params.tag?.join('|')
   const res = await getSensitiveWordPageApi(params)
   console.log('res', res)
   return res

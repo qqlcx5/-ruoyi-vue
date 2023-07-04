@@ -24,7 +24,7 @@
                     class="width-100"
                     v-model:value="queryParams.memberName"
                     @pressEnter="getList(1)"
-                    placeholder="请输入姓名或工号"
+                    placeholder="姓名或工号或ID"
                     allowClear
                   />
                 </div>
@@ -1772,6 +1772,15 @@ const allColumns = [
     ellipsis: true,
     disabled: true,
     sort: 3
+  },
+  {
+    title: '成员ID',
+    width: 100,
+    dataIndex: 'id',
+    key: 'id',
+    resizable: true,
+    ellipsis: true,
+    sort: 1
   },
   {
     title: '部门/岗位',

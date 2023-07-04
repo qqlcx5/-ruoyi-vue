@@ -10,9 +10,24 @@
       showAdd: true,
       selection: true
     }"
+    @add="addBank"
   >
     <template #tableAppend>
       <XButton title="删除" />
+    </template>
+    <template #form-province="{ model }">
+      <AreaSelect
+        v-model:province="model.province"
+        v-model:city="model.city"
+        v-model:county="model.county"
+      />
+    </template>
+    <template #form-searchKey="{ model }">
+      <el-input
+        v-model="model.searchKey"
+        placeholder="请输入按揭银行名称、联系人、最近操作人进行搜索"
+        style="width: 344px"
+      />
     </template>
     <template #action>
       <!-- 操作：修改 -->
@@ -20,16 +35,24 @@
       <!-- 操作：详情 -->
       <XTextButton title="删除" />
     </template>
+    <template #superiorsCount="{ row }">
+      <div class="leader-num" @click="lookLeaders(row)">1</div>
+    </template>
     <template #financeStatus="{ row }">
       <el-switch v-model="row.financeStatus" :active-value="1" :inactive-value="0" />
     </template>
   </form-table>
+  <EditBank v-model="visible" />
+  <LeaderDialog v-model="visibleLeader" />
 </template>
 
 <script lang="ts" setup>
 import { TableColumn } from '@/types/table'
 import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { mortgageFinancePage } from '@/api/mortgage'
+import EditBank from '@/views/mortgage/components/EditBank/index.vue'
+import LeaderDialog from '@/views/mortgage/components/LeaderDialog/index.vue'
+import AreaSelect from '@/components/AreaSelect/index.vue'
 
 const columns: TableColumn[] = [
   { label: '金融机构名称', field: 'financeName', width: 150 },
@@ -55,6 +78,8 @@ const columns: TableColumn[] = [
       }
     }
   },
+  { label: '省市区', field: 'province', width: 110, isTable: false, isSearch: true },
+  { label: '', field: 'searchKey', isTable: false, isSearch: true },
   { label: '联系人', field: 'contactName', width: 110 },
   { label: '电话', field: 'contactMobile', width: 110 },
   { label: '职位', field: 'position', width: 110 },
@@ -68,7 +93,21 @@ const columns: TableColumn[] = [
   }
 ]
 
+const visible = ref<boolean>(false)
+const addBank = () => {
+  visible.value = true
+}
+const visibleLeader = ref<boolean>(false)
+const lookLeaders = (row) => {
+  visibleLeader.value = true
+}
+
 const { allSchemas } = useCrudSchemas(columns)
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss">
+.leader-num {
+  cursor: pointer;
+  color: $wg-primary-color;
+}
+</style>
