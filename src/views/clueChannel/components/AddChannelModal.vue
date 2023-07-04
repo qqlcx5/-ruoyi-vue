@@ -18,15 +18,6 @@
         align="left"
         @update:page-size="() => {}"
       >
-        <template #serialNumber="{ row }">
-          <el-input
-            v-model="row.serialNumber"
-            :class="{ error: row.serialNumberError }"
-            size="small"
-            placeholder="请输入"
-            @input="handleSserialNumber(row)"
-          />
-        </template>
         <template #clueSourceId="{ row }">
           <el-cascader
             ref="cascaderRef"
@@ -150,11 +141,6 @@ interface tableColumnsType {
 }
 const initTableColumns: tableColumnsType[] = [
   {
-    label: '编号',
-    field: 'serialNumber',
-    minWidth: '100px'
-  },
-  {
     label: '线索平台',
     field: 'clueSourceId',
     minWidth: '100px'
@@ -200,7 +186,6 @@ const tableList = ref<ChannelVO[]>([])
 
 const handleAdd = () => {
   let addItem = {
-    serialNumber: '',
     clueSourceId: '',
     shopId: '',
     platformUsername: '',
@@ -282,34 +267,22 @@ const shopOptions = ref(getSuitableShopList())
 
 import { cloneDeep } from 'lodash-es'
 
-const showError = (errList, type) => {
+const showError = (errList) => {
   errList.forEach((error) => {
     console.log(error)
     tableList.value = tableList.value.map((tItem: any) => {
-      if (type == 'serialNumber') {
-        if (error == tItem.serialNumber) {
-          tItem.serialNumberError = true
-        }
-      } else {
-        if (error == tItem.clueSourceId) {
-          tItem.clueSourceIdError = true
-        }
+      if (error == tItem.clueSourceId) {
+        tItem.clueSourceIdError = true
       }
       return tItem
     })
   })
   console.log('=========', errList)
 }
-const handleSserialNumber = (row) => {
-  console.log(row)
-
-  row.serialNumberError = false
-}
 
 // 保存按钮
 const submitForm = async () => {
   let list = cloneDeep(tableList.value)
-  let isSerialNumberEmptyTool = false
   let isClueSourceIdEmptyTool = false
   let isClueShopIdEmptyTool = false
   let paramsList = list.map((item: any) => {
@@ -324,9 +297,6 @@ const submitForm = async () => {
       let len = item.shopId.length - 1 || 0
       item.shopId = item.shopId[len]
     }
-    if (!item.serialNumber) {
-      isSerialNumberEmptyTool = true
-    }
     if (!item.clueSourceId) {
       isClueSourceIdEmptyTool = true
     }
@@ -337,10 +307,6 @@ const submitForm = async () => {
   })
   console.log(paramsList)
 
-  if (isSerialNumberEmptyTool) {
-    message.error('编号不能为空')
-    return
-  }
   if (isClueSourceIdEmptyTool) {
     message.error('线索平台不能为空')
     return
@@ -362,12 +328,9 @@ const submitForm = async () => {
     emit('refreshList')
   } else {
     let errData = data.data || []
-    if (data.code == '2001000008') {
-      // 编号已存在
-      showError(errData, 'serialNumber')
-    } else if (data.code == '2001000009') {
+    if (data.code == '2001000009') {
       //  门店选择的线索平台已存在
-      showError(errData, 'clueSourceId')
+      showError(errData)
     }
     ElNotification.error({ title: data.msg })
   }
@@ -447,16 +410,6 @@ defineExpose({ openModal })
     }
   }
   &:nth-child(2) {
-    .cell {
-      position: relative;
-      &::before {
-        content: '*';
-        display: inline-block;
-        color: red;
-      }
-    }
-  }
-  &:nth-child(3) {
     .cell {
       position: relative;
       &::before {

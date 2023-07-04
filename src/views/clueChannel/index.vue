@@ -132,18 +132,13 @@ const columns: TableColumn[] = [
     }
   },
   {
-    label: '编号',
-    field: 'serialNumber',
+    label: '线索平台',
+    field: 'clueSource',
     disabled: true
   },
   {
     label: '线索平台所属门店',
     field: 'shopName',
-    disabled: true
-  },
-  {
-    label: '线索平台',
-    field: 'clueSource',
     disabled: true
   },
   {
