@@ -86,7 +86,7 @@ $btnWrapHeight: 86px;
   }
   :deep(.el-table__row):last-child {
     td.el-table__cell {
-      border-bottom: none;
+      border-bottom-color: transparent;
     }
   }
   :deep(.el-table__cell) {

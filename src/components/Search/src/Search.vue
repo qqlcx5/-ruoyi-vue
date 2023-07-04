@@ -79,10 +79,10 @@ const setDefaultShowOneLint = () => {
       if (formWidth - itemsWidth < getItemWidth(formItems[index + 1]) + 5) {
         // 判断一行是否还能放下查询重置按钮，不能就把当前及之后的选项收起
         if (props.layout === 'inline' && formWidth - itemsWidth < lastFormItemWidth + 90) {
-          defaultExpanField.value = props.schema[index - 1].field
+          defaultExpanField.value = props.schema[index - 1]?.field
           break
         }
-        defaultExpanField.value = props.schema[index].field
+        defaultExpanField.value = props.schema[index]?.field
         break
       }
     }
