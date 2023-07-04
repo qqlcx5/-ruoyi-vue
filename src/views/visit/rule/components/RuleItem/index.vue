@@ -179,7 +179,7 @@ const onDelete = async () => {
 <style lang="scss">
 .visit-rule-item {
   .desc-label {
-    width: 144px !important;
+    width: 152px !important;
     white-space: nowrap;
     background: #f3f8ff !important;
   }

@@ -4,6 +4,7 @@
     v-model="dialogVisible"
     title="接待关联配置"
     width="1000px"
+    :close-on-click-modal="false"
     @confirm="confirm"
     @cancel="cancel"
   >
