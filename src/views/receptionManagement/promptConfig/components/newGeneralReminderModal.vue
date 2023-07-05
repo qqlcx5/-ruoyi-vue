@@ -93,7 +93,12 @@
           />
         </el-form-item>
         <el-form-item label="提示内容" prop="content" required>
-          <Editor v-model="formData.content" class="mb-20px" :height="220" />
+          <Editor
+            :toolbarConfig="{ excludeKeys: ['group-image', 'group-video', 'emotion'] }"
+            v-model="formData.content"
+            class="mb-20px"
+            :height="220"
+          />
         </el-form-item>
       </el-form>
       <!-- 操作按钮 -->
