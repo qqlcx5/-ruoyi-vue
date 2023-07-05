@@ -9,14 +9,15 @@
           :suffix-icon="Search"
           class="mb-10px"
         />
-        <el-button class="mb-14px">
+        <el-button class="mb-14px" @click="handleTreeClick">
           <svg-icon icon-class="el-icon-arrow-down" />
           展开/折叠
         </el-button>
         <el-tree
+          ref="treeRef"
           :data="data"
-          :default-expanded-keys="[1, 2]"
           :props="defaultProps"
+          default-expand-all
           @node-click="handleNodeClick"
         />
       </div>
@@ -33,7 +34,7 @@
         :form-options="{ schema: allSchemas.searchSchema }"
         :table-options="{
           columns: allSchemas.tableColumns,
-          // listApi: dispatchApi.getClueDistributeRule,
+          listApi: portraitFactor.portraitFactorLevelConfigAllListApi,
           showAdd: true,
           actionButtons
         }"
@@ -57,6 +58,19 @@
 
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue'
+import { ElTree } from 'element-plus'
+import * as portraitFactor from '@/api/receptionManagement/portraitFactor'
+// 展开/折叠
+let treeRef = ref<InstanceType<typeof ElTree>>()
+let treeNodeExpand = ref(true)
+
+function handleTreeClick() {
+  treeNodeExpand.value = !treeNodeExpand.value
+  const nodes = treeRef.value?.store.nodesMap
+  for (let node in nodes) {
+    nodes[node].expanded = treeNodeExpand.value
+  }
+}
 let queryBrand = ref('')
 
 const actionButtons = [
@@ -181,5 +195,13 @@ const { allSchemas } = useCrudSchemas(columns)
 <style lang="scss" scoped>
 .text-blue {
   color: #0081ff;
+}
+
+:deep(.el-tree-node__content) {
+  .el-tree-node__label {
+    font-size: 14px;
+    font-weight: bold;
+    color: rgb(51 51 51 / 100%);
+  }
 }
 </style>

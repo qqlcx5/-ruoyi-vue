@@ -27,8 +27,8 @@
       <template #header>
         <div class="text-title text-18px font-bold flex items-center">
           哈弗-车系信息
-          <el-button class="!h-28px ml-10px" type="primary" text bg> 清除 </el-button></div
-        >
+          <el-button class="!h-28px ml-10px" type="primary" text bg> 清除 </el-button>
+        </div>
       </template>
       <div class="flex">
         <form-table
@@ -36,7 +36,7 @@
           :form-options="{ schema: allSchemas.searchSchema }"
           :table-options="{
             columns: allSchemas.tableColumns,
-            // listApi: dispatchApi.getClueDistributeRule,
+            listApi: portraitFactor.portraitFactorLevelConfigAllListApi,
             showAdd: true,
             actionButtons
           }"
@@ -64,7 +64,7 @@
             :form-options="{ schema: allSchemas.searchSchema }"
             :table-options="{
               columns: allSchemas.tableColumns,
-              // listApi: dispatchApi.getClueDistributeRule,
+              listApi: portraitFactor.portraitFactorLevelConfigAllListApi,
               showAdd: true,
               actionButtons
             }"
@@ -90,6 +90,8 @@
 
 <script setup lang="ts">
 import { Search } from '@element-plus/icons-vue'
+import * as portraitFactor from '@/api/receptionManagement/portraitFactor'
+
 let queryBrand = ref('')
 
 const actionButtons = [

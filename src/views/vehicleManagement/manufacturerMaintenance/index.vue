@@ -115,7 +115,8 @@ async function handleAdd() {
 // }
 
 // 操作：删除
-async function handleDel() {
+async function handleDel(row) {
+  console.log('🚀 ~ file: index.vue:119 ~ handleDel ~ row:', row)
   const list = await tableRef.value?.tableMethods?.getSelections()
   if (list) {
     selectedIds.value = list.map((item) => item.id)
