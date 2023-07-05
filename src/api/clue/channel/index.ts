@@ -6,7 +6,6 @@ export interface ChannelPageReqVO extends PageParam {
 }
 
 export interface ChannelVO {
-  serialNumber: string
   clueSourceId: string
   shopId: string
   platformUsername: string

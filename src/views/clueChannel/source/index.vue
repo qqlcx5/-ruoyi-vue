@@ -22,7 +22,7 @@
               <div class="bnt-wrap">
                 <XTextButton :title="t('action.edit')" @click.stop="handleEdit(lItem, index)" />
                 <XTextButton :title="t('action.del')" @click.stop="handledelete(lItem)" />
-                <i class="iconfont icon-you"></i>
+                <i class="iconfont icon-you" v-if="index < levelList.length - 1"></i>
               </div>
             </div>
           </div>

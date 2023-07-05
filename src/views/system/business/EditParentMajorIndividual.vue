@@ -110,17 +110,13 @@
 import { reactive } from 'vue'
 import {
   getCheckMajorIndividual,
-  getMajorIndividualList,
-  getSimpleTenantList,
   getSimpleTenantListStore,
   getTopPhone,
-  updateEditMajorIndividualStatus,
   updateParentMajorIndividual
 } from '@/api/system/business'
 import { handleTree } from '@/utils/tree'
 import warningImg from '@/assets/imgs/system/warning.png'
 import { message } from 'ant-design-vue'
-import { updateOrganizationStatus } from '@/api/system/organization'
 
 interface Props {
   currentRecord?: object
@@ -236,7 +232,8 @@ onMounted(async () => {
   res = res.filter((item) => item.type === 'dealer')
   state.optionalMenuTree = handleTree(res, 'id', 'belongTenantId', 'children')
   console.log('state.optionalMenuTree', state.optionalMenuTree)
-  state.formState.belongTenantId = props.currentRecord.belongTenantId
+  state.formState.belongTenantId =
+    props.currentRecord.belongTenantId || props.currentRecord.tenantId
 })
 </script>
 

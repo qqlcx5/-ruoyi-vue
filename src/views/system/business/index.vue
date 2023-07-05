@@ -882,6 +882,7 @@
           :rules="[{ required: true, message: `上级主体不能为空` }]"
         >
           <a-tree-select
+            ref="belongTenantIdRef"
             v-model:value="state.formState.belongTenantId"
             :disabled="state.modalType === 'edit'"
             show-search
@@ -2298,6 +2299,8 @@ const state: any = reactive({
 const checkedKeysDirIds: Ref<(string | number)[]> = ref([])
 const checkedKeysDirIdsFrontDesk: Ref<(string | number)[]> = ref([])
 
+// 上级主体组件
+const belongTenantIdRef = ref()
 // 有效期组件
 const effectiveRef = ref()
 // 成立日期组件
@@ -2306,6 +2309,7 @@ const establishRef = ref()
 const companyAddressRef = ref()
 /** 弹窗滚动事件 */
 const handleModalScroll = () => {
+  belongTenantIdRef.value?.blur()
   effectiveRef.value?.blur()
   establishRef.value?.blur()
   companyAddressRef.value?.blur()

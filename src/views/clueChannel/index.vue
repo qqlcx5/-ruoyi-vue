@@ -59,7 +59,7 @@ import { useCrudSchemas } from '@/hooks/web/useCrudSchemas'
 import { TableColumn } from '@/types/table'
 import AddChannelModal from './components/AddChannelModal.vue'
 import { hasPermission } from '@/utils/utils'
-
+import { cloneDeep } from 'lodash-es'
 import { useCommonList } from '@/hooks/web/useCommonList'
 const { getSuitableShopList } = useCommonList()
 
@@ -132,18 +132,13 @@ const columns: TableColumn[] = [
     }
   },
   {
-    label: '编号',
-    field: 'serialNumber',
+    label: '线索平台',
+    field: 'clueSource',
     disabled: true
   },
   {
     label: '线索平台所属门店',
     field: 'shopName',
-    disabled: true
-  },
-  {
-    label: '线索平台',
-    field: 'clueSource',
     disabled: true
   },
   {
@@ -246,7 +241,7 @@ const handleSource = () => {
   })
 }
 const handleUpdate = async (row: any) => {
-  addChannelModalRef.value.openModal(sourceList.value, row)
+  addChannelModalRef.value.openModal(sourceList.value, cloneDeep(row))
 }
 
 // 更改是否需要清洗

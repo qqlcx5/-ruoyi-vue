@@ -45,6 +45,7 @@
               :rules="[{ required: true, message: `上级主体不能为空` }]"
             >
               <a-tree-select
+                ref="belongTenantIdRef"
                 v-model:value="state.formState.belongTenantId"
                 :disabled="state.modalType === 'edit'"
                 show-search
@@ -60,6 +61,7 @@
 
             <a-form-item :label="`上级机构`" name="parentId" v-if="props.needParentId">
               <a-tree-select
+                ref="parentIdRef"
                 v-model:value="state.formState.parentId"
                 :disabled="props.storeType !== organizationType.store"
                 show-search
@@ -141,6 +143,7 @@
               :rules="[{ required: true, message: '品牌不能为空!' }]"
             >
               <a-tree-select
+                ref="brandRef"
                 v-model:value="state.formState.brand"
                 style="width: 100%"
                 :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -202,6 +205,7 @@
 
             <a-form-item :label="`负责人`" name="contactName">
               <a-tree-select
+                ref="contactNameRef"
                 v-model:value="state.formState.contactName"
                 show-search
                 style="width: 100%"
@@ -217,6 +221,7 @@
             <a-form-item label="负责人电话" name="contactMobile" :rules="state.contactMobileRules">
               <!--          <a-input v-model:value="state.formState.contactMobile" placeholder="请输入负责人电话" />-->
               <a-select
+                ref="contactMobileRef"
                 v-model:value="state.formState.contactMobile"
                 class="width-100"
                 :options="state.memberPhoneOptions"
@@ -316,6 +321,7 @@
                 v-if="state.formState.isSale === 0"
               >
                 <a-tree-select
+                  ref="saleBrandRef"
                   v-model:value="state.formState.saleBrand"
                   style="width: 100%"
                   :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -348,6 +354,7 @@
                 v-if="state.formState.isRescue === 0"
               >
                 <a-tree-select
+                  ref="rescueBrandRef"
                   v-model:value="state.formState.rescueBrand"
                   style="width: 100%"
                   :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -380,6 +387,7 @@
                 v-if="state.formState.isMaintenance === 0"
               >
                 <a-tree-select
+                  ref="maintenanceBrandRef"
                   v-model:value="state.formState.maintenanceBrand"
                   style="width: 100%"
                   :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
@@ -427,6 +435,7 @@
             >
               <a-form-item :name="['contactInformationArr', index, 'mobile']" label="联系方式">
                 <a-select
+                  ref="contactTypeRefs"
                   v-model:value="item.contactType"
                   placeholder="请选择联系方式"
                   style="width: 200px"
@@ -822,6 +831,22 @@ const numValidator = (rule, value) => {
   })
 }
 
+// 上级主体组件
+const belongTenantIdRef = ref()
+// 上级机构组件
+const parentIdRef = ref()
+// 品牌组件
+const brandRef = ref()
+// 负责人组件
+const contactNameRef = ref()
+// 负责人电话组件
+const contactMobileRef = ref()
+// 销售品牌组件
+const saleBrandRef = ref()
+// 救援品牌组件
+const rescueBrandRef = ref()
+// 维保品牌组件
+const maintenanceBrandRef = ref()
 // 数据统计区域组件
 const companyAddressDataRef = ref()
 // 门店地址组件
@@ -832,13 +857,27 @@ const establishRef = ref()
 const operationRef = ref()
 // 验收通过时间组件
 const acceptanceRef = ref()
+// 联系方式组件list
+const contactTypeRefs: any = ref([])
 /** 弹窗滚动事件 */
 const handleModalScroll = () => {
+  console.log('contactTypeRefs', contactTypeRefs)
+  belongTenantIdRef.value?.blur()
+  parentIdRef.value?.blur()
+  brandRef.value?.blur()
+  contactNameRef.value?.blur()
+  contactMobileRef.value?.blur()
+  saleBrandRef.value?.blur()
+  rescueBrandRef.value?.blur()
+  maintenanceBrandRef.value?.blur()
   companyAddressDataRef.value?.blur()
   companyAddressRef.value?.blur()
   establishRef.value?.blur()
   operationRef.value?.blur()
   acceptanceRef.value?.blur()
+  contactTypeRefs.value?.forEach((item) => {
+    item?.blur()
+  })
 }
 
 const layout = {
