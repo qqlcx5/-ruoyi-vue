@@ -27,7 +27,7 @@
         <div>{{ info.applyShopType === 1 ? '全部' : '部分' }}</div>
       </div>
       <div class="flex mb-14px">
-        <div class="text-title font-bold">提示内容：</div>
+        <div class="text-title font-bold flex-shrink-0">提示内容：</div>
         <div v-html="info.content"></div>
       </div>
     </XModal>

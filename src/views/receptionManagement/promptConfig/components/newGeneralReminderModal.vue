@@ -140,8 +140,8 @@ function openModal(open: boolean, row: any) {
   formData.value = row ? { ...row } : { ...defaultFormData.value }
   formData.value.hintTypeId = row && row.hintTypeId * 1
   let validityDate = [
-    dayjs(row.validityDateBegin).format('YYYY-MM-DD HH:mm:ss'),
-    dayjs(row.validityDateEnd).format('YYYY-MM-DD HH:mm:ss')
+    dayjs(row?.validityDateBegin).format('YYYY-MM-DD HH:mm:ss'),
+    dayjs(row?.validityDateEnd).format('YYYY-MM-DD HH:mm:ss')
   ]
   formData.value.validityDate = validityDate
   formData.value.validityDateType = row && row.validityDateBegin && row.validityDateEnd ? 2 : 1

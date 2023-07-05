@@ -26,12 +26,17 @@
 
       <!-- 操作：修改 -->
       <template #action="{ row }">
-        <XTextButton :title="t('action.edit')" @click="handleEdit(row)" />
+        <XTextButton :title="t('action.edit')" @click="handleEdit(row, 'edit')" />
         <XTextButton :title="t('action.del')" @click="confirmDel(row)" />
       </template>
 
       <template #status="{ row }">
-        <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
+        <el-switch
+          v-model="row.status"
+          :active-value="1"
+          :inactive-value="0"
+          @change="handleSwitch(row)"
+        />
       </template>
       <!-- <template #content="{ row }">
         <span v-html="row.content"></span>
@@ -121,7 +126,21 @@ let tableRef = ref()
 async function handleAdd() {
   newGeneralRef.value?.openModal(true)
 }
-
+// 操作：启用/禁用
+async function handleSwitch(row) {
+  if (!row.id) return
+  let params = {
+    id: row.id,
+    status: row.status ? 1 : 0
+  }
+  let res = null
+  if (tabsName.value === 'currency') {
+    res = await promptConfig.receptionHintConfigUpdateStatusApi(params)
+  } else {
+    res = await promptConfig.receptionMustSayConfigUpdateStatusApi(params)
+  }
+  res ? message.success('操作成功') : message.error('报错了')
+}
 // 操作：删除
 async function handleDel() {
   const list = await tableRef.value?.tableMethods?.getSelections()
