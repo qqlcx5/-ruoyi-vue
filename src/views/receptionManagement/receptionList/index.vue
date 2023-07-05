@@ -247,14 +247,14 @@ const columns: TableColumn[] = [
     }
   },
   {
-    label: '接待时长',
+    label: '接待时长xxx',
     field: 'receptionDuration',
     isSearch: true,
     isTable: false,
     search: searchComp([])
   },
   {
-    label: '录音时长',
+    label: '录音时长xxx',
     field: 'receptionAudioDuration',
     isSearch: true,
     search: searchComp([]),
@@ -295,7 +295,7 @@ const columns: TableColumn[] = [
   },
 
   {
-    label: '到店来源',
+    label: '到店来源xxx',
     field: 'arrivalSource',
     isSearch: true,
     isTable: false,
@@ -412,7 +412,7 @@ const columns: TableColumn[] = [
   },
 
   {
-    label: '成员所属门店xxx',
+    label: '成员所属门店',
     field: 'userDepartment',
     width: 200
   },

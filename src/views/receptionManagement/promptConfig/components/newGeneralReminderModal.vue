@@ -10,7 +10,7 @@
           <div class="w-116">
             <el-input
               v-model="formData.title"
-              placeholder="请输入主体编码"
+              placeholder="请输入提示标题"
               maxlength="30"
               show-word-limit
             />
